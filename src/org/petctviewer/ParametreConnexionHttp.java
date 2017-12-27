@@ -45,7 +45,7 @@ public class ParametreConnexionHttp {
 	
 	
 	public ParametreConnexionHttp() {
-	
+	       
 			int curDb = jprefer.getInt("current database", 0);
 			int typeDb = jprefer.getInt("db type" + curDb, 5);
 			String ip=null;
@@ -78,14 +78,13 @@ public class ParametreConnexionHttp {
 				authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
 			}
 		}
-			
 		testConnexion();
 		
 	}
 	
 	public HttpURLConnection makeGetConnection(String apiUrl) throws IOException {
-		HttpURLConnection conn=null;
 		
+		HttpURLConnection conn=null;
 		try {
 			URL url = new URL(fullAddress+apiUrl);
 			conn = (HttpURLConnection) url.openConnection();
@@ -94,8 +93,6 @@ public class ParametreConnexionHttp {
 		} catch (IOException e2) {
 			e2.printStackTrace();
 		}
-		
-		
 		if((fullAddress != null && fullAddress.contains("https"))){
 			try{
 				HttpsTrustModifier.Trust(conn);
@@ -103,36 +100,32 @@ public class ParametreConnexionHttp {
 				throw new IOException("Cannot allow self-signed certificates");
 			}
 		}
-		
 		if(authentication != null){
 			conn.setRequestProperty("Authorization", "Basic " + authentication);
 		}
-		
 		conn.getResponseMessage();
-		
 		return conn;
-
+	
 	}
 
 	public StringBuilder makeGetConnectionAndStringBuilder(String apiUrl) throws IOException {
+		
 		HttpURLConnection conn=makeGetConnection(apiUrl);
 		BufferedReader br = new BufferedReader(new InputStreamReader(
 			(conn.getInputStream())));
-
+	
 		StringBuilder sb = new StringBuilder();
 		String output;
 		while ((output = br.readLine()) != null) {
 			sb.append(output);
 		}
 		conn.disconnect();
-		
 		return sb;
 	}
 	
 	
 	
-public HttpURLConnection makePostConnection(String apiUrl, String post) throws IOException {
-		
+	public HttpURLConnection makePostConnection(String apiUrl, String post) throws IOException {
 		
 		URL url = new URL(fullAddress+apiUrl);
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -151,43 +144,39 @@ public HttpURLConnection makePostConnection(String apiUrl, String post) throws I
 		OutputStream os = conn.getOutputStream();
 		os.write(post.getBytes());
 		os.flush();
-		
 		conn.getResponseMessage();
-		
 		return conn;
-}
+	}
 
-public HttpURLConnection sendDicom(String apiUrl, byte[] post) throws IOException {
-	URL url = new URL(fullAddress+apiUrl);
-	HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-	conn.setDoOutput(true);
-	conn.setRequestMethod("POST");
-	
-	if((fullAddress != null && fullAddress.contains("https")) ){
-		try{
-			HttpsTrustModifier.Trust(conn);
-		}catch (Exception e){
-			throw new IOException("Cannot allow self-signed certificates");
+	public HttpURLConnection sendDicom(String apiUrl, byte[] post) throws IOException {
+		
+		URL url = new URL(fullAddress+apiUrl);
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		conn.setDoOutput(true);
+		conn.setRequestMethod("POST");
+		
+		if((fullAddress != null && fullAddress.contains("https")) ){
+			try{
+				HttpsTrustModifier.Trust(conn);
+			}catch (Exception e){
+				throw new IOException("Cannot allow self-signed certificates");
+			}
 		}
+		if(this.authentication != null){
+			conn.setRequestProperty("Authorization", "Basic " + this.authentication);
+		}
+		conn.setRequestProperty("content-length", Integer.toString(post.length));
+		conn.setRequestProperty("content-type", "application/dicom");
+		OutputStream os = conn.getOutputStream();
+		os.write(post);
+		os.flush();
+		conn.getResponseMessage();
+		return conn;
 	}
-	if(this.authentication != null){
-		conn.setRequestProperty("Authorization", "Basic " + this.authentication);
-	}
-	
-	conn.setRequestProperty("content-length", Integer.toString(post.length));
-	conn.setRequestProperty("content-type", "application/dicom");
-	OutputStream os = conn.getOutputStream();
-	os.write(post);
-	os.flush();
-	
-	conn.getResponseMessage();
-	
-	return conn;
-}
 		
 	public StringBuilder makePostConnectionAndStringBuilder(String apiUrl, String post) throws IOException {
-		HttpURLConnection conn = makePostConnection(apiUrl, post);
 		
+		HttpURLConnection conn = makePostConnection(apiUrl, post);
 		BufferedReader br = new BufferedReader(new InputStreamReader(
 				(conn.getInputStream())));
 
@@ -201,47 +190,36 @@ public HttpURLConnection sendDicom(String apiUrl, byte[] post) throws IOExceptio
 		conn.getResponseMessage();
 		
 		return sb; 
+	}
 
-
-}
-
-public void makeDeleteConnection(String apiUrl) throws IOException {
-	
-	
-	URL url = new URL(fullAddress+apiUrl);
-	
-	HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-	conn.setDoOutput(true);
-	conn.setRequestMethod("DELETE");
-	if((fullAddress != null && fullAddress.contains("https")) ){
-		try{
-			HttpsTrustModifier.Trust(conn);
-		}catch (Exception e){
-			throw new IOException("Cannot allow self-signed certificates");
+	public void makeDeleteConnection(String apiUrl) throws IOException {
+		
+		URL url = new URL(fullAddress+apiUrl);
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		conn.setDoOutput(true);
+		conn.setRequestMethod("DELETE");
+		if((fullAddress != null && fullAddress.contains("https")) ){
+			try{
+				HttpsTrustModifier.Trust(conn);
+			}catch (Exception e){
+				throw new IOException("Cannot allow self-signed certificates");
+			}
 		}
-	}
-	if(this.authentication != null){
-		conn.setRequestProperty("Authorization", "Basic " + this.authentication);
-	}
+		if(this.authentication != null){
+			conn.setRequestProperty("Authorization", "Basic " + this.authentication);
+		}
+		
+		conn.getResponseMessage();
+		conn.disconnect();
 	
-	conn.getResponseMessage();
-	
-	conn.disconnect();
-
-}
+	}
 	
 	private int ordinalIndexOf(String str, String substr, int n) {
+		
 		int pos = str.indexOf(substr);
 		while (--n > 0 && pos != -1)
 			pos = str.indexOf(substr, pos + 1);
 		return pos;
-	}
-	
-	public String[] getConnexionParameter() {
-		String[] parameters=new String[2];
-		parameters[0]=fullAddress;
-		parameters[1]=authentication;
-		return parameters;
 	}
 	
 	// Display Error message if connexion failed
@@ -259,8 +237,6 @@ public void makeDeleteConnection(String apiUrl) throws IOException {
 				    JOptionPane.ERROR_MESSAGE);
 			ConnectionSetup.main();
 		}
-			
-		
 	}
 
 	

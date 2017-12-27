@@ -55,7 +55,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 	private ParametreConnexionHttp connexion=new ParametreConnexionHttp();
 
 	public ImportDCM(){
-		this.setTitle("Import DICOM files");
+		super("Import DICOM files");
 		JPanel mainPanel = new JPanel(new GridBagLayout());
 		JLabel labelPath = new JLabel("DICOM files path");
 		JTextField path = new JTextField(jpreferPerso.get("filesLocation", System.getProperty("user.dir")));

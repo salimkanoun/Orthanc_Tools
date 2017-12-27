@@ -201,6 +201,8 @@ public class VueAnon extends JFrame implements PlugIn{
 
 	public VueAnon(){
 		
+		super("Orthanc Tools");
+		
 		//On remplis les parametre de connexion pour la session
 		connexionHttp= new ParametreConnexionHttp();
 		//On set les objets necessaires
@@ -210,8 +212,6 @@ public class VueAnon extends JFrame implements PlugIn{
 		modeleExportStudies = new TableDataExportStudies(connexionHttp);
 		modeleAnonStudies = new TableDataAnonStudies(connexionHttp);
 		modeleStudies = new TableDataStudies(connexionHttp);
-
-		this.setTitle("Orthanc Tools");
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////// PANEL 1 : ANONYMIZATION ////////////////////////////////////////////////////
@@ -2683,8 +2683,8 @@ public class VueAnon extends JFrame implements PlugIn{
 		VueAnon vue = new VueAnon();
 		vue.pack();
 		vue.setLocationRelativeTo(null);
-		//WindowManager.addWindow(gui);
-		//IJ.register(VueAnon.class);
+		WindowManager.addWindow(gui);
+		IJ.register(VueAnon.class);
 		vue.setVisible(true);
 		}
 		

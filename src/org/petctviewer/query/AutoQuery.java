@@ -37,7 +37,6 @@ import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.petctviewer.ParametreConnexionHttp;
 
 
 
@@ -55,8 +54,8 @@ public class AutoQuery  {
 	private DateFormat df = new SimpleDateFormat("yyyyMMdd");
 	
 	
-	public AutoQuery(ParametreConnexionHttp connexion) {
-		api=new Rest(connexion);
+	public AutoQuery(Rest rest) {
+		api=rest;
 		try {
 			aet=api.getAET();
 			aetRetrieve=api.getLocalAET();

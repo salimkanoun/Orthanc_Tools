@@ -25,8 +25,6 @@ import java.util.Date;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.petctviewer.ParametreConnexionHttp;
-
 public class TableDataPatient extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
 
@@ -35,9 +33,9 @@ public class TableDataPatient extends AbstractTableModel{
 	private ArrayList<Patient> patients = new ArrayList<Patient>();
 	private Rest rest;
 
-	public TableDataPatient(ParametreConnexionHttp connexion){
+	public TableDataPatient(Rest rest){
 		super();
-		rest = new Rest(connexion);
+		this.rest = rest;
 	}
 
 	public int getRowCount(){

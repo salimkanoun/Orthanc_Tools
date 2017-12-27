@@ -65,7 +65,6 @@ import javax.swing.table.TableRowSorter;
 
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.petctviewer.ParametreConnexionHttp;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
 
@@ -85,13 +84,14 @@ import java.util.prefs.Preferences;
 public class VueRest extends JFrame implements PlugIn{
 	
 	private static final long serialVersionUID = 1L;
-	private ParametreConnexionHttp connexion =new ParametreConnexionHttp();
+	//objet gerant les restfull apis
+	Rest rest=new Rest();
 	
 	JTabbedPane tabbedPane;
-	private TableDataPatient modele = new TableDataPatient(connexion); // model for the main JTable (tableau)
-	private TableDataDetails modeleDetails = new TableDataDetails(connexion); // model for the details JTable (tableauDetails) in the main tab
-	private TableDataPatient modeleH = new TableDataPatient(connexion); // model for the history JTable (tab History)
-	private TableDataDetails modeleDetailsH = new TableDataDetails(connexion); // model for the details JTable (tableauDetails) in the history tab
+	private TableDataPatient modele = new TableDataPatient(rest); // model for the main JTable (tableau)
+	private TableDataDetails modeleDetails = new TableDataDetails(rest); // model for the details JTable (tableauDetails) in the main tab
+	private TableDataPatient modeleH = new TableDataPatient(rest); // model for the history JTable (tab History)
+	private TableDataDetails modeleDetailsH = new TableDataDetails(rest); // model for the details JTable (tableauDetails) in the history tab
 	private JTable tableau; // displayed table in the main tab
 	private JTable tableauDetails; // displayed table containing the details in the main tab
 	private JTable tableauH; // displayed table in the history tab
@@ -150,7 +150,7 @@ public class VueRest extends JFrame implements PlugIn{
 	private JTextField textFieldNameIDAcc;
 	private JButton btnScheduleDaily;
 	private JLabel info;
-	private AutoQuery autoQuery=new AutoQuery(connexion);
+	private AutoQuery autoQuery=new AutoQuery(rest);
 	
 	//timer
 	private boolean timerOn;
@@ -162,8 +162,7 @@ public class VueRest extends JFrame implements PlugIn{
     
 	public VueRest() {
 		
-		
-		this.setTitle("Orthanc queries");
+		super("Orthanc queries");
 		this.setResizable(true);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.addWindowListener(new WindowAdapter() {
@@ -1301,7 +1300,7 @@ public class VueRest extends JFrame implements PlugIn{
 		
 	}
 	/**
-	 * AutoQuery :Appelle la dialog d'affichage des resultat et recupère les resultat validés pour l'injecter dans la table de la main frame
+	 * AutoQuery :Appelle la dialog d'affichage des resultat et recupï¿½re les resultat validï¿½s pour l'injecter dans la table de la main frame
 	 * @param patientArray
 	 */
 	private void showResultTable(ArrayList<Patient> patientArray) {

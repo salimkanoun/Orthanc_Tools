@@ -23,8 +23,6 @@ import java.util.ArrayList;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.petctviewer.ParametreConnexionHttp;
-
 public class TableDataDetails extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
 
@@ -34,9 +32,9 @@ public class TableDataDetails extends AbstractTableModel{
 	private ArrayList<String> listIndexes = null;
 	private Rest rest;
 
-	public TableDataDetails(ParametreConnexionHttp connexion){
+	public TableDataDetails(Rest rest){
 		super();
-		rest = new Rest(connexion);
+		this.rest=rest;
 	}
 
 	public int getRowCount(){

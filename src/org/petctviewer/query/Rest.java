@@ -29,6 +29,7 @@ import org.petctviewer.ParametreConnexionHttp;
 
 public class Rest {
 
+	private ParametreConnexionHttp connexion =new ParametreConnexionHttp();
 	private String query;
 	private String index;
 	private String aet;
@@ -36,10 +37,8 @@ public class Rest {
 	private String idQuery;
 	private JSONObject contentJson=new JSONObject();
 	private JSONParser parser = new JSONParser();
-	private ParametreConnexionHttp connexion =new ParametreConnexionHttp();
 
-	public Rest(ParametreConnexionHttp connexion){
-		this.connexion=connexion;
+	public Rest(){
 	}
 
 

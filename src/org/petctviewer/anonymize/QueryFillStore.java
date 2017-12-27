@@ -208,11 +208,18 @@ public class QueryFillStore {
 		this.url="/studies/" + orthancUID;
 		String[] studyDescriptionAndUID=new String[3];
 		try {
+			//SK Utiliser les contains key pour le parsing COMME DANS CET EXEMPLE
 			JSONObject responseJson=(JSONObject) parser.parse(this.sendQuery("get"));
 			JSONObject responsemaintag=(JSONObject) responseJson.get("MainDicomTags");
-			String studyDescription=responsemaintag.get("StudyDescription").toString();
-			String studyDate=responsemaintag.get("StudyDate").toString();
-			String studyInstanceUID=responsemaintag.get("StudyInstanceUID").toString();
+			
+			String studyDescription;
+			String studyDate;
+			String studyInstanceUID;
+			
+			if (responsemaintag.containsKey("StudyDescription")) studyDescription =responsemaintag.get("StudyDescription").toString(); else studyDescription="";
+			if (responsemaintag.containsKey("StudyDate")) studyDate=responsemaintag.get("StudyDate").toString(); else studyDate="";
+			if (responsemaintag.containsKey("StudyInstanceUID")) studyInstanceUID=responsemaintag.get("StudyInstanceUID").toString(); else studyInstanceUID="";
+			
 			studyDescriptionAndUID[0]=studyDescription;
 			studyDescriptionAndUID[1]=studyInstanceUID;
 			studyDescriptionAndUID[2]=studyDate;
