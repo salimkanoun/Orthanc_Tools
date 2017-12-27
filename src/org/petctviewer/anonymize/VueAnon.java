@@ -83,6 +83,8 @@ import org.json.simple.parser.JSONParser;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
 
+import ij.IJ;
+import ij.WindowManager;
 import ij.plugin.PlugIn;
 
 import org.petctviewer.*;
@@ -2679,16 +2681,12 @@ public class VueAnon extends JFrame implements PlugIn{
 		System.setProperty("org.apache.commons.logging.Log",
 				"org.apache.commons.logging.impl.NoOpLog");
 		VueAnon vue = new VueAnon();
-		SwingUtilities.invokeLater(new Runnable(){
-
-			@Override
-			public void run() {
-				vue.pack();
-				vue.setLocationRelativeTo(null);
-				vue.setVisible(true);
-				
-			}
-		});
+		vue.pack();
+		vue.setLocationRelativeTo(null);
+		//WindowManager.addWindow(gui);
+		//IJ.register(VueAnon.class);
+		vue.setVisible(true);
+		}
 		
-	}
+	
 }
