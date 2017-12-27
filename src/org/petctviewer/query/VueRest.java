@@ -65,10 +65,10 @@ import javax.swing.table.TableRowSorter;
 
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.petctviewer.ParametreConnexionHttp;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
 
-import ij.IJ;
 import ij.plugin.PlugIn;
 
 import java.io.IOException;
@@ -85,12 +85,13 @@ import java.util.prefs.Preferences;
 public class VueRest extends JFrame implements PlugIn{
 	
 	private static final long serialVersionUID = 1L;
-
+	private ParametreConnexionHttp connexion =new ParametreConnexionHttp();
+	
 	JTabbedPane tabbedPane;
-	private TableDataPatient modele = new TableDataPatient(); // model for the main JTable (tableau)
-	private TableDataDetails modeleDetails = new TableDataDetails(); // model for the details JTable (tableauDetails) in the main tab
-	private TableDataPatient modeleH = new TableDataPatient(); // model for the history JTable (tab History)
-	private TableDataDetails modeleDetailsH = new TableDataDetails(); // model for the details JTable (tableauDetails) in the history tab
+	private TableDataPatient modele = new TableDataPatient(connexion); // model for the main JTable (tableau)
+	private TableDataDetails modeleDetails = new TableDataDetails(connexion); // model for the details JTable (tableauDetails) in the main tab
+	private TableDataPatient modeleH = new TableDataPatient(connexion); // model for the history JTable (tab History)
+	private TableDataDetails modeleDetailsH = new TableDataDetails(connexion); // model for the details JTable (tableauDetails) in the history tab
 	private JTable tableau; // displayed table in the main tab
 	private JTable tableauDetails; // displayed table containing the details in the main tab
 	private JTable tableauH; // displayed table in the history tab
@@ -149,7 +150,7 @@ public class VueRest extends JFrame implements PlugIn{
 	private JTextField textFieldNameIDAcc;
 	private JButton btnScheduleDaily;
 	private JLabel info;
-	private AutoQuery autoQuery=new AutoQuery();
+	private AutoQuery autoQuery=new AutoQuery(connexion);
 	
 	//timer
 	private boolean timerOn;
@@ -173,7 +174,7 @@ public class VueRest extends JFrame implements PlugIn{
 		    	String ObjButtons[] = {"Yes","No"};
 				int PromptResult = JOptionPane.showOptionDialog(null,"Operation pending Are you sure you want to exit?","Orthanc Query",JOptionPane.DEFAULT_OPTION,JOptionPane.WARNING_MESSAGE,null,ObjButtons,ObjButtons[1]);
 				if (PromptResult==JOptionPane.YES_OPTION) {
-					//A FAIRE Terminer les processus SWING Voir dans sources de script editor comment evite la sortie de Fiji
+					//SK A FAIRE Terminer les processus SWING Voir dans sources de script editor comment evite la sortie de Fiji
 					dispose();
 					
 				}
@@ -183,18 +184,6 @@ public class VueRest extends JFrame implements PlugIn{
 	    	}
 	    }});
 		
-
-		
-		    
-		///////////////////////////////////////////////////////////////////////////////////////////////////////
-		//////////////////////////////////////// SETUP ////////////////////////////////////////////////////////
-		///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		int curDb = jprefer.getInt("current database", 0);
-
-		///////////////////////////////////////////////////////////////////////////////////////////////////////
-		///////////////////////////////////////// END SETUP ///////////////////////////////////////////////////
-		///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -306,10 +295,8 @@ public class VueRest extends JFrame implements PlugIn{
 		Object[] tabAETs = {""};
 
 		// Creating the queryAET comboBox
-		boolean successful = false;
 		try{
 			tabAETs = modele.getAETs();
-			successful = true;
 			queryAET = new JComboBox<Object>(tabAETs);
 		}catch(IOException e1){
 			e1.printStackTrace();
@@ -317,17 +304,6 @@ public class VueRest extends JFrame implements PlugIn{
 			JOptionPane.showMessageDialog(null, "Please set an AET before using this app (You will have to close it).",
 					"No AET found", JOptionPane.INFORMATION_MESSAGE);
 		}finally{
-			if(!successful){
-				if(jprefer.get("db type" + curDb , "99").equals("5")){
-					String newAdress = JOptionPane.showInputDialog("A problem occurred, \n"
-							+ "You may not have declared any AET, or the connection setup is false"
-							+ " (check your BI database/AET settings) \n"
-							+ "The program will have to be reloaded", jprefer.get("db path" + curDb, "http://localhost:8042"));
-					jprefer.put("db path" + curDb, newAdress);
-				}else{
-					IJ.runMacro("run(\"Launch setup\");");
-				}
-			}
 			queryAET = new JComboBox<Object>(tabAETs);
 			try {
 				tabAETs = modele.getAETs();
@@ -1112,11 +1088,9 @@ public class VueRest extends JFrame implements PlugIn{
 	 */
 	private class SearchAction extends AbstractAction {
 		private static final long serialVersionUID = 1L;
-		private JFrame frame;
 
 		private SearchAction(JFrame frame) {
 			super("Search");
-			this.frame = frame;
 		}
 
 		public void actionPerformed(ActionEvent e) {
@@ -1190,9 +1164,10 @@ public class VueRest extends JFrame implements PlugIn{
 								+ " have to be reloaded)", jprefer.get("db path" + curDb, "http://localhost:8042"));
 						jprefer.put("db path" + curDb, newAdress);
 					}else{
-						IJ.runMacro("run(\"Launch setup\");");
+						// SK ICI LANCER SETUP ?
+						//e1.printStackTrace();
 					}
-					frame.dispose();
+					//frame.dispose();
 				}
 			}
 		}

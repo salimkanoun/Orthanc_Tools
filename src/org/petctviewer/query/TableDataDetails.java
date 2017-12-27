@@ -23,6 +23,8 @@ import java.util.ArrayList;
 
 import javax.swing.table.AbstractTableModel;
 
+import org.petctviewer.ParametreConnexionHttp;
+
 public class TableDataDetails extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
 
@@ -32,9 +34,9 @@ public class TableDataDetails extends AbstractTableModel{
 	private ArrayList<String> listIndexes = null;
 	private Rest rest;
 
-	public TableDataDetails(){
+	public TableDataDetails(ParametreConnexionHttp connexion){
 		super();
-		rest = new Rest();
+		rest = new Rest(connexion);
 	}
 
 	public int getRowCount(){
@@ -69,16 +71,16 @@ public class TableDataDetails extends AbstractTableModel{
 		rest.setAET(aet);
 		rest.getSeriesDescriptionID(studyInstanceUID);
 		this.idURL = rest.getSeriesDescriptionID(studyInstanceUID);
-
-		String[] modal = rest.getSeriesDescriptionValues(idURL, "Modality");
-		String[] seriesDescTab = rest.getSeriesDescriptionValues(idURL, "SeriesDescription");
+		// SK INSERER ICI LES AUTRE INFO INTERESSANTE NOTAMMENT LE SERIE NUMBER
+		String[][] studyDescriptionAndModality = rest.getSeriesDescriptionValues(idURL);
+		
 		Details d;
-		if(modal.length != 0){
+		if(studyDescriptionAndModality[0].length != 0){
 			if(studyInstanceUID == null){
 				throw new Exception("This study doesn't have an instance UID !");
 			}
-			for(int i = 0; i < modal.length; i++){
-				d = new Details(seriesDescTab[i], modal[i], studyInstanceUID);
+			for(int i = 0; i < studyDescriptionAndModality[0].length; i++){
+				d = new Details(studyDescriptionAndModality[0][i], studyDescriptionAndModality[1][i], studyInstanceUID);
 				if(!details.contains(d)){
 					details.add(d);
 					// Whenever we add details, we store the query ID, in order to use it for the retrieve queries
@@ -87,7 +89,7 @@ public class TableDataDetails extends AbstractTableModel{
 				}
 			}
 		}
-		rest.resetURL(aet);
+		//rest.resetURL(aet);
 	}
 
 	public void removeDetails(int rowIndex){
