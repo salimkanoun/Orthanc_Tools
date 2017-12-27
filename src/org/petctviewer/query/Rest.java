@@ -27,8 +27,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.prefs.Preferences;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

@@ -1,5 +1,5 @@
 /**
-Copyright (C) 2017 VONGSALAT Anousone
+Copyright (C) 2017 VONGSALAT Anousone & KANOUN Salim
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public v.3 License as published by
@@ -815,6 +815,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		
 		JPanel deletePanelComboButton = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		manageShownContent=new JComboBox<Object>(manageContent.toArray());
+		manageShownContent.setPreferredSize(new Dimension(297,27));
 		
 	
 		deletePanelComboButton.add(manageShownContent);

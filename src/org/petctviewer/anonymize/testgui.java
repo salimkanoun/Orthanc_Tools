@@ -1,3 +1,20 @@
+/**
+Copyright (C) 2017 VONGSALAT Anousone & KANOUN Salim
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public v.3 License as published by
+the Free Software Foundation;
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
 package org.petctviewer.anonymize;
 
 import java.awt.BorderLayout;
@@ -12,7 +29,6 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -20,7 +36,6 @@ import org.json.simple.parser.ParseException;
 import java.awt.GridLayout;
 import java.awt.Dimension;
 import javax.swing.JSpinner;
-import javax.swing.JToggleButton;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.awt.event.ActionEvent;

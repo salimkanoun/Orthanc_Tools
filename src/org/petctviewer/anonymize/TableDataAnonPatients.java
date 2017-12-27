@@ -1,5 +1,5 @@
 /**
-Copyright (C) 2017 VONGSALAT Anousone
+Copyright (C) 2017 VONGSALAT Anousone & KANOUN Salim
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public v.3 License as published by
@@ -119,9 +119,6 @@ public class TableDataAnonPatients extends AbstractTableModel{
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
 	public void addPatient(ParametreConnexionHttp connexion, String patientName, String patientID, Date birthdate, ArrayList<String> selectedStudies) throws IOException, ParseException{
-		//QueryFillStore queryID = new QueryFillStore(connexion,"patients", patientName, null, null, null);
-		//String[] id = queryID.extractData("id").split("SEPARATOR");
-		//System.out.println(id.length);
 		PatientAnon p = new PatientAnon(patientName, patientID, "", birthdate, selectedStudies);
 		if(!this.patients.contains(p)){
 			this.patients.add(p);

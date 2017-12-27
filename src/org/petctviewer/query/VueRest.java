@@ -1361,6 +1361,7 @@ public class VueRest extends JFrame implements PlugIn{
 		VueRest vue = new VueRest();
 		vue.setSize(1200, 400);
 		vue.pack();
+		vue.setLocationRelativeTo(null);
 		vue.setVisible(true);
 		
 	}
@@ -1370,6 +1371,7 @@ public class VueRest extends JFrame implements PlugIn{
 		VueRest vue = new VueRest();
 		vue.setSize(1200, 400);
 		vue.pack();
+		vue.setLocationRelativeTo(null);
 		vue.setVisible(true);
 	
 		

@@ -1,5 +1,5 @@
 /**
-Copyright (C) 2017 VONGSALAT Anousone
+Copyright (C) 2017 VONGSALAT Anousone & KANOUN Salim
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public v.3 License as published by
@@ -106,7 +106,7 @@ public class QueryAnon {
 		this.tags[36] = new Tags("0009,103b", Choice.KEEP); // GE
 		this.tags[37] = new Tags("0009,100d", Choice.KEEP); // GE
 		this.tags[38] = new Tags("0011,1012", Choice.KEEP);
-		//AJOUT FRAME OF REFERENCE UID - A GERER
+		//SK AJOUT FRAME OF REFERENCE UID - A GERER
 		this.tags[39] = new Tags("0020,0052", Choice.KEEP);
 		
 		this.privateTags = privateTags;
