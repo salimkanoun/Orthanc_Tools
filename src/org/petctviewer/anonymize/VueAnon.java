@@ -83,10 +83,11 @@ import org.json.simple.parser.JSONParser;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
 
-import ij.IJ;
 import ij.plugin.PlugIn;
 
 import org.petctviewer.*;
+import org.petctviewer.importdicom.ImportDCM;
+import org.petctviewer.query.*;
 
 
 public class VueAnon extends JFrame implements PlugIn{
@@ -296,7 +297,14 @@ public class VueAnon extends JFrame implements PlugIn{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				IJ.runMacro("run(\"Launch queries\");");
+				// SK Voir PQ LE TRY CATCH
+				try {
+					VueRest.main();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
 			}
 		});
 		
@@ -305,7 +313,7 @@ public class VueAnon extends JFrame implements PlugIn{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				IJ.runMacro("run(\"Launch import\");");
+				ImportDCM.main();
 			}
 		});
 
