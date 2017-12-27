@@ -33,9 +33,9 @@ public class TableDataPatient extends AbstractTableModel{
 	private ArrayList<Patient> patients = new ArrayList<Patient>();
 	private Rest rest;
 
-	public TableDataPatient(Rest rest){
+	public TableDataPatient(){
 		super();
-		this.rest = rest;
+		this.rest = new Rest();
 	}
 
 	public int getRowCount(){

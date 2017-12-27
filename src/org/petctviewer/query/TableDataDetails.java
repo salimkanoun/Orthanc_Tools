@@ -32,9 +32,9 @@ public class TableDataDetails extends AbstractTableModel{
 	private ArrayList<String> listIndexes = null;
 	private Rest rest;
 
-	public TableDataDetails(Rest rest){
+	public TableDataDetails(){
 		super();
-		this.rest=rest;
+		this.rest=new Rest();
 	}
 
 	public int getRowCount(){

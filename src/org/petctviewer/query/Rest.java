@@ -30,10 +30,7 @@ import org.petctviewer.ParametreConnexionHttp;
 public class Rest {
 
 	private ParametreConnexionHttp connexion =new ParametreConnexionHttp();
-	private String query;
-	private String index;
 	private String aet;
-	private String retrieveAET;
 	private String idQuery;
 	private JSONObject contentJson=new JSONObject();
 	private JSONParser parser = new JSONParser();
@@ -47,12 +44,12 @@ public class Rest {
 	 */
 	private String getQueryID(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber) throws IOException{
 		// We re-define the new query
-		this.setQuery(level, name, id, studyDate, modality, studyDescription, accessionNumber);
+		String query =setQuery(level, name, id, studyDate, modality, studyDescription, accessionNumber);
 		String conn = null;
-		JSONObject answer;
 		
+		JSONObject answer;
 		try {
-			answer = (JSONObject) parser.parse(connexion.makePostConnectionAndStringBuilder("/modalities/" + this.aet + "/query", this.query).toString());
+			answer = (JSONObject) parser.parse(connexion.makePostConnectionAndStringBuilder("/modalities/" + this.aet + "/query", query).toString());
 			conn=(String) answer.get("ID");
 		} catch (ParseException e) {
 			e.printStackTrace();
@@ -85,8 +82,8 @@ public class Rest {
 		if(index.equals("")){
 			return null;
 		}
-		this.index = index;
-		String content = connexion.makeGetConnectionAndStringBuilder( "/queries/" + idQuery + "/answers/" + this.index + "/content/").toString();
+		//this.index = index;
+		String content = connexion.makeGetConnectionAndStringBuilder( "/queries/" + idQuery + "/answers/" + index + "/content/").toString();
 		return content;
 	}
 
@@ -199,7 +196,7 @@ public class Rest {
 	 */
 	public String getSeriesDescriptionID(String studyInstanceUID) throws Exception{
 		// getting the query ID
-		this.query = "{ \"Level\" : \"" + "Series" + "\", \"Query\" : "
+		String query = "{ \"Level\" : \"" + "Series" + "\", \"Query\" : "
 				+ "{\"Modality\" : \"" + "*" + "\","
 				+ "\"ProtocolName\" : \"" + "*" + "\","
 				+ "\"SeriesDescription\" : \"" + "*" + "\","
@@ -210,7 +207,7 @@ public class Rest {
 		JSONObject answer;
 		String idURL =null;
 		try {
-			answer = (JSONObject) parser.parse(connexion.makePostConnectionAndStringBuilder("/modalities/" + this.aet + "/query", this.query).toString());
+			answer = (JSONObject) parser.parse(connexion.makePostConnectionAndStringBuilder("/modalities/" + this.aet + "/query", query).toString());
 			idURL=(String) answer.get("ID");
 		} catch (ParseException e) {
 			e.printStackTrace();
@@ -248,8 +245,8 @@ public class Rest {
 	 * This method retrieves an instance, depending on its query ID 
 	 */
 	public void retrieve(String queryID, String answer, String retrieveAET) throws IOException{
-		this.retrieveAET = retrieveAET;
-		connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve", this.retrieveAET);
+		//this.retrieveAET = retrieveAET;
+		connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve", retrieveAET);
 	}
 
 	/*
@@ -293,8 +290,8 @@ public class Rest {
 		this.aet = aet;
 	}
 
-	private void setQuery(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber) {
-		this.query = "{ \"Level\" : \"" + level + "\", \"Query\" : "
+	private String setQuery(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber) {
+		String query = "{ \"Level\" : \"" + level + "\", \"Query\" : "
 				+ "{\"PatientName\" : \"" + name + "\","
 				+ "\"PatientID\" : \"" + id + "\","
 				+ "\"StudyDate\" : \"" + studyDate + "\","
@@ -302,6 +299,7 @@ public class Rest {
 				+ "\"StudyDescription\" : \"" + studyDescription + "\","
 				+ "\"AccessionNumber\" : \"" + accessionNumber + "\"}"
 				+ "}";
+		return query;
 	}
 	
 	public String getQueryId() {

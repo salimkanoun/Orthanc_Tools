@@ -84,14 +84,12 @@ import java.util.prefs.Preferences;
 public class VueRest extends JFrame implements PlugIn{
 	
 	private static final long serialVersionUID = 1L;
-	//objet gerant les restfull apis
-	Rest rest=new Rest();
 	
 	JTabbedPane tabbedPane;
-	private TableDataPatient modele = new TableDataPatient(rest); // model for the main JTable (tableau)
-	private TableDataDetails modeleDetails = new TableDataDetails(rest); // model for the details JTable (tableauDetails) in the main tab
-	private TableDataPatient modeleH = new TableDataPatient(rest); // model for the history JTable (tab History)
-	private TableDataDetails modeleDetailsH = new TableDataDetails(rest); // model for the details JTable (tableauDetails) in the history tab
+	private TableDataPatient modele = new TableDataPatient(); // model for the main JTable (tableau)
+	private TableDataDetails modeleDetails = new TableDataDetails(); // model for the details JTable (tableauDetails) in the main tab
+	private TableDataPatient modeleH = new TableDataPatient(); // model for the history JTable (tab History)
+	private TableDataDetails modeleDetailsH = new TableDataDetails(); // model for the details JTable (tableauDetails) in the history tab
 	private JTable tableau; // displayed table in the main tab
 	private JTable tableauDetails; // displayed table containing the details in the main tab
 	private JTable tableauH; // displayed table in the history tab
@@ -150,7 +148,7 @@ public class VueRest extends JFrame implements PlugIn{
 	private JTextField textFieldNameIDAcc;
 	private JButton btnScheduleDaily;
 	private JLabel info;
-	private AutoQuery autoQuery=new AutoQuery(rest);
+	private AutoQuery autoQuery=new AutoQuery();
 	
 	//timer
 	private boolean timerOn;

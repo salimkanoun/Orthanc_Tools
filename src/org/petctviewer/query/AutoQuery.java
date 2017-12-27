@@ -54,8 +54,8 @@ public class AutoQuery  {
 	private DateFormat df = new SimpleDateFormat("yyyyMMdd");
 	
 	
-	public AutoQuery(Rest rest) {
-		api=rest;
+	public AutoQuery() {
+		api=new Rest();
 		try {
 			aet=api.getAET();
 			aetRetrieve=api.getLocalAET();
