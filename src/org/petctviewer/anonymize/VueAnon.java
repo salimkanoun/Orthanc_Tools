@@ -2084,7 +2084,9 @@ public class VueAnon extends JFrame implements PlugIn{
 						@Override
 						protected Void doInBackground() {
 							try {
-								FileUtils.copyURLToFile(new URL("http://163.172.169.15/owncloud/index.php/s/bhQyEi2HtYernvI/download"), chooser.getSelectedFile());
+								FileUtils.copyURLToFile(new URL("http://163.172.169.15/owncloud/index.php/s/oCblQNWH9q3jLyo/download"), chooser.getSelectedFile());
+								//Message confirmation
+								JOptionPane.showMessageDialog(gui, "Viewer distribution sucessfully downloaded");
 							} catch (IOException e) {
 								e.printStackTrace();
 								JOptionPane.showMessageDialog(gui, "Download Failed",  "Error", JOptionPane.ERROR_MESSAGE);
@@ -2097,8 +2099,6 @@ public class VueAnon extends JFrame implements PlugIn{
 							// Enregistre la destination du fichier dans le registery
 							jpreferPerso.put("viewerDistribution", chooser.getSelectedFile().toString());
 							viewerDistribution.setBackground(null);
-							//Message confirmation
-							JOptionPane.showMessageDialog(gui, "Viewer distribution sucessfully downloaded");
 						}
 					};
 					worker.execute();
