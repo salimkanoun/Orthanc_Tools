@@ -90,6 +90,7 @@ import ij.plugin.PlugIn;
 import org.petctviewer.*;
 import org.petctviewer.importdicom.ImportDCM;
 import org.petctviewer.query.*;
+import org.petctviewer.setup.ConnectionSetup;
 
 
 public class VueAnon extends JFrame implements PlugIn{
@@ -189,6 +190,7 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JTextField dbName;
 	private JTextField dbUsername;
 	private JPasswordField dbPassword;
+	private JButton setupButton;
 	
 	
 
@@ -2110,6 +2112,20 @@ public class VueAnon extends JFrame implements PlugIn{
 			
 		});
 		
+		//Setup button only for starting outside Fiji
+		setupButton = new JButton("Orthanc HTTP Setup");
+		setupButton.setVisible(false);
+		
+		setupButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				ConnectionSetup.main();
+				
+			}
+			
+		});
+		
 		JButton aboutBtn = new JButton("About us");
 		aboutBtn.addActionListener(new ActionListener() {
 			
@@ -2123,6 +2139,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		});
 		
 		aboutPanel.add(viewerDistribution);
+		aboutPanel.add(setupButton);
 		aboutPanel.add(aboutBtn);
 		
 		if(dbAdress.getText().length() > 0 && dbPort.getText().length() > 0 && dbName.getText().length() > 0
@@ -2669,6 +2686,7 @@ public class VueAnon extends JFrame implements PlugIn{
 			@Override
 			public void run() {
 				vue.pack();
+				vue.setupButton.setVisible(true);
 				vue.setLocationRelativeTo(null);
 				vue.setVisible(true);
 				
