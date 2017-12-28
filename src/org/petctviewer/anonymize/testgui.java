@@ -57,6 +57,7 @@ public class testgui extends JFrame {
 	private JTable table_study;
 	private JTable table_serie;
 	private JTable table_SharedTags;
+	private JButton btnShowTags;
 	
 	private Modify modify;
 	private boolean enableInstance=true;
@@ -265,6 +266,10 @@ public class testgui extends JFrame {
 			public Class getColumnClass(int columnIndex) {
 				return columnTypes[columnIndex];
 			}
+			@Override
+			public boolean isCellEditable(int row, int column){  
+		          if (column==0 ||column==1 ) return false;  else return true;
+		     }
 		};
 		table_SharedTags.setModel(table_customChange_model);
 		scrollPane.setViewportView(table_SharedTags);
@@ -320,13 +325,14 @@ public class testgui extends JFrame {
 		spinner_instanceNumber.setModel(new SpinnerNumberModel(0, null, 99999, 1));
 		panel_otherButtons.add(spinner_instanceNumber);
 		
-		JButton btnShowTags = new JButton("Show");
+		btnShowTags = new JButton("Show");
+		btnShowTags.setEnabled(false);
 		panel_otherButtons.add(btnShowTags);
 		btnShowTags.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					JSONObject instanceTags=modify.getInstanceTags((int) spinner_instanceNumber.getValue());
-					System.out.println(instanceTags);
+					System.out.println(instanceTags.toJSONString());
 					// SK A FAIRE TROUVER UNE INTERFACE POUR AFFICHER PROPREMENT LE RESULTAT
 				} catch (IOException | ParseException e1) {
 					// TODO Auto-generated catch block
@@ -374,6 +380,7 @@ public class testgui extends JFrame {
 			}
 			table_serie.putClientProperty("terminateEditOnFocusLost", true);
 			table_serie.getModel().addTableModelListener(tablechangeListenerSeries);
+			btnShowTags.setEnabled(true);
 		}
 		
 	}

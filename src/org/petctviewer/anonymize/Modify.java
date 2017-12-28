@@ -140,7 +140,7 @@ public class Modify {
 	}
 	
 	public  static void main(String...args){
-		new Modify("studies","d3a60cca-e907c064-cec0146b-e7b20d92-767fe06d");
+		new Modify("series","c2a16437-23a56d57-b8b3343e-4d6215fc-4cc5d0c2");
 		
 	}
 }
