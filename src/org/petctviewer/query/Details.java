@@ -23,13 +23,15 @@ public class Details {
 	private String modality;
 	private String seriesInstanceUID;
 	private String seriesDescription;
+	private String serieNumber;
 
-	public Details(String seriesDescription, String modality, String seriesInstanceUID) throws ParseException {
+	public Details(String seriesDescription, String modality, String seriesInstanceUID, String serieNumber) throws ParseException {
 		super();
 
 		this.modality = modality;
 		this.seriesInstanceUID = seriesInstanceUID;
 		this.seriesDescription = seriesDescription;
+		this.serieNumber=serieNumber;
 	}
 
 	public String getModality() {
@@ -54,6 +56,10 @@ public class Details {
 
 	public void setSeriesInstanceUID(String seriesInstanceUID) {
 		this.seriesInstanceUID = seriesInstanceUID;
+	}
+	
+	public String getSeriesNumber() {
+		return this.serieNumber;
 	}
 	
 	@SuppressWarnings("unlikely-arg-type")

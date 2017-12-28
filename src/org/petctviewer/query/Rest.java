@@ -220,16 +220,31 @@ public class Rest {
 			throw new Exception("No Answer for this Query");
 		}
 		
-		// SK AJOUTER ICI AUTRE INFO NOTAMMENT LE SERIE NUMBER
-		String[] [] values = new String[2][serverResponseArray.size()];
+		String[] [] values = new String[3][serverResponseArray.size()];
 		for(int i = 0; i < serverResponseArray.size(); i++){
 			contentJson= (JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/queries/" + idURL + "/answers/" + i + "/content").toString());
 			
-			JSONObject studyDescriptionJson=(JSONObject) parser.parse(contentJson.get("0008,103e").toString());
-			values[0][i]=(String) studyDescriptionJson.get("Value");
-		
-			JSONObject modalityJson=(JSONObject) parser.parse(contentJson.get("0008,0060").toString());
-			values[1][i]=(String) modalityJson.get("Value");
+			if (contentJson.containsKey("0008,103e")) {
+				JSONObject studyDescriptionJson=(JSONObject) parser.parse(contentJson.get("0008,103e").toString());
+				values[0][i]=(String) studyDescriptionJson.get("Value");	
+			} else {
+				values[0][i]="";	
+			}
+			
+			if (contentJson.containsKey("0008,0060")) {
+				JSONObject modalityJson=(JSONObject) parser.parse(contentJson.get("0008,0060").toString());
+				values[1][i]=(String) modalityJson.get("Value");
+			}else {
+				values[1][i]="";
+			}
+			//SK SERIE NUMBER RECUPEREE A AJOUTER DANS LE DISPLAY
+			if (contentJson.containsKey("0020,0011")) {
+				JSONObject serieNumberJson=(JSONObject) parser.parse(contentJson.get("0020,0011").toString());
+				values[2][i]=(String) serieNumberJson.get("Value");
+			}else {
+				values[2][i]="";
+			}
+			
 			
 		}
 		return values;

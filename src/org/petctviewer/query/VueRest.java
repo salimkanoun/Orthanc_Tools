@@ -252,7 +252,9 @@ public class VueRest extends JFrame implements PlugIn{
 		tableauDetails.getColumnModel().getColumn(1).setMinWidth(100);
 		tableauDetails.getColumnModel().getColumn(1).setMaxWidth(100);
 		tableauDetails.getColumnModel().getColumn(1).setResizable(false);
-		tableauDetails.setPreferredScrollableViewportSize(new Dimension(300,400));
+		tableauDetails.getColumnModel().getColumn(2).setMaxWidth(100);
+		tableauDetails.getColumnModel().getColumn(2).setResizable(false);
+		tableauDetails.setPreferredScrollableViewportSize(new Dimension(400,400));
 		tableauDetails.addMouseListener(new MouseAdapter() {
 
 			@Override
@@ -452,7 +454,10 @@ public class VueRest extends JFrame implements PlugIn{
 		tableauDetailsH.getColumnModel().getColumn(1).setMinWidth(100);
 		tableauDetailsH.getColumnModel().getColumn(1).setMaxWidth(100);
 		tableauDetailsH.getColumnModel().getColumn(1).setResizable(false);
-		tableauDetailsH.setPreferredScrollableViewportSize(new Dimension(300,400));
+		tableauDetailsH.getColumnModel().getColumn(2).setMinWidth(100);
+		tableauDetailsH.getColumnModel().getColumn(2).setMaxWidth(100);
+		tableauDetailsH.getColumnModel().getColumn(2).setResizable(false);
+		tableauDetailsH.setPreferredScrollableViewportSize(new Dimension(400,400));
 
 		//Setting the sorter for tableauDetailsH
 		sorterDetailsH.setSortsOnUpdates(true);

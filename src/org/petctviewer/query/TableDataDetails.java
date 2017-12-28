@@ -26,7 +26,7 @@ import javax.swing.table.AbstractTableModel;
 public class TableDataDetails extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Series name", "Modality"};
+	private String[] entetes = {"Series name", "Modality", "Serie n°"};
 	private String idURL;
 	private ArrayList<Details> details = new ArrayList<Details>();
 	private ArrayList<String> listIndexes = null;
@@ -56,6 +56,8 @@ public class TableDataDetails extends AbstractTableModel{
 			return details.get(rowIndex).getSeriesDescription();
 		case 1:
 			return details.get(rowIndex).getModality();
+		case 2:
+			return details.get(rowIndex).getSeriesNumber();
 		default:
 			return null; // Should never happen
 		}
@@ -79,7 +81,7 @@ public class TableDataDetails extends AbstractTableModel{
 				throw new Exception("This study doesn't have an instance UID !");
 			}
 			for(int i = 0; i < studyDescriptionAndModality[0].length; i++){
-				d = new Details(studyDescriptionAndModality[0][i], studyDescriptionAndModality[1][i], studyInstanceUID);
+				d = new Details(studyDescriptionAndModality[0][i], studyDescriptionAndModality[1][i], studyInstanceUID, studyDescriptionAndModality[2][i]);
 				if(!details.contains(d)){
 					details.add(d);
 					// Whenever we add details, we store the query ID, in order to use it for the retrieve queries
