@@ -25,6 +25,8 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -184,6 +186,7 @@ public class testgui extends JFrame {
 		serie_panel.add(scrollPane_serie, BorderLayout.CENTER);
 		
 		table_serie = new JTable();
+		
 		table_serie.setModel(new DefaultTableModel(new String[] {"Tag", "Value"},0) {
 			private static final long serialVersionUID = 1L;
 			
@@ -327,9 +330,10 @@ public class testgui extends JFrame {
 			tags[0]=(String) mainPatientTag[i];
 			tags[1]=(String) MainTags.get(mainPatientTag[i]);
 			patientModel.addRow(tags);
-			
+			//On ajoute le listener pour ecouter les changement de l'utilisateur
 			}
-			
+			table_patient.putClientProperty("terminateEditOnFocusLost", true);
+			table_patient.getModel().addTableModelListener(tablechangeListenerPatient);
 		}
 		else if (level.equals("study")) {
 			DefaultTableModel studyModel =(DefaultTableModel) table_study.getModel();
@@ -338,7 +342,8 @@ public class testgui extends JFrame {
 				tags[1]=(String) MainTags.get(mainPatientTag[i]);
 				studyModel.addRow(tags);
 			}
-			
+			table_study.putClientProperty("terminateEditOnFocusLost", true);
+			table_study.getModel().addTableModelListener(tablechangeListenerStudy);
 		}
 		else if (level.equals("serie")) {
 			DefaultTableModel serieModel =(DefaultTableModel) table_serie.getModel();
@@ -347,7 +352,8 @@ public class testgui extends JFrame {
 				tags[1]=(String) MainTags.get(mainPatientTag[i]);
 				serieModel.addRow(tags);
 			}
-			
+			table_serie.putClientProperty("terminateEditOnFocusLost", true);
+			table_serie.getModel().addTableModelListener(tablechangeListenerSeries);
 		}
 		//On PANEL NON UTILES
 		//study_panel.setVisible(false);
@@ -381,6 +387,30 @@ public class testgui extends JFrame {
 			model.removeRow(i);
 		}
 	}
+	
+	TableModelListener tablechangeListenerPatient =new TableModelListener() {
+		@Override
+		public void tableChanged(TableModelEvent e) {
+			System.out.println("patient");
+			System.out.println("Tag"+ table_patient.getValueAt(e.getFirstRow(), 0) +"Value"+ (String)  table_patient.getValueAt(e.getFirstRow(), 1));
+		}
+    };
+    TableModelListener tablechangeListenerStudy =new TableModelListener() {
+		@Override
+		public void tableChanged(TableModelEvent e) {
+			System.out.println("Study");
+			System.out.println("Tag"+ (String) table_study.getValueAt(e.getFirstRow(), 0)+"Value"+ (String) table_study.getValueAt(e.getFirstRow(), 1));
+		}
+    };
+    TableModelListener tablechangeListenerSeries =new TableModelListener() {
+		@Override
+		public void tableChanged(TableModelEvent e) {
+			System.out.println("Serie");
+			System.out.println("Tag"+ (String) table_serie.getValueAt(e.getFirstRow(), 0)+"Value"+ (String) table_serie.getValueAt(e.getFirstRow(), 1));
+			
+		}
+    };
+    
 	
 
 }
