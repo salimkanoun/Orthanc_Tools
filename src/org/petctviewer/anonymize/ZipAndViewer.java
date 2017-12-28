@@ -81,7 +81,6 @@ public class ZipAndViewer {
 		
 	}
 	
-	// SK METHODE DEBEUGGE UPDATER LE CODE DE MAXIME
 	private void unzip(File zip, Path tempFolder){
 		 try {
 		     byte[] buffer = new byte[1024];
