@@ -2078,6 +2078,9 @@ public class VueAnon extends JFrame implements PlugIn{
 				chooser.setDialogTitle("Select folder for CD/DVD output");
 				chooser.setSelectedFile(new File("ImageJ.zip"));
 				chooser.setDialogTitle("Dowload Viewer to...");
+				if (! jpreferPerso.get("viewerDistribution", "empty").equals("empty") ) {
+					chooser.setSelectedFile(new File (jpreferPerso.get("viewerDistribution", "empty")));
+				}
 				chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				chooser.setAcceptAllFileFilterUsed(false);
 				if (chooser.showSaveDialog(gui) == JFileChooser.APPROVE_OPTION) {

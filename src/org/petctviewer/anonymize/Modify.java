@@ -29,51 +29,77 @@ import org.petctviewer.*;
 public class Modify {
 	testgui gui=new testgui(this, true);
 	String level;
+	String levelUrl;
 	String id;
-	
-	String url = "/series/ec1c4786-99dc6c3e-4ca9cd5d-a1bc96f3-b240c19e";
-	String urlStudy = "/studies/";
 	
 	private JSONArray seriesInstancesID;
 	ParametreConnexionHttp connexion;
 	JSONParser parser=new JSONParser();
 	
-	public Modify(/*ParametreConnexionHttp connexion, String level, String id*/){
+	public Modify(String level, String id){
 		this.connexion= new ParametreConnexionHttp();
-		
+		this.level=level;
+		this.id=id;
+		try {
+			setUrlAndFetch();
+		} catch (IOException | ParseException e) {
+			e.printStackTrace();
+		} 
 	}
-	public void getPatientsTags() throws IOException, ParseException{
-		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder(url);
+	
+	private void setUrlAndFetch() throws IOException, ParseException {
+		
+		// AJOUTER UN SETTEUR DANS LA GUI POUR DESACTIVER LES TABLES NON NECESSAIRE DEPUIS ICI
+		
+		if (level.equals("series")){
+			levelUrl="/series/";
+			getSeriesTags(id);
+		}
+		else if (level.equals("studies")) {
+			levelUrl="/studies/";
+			getStudiesTags(id);
+		}
+		else if (level.equals("patients")) {
+			levelUrl="/patients/";
+			getPatientsTags(id);
+		}
+		//On onvre la GUI
+		gui.hideTables(level);
+		gui.setSize(800,750);
+		gui.setVisible(true);
+	}
+	
+	public void getPatientsTags(String patientID) throws IOException, ParseException{
+		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/patients/"+patientID);
 		JSONObject response=(JSONObject) parser.parse(sb.toString());
 		JSONObject patientsMainTags=(JSONObject) response.get("MainDicomTags");
 		gui.setTables(patientsMainTags, "patient");
 	}
 	
-	public void getSeriesTags() throws IOException, ParseException{
-		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder(url);
+	public void getSeriesTags(String seriesID) throws IOException, ParseException{
+		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/series/"+seriesID);
 		JSONObject response=(JSONObject) parser.parse(sb.toString());
 		JSONObject seriesMainTags=(JSONObject) response.get("MainDicomTags");
 		String parentStudyID=(String) response.get("ParentStudy");
-		urlStudy+=parentStudyID;
 		seriesInstancesID= (JSONArray) response.get("Instances");
 		gui.setTables(seriesMainTags, "serie");
-		getStudiesTags();
+		getStudiesTags(parentStudyID);
 		
 	}
 	
-	public void getStudiesTags() throws IOException, ParseException{
-		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder(urlStudy);
+	public void getStudiesTags(String studyID) throws IOException, ParseException{
+		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/studies/"+studyID);
 		JSONObject response=(JSONObject) parser.parse(sb.toString());
 		JSONObject studyMainTags=(JSONObject) response.get("MainDicomTags");
 		JSONObject patientMainTags=(JSONObject) response.get("PatientMainDicomTags");
 		gui.setTables(studyMainTags, "study");
 		gui.setTables(patientMainTags, "patient");
-		gui.setSize(800,750);
-		gui.setVisible(true);
+		
 	}
 	
+	
 	public JSONObject getSharedTags() throws IOException, ParseException{
-		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder(url+"/shared-tags");
+		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder(levelUrl+id+"/shared-tags");
 		JSONObject response=(JSONObject) parser.parse(sb.toString());
 		return response;
 	}
@@ -87,14 +113,7 @@ public class Modify {
 	}
 	
 	public  static void main(String...args){
-		Modify modify=new Modify();
-		try {
-			modify.getSeriesTags();
-			//modify.getStudiesTags();
-		} catch (IOException | ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		new Modify("series","ec1c4786-99dc6c3e-4ca9cd5d-a1bc96f3-b240c19e");
 		
 	}
 }

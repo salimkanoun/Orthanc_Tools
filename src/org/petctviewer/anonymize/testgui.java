@@ -26,6 +26,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -47,6 +48,7 @@ public class testgui extends JFrame {
 	private JPanel study_panel ;
 	private JPanel serie_panel ;
 	private JTable table_patient;
+	private JPanel patient_panel ;
 	private JTable table_study;
 	private JTable table_serie;
 	private JTable table_customChange;
@@ -116,7 +118,7 @@ public class testgui extends JFrame {
 		center_panel.add(panel_tags);
 		panel_tags.setLayout(new GridLayout(0, 2, 0, 0));
 		
-		JPanel patient_panel = new JPanel();
+		patient_panel = new JPanel();
 		panel_tags.add(patient_panel);
 		patient_panel.setLayout(new BorderLayout(0, 0));
 		
@@ -279,25 +281,35 @@ public class testgui extends JFrame {
 		JButton btnSharedTags = new JButton("Get Shared Tags");
 		btnSharedTags.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				removeAllRow (table_customChange);
-				JSONObject response = null;
-				try {
-					response = modify.getSharedTags();
-				} catch (IOException | ParseException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				Object[] sharedTags=response.keySet().toArray();
-				for (int i=0; i<sharedTags.length; i++) {
-					String[] row=new String[3];
-					row[0] = (String) sharedTags[i];
-					JSONObject response2 =(JSONObject) response.get(sharedTags[i]);
-					row[1] = response2.get("Name").toString() ;
-					row[2] = response2.get("Value").toString() ;
-					
-					table_customChange_model.addRow(row);
-				}
+				int answer = JOptionPane.showConfirmDialog(
+					    null,
+					    "Editing Shared tags will discard changes in other tables, continue ?",
+					    "Shared Tags",
+					    JOptionPane.YES_NO_OPTION);
 				
+				if (answer==JOptionPane.OK_OPTION) {
+					removeAllRow (table_customChange);				
+					JSONObject response = null;
+					// SI SHARED TAG DESACTIVER LES AUTRES TABLES (REDONDANCE)
+					try {
+						response = modify.getSharedTags();
+					} catch (IOException | ParseException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					Object[] sharedTags=response.keySet().toArray();
+					for (int i=0; i<sharedTags.length; i++) {
+						String[] row=new String[3];
+						row[0] = (String) sharedTags[i];
+						JSONObject response2 =(JSONObject) response.get(sharedTags[i]);
+						row[1] = response2.get("Name").toString() ;
+						row[2] = response2.get("Value").toString() ;
+						
+						table_customChange_model.addRow(row);
+					}
+					hideTables("all");
+					}
+
 			}
 		});
 		panel_otherButtons.add(btnSharedTags);
@@ -307,6 +319,7 @@ public class testgui extends JFrame {
 	public void setTables(JSONObject MainTags, String level) {
 		Object[] mainPatientTag=MainTags.keySet().toArray();
 		String[] tags=new String[2];	
+		
 		if (level.equals("patient")) {
 			DefaultTableModel patientModel =(DefaultTableModel) table_patient.getModel();
 			for (int i=0; i<mainPatientTag.length;i++) {
@@ -336,11 +349,31 @@ public class testgui extends JFrame {
 			}
 			
 		}
-		//A FAIRE SK DIPARAITRE PANEL NON UTILES
+		//On PANEL NON UTILES
 		//study_panel.setVisible(false);
 		//serie_panel.setVisible(false);
 		
 	}
+	
+	public void hideTables(String level) {
+		if (level.equals("patient")) {
+			study_panel.setVisible(false);
+			serie_panel.setVisible(false);
+			}
+			
+		
+		else if (level.equals("study")) {
+			serie_panel.setVisible(false);
+			}
+		
+		else if (level.equals("all")) {
+			table_patient.setEnabled(false);
+			table_study.setEnabled(false);
+			table_serie.setEnabled(false);
+		}
+			
+	}
+	
 	
 	private void removeAllRow (JTable table) {
 		DefaultTableModel model =(DefaultTableModel) table.getModel();
