@@ -22,3 +22,4 @@ Features :
  From petctviewer.org, free and open source PET/CT viewer based on Fiji/ImageJ
  
  GPL v.3 Licence
+ 
