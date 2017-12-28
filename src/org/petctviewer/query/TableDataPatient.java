@@ -33,9 +33,9 @@ public class TableDataPatient extends AbstractTableModel{
 	private ArrayList<Patient> patients = new ArrayList<Patient>();
 	private Rest rest;
 
-	public TableDataPatient(){
+	public TableDataPatient(Rest rest){
 		super();
-		this.rest = new Rest();
+		this.rest = rest;
 	}
 
 	public int getRowCount(){
@@ -80,36 +80,29 @@ public class TableDataPatient extends AbstractTableModel{
 			String studyDescription, String accessionNumber, String aet) throws Exception{
 		DateFormat parser = new SimpleDateFormat("yyyyMMdd");
 		int i;
-		rest.setAET(aet);
-		Object[] tabStudies = rest.getQueryAnswerIndexes("Study", patientName, patientID, studyDate, modality, studyDescription, accessionNumber);
+		String[] queryIDandSize = rest.getQueryAnswerIndexes("Study", patientName, patientID, studyDate, modality, studyDescription, accessionNumber, aet);
+		
 		Patient p;
-		if(tabStudies != null){
-			for(i = 0; i < tabStudies.length; i++){
-				String name = (String)rest.getValue(rest.getIndexContent(tabStudies[i].toString()), "PatientName").toString();
-				String id = (String)rest.getValue(rest.getIndexContent(tabStudies[i].toString()), "PatientID");
-				String number = (String)rest.getValue(rest.getIndexContent(tabStudies[i].toString()), "AccessionNumber").toString();
-				Date date = parser.parse((String)rest.getValue(rest.getIndexContent(tabStudies[i].toString()), "StudyDate"));
-				String desc = (String)rest.getValue(rest.getIndexContent(tabStudies[i].toString()), "StudyDescription").toString();
-				String studyUID = (String)rest.getValue(rest.getIndexContent(tabStudies[i].toString()), "StudyInstanceUID").toString();
-				String modalityResult=(String)rest.getValue(rest.getIndexContent(tabStudies[i].toString()), "Modality").toString();
-				p = new Patient(name, id, date, desc, number, studyUID,modalityResult);
-				if(!patients.contains(p)){
-					patients.add(p);
-					fireTableRowsInserted(patients.size() - 1, patients.size() - 1);
-				}
+		for(i = 0; i < Integer.parseInt(queryIDandSize[1]); i++){
+			String name = (String)rest.getValue(rest.getIndexContent(queryIDandSize[0],i), "PatientName").toString();
+			String id = (String)rest.getValue(rest.getIndexContent(queryIDandSize[0],i), "PatientID");
+			String number = (String)rest.getValue(rest.getIndexContent(queryIDandSize[0],i), "AccessionNumber").toString();
+			Date date = parser.parse((String)rest.getValue(rest.getIndexContent(queryIDandSize[0],i), "StudyDate"));
+			String desc = (String)rest.getValue(rest.getIndexContent(queryIDandSize[0],i), "StudyDescription").toString();
+			String studyUID = (String)rest.getValue(rest.getIndexContent(queryIDandSize[0],i), "StudyInstanceUID").toString();
+			String modalityResult=(String)rest.getValue(rest.getIndexContent(queryIDandSize[0],i), "Modality").toString();
+			p = new Patient(name, id, date, desc, number, studyUID,modalityResult);
+			if(!patients.contains(p)){
+				patients.add(p);
+				fireTableRowsInserted(patients.size() - 1, patients.size() - 1);
 			}
 		}
-		//rest.resetURL(aet);
 		return true;
 	}
 
 	public void removePatient(int rowIndex){
 		this.patients.remove(rowIndex);
 		fireTableRowsDeleted(rowIndex, rowIndex);
-	}
-
-	public void setAET(String aet){
-		this.rest.setAET(aet);
 	}
 
 	/*

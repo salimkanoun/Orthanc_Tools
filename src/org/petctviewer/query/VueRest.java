@@ -84,12 +84,14 @@ import java.util.prefs.Preferences;
 public class VueRest extends JFrame implements PlugIn{
 	
 	private static final long serialVersionUID = 1L;
+	// Instancie la classe rest qui fournit les services de connexion et input
+	private Rest rest =new Rest();
 	
-	JTabbedPane tabbedPane;
-	private TableDataPatient modele = new TableDataPatient(); // model for the main JTable (tableau)
-	private TableDataDetails modeleDetails = new TableDataDetails(); // model for the details JTable (tableauDetails) in the main tab
-	private TableDataPatient modeleH = new TableDataPatient(); // model for the history JTable (tab History)
-	private TableDataDetails modeleDetailsH = new TableDataDetails(); // model for the details JTable (tableauDetails) in the history tab
+	private JTabbedPane tabbedPane;
+	private TableDataPatient modele = new TableDataPatient(rest); // model for the main JTable (tableau)
+	private TableDataDetails modeleDetails = new TableDataDetails(rest); // model for the details JTable (tableauDetails) in the main tab
+	private TableDataPatient modeleH = new TableDataPatient(rest); // model for the history JTable (tab History)
+	private TableDataDetails modeleDetailsH = new TableDataDetails(rest); // model for the details JTable (tableauDetails) in the history tab
 	private JTable tableau; // displayed table in the main tab
 	private JTable tableauDetails; // displayed table containing the details in the main tab
 	private JTable tableauH; // displayed table in the history tab
@@ -148,7 +150,7 @@ public class VueRest extends JFrame implements PlugIn{
 	private JTextField textFieldNameIDAcc;
 	private JButton btnScheduleDaily;
 	private JLabel info;
-	private AutoQuery autoQuery=new AutoQuery();
+	private AutoQuery autoQuery=new AutoQuery(rest);
 	
 	//timer
 	private boolean timerOn;
@@ -633,11 +635,10 @@ public class VueRest extends JFrame implements PlugIn{
 										if (StringUtils.equals(table.getValueAt(i, 1).toString(),"*")==true && StringUtils.equals(table.getValueAt(i, 0).toString(),"*")==true) name.append("*");
 										if (StringUtils.equals(table.getValueAt(i, 1).toString(),"*")==false && StringUtils.equals(table.getValueAt(i, 0).toString(),"*")==false) name.append(table.getValueAt(i, 0).toString()+"^"+table.getValueAt(i, 1).toString());
 								
-										Object[] results=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox.getSelectedItem().toString() );
+										String[] results=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox.getSelectedItem().toString() );
 										
 										//On recupe les infos toutes les studies 
 										if (results!=null) {
-											System.out.println(results.length);	
 											autoQuery.getContent(results, patientArray);
 										}
 										
@@ -840,7 +841,7 @@ public class VueRest extends JFrame implements PlugIn{
 											if (StringUtils.equals(table.getValueAt(i, 1).toString(),"*")==true && StringUtils.equals(table.getValueAt(i, 0).toString(),"*")==true) name.append("*");
 											if (StringUtils.equals(table.getValueAt(i, 1).toString(),"*")==false && StringUtils.equals(table.getValueAt(i, 0).toString(),"*")==false) name.append(table.getValueAt(i, 0).toString()+"^"+table.getValueAt(i, 1).toString());
 										
-											Object[] results=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox.getSelectedItem().toString());
+											String[] results=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox.getSelectedItem().toString());
 											//On retrieve toutes les studies 
 											if (results!=null) {
 												autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery.discard);
@@ -895,7 +896,7 @@ public class VueRest extends JFrame implements PlugIn{
 				    		//On construit la string modalities
 				    		StringBuilder modalities=sbModalitiesAutoQuery();
 							
-							Object[] results=autoQuery.sendQuery("*","*",df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),"*", comboBox.getSelectedItem().toString());
+							String[] results=autoQuery.sendQuery("*","*",df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),"*", comboBox.getSelectedItem().toString());
 							//On retrieve toutes les studies 
 							if (results!=null) {
 								autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery.discard);

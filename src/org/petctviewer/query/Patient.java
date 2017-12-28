@@ -30,7 +30,7 @@ public class Patient {
 	private String studyDescription;
 	private String studyInstanceUID;
 	private String modality;
-
+	
 	public Patient(String patientName, String patientID, Date studyDate,
 			String studyDescription, String accessionNumber, String studyInstanceUID, String modality) throws ParseException {
 		super();

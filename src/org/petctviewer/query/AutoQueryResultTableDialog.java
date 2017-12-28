@@ -173,7 +173,6 @@ public class AutoQueryResultTableDialog extends JDialog {
 			String modalityString=patientList.get(i).getModality();
 			if (modalityString.contains("\\")) modalityString = modalityString.replace("\\", "\\\\");
 			// on ajoute la ligne
-			System.out.println(patientList.size()+lastName+firstName+modalityString);
 			model.addRow(new Object[] {lastName, firstName, patientList.get(i).getPatientID(), patientList.get(i).getAccessionNumber(),parser.format(patientList.get(i).getStudyDate()), parser.format(patientList.get(i).getStudyDate()), modalityString, patientList.get(i).getStudyDescription() });
 			}
 	}

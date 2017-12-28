@@ -54,8 +54,8 @@ public class AutoQuery  {
 	private DateFormat df = new SimpleDateFormat("yyyyMMdd");
 	
 	
-	public AutoQuery() {
-		api=new Rest();
+	public AutoQuery(Rest rest) {
+		api=rest;
 		try {
 			aet=api.getAET();
 			aetRetrieve=api.getLocalAET();
@@ -83,11 +83,10 @@ public class AutoQuery  {
 	 * @return
 	 * @throws IOException
 	 */
-	public Object[] sendQuery(String name, String id, String dateFrom, String dateTo, String modality, String studyDescription, String accessionNumber, String aet) throws IOException {
-		Object[] results=null;
+	public String[] sendQuery(String name, String id, String dateFrom, String dateTo, String modality, String studyDescription, String accessionNumber, String aet) throws IOException {
+		String[] results=null;
 		try {
 			//Selectionne l'AET de query
-			api.setAET(aet);
 			//On format les date pour avoir la bonne string
 			Date From=null;
 			Date To=null;
@@ -103,7 +102,7 @@ public class AutoQuery  {
 			
 			//On lance la query
 			if (StringUtils.equals(name, "*")==false|| StringUtils.equals(id, "*")==false ||StringUtils.equals(dateFrom, "*")==false || StringUtils.equals(dateTo, "*")==false || StringUtils.equals(modality, "*")==false|| StringUtils.equals(studyDescription, "*")==false|| StringUtils.equals(accessionNumber, "*")==false) {
-				results=api.getQueryAnswerIndexes("Study", name , id, date, modality, studyDescription , accessionNumber);
+				results=api.getQueryAnswerIndexes("Study", name , id, date, modality, studyDescription , accessionNumber, aet);
 				
 			}
 			
@@ -121,10 +120,10 @@ public class AutoQuery  {
 	 * @param discard
 	 * @throws IOException
 	 */
-	public void retrieveQuery(Object[] results, String aetRetrieve, int discard) throws IOException {
+	public void retrieveQuery(String[] results, String aetRetrieve, int discard) throws IOException {
 		if (results.length<=discard){		
-			for (int i=0; i<results.length; i++) {
-			api.retrieve(api.getQueryId(), String.valueOf(i), aetRetrieve );
+			for (int i=0; i<Integer.valueOf(results[1]); i++) {
+			api.retrieve(results[0], String.valueOf(i), aetRetrieve );
 			}
 		}
 		else {
@@ -185,16 +184,18 @@ public class AutoQuery  {
 	 * @throws IOException
 	 * @throws ParseException 
 	 */
-	protected void getContent(Object[] results, ArrayList<Patient> patientArray) throws IOException, ParseException {
+	protected void getContent(String[] results, ArrayList<Patient> patientArray) throws IOException, ParseException {
 		DateFormat parser = new SimpleDateFormat("yyyyMMdd");
-		for (int i=0; i<results.length; i++) {
-			String name = (String)api.getValue(api.getIndexContent(results[i].toString()), "PatientName");
-			String id = (String)api.getValue(api.getIndexContent(results[i].toString()), "PatientID");
-			String accNumber = (String)api.getValue(api.getIndexContent(results[i].toString()), "AccessionNumber");
-			Date date = parser.parse((String)api.getValue(api.getIndexContent(results[i].toString()), "StudyDate"));
-			String studyDesc = (String)api.getValue(api.getIndexContent(results[i].toString()), "StudyDescription");
-			String modality = (String)api.getValue(api.getIndexContent(results[i].toString()), "ModalitiesInStudy");
-			String studyUID = (String)api.getValue(api.getIndexContent(results[i].toString()), "StudyInstanceUID");
+		
+		for (int i=0; i<Integer.parseInt(results[1]); i++) {
+			String name = (String)api.getValue(api.getIndexContent(results[0],i), "PatientName");
+			String id = (String)api.getValue(api.getIndexContent(results[0],i), "PatientID");
+			String accNumber = (String)api.getValue(api.getIndexContent(results[0],i), "AccessionNumber");
+			Date date = parser.parse((String)api.getValue(api.getIndexContent(results[0],i), "StudyDate"));
+			String studyDesc = (String)api.getValue(api.getIndexContent(results[0],i), "StudyDescription");
+			String modality = (String)api.getValue(api.getIndexContent(results[0],i), "ModalitiesInStudy");
+			String studyUID = (String)api.getValue(api.getIndexContent(results[0],i), "StudyInstanceUID");
+			
 			Patient patient=new Patient(name, id, date, studyDesc, accNumber, studyUID, modality);
 			patientArray.add(patient);
 			//buildCSV(name,id,accNumber,date,modality,studyDesc,csv);
