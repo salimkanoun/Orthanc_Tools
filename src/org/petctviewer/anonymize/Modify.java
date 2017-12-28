@@ -19,6 +19,8 @@ package org.petctviewer.anonymize;
 
 import java.io.IOException;
 
+import javax.swing.JOptionPane;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -48,9 +50,6 @@ public class Modify {
 	}
 	
 	private void setUrlAndFetch() throws IOException, ParseException {
-		
-		// AJOUTER UN SETTEUR DANS LA GUI POUR DESACTIVER LES TABLES NON NECESSAIRE DEPUIS ICI
-		
 		if (level.equals("series")){
 			levelUrl="/series/";
 			getSeriesTags(id);
@@ -105,15 +104,43 @@ public class Modify {
 	}
 	
 	public JSONObject getInstanceTags(int instance) throws IOException, ParseException{
-		String idInstance=(String) seriesInstancesID.get(instance);
-		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/instances/"+idInstance+"/tags");
-		System.out.println(sb.toString());
-		//A FAIRE VOIR POUR L AFFICHAGE DE TOUTE LA REPONSE AVEC ELEMENTS IMBRIQUES
-		return null;
+		JSONObject responseInstance = null;
+		if (instance<seriesInstancesID.size()) {
+			String idInstance=(String) seriesInstancesID.get(instance);
+			StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/instances/"+idInstance+"/tags");
+			responseInstance=(JSONObject) parser.parse(sb.toString());
+		}
+		else {
+			JOptionPane.showMessageDialog(null, "Series contains "+seriesInstancesID.size()+" Instances (index start a 0)");
+		}
+		
+		return responseInstance;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void sendModifyQuery(JSONObject replaceTags, JSONArray removeTags, boolean removePrivateTags) {
+		JSONObject modifyRequest=new JSONObject();
+		modifyRequest.put("Replace", replaceTags);
+		modifyRequest.put("Remove", removeTags);
+		modifyRequest.put("RemovePrivateTags", removePrivateTags);
+		if (replaceTags.containsKey("PatientID") || replaceTags.containsKey("StudyInstanceUID") || replaceTags.containsKey("SeriesInstanceUID") || replaceTags.containsKey( "SOPInstanceUID" ) || removeTags.contains("PatientID") || removeTags.contains("StudyInstanceUID") || removeTags.contains("SeriesInstanceUID") || removeTags.contains( "SOPInstanceUID" ) ) {
+		modifyRequest.put("Force", true);
+		}
+		System.out.println(modifyRequest.toString());
+		try {
+			StringBuilder response=connexion.makePostConnectionAndStringBuilder(this.levelUrl+this.id+"/modify", modifyRequest.toString());
+			System.out.println(response);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//SK A FAIRE
+		// AJOUTER SI BESOIN LE FORCE AVEC WARNING ?
+		
 	}
 	
 	public  static void main(String...args){
-		new Modify("series","ec1c4786-99dc6c3e-4ca9cd5d-a1bc96f3-b240c19e");
+		new Modify("studies","d3a60cca-e907c064-cec0146b-e7b20d92-767fe06d");
 		
 	}
 }

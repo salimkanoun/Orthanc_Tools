@@ -33,6 +33,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
@@ -42,6 +43,8 @@ import javax.swing.JSpinner;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.awt.event.ActionEvent;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.JCheckBox;
 
 @SuppressWarnings("serial")
 public class testgui extends JFrame {
@@ -53,10 +56,14 @@ public class testgui extends JFrame {
 	private JPanel patient_panel ;
 	private JTable table_study;
 	private JTable table_serie;
-	private JTable table_customChange;
+	private JTable table_SharedTags;
 	
 	private Modify modify;
 	private boolean enableInstance=true;
+	
+	//Build modification list
+	JSONObject queryReplace=new JSONObject();
+	JSONArray queryRemove=new JSONArray();
 
 	/**
 	 * Launch the application.
@@ -88,6 +95,7 @@ public class testgui extends JFrame {
 	}
 	
 	private void makegui() {
+		setTitle("Modify");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
@@ -100,17 +108,25 @@ public class testgui extends JFrame {
 		fl_button_panel.setAlignment(FlowLayout.RIGHT);
 		contentPane.add(button_panel, BorderLayout.SOUTH);
 		
+		JCheckBox chckbxRemovePrivateTags = new JCheckBox("Remove Private Tags");
+		button_panel.add(chckbxRemovePrivateTags);
+		
 		JButton btnModify = new JButton("Modify");
+		btnModify.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				modify.sendModifyQuery(queryReplace, queryRemove, chckbxRemovePrivateTags.isSelected());
+				dispose();
+			}
+		});
 		button_panel.add(btnModify);
 		
 		JButton btnCancel = new JButton("Cancel");
+		btnCancel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				dispose();
+			}
+		});
 		button_panel.add(btnCancel);
-		
-		JPanel top_panel = new JPanel();
-		contentPane.add(top_panel, BorderLayout.NORTH);
-		
-		JLabel lblModify = new JLabel("Modify");
-		top_panel.add(lblModify);
 		
 		JPanel center_panel = new JPanel();
 		contentPane.add(center_panel, BorderLayout.CENTER);
@@ -128,11 +144,11 @@ public class testgui extends JFrame {
 		patient_panel.add(scrollPane_patient);
 		
 		table_patient = new JTable();
-		table_patient.setModel(new DefaultTableModel(new String[] {"Tag", "Value"},0) {
+		table_patient.setModel(new DefaultTableModel(new String[] {"Tag", "Value", "Remove"},0) {
 			private static final long serialVersionUID = 1L;
 			@SuppressWarnings("rawtypes")
 			Class[] columnTypes = new Class[] {
-				Object.class, String.class
+				String.class,String.class, Boolean.class
 			};
 			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public Class getColumnClass(int columnIndex) {
@@ -157,11 +173,11 @@ public class testgui extends JFrame {
 		study_panel.add(scrollPane_study, BorderLayout.CENTER);
 		
 		table_study = new JTable();
-		table_study.setModel(new DefaultTableModel(new String[] {"Tag", "Value"},0) {
+		table_study.setModel(new DefaultTableModel(new String[] {"Tag", "Value", "Remove"},0) {
 			private static final long serialVersionUID = 1L;
 			@SuppressWarnings("rawtypes")
 			Class[] columnTypes = new Class[] {
-				Object.class, String.class
+				String.class, String.class, Boolean.class
 			};
 			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public Class getColumnClass(int columnIndex) {
@@ -187,12 +203,12 @@ public class testgui extends JFrame {
 		
 		table_serie = new JTable();
 		
-		table_serie.setModel(new DefaultTableModel(new String[] {"Tag", "Value"},0) {
+		table_serie.setModel(new DefaultTableModel(new String[] {"Tag", "name", "Remove"},0) {
 			private static final long serialVersionUID = 1L;
 			
 			@SuppressWarnings("rawtypes")
 			Class[] columnTypes = new Class[] {
-				String.class, String.class
+				String.class, String.class, Boolean.class
 			};
 			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public Class getColumnClass(int columnIndex) {
@@ -227,61 +243,32 @@ public class testgui extends JFrame {
 		JPanel panel_Instance = new JPanel();
 		panel_showTags.add(panel_Instance, BorderLayout.NORTH);
 		
-		JLabel lblSeeTagInstance = new JLabel("See tag instance n\u00B0");
-		panel_Instance.add(lblSeeTagInstance);
+		JButton btnSharedTags = new JButton("Get Shared Tags");
+		panel_Instance.add(btnSharedTags);
 		
-		JSpinner spinner_instanceNumber = new JSpinner();
-		panel_Instance.add(spinner_instanceNumber);
 		
-		JButton btnShowTags = new JButton("Show");
-		btnShowTags.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				removeAllRow (table_customChange);
-				try {
-					modify.getInstanceTags((int) spinner_instanceNumber.getValue());
-				} catch (IOException | ParseException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				// A FAIRE
-				
-				
-			}
-		});
-		panel_Instance.add(btnShowTags);
+		
 		panel_Instance.setVisible(enableInstance);
 		
 		JScrollPane scrollPane = new JScrollPane();
 		panel_showTags.add(scrollPane);
 		
-		table_customChange = new JTable();
-		table_customChange.setPreferredScrollableViewportSize(new Dimension(300, 100));
-		DefaultTableModel table_customChange_model= new DefaultTableModel(new String[] {"Tag", "Name", "Value", "Replace/Delete"},0) {
+		table_SharedTags = new JTable();
+		table_SharedTags.setPreferredScrollableViewportSize(new Dimension(300, 100));
+		DefaultTableModel table_customChange_model= new DefaultTableModel(new String[] {"Tag", "Name", "Value", "Delete"},0) {
 			private static final long serialVersionUID = 1L;
 			@SuppressWarnings("rawtypes")
 			Class[] columnTypes = new Class[] {
-				String.class, String.class, String.class, String.class
+				String.class, String.class, String.class, Boolean.class
 			};
 			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public Class getColumnClass(int columnIndex) {
 				return columnTypes[columnIndex];
 			}
 		};
-		table_customChange.setModel(table_customChange_model);
-		scrollPane.setViewportView(table_customChange);
+		table_SharedTags.setModel(table_customChange_model);
+		scrollPane.setViewportView(table_SharedTags);
 		
-		JPanel panel_otherButtons = new JPanel();
-		FlowLayout flowLayout = (FlowLayout) panel_otherButtons.getLayout();
-		flowLayout.setAlignment(FlowLayout.RIGHT);
-		panel_showTags.add(panel_otherButtons, BorderLayout.SOUTH);
-		
-		JButton btnaddCustomTag = new JButton("Add");
-		panel_otherButtons.add(btnaddCustomTag);
-		
-		JButton btnremoveCustomTag = new JButton("Remove");
-		panel_otherButtons.add(btnremoveCustomTag);
-		
-		JButton btnSharedTags = new JButton("Get Shared Tags");
 		btnSharedTags.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int answer = JOptionPane.showConfirmDialog(
@@ -291,9 +278,9 @@ public class testgui extends JFrame {
 					    JOptionPane.YES_NO_OPTION);
 				
 				if (answer==JOptionPane.OK_OPTION) {
-					removeAllRow (table_customChange);				
+					removeAllRow (table_SharedTags);				
 					JSONObject response = null;
-					// SI SHARED TAG DESACTIVER LES AUTRES TABLES (REDONDANCE)
+					
 					try {
 						response = modify.getSharedTags();
 					} catch (IOException | ParseException e1) {
@@ -302,62 +289,92 @@ public class testgui extends JFrame {
 					}
 					Object[] sharedTags=response.keySet().toArray();
 					for (int i=0; i<sharedTags.length; i++) {
-						String[] row=new String[3];
-						row[0] = (String) sharedTags[i];
+						String address = (String) sharedTags[i];
 						JSONObject response2 =(JSONObject) response.get(sharedTags[i]);
-						row[1] = response2.get("Name").toString() ;
-						row[2] = response2.get("Value").toString() ;
+						String tag = response2.get("Name").toString() ;
+						String value = response2.get("Value").toString() ;
 						
-						table_customChange_model.addRow(row);
+						table_customChange_model.addRow(new Object[] {address, tag, value, Boolean.FALSE});
 					}
+					// Unable all other table because risk of redundency
 					hideTables("all");
+					queryReplace.clear();
+					queryRemove.clear();
+					table_SharedTags.putClientProperty("terminateEditOnFocusLost", true);
+					table_SharedTags.getModel().addTableModelListener(tablechangeListenerSharedTags);
+					btnSharedTags.setEnabled(false);
 					}
 
 			}
 		});
-		panel_otherButtons.add(btnSharedTags);
+		
+		JPanel panel_otherButtons = new JPanel();
+		FlowLayout flowLayout = (FlowLayout) panel_otherButtons.getLayout();
+		flowLayout.setAlignment(FlowLayout.RIGHT);
+		panel_showTags.add(panel_otherButtons, BorderLayout.SOUTH);
+		
+		JLabel lblSeeTagInstance = new JLabel("See tag instance n\u00B0");
+		panel_otherButtons.add(lblSeeTagInstance);
+		
+		JSpinner spinner_instanceNumber = new JSpinner();
+		spinner_instanceNumber.setModel(new SpinnerNumberModel(0, null, 99999, 1));
+		panel_otherButtons.add(spinner_instanceNumber);
+		
+		JButton btnShowTags = new JButton("Show");
+		panel_otherButtons.add(btnShowTags);
+		btnShowTags.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					JSONObject instanceTags=modify.getInstanceTags((int) spinner_instanceNumber.getValue());
+					System.out.println(instanceTags);
+					// SK A FAIRE TROUVER UNE INTERFACE POUR AFFICHER PROPREMENT LE RESULTAT
+				} catch (IOException | ParseException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+			}
+		});
 
 	}
 	
 	public void setTables(JSONObject MainTags, String level) {
-		Object[] mainPatientTag=MainTags.keySet().toArray();
-		String[] tags=new String[2];	
+		Object[] mainPatientTag=MainTags.keySet().toArray();	
 		
 		if (level.equals("patient")) {
 			DefaultTableModel patientModel =(DefaultTableModel) table_patient.getModel();
 			for (int i=0; i<mainPatientTag.length;i++) {
 			
-			tags[0]=(String) mainPatientTag[i];
-			tags[1]=(String) MainTags.get(mainPatientTag[i]);
-			patientModel.addRow(tags);
+			String tag=(String) mainPatientTag[i];
+			String value=(String) MainTags.get(mainPatientTag[i]);
+			patientModel.addRow(new Object[] {tag, value, Boolean.FALSE});
 			//On ajoute le listener pour ecouter les changement de l'utilisateur
 			}
 			table_patient.putClientProperty("terminateEditOnFocusLost", true);
 			table_patient.getModel().addTableModelListener(tablechangeListenerPatient);
 		}
+		
 		else if (level.equals("study")) {
 			DefaultTableModel studyModel =(DefaultTableModel) table_study.getModel();
 			for (int i=0; i<mainPatientTag.length;i++) {
-				tags[0]=(String) mainPatientTag[i];
-				tags[1]=(String) MainTags.get(mainPatientTag[i]);
-				studyModel.addRow(tags);
+				String tag=(String) mainPatientTag[i];
+				String value=(String) MainTags.get(mainPatientTag[i]);
+				studyModel.addRow(new Object[] {tag, value, Boolean.FALSE});
 			}
 			table_study.putClientProperty("terminateEditOnFocusLost", true);
 			table_study.getModel().addTableModelListener(tablechangeListenerStudy);
 		}
+		
 		else if (level.equals("serie")) {
 			DefaultTableModel serieModel =(DefaultTableModel) table_serie.getModel();
 			for (int i=0; i<mainPatientTag.length;i++) {
-				tags[0]=(String) mainPatientTag[i];
-				tags[1]=(String) MainTags.get(mainPatientTag[i]);
-				serieModel.addRow(tags);
+				String tag=(String) mainPatientTag[i];
+				String value=(String) MainTags.get(mainPatientTag[i]);
+				serieModel.addRow(new Object[] {tag, value, Boolean.FALSE});
 			}
 			table_serie.putClientProperty("terminateEditOnFocusLost", true);
 			table_serie.getModel().addTableModelListener(tablechangeListenerSeries);
 		}
-		//On PANEL NON UTILES
-		//study_panel.setVisible(false);
-		//serie_panel.setVisible(false);
 		
 	}
 	
@@ -373,9 +390,9 @@ public class testgui extends JFrame {
 			}
 		
 		else if (level.equals("all")) {
-			table_patient.setEnabled(false);
-			table_study.setEnabled(false);
-			table_serie.setEnabled(false);
+			removeAllRow(table_patient);
+			removeAllRow(table_serie);
+			removeAllRow(table_study);
 		}
 			
 	}
@@ -388,25 +405,96 @@ public class testgui extends JFrame {
 		}
 	}
 	
+	
 	TableModelListener tablechangeListenerPatient =new TableModelListener() {
+		@SuppressWarnings("unchecked")
 		@Override
 		public void tableChanged(TableModelEvent e) {
-			System.out.println("patient");
-			System.out.println("Tag"+ table_patient.getValueAt(e.getFirstRow(), 0) +"Value"+ (String)  table_patient.getValueAt(e.getFirstRow(), 1));
+			if (e.getType()==TableModelEvent.UPDATE) {
+				System.out.println(e.getFirstRow());
+				System.out.println(table_patient.getValueAt(e.getFirstRow(), 2));
+				// If item not to remove, add to replace list and remove if present in the remove list
+				if (table_patient.getValueAt(e.getFirstRow(), 2).equals(Boolean.FALSE)) {
+					queryReplace.put( table_patient.getValueAt(e.getFirstRow(), 0), table_patient.getValueAt(e.getFirstRow(), 1));
+					queryRemove.remove(table_patient.getValueAt(e.getFirstRow(), 0));
+				}
+				//else add item to replace list and remove it from remove list
+				else {
+					queryRemove.add(table_patient.getValueAt(e.getFirstRow(), 0));
+					queryReplace.remove(table_patient.getValueAt(e.getFirstRow(), 0));
+				}
+				System.out.println(queryReplace);
+				System.out.println(queryRemove);
+			}
+			
 		}
     };
+    
     TableModelListener tablechangeListenerStudy =new TableModelListener() {
-		@Override
+    	@SuppressWarnings("unchecked")
+    	@Override
 		public void tableChanged(TableModelEvent e) {
-			System.out.println("Study");
-			System.out.println("Tag"+ (String) table_study.getValueAt(e.getFirstRow(), 0)+"Value"+ (String) table_study.getValueAt(e.getFirstRow(), 1));
+    		if (e.getType()==TableModelEvent.UPDATE) {
+    			if (!(boolean) table_study.getValueAt(e.getFirstRow(), 2)) {
+					queryReplace.put( table_study.getValueAt(e.getFirstRow(), 0), table_study.getValueAt(e.getFirstRow(), 1));
+					queryRemove.remove(table_study.getValueAt(e.getFirstRow(), 0));
+				}
+				//else add item to replace list and remove it from remove list
+				else {
+					queryRemove.add(table_study.getValueAt(e.getFirstRow(), 0));
+					queryReplace.remove(table_study.getValueAt(e.getFirstRow(), 0));
+				}
+				System.out.println(queryReplace);
+				System.out.println(queryRemove);
+    		}
+	    		
 		}
     };
+    
     TableModelListener tablechangeListenerSeries =new TableModelListener() {
-		@Override
+    	@SuppressWarnings("unchecked")
+    	@Override
 		public void tableChanged(TableModelEvent e) {
-			System.out.println("Serie");
-			System.out.println("Tag"+ (String) table_serie.getValueAt(e.getFirstRow(), 0)+"Value"+ (String) table_serie.getValueAt(e.getFirstRow(), 1));
+    		if (e.getType()==TableModelEvent.UPDATE) {
+				if (!(boolean) table_serie.getValueAt(e.getFirstRow(), 2)) {
+				queryReplace.put( table_serie.getValueAt(e.getFirstRow(), 0), table_serie.getValueAt(e.getFirstRow(), 1));
+				queryRemove.remove(table_serie.getValueAt(e.getFirstRow(), 0));
+				}
+				//else add item to replace list and remove it from remove list
+				else {
+				queryRemove.add(table_serie.getValueAt(e.getFirstRow(), 0));
+				queryReplace.remove(table_serie.getValueAt(e.getFirstRow(), 0));
+				}
+	    		
+	    		System.out.println(queryReplace);
+				System.out.println(queryRemove);
+    		}
+
+    		
+			
+		}
+    };
+    
+    TableModelListener tablechangeListenerSharedTags =new TableModelListener() {
+    	@SuppressWarnings("unchecked")
+    	@Override
+		public void tableChanged(TableModelEvent e) {
+    		if (e.getType()==TableModelEvent.UPDATE) {
+	    		if (!(boolean) table_SharedTags.getValueAt(e.getFirstRow(), 3)) {
+	    			queryReplace.put( table_SharedTags.getValueAt(e.getFirstRow(), 1), table_SharedTags.getValueAt(e.getFirstRow(), 2));
+	    			queryRemove.remove(table_SharedTags.getValueAt(e.getFirstRow(), 1));
+				}
+				//else add item to replace list and remove it from remove list
+				else {
+					queryRemove.add(table_SharedTags.getValueAt(e.getFirstRow(), 1));
+					queryReplace.remove(table_SharedTags.getValueAt(e.getFirstRow(), 1));
+				}
+	    		
+	    		
+	    		System.out.println(queryReplace);
+				System.out.println(queryRemove);
+    		}
+    		
 			
 		}
     };
