@@ -394,51 +394,22 @@ public class VueAnon extends JFrame implements PlugIn{
 				
 		
 
-		//JMenuItem menuItemZipPatients = new JMenuItem("Add to export tool");
-		//menuItemZipPatients.addActionListener(new addZipAction(tableauPatients));
-		/*JMenuItem menuItemAnonPatients = new JMenuItem("Add to anonymization tool");
-		menuItemAnonPatients.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				try {
-					modeleStudies.clear();
-					String patientName = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 0).toString();
-					String patientID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 1).toString();
-					String patientUID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 2).toString();
-					Date patientBirthDate = (Date)tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 3);
-					ArrayList<String> listeUIDs = new ArrayList<String>();
-					modeleStudies.addStudy(patientName, patientID, patientUID);
-					listeUIDs.addAll(modeleStudies.getIds());
-					modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientBirthDate, listeUIDs);
-					modeleAnonStudies.clear();
-					modeleAnonStudies.addStudies(patientName, patientID, listeUIDs);
-					for(int i = 0; i < modeleAnonPatients.getPatientList().size(); i++){
-						if(modeleAnonPatients.getPatient(i).getPatientId().equals(patientID) && 
-								modeleAnonPatients.getPatient(i).getPatientName().equals(patientName)){
-							anonPatientTable.setRowSelectionInterval(i, i);
-						}
-					}
-					oToolRight.setVisible(false);
-					anonTablesPanel.setVisible(true);
-					addToAnon.setVisible(true);
-					displayAnonTool.setText("Close anonymization tool");
-					displayExportTool.setVisible(false);
-					pack();
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (ParseException e) {
-					e.printStackTrace();
+		JMenuItem menuItemModifyPatients = new JMenuItem("Modify");
+		menuItemModifyPatients.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					new Modify("patients",(String)tableauPatients.getValueAt(tableauPatients.getSelectedRow(),2));
 				}
-			}
-		});*/
+			});
+		
 		JMenuItem menuItemDeletePatients = new JMenuItem("Delete this patient");
 		menuItemDeletePatients.addActionListener(new DeleteActionMainPanel(connexionHttp, "Patient", this.modeleStudies, this.tableauStudies, 
 				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this.state, this, search));
 
-		//popMenuPatients.add(menuItemZipPatients);
-		//popMenuPatients.add(menuItemAnonPatients);
-		//popMenuPatients.addSeparator();
+		popMenuPatients.add(menuItemModifyPatients);
+		popMenuPatients.addSeparator();
 		popMenuPatients.add(menuItemDeletePatients);
+		
 		this.tableauPatients.setComponentPopupMenu(popMenuPatients);
 
 		////////////////////////// STUDIES ///////////////////////////////
@@ -468,50 +439,21 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.tableauStudies.setRowSorter(sorterStudies);
 		this.tableauStudies.setDefaultRenderer(Date.class, new DateRendererAnon());
 		
-		// SK TO DO
-		// ICI GESTION DU CLIC DROIT
-		// AJOUT FONCTION MODIFY
-
-		//JMenuItem menuItemZipStudies = new JMenuItem("Add to export tool");
-		//menuItemZipStudies.addActionListener(new addZipAction(tableauStudies));
-		/*JMenuItem menuItemAnonStudies = new JMenuItem("Add to anonymization tool");
-		menuItemAnonStudies.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				try {					
-					ArrayList<String> listeDummy = new ArrayList<String>();
-					String patientName = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 0).toString();
-					String patientID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 1).toString();
-					Date patientBirthDate = (Date)tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 3);
-					listeDummy.add(modeleStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 3).toString());					
-					modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientBirthDate, listeDummy);
-					modeleAnonStudies.clear();
-					modeleAnonStudies.addStudies(patientName, patientID, listeDummy);
-					for(int i = 0; i < modeleAnonPatients.getPatientList().size(); i++){
-						if(modeleAnonPatients.getPatient(i).getPatientId().equals(patientID) && 
-								modeleAnonPatients.getPatient(i).getPatientName().equals(patientName)){
-							anonPatientTable.setRowSelectionInterval(i, i);
-						}
-					}
-					anonTablesPanel.setVisible(true);
-					addToAnon.setVisible(true);
-					displayAnonTool.setText("Close anonymization tool");
-					displayExportTool.setVisible(false);
-					pack();
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (ParseException e) {
-					e.printStackTrace();
+		JMenuItem menuItemModifyStudy = new JMenuItem("Modify");
+		menuItemModifyStudy.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					new Modify("studies",(String)tableauStudies.getValueAt(tableauStudies.getSelectedRow(),3));
 				}
-			}
-		});*/
+			});
+		
+		
 		JMenuItem menuItemDeleteStudy = new JMenuItem("Delete this study");
 		menuItemDeleteStudy.addActionListener(new DeleteActionMainPanel(connexionHttp, "Study", this.modeleStudies, this.tableauStudies, 
 				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this.state, this, search));
 
-		//popMenuStudies.add(menuItemZipStudies);
-		//popMenuStudies.add(menuItemAnonStudies);
-		//popMenuStudies.addSeparator();
+		popMenuStudies.add(menuItemModifyStudy);
+		popMenuStudies.addSeparator();
 		popMenuStudies.add(menuItemDeleteStudy);
 		this.tableauStudies.setComponentPopupMenu(popMenuStudies);
 
@@ -558,8 +500,13 @@ public class VueAnon extends JFrame implements PlugIn{
 		sorterSeries.sort();
 		this.tableauSeries.setRowSorter(sorterSeries);
 
-		//JMenuItem menuItemZipSeries = new JMenuItem("Add to export tool");
-		//menuItemZipSeries.addActionListener(new addZipAction(tableauSeries));
+		JMenuItem menuItemModifySeries = new JMenuItem("Modify");
+		menuItemModifySeries.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					new Modify("series",(String)tableauSeries.getValueAt(tableauSeries.getSelectedRow(),4));
+				}
+			});
 		
 		JMenuItem menuItemSopClass = new JMenuItem("Check if secondary capture");
 		menuItemSopClass.addActionListener(new ActionListener() {			
@@ -610,8 +557,8 @@ public class VueAnon extends JFrame implements PlugIn{
 		menuItemDeleteSeries.addActionListener(new DeleteActionMainPanel(connexionHttp, "Serie", this.modeleStudies, this.tableauStudies, 
 				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this.state, this, search));
 
-		//popMenuSeries.add(menuItemZipSeries);
-		//popMenuSeries.addSeparator();
+		popMenuSeries.add(menuItemModifySeries);
+		popMenuSeries.addSeparator();
 		popMenuSeries.add(menuItemSopClass);
 		popMenuSeries.add(menuItemAllSopClass);
 		popMenuSeries.add(menuItemDeleteAllSop);

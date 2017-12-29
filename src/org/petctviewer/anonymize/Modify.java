@@ -29,45 +29,57 @@ import org.json.simple.parser.ParseException;
 import org.petctviewer.*;
 
 public class Modify {
-	testgui gui=new testgui(this, true);
-	String level;
-	String levelUrl;
-	String id;
 	
+	private Modify_Gui gui = new Modify_Gui(this);
+	private String levelUrl;
+	private String id;
 	private JSONArray seriesInstancesID;
-	ParametreConnexionHttp connexion;
-	JSONParser parser=new JSONParser();
+	private ParametreConnexionHttp connexion;
+	private JSONParser parser=new JSONParser();
 	
 	public Modify(String level, String id){
 		this.connexion= new ParametreConnexionHttp();
-		this.level=level;
 		this.id=id;
 		try {
-			setUrlAndFetch();
+			setUrlAndFetch(level);
 		} catch (IOException | ParseException e) {
 			e.printStackTrace();
 		} 
 	}
 	
-	private void setUrlAndFetch() throws IOException, ParseException {
+	private void setUrlAndFetch(String level) throws IOException, ParseException {
+		
 		if (level.equals("series")){
 			levelUrl="/series/";
 			getSeriesTags(id);
+			
+			//Open GUI and enable instance button
+			
 		}
 		else if (level.equals("studies")) {
 			levelUrl="/studies/";
 			getStudiesTags(id);
+			gui.hideTables(level);
+			//Open GUI and disable instance button because level is too high
+			
 		}
 		else if (level.equals("patients")) {
 			levelUrl="/patients/";
 			getPatientsTags(id);
+			gui.hideTables(level);
+			
 		}
-		//On onvre la GUI
-		gui.hideTables(level);
+		//On ouvre la GUI
 		gui.setSize(800,750);
 		gui.setVisible(true);
 	}
 	
+	/**
+	 * Retrieve and set Patients level main tags in the gui
+	 * @param patientID
+	 * @throws IOException
+	 * @throws ParseException
+	 */
 	public void getPatientsTags(String patientID) throws IOException, ParseException{
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/patients/"+patientID);
 		JSONObject response=(JSONObject) parser.parse(sb.toString());
@@ -75,17 +87,30 @@ public class Modify {
 		gui.setTables(patientsMainTags, "patient");
 	}
 	
+	
+	/**
+	 * Retrieve and set Series tags and call set Study/Patients main tags in the GUI
+	 * @param seriesID
+	 * @throws IOException
+	 * @throws ParseException
+	 */
 	public void getSeriesTags(String seriesID) throws IOException, ParseException{
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/series/"+seriesID);
 		JSONObject response=(JSONObject) parser.parse(sb.toString());
 		JSONObject seriesMainTags=(JSONObject) response.get("MainDicomTags");
 		String parentStudyID=(String) response.get("ParentStudy");
 		seriesInstancesID= (JSONArray) response.get("Instances");
+		System.out.println(seriesMainTags);
 		gui.setTables(seriesMainTags, "serie");
 		getStudiesTags(parentStudyID);
 		
 	}
-	
+	/**
+	 * Retrieve and set study/Patient main tags in the gui
+	 * @param studyID
+	 * @throws IOException
+	 * @throws ParseException
+	 */
 	public void getStudiesTags(String studyID) throws IOException, ParseException{
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/studies/"+studyID);
 		JSONObject response=(JSONObject) parser.parse(sb.toString());
@@ -96,13 +121,25 @@ public class Modify {
 		
 	}
 	
-	
+	/**
+	 * get Shared tag of the level to be parsed in the gui
+	 * @return
+	 * @throws IOException
+	 * @throws ParseException
+	 */
 	public JSONObject getSharedTags() throws IOException, ParseException{
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder(levelUrl+id+"/shared-tags");
 		JSONObject response=(JSONObject) parser.parse(sb.toString());
 		return response;
 	}
 	
+	/**
+	 * get the full tags of a specific instnce
+	 * @param instance
+	 * @return
+	 * @throws IOException
+	 * @throws ParseException
+	 */
 	public JSONObject getInstanceTags(int instance) throws IOException, ParseException{
 		JSONObject responseInstance = null;
 		if (instance<seriesInstancesID.size()) {
@@ -117,30 +154,38 @@ public class Modify {
 		return responseInstance;
 	}
 	
+	/**
+	 * Build the final modify query and send it to Orthanc
+	 * @param replaceTags
+	 * @param removeTags
+	 * @param removePrivateTags
+	 */
 	@SuppressWarnings("unchecked")
 	public void sendModifyQuery(JSONObject replaceTags, JSONArray removeTags, boolean removePrivateTags) {
+		boolean cancel=false;
+		
 		JSONObject modifyRequest=new JSONObject();
 		modifyRequest.put("Replace", replaceTags);
 		modifyRequest.put("Remove", removeTags);
 		modifyRequest.put("RemovePrivateTags", removePrivateTags);
-		if (replaceTags.containsKey("PatientID") || replaceTags.containsKey("StudyInstanceUID") || replaceTags.containsKey("SeriesInstanceUID") || replaceTags.containsKey( "SOPInstanceUID" ) || removeTags.contains("PatientID") || removeTags.contains("StudyInstanceUID") || removeTags.contains("SeriesInstanceUID") || removeTags.contains( "SOPInstanceUID" ) ) {
-		modifyRequest.put("Force", true);
-		}
-		System.out.println(modifyRequest.toString());
-		try {
-			StringBuilder response=connexion.makePostConnectionAndStringBuilder(this.levelUrl+this.id+"/modify", modifyRequest.toString());
-			System.out.println(response);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		//SK A FAIRE
-		// AJOUTER SI BESOIN LE FORCE AVEC WARNING ?
 		
+		System.out.println(modifyRequest.toString());
+		
+		if (replaceTags.containsKey("PatientID") || replaceTags.containsKey("StudyInstanceUID") || replaceTags.containsKey("SeriesInstanceUID") || replaceTags.containsKey( "SOPInstanceUID" ) || removeTags.contains("PatientID") || removeTags.contains("StudyInstanceUID") || removeTags.contains("SeriesInstanceUID") || removeTags.contains( "SOPInstanceUID" ) ) {
+            int response=JOptionPane.showConfirmDialog (null, "You are modifying key idenditifaction patients (Patient ID...) would you can to continue ?","Warning",JOptionPane.YES_NO_OPTION);
+            if (response==JOptionPane.NO_OPTION) cancel=true;
+            else modifyRequest.put("Force", Boolean.TRUE);
+		}
+		if (!cancel) {
+			try {
+			connexion.makePostConnectionAndStringBuilder(this.levelUrl+this.id+"/modify", modifyRequest.toString());
+			} catch (IOException e) {e.printStackTrace();}
+		}
+
 	}
 	
 	public  static void main(String...args){
-		new Modify("series","c2a16437-23a56d57-b8b3343e-4d6215fc-4cc5d0c2");
+		new Modify("series","ec1c4786-99dc6c3e-4ca9cd5d-a1bc96f3-b240c19e");
 		
 	}
 }
