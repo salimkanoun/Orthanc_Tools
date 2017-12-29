@@ -31,11 +31,17 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.table.DefaultTableModel;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 import java.awt.GridLayout;
 import java.awt.Dimension;
@@ -45,9 +51,10 @@ import java.io.IOException;
 import java.awt.event.ActionEvent;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 
 @SuppressWarnings("serial")
-public class Modify_Gui extends JFrame {
+public class Modify_Gui extends JDialog {
 
 	private JPanel contentPane;
 	private JPanel study_panel ;
@@ -66,14 +73,15 @@ public class Modify_Gui extends JFrame {
 	JSONArray queryRemove=new JSONArray();
 
 	
-	public Modify_Gui(Modify modify) {
+	public Modify_Gui(Modify modify, JFrame guiParent) {
+		super(guiParent, "Modify", true);
 		this.modify=modify;
 		makegui();
 	}
 	
 	private void makegui() {
 		this.setIconImage(new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage());
-		setTitle("Modify");
+		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		
@@ -310,10 +318,18 @@ public class Modify_Gui extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					JSONObject instanceTags=modify.getInstanceTags((int) spinner_instanceNumber.getValue());
-					System.out.println(instanceTags.toJSONString());
-					// SK A FAIRE TROUVER UNE INTERFACE POUR AFFICHER PROPREMENT LE RESULTAT
+					Gson gson = new GsonBuilder().setPrettyPrinting().create();
+					JsonParser jp = new JsonParser();
+					JsonElement je = jp.parse(instanceTags.toString());
+					String prettyJsonString = gson.toJson(je);
+					
+					JTextArea textArea = new JTextArea(prettyJsonString);
+					JScrollPane scrollPane = new JScrollPane(textArea);  
+					textArea.setLineWrap(true);  
+					textArea.setWrapStyleWord(true); 
+					scrollPane.setPreferredSize( new Dimension( 500, 500 ) );
+					JOptionPane.showMessageDialog(null, scrollPane, "DICOM Tags", JOptionPane.INFORMATION_MESSAGE);
 				} catch (IOException | ParseException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 				

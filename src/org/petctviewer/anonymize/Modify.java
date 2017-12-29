@@ -19,6 +19,7 @@ package org.petctviewer.anonymize;
 
 import java.io.IOException;
 
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import org.json.simple.JSONArray;
@@ -30,15 +31,16 @@ import org.petctviewer.*;
 
 public class Modify {
 	
-	private Modify_Gui gui = new Modify_Gui(this);
+	private Modify_Gui gui;
 	private String levelUrl;
 	private String id;
 	private JSONArray seriesInstancesID;
 	private ParametreConnexionHttp connexion;
 	private JSONParser parser=new JSONParser();
 	
-	public Modify(String level, String id){
+	public Modify(String level, String id, JFrame guiParent){
 		this.connexion= new ParametreConnexionHttp();
+		gui = new Modify_Gui(this, guiParent);
 		this.id=id;
 		try {
 			setUrlAndFetch(level);
@@ -185,8 +187,4 @@ public class Modify {
 
 	}
 	
-	public  static void main(String...args){
-		new Modify("series","ec1c4786-99dc6c3e-4ca9cd5d-a1bc96f3-b240c19e");
-		
-	}
 }

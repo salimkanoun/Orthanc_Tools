@@ -398,7 +398,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		menuItemModifyPatients.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					new Modify("patients",(String)tableauPatients.getValueAt(tableauPatients.getSelectedRow(),2));
+					new Modify("patients",(String)tableauPatients.getValueAt(tableauPatients.getSelectedRow(),2), gui);
 					search.doClick();
 				}
 			});
@@ -444,7 +444,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		menuItemModifyStudy.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					new Modify("studies",(String)tableauStudies.getValueAt(tableauStudies.getSelectedRow(),3));
+					new Modify("studies",(String)tableauStudies.getValueAt(tableauStudies.getSelectedRow(),3), gui);
 					search.doClick();
 				}
 			});
@@ -506,7 +506,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		menuItemModifySeries.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					new Modify("series",(String)tableauSeries.getValueAt(tableauSeries.getSelectedRow(),4));
+					new Modify("series",(String)tableauSeries.getValueAt(tableauSeries.getSelectedRow(),4), gui);
 					search.doClick();
 				}
 			});
