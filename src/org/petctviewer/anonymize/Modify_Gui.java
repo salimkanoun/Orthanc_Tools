@@ -50,6 +50,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.awt.event.ActionEvent;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingWorker;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 
@@ -65,6 +66,7 @@ public class Modify_Gui extends JDialog {
 	private JTable table_serie;
 	private JTable table_SharedTags;
 	private JButton btnShowTags;
+	private JLabel state;
 	
 	private Modify modify;
 	
@@ -73,9 +75,10 @@ public class Modify_Gui extends JDialog {
 	JSONArray queryRemove=new JSONArray();
 
 	
-	public Modify_Gui(Modify modify, JFrame guiParent) {
+	public Modify_Gui(Modify modify, JFrame guiParent, JLabel state) {
 		super(guiParent, "Modify", true);
 		this.modify=modify;
+		this.state=state;
 		makegui();
 	}
 	
@@ -95,6 +98,9 @@ public class Modify_Gui extends JDialog {
 		fl_button_panel.setAlignment(FlowLayout.RIGHT);
 		contentPane.add(button_panel, BorderLayout.SOUTH);
 		
+		JLabel label = new JLabel("");
+		button_panel.add(label);
+		
 		JCheckBox chckbxRemovePrivateTags = new JCheckBox("Remove Private Tags");
 		button_panel.add(chckbxRemovePrivateTags);
 		
@@ -102,7 +108,21 @@ public class Modify_Gui extends JDialog {
 		
 		btnModify.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				modify.sendModifyQuery(queryReplace, queryRemove, chckbxRemovePrivateTags.isSelected());
+				
+				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+					@Override
+					protected Void doInBackground() {
+						state.setText("<html><font color='red'>Modifying...</font></html>");
+						modify.sendModifyQuery(queryReplace, queryRemove, chckbxRemovePrivateTags.isSelected());
+						return null;
+					}
+					@Override
+					protected void done() {
+						state.setText("<html><font color='green'>Modified DICOM created</font></html>");
+					}
+				};
+				
+				worker.execute();
 				dispose();
 			}
 		});

@@ -20,6 +20,7 @@ package org.petctviewer.anonymize;
 import java.io.IOException;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 import org.json.simple.JSONArray;
@@ -38,9 +39,9 @@ public class Modify {
 	private ParametreConnexionHttp connexion;
 	private JSONParser parser=new JSONParser();
 	
-	public Modify(String level, String id, JFrame guiParent, ParametreConnexionHttp connexion){
+	public Modify(String level, String id, JFrame guiParent, ParametreConnexionHttp connexion, JLabel state){
 		this.connexion= connexion;
-		gui = new Modify_Gui(this, guiParent);
+		gui = new Modify_Gui(this, guiParent, state);
 		this.id=id;
 		try {
 			setUrlAndFetch(level);
