@@ -118,7 +118,7 @@ public class Modify_Gui extends JDialog {
 					}
 					@Override
 					protected void done() {
-						state.setText("<html><font color='green'>Modified DICOM created</font></html>");
+						state.setText("<html><font color='green'>Modified DICOM created (refresh list)</font></html>");
 					}
 				};
 				
