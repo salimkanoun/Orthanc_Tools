@@ -20,6 +20,7 @@ package org.petctviewer.anonymize;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -71,7 +72,7 @@ public class Modify_Gui extends JFrame {
 	}
 	
 	private void makegui() {
-		
+		this.setIconImage(new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage());
 		setTitle("Modify");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 450, 300);

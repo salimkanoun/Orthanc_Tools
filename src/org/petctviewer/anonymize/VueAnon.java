@@ -399,6 +399,7 @@ public class VueAnon extends JFrame implements PlugIn{
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
 					new Modify("patients",(String)tableauPatients.getValueAt(tableauPatients.getSelectedRow(),2));
+					search.doClick();
 				}
 			});
 		
@@ -444,6 +445,7 @@ public class VueAnon extends JFrame implements PlugIn{
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
 					new Modify("studies",(String)tableauStudies.getValueAt(tableauStudies.getSelectedRow(),3));
+					search.doClick();
 				}
 			});
 		
@@ -505,6 +507,7 @@ public class VueAnon extends JFrame implements PlugIn{
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
 					new Modify("series",(String)tableauSeries.getValueAt(tableauSeries.getSelectedRow(),4));
+					search.doClick();
 				}
 			});
 		
