@@ -5,6 +5,8 @@ Features :
 
 - Anonymization : Fine tunable anonymization and sharing services of Anonymized DICOMs (FTP/SHH/WebDAV)
 
+- Modification : Edit DICOM tags in Patients / Study / Series level
+
 - Export : 
    - Export of study stored in Orthanc (Hierachical or DICOMDIR)
    - CD/DVD image generation with patient DICOM and ImageJ viewer (zip or ISO)
