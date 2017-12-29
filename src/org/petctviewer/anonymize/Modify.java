@@ -59,18 +59,19 @@ public class Modify {
 		else if (level.equals("studies")) {
 			levelUrl="/studies/";
 			getStudiesTags(id);
-			gui.hideTables(level);
+			
 			//Open GUI and disable instance button because level is too high
 			
 		}
 		else if (level.equals("patients")) {
 			levelUrl="/patients/";
 			getPatientsTags(id);
-			gui.hideTables(level);
+			
 			
 		}
 		//On ouvre la GUI
 		gui.setSize(800,750);
+		gui.hideTables(level);
 		gui.setVisible(true);
 	}
 	

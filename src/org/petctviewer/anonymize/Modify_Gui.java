@@ -364,15 +364,19 @@ public class Modify_Gui extends JFrame {
 	}
 	
 	public void hideTables(String level) {
-		System.out.println(level);
-		if (level.equals("patient")) {
+		if (level.equals("patients")) {
 			study_panel.setVisible(false);
 			serie_panel.setVisible(false);
 		}
 			
 		
-		else if (level.equals("study")) {
+		else if (level.equals("studies")) {
 			serie_panel.setVisible(false);
+			table_patient.setEnabled(false);
+		}
+		
+		else if (level.equals("series")) {
+			table_patient.setEnabled(false);
 		}
 		
 		else if (level.equals("all")) {
