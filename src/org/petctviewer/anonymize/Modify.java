@@ -38,8 +38,8 @@ public class Modify {
 	private ParametreConnexionHttp connexion;
 	private JSONParser parser=new JSONParser();
 	
-	public Modify(String level, String id, JFrame guiParent){
-		this.connexion= new ParametreConnexionHttp();
+	public Modify(String level, String id, JFrame guiParent, ParametreConnexionHttp connexion){
+		this.connexion= connexion;
 		gui = new Modify_Gui(this, guiParent);
 		this.id=id;
 		try {
