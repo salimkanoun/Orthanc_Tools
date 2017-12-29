@@ -165,8 +165,8 @@ public class Modify {
 	 * @param removePrivateTags
 	 */
 	@SuppressWarnings("unchecked")
-	public void sendModifyQuery(JSONObject replaceTags, JSONArray removeTags, boolean removePrivateTags) {
-		boolean cancel=false;
+	public JSONObject buildModifyQuery(JSONObject replaceTags, JSONArray removeTags, boolean removePrivateTags) {
+
 		
 		JSONObject modifyRequest=new JSONObject();
 		modifyRequest.put("Replace", replaceTags);
@@ -176,16 +176,23 @@ public class Modify {
 		System.out.println(modifyRequest.toString());
 		
 		if (replaceTags.containsKey("PatientID") || replaceTags.containsKey("StudyInstanceUID") || replaceTags.containsKey("SeriesInstanceUID") || replaceTags.containsKey( "SOPInstanceUID" ) || removeTags.contains("PatientID") || removeTags.contains("StudyInstanceUID") || removeTags.contains("SeriesInstanceUID") || removeTags.contains( "SOPInstanceUID" ) ) {
-            int response=JOptionPane.showConfirmDialog (null, "You are modifying key idenditifaction patients (Patient ID...) would you can to continue ?","Warning",JOptionPane.YES_NO_OPTION);
-            if (response==JOptionPane.NO_OPTION) cancel=true;
-            else modifyRequest.put("Force", Boolean.TRUE);
+            modifyRequest.put("Force", Boolean.TRUE);
 		}
-		if (!cancel) {
-			try {
-			connexion.makePostConnectionAndStringBuilder(this.levelUrl+this.id+"/modify", modifyRequest.toString());
-			} catch (IOException e) {e.printStackTrace();}
+		
+		if (levelUrl.contains("patients") && !replaceTags.containsKey("PatientID") || removeTags.contains("PatientID")) {
+			JOptionPane.showMessageDialog(null, "For Patient edition, PatientID must be set to a new value, please edit it");
+			modifyRequest=null;
 		}
+		
+		return modifyRequest;
 
+	}
+	
+	public void sendQuery(JSONObject query) {
+		try {
+			connexion.makePostConnectionAndStringBuilder(this.levelUrl+this.id+"/modify", query.toString());
+		} catch (IOException e) {e.printStackTrace();}
+		
 	}
 	
 }

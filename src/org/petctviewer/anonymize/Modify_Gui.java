@@ -108,12 +108,17 @@ public class Modify_Gui extends JDialog {
 		
 		btnModify.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				JSONObject query =modify.buildModifyQuery(queryReplace, queryRemove, chckbxRemovePrivateTags.isSelected());
 				
 				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 					@Override
 					protected Void doInBackground() {
-						state.setText("<html><font color='red'>Modifying...</font></html>");
-						modify.sendModifyQuery(queryReplace, queryRemove, chckbxRemovePrivateTags.isSelected());
+
+						if (query !=null) {
+							dispose();
+							state.setText("<html><font color='red'>Modifying...</font></html>");
+							modify.sendQuery(query);
+						}
 						return null;
 					}
 					@Override
@@ -123,7 +128,7 @@ public class Modify_Gui extends JDialog {
 				};
 				
 				worker.execute();
-				dispose();
+				
 			}
 		});
 		button_panel.add(btnModify);
@@ -437,8 +442,6 @@ public class Modify_Gui extends JDialog {
 		@Override
 		public void tableChanged(TableModelEvent e) {
 			if (e.getType()==TableModelEvent.UPDATE) {
-				System.out.println(e.getFirstRow());
-				System.out.println(table_patient.getValueAt(e.getFirstRow(), 2));
 				// If item not to remove, add to replace list and remove if present in the remove list
 				if (table_patient.getValueAt(e.getFirstRow(), 2).equals(Boolean.FALSE)) {
 					queryReplace.put( table_patient.getValueAt(e.getFirstRow(), 0), table_patient.getValueAt(e.getFirstRow(), 1));
