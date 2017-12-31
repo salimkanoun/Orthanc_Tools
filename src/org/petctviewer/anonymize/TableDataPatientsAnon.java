@@ -102,18 +102,33 @@ public class TableDataPatientsAnon extends AbstractTableModel{
 		String[] name = new String[jsonResponsesPatient.size()];
 		String[] patientID = new String[jsonResponsesPatient.size()];
 		String[] id = new String[jsonResponsesPatient.size()];
-		String[] birthdateBrut = new String[jsonResponsesPatient.size()];
+		//String[] birthdateBrut = new String[jsonResponsesPatient.size()];
 		Date[] birthdate = new Date[jsonResponsesPatient.size()];
 		
 		//On boucle pour extraire les valeurs des JSONs
 		for(int i=0; i<jsonResponsesPatient.size();i++){
 			JSONObject mainDicomTag=(JSONObject) jsonResponsesPatient.get(i).get("MainDicomTags");
-			name[i]=(String) mainDicomTag.get("PatientName");
-			patientID[i]=((String) mainDicomTag.get("PatientID"));
 			id[i]=(String) (String)jsonResponsesPatient.get(i).get("ID");
-			birthdateBrut[i]=(String) mainDicomTag.get("PatientBirthDate");
-			// SK VOIR SI ON REPASSE PAS EN STRING POUR METTRE UNKNOW EN CAS DE DATE ABSENTE
-			if (! birthdateBrut[i].equals("")) birthdate[i]= parser.parse(birthdateBrut[i]) ; else birthdate[i]=null;
+			
+			if (mainDicomTag.containsKey("PatientName")) {
+				name[i]=(String) mainDicomTag.get("PatientName");
+			}else {
+				name[i]="";
+			}
+			
+			if (mainDicomTag.containsKey("PatientID")) {
+				patientID[i]=(String) mainDicomTag.get("PatientID");
+			}else {
+				patientID[i]="";
+			}
+			
+			if (mainDicomTag.containsKey("PatientBirthDate")) {
+				String birthdateBrut=(String) mainDicomTag.get("PatientBirthDate");
+				birthdate[i]= parser.parse(birthdateBrut);
+			}else {
+				birthdate[i]=null;
+			}
+			
 		}
 		
 		for(int i = 0; i < id.length; i++){

@@ -117,10 +117,31 @@ public class TableDataExportStudies extends AbstractTableModel{
 		for(int i=0; i<jsonResponsesPatient.size();i++){
 			JSONObject mainDicomTag=(JSONObject) jsonResponsesPatient.get(i).get("MainDicomTags");
 			id[i]=(String) jsonResponsesPatient.get(i).get("ID");
-			description[i]=((String) mainDicomTag.get("StudyDescription"));
-			accession[i]=(String) mainDicomTag.get("AccessionNumber");
-			date[i]=parser.parse(mainDicomTag.get("StudyDate").toString());
-			studyInstanceUID[i]= (String)mainDicomTag.get("StudyInstanceUID");
+			
+			if (mainDicomTag.containsKey("SeriesDescription")) {
+				description[i]=((String) mainDicomTag.get("SeriesDescription"));
+			} else {
+				description[i]="";
+			}
+			
+			if (mainDicomTag.containsKey("AccessionNumber")) {
+				accession[i]=((String) mainDicomTag.get("AccessionNumber"));
+			} else {
+				accession[i]="";
+			}
+			
+			if (mainDicomTag.containsKey("StudyDate")) {
+				date[i]=parser.parse(mainDicomTag.get("StudyDate").toString());
+			} else {
+				date[i]=null;
+			}
+			
+			if (mainDicomTag.containsKey("StudyInstanceUID")) {
+				studyInstanceUID[i]=(String) mainDicomTag.get("StudyInstanceUID");
+			} else {
+				studyInstanceUID[i]="";
+			}
+
 		}
 		
 		

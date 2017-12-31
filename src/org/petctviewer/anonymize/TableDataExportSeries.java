@@ -99,7 +99,9 @@ public class TableDataExportSeries extends AbstractTableModel{
 	
 	public void setValueAt(Object value, int row, int col) {
 		String uid = this.getValueAt(row, 4).toString();
-		String oldDesc = this.getValueAt(row, 0).toString();
+		String oldDesc ;
+		if (this.getValueAt(row, 0)==null) oldDesc=""; else oldDesc=this.getValueAt(row, 0).toString();
+		
 		if(!oldDesc.equals(value.toString()) && col == 0){
 			series.get(row).setSerieDescription(value.toString());
 			fireTableCellUpdated(row, col);
@@ -112,6 +114,7 @@ public class TableDataExportSeries extends AbstractTableModel{
 					url="/series/" + uid + "/modify";
 					stateExport.setText("<html>Modifying a serie description <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
 					HttpURLConnection conn =connexionHttp.makePostConnection(url, ("{\"Replace\":{\"SeriesDescription\":\"" + value.toString() + "\"}}"));
+					connexionHttp.makeDeleteConnection("/series/" + uid );
 					frame.pack();
 					conn.disconnect();
 				} catch (IOException e) {
@@ -213,9 +216,24 @@ public class TableDataExportSeries extends AbstractTableModel{
 		for(int i=0; i<jsonResponsesPatient.size();i++){
 			JSONObject mainDicomTag=(JSONObject) jsonResponsesPatient.get(i).get("MainDicomTags");
 			id[i]=(String) jsonResponsesPatient.get(i).get("ID");
-			description[i]=((String) mainDicomTag.get("SeriesDescription"));
-			serieNumber[i]=((String) mainDicomTag.get("SeriesNumber"));
-			modality[i]=(String) (String)mainDicomTag.get("Modality");
+			
+			if (mainDicomTag.containsKey("SeriesDescription")) {
+				description[i]=((String) mainDicomTag.get("SeriesDescription"));
+			} else {
+				description[i]="";
+			}
+			
+			if (mainDicomTag.containsKey("SeriesNumber")) {
+				serieNumber[i]=((String) mainDicomTag.get("SeriesNumber"));
+			} else {
+				serieNumber[i]="";
+			}
+			
+			if (mainDicomTag.containsKey("Modality")) {
+				modality[i]=((String) mainDicomTag.get("SeriesDescription"));
+			} else {
+				modality[i]="";
+			}
 			
 			JSONArray instancesArray=(JSONArray) jsonResponsesPatient.get(i).get("Instances");
 			nbInstances[i]=String.valueOf(instancesArray.size());

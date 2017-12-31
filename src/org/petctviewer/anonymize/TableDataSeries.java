@@ -18,14 +18,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 package org.petctviewer.anonymize;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
+//import java.net.HttpURLConnection;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.SwingWorker;
+//import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
 
 import org.json.simple.JSONArray;
@@ -33,24 +33,26 @@ import org.json.simple.JSONObject;
 
 import org.petctviewer.*;
 
+// SK MODIFIE POUR PASSER L EDITION DANS LE MODIFY SEULEMENT A VALIDER SI TEST OK
+
 public class TableDataSeries extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Serie description*", "Modality", "Instances", "Secondary capture", "ID", "Serie N°"};
+	private String[] entetes = {"Serie description", "Modality", "Instances", "Secondary capture", "ID", "Serie Num"};
 	private ArrayList<Serie> series = new ArrayList<Serie>();
 	private ArrayList<String> instancesWithSecondaryCapture = new ArrayList<String>();
 	private String url;
-	private JLabel state;
-	private JFrame frame;
-	private String studyID = "";
+	//private JLabel state;
+	//private JFrame frame;
+	//private String studyID = "";
 	private ParametreConnexionHttp connexionHttp;
 
 	public TableDataSeries(ParametreConnexionHttp connexionHttp, JLabel state, JFrame frame){
 		super();
 		//Recupere les settings
 		this.connexionHttp=connexionHttp;
-		this.state = state;
-		this.frame = frame;
+		//this.state = state;
+		//this.frame = frame;
 		
 	}
 
@@ -94,13 +96,13 @@ public class TableDataSeries extends AbstractTableModel{
 	}
 
 	public boolean isCellEditable(int row, int col){
-		if(col == 0){
-			return true; 
-		}
+		//if(col == 0){
+		//	return true; 
+		//}
 		return false;
 	}
 
-	public void setValueAt(Object value, int row, int col) {
+	/*public void setValueAt(Object value, int row, int col) {
 		String uid = this.getValueAt(row, 4).toString();
 		String oldDesc = this.getValueAt(row, 0).toString();
 		if(!oldDesc.equals(value.toString()) && col == 0){
@@ -141,7 +143,7 @@ public class TableDataSeries extends AbstractTableModel{
 			series.get(row).setSecondaryCapture((boolean) value);
 			fireTableCellUpdated(row, col);
 		}
-	}
+	}*/
 
 	public boolean checkSopClassUid(String instanceUid) throws IOException{
 		this.url="/instances/" + instanceUid + "/metadata/SopClassUid";
@@ -192,7 +194,7 @@ public class TableDataSeries extends AbstractTableModel{
 	}
 
 	public void addSerie(String studyID) throws IOException, ParseException{
-		this.studyID = studyID;
+		//this.studyID = studyID;
 		QueryFillStore querySeries = new QueryFillStore(connexionHttp,"series", null, studyID, null, null);
 		List<JSONObject> jsonResponsesPatient=querySeries.getJsonResponse();
 		
@@ -208,9 +210,24 @@ public class TableDataSeries extends AbstractTableModel{
 		for(int i=0; i<jsonResponsesPatient.size();i++){
 			JSONObject mainDicomTag=(JSONObject) jsonResponsesPatient.get(i).get("MainDicomTags");
 			id[i]=(String) jsonResponsesPatient.get(i).get("ID");
-			description[i]=((String) mainDicomTag.get("SeriesDescription"));
-			serieNumber[i]=((String) mainDicomTag.get("SeriesNumber"));
-			modality[i]=(String) (String)mainDicomTag.get("Modality");
+			
+			if (mainDicomTag.containsKey("SeriesDescription")) {
+				description[i]=((String) mainDicomTag.get("SeriesDescription"));
+			} else {
+				description[i]="";
+			}
+			
+			if (mainDicomTag.containsKey("SeriesNumber")) {
+				serieNumber[i]=((String) mainDicomTag.get("SeriesNumber"));
+			} else {
+				serieNumber[i]="";
+			}
+			
+			if (mainDicomTag.containsKey("Modality")) {
+				modality[i]=((String) mainDicomTag.get("SeriesDescription"));
+			} else {
+				modality[i]="";
+			}
 			
 			JSONArray instancesArray=(JSONArray) jsonResponsesPatient.get(i).get("Instances");
 			nbInstances[i]=String.valueOf(instancesArray.size());

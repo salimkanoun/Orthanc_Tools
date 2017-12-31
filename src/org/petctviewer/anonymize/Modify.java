@@ -104,7 +104,6 @@ public class Modify {
 		JSONObject seriesMainTags=(JSONObject) response.get("MainDicomTags");
 		String parentStudyID=(String) response.get("ParentStudy");
 		seriesInstancesID= (JSONArray) response.get("Instances");
-		System.out.println(seriesMainTags);
 		gui.setTables(seriesMainTags, "serie");
 		getStudiesTags(parentStudyID);
 		
@@ -167,13 +166,10 @@ public class Modify {
 	@SuppressWarnings("unchecked")
 	public JSONObject buildModifyQuery(JSONObject replaceTags, JSONArray removeTags, boolean removePrivateTags) {
 
-		
 		JSONObject modifyRequest=new JSONObject();
 		modifyRequest.put("Replace", replaceTags);
 		modifyRequest.put("Remove", removeTags);
 		modifyRequest.put("RemovePrivateTags", removePrivateTags);
-		
-		System.out.println(modifyRequest.toString());
 		
 		if (replaceTags.containsKey("PatientID") || replaceTags.containsKey("StudyInstanceUID") || replaceTags.containsKey("SeriesInstanceUID") || replaceTags.containsKey( "SOPInstanceUID" ) || removeTags.contains("PatientID") || removeTags.contains("StudyInstanceUID") || removeTags.contains("SeriesInstanceUID") || removeTags.contains( "SOPInstanceUID" ) ) {
             modifyRequest.put("Force", Boolean.TRUE);
@@ -183,7 +179,7 @@ public class Modify {
 			JOptionPane.showMessageDialog(null, "For Patient edition, PatientID must be set to a new value, please edit it");
 			modifyRequest=null;
 		}
-		
+		System.out.println(modifyRequest.toString());
 		return modifyRequest;
 
 	}

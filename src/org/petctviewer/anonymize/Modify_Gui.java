@@ -66,6 +66,7 @@ public class Modify_Gui extends JDialog {
 	private JTable table_serie;
 	private JTable table_SharedTags;
 	private JButton btnShowTags;
+	private JSpinner spinner_instanceNumber;
 	private JLabel state;
 	
 	private Modify modify;
@@ -74,7 +75,12 @@ public class Modify_Gui extends JDialog {
 	JSONObject queryReplace=new JSONObject();
 	JSONArray queryRemove=new JSONArray();
 
-	
+	/**
+	 * Make edition dialog box
+	 * @param modify
+	 * @param guiParent
+	 * @param state
+	 */
 	public Modify_Gui(Modify modify, JFrame guiParent, JLabel state) {
 		super(guiParent, "Modify", true);
 		this.modify=modify;
@@ -332,12 +338,15 @@ public class Modify_Gui extends JDialog {
 		JLabel lblSeeTagInstance = new JLabel("See tag instance number");
 		panel_otherButtons.add(lblSeeTagInstance);
 		
-		JSpinner spinner_instanceNumber = new JSpinner();
-		spinner_instanceNumber.setModel(new SpinnerNumberModel(0, null, 99999, 1));
+		spinner_instanceNumber = new JSpinner();
+		spinner_instanceNumber.setEnabled(false);
+		spinner_instanceNumber.setToolTipText("only available for Serie level");
+		spinner_instanceNumber.setModel(new SpinnerNumberModel(0, 0, 9999, 1));
 		panel_otherButtons.add(spinner_instanceNumber);
 		
 		btnShowTags = new JButton("Show");
 		btnShowTags.setEnabled(false);
+		btnShowTags.setToolTipText("only available for Serie level");
 		panel_otherButtons.add(btnShowTags);
 		btnShowTags.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -400,6 +409,7 @@ public class Modify_Gui extends JDialog {
 			table_serie.putClientProperty("terminateEditOnFocusLost", true);
 			table_serie.getModel().addTableModelListener(tablechangeListenerSeries);
 			btnShowTags.setEnabled(true);
+			spinner_instanceNumber.setEnabled(true);
 		}
 		
 	}

@@ -394,7 +394,7 @@ public class VueAnon extends JFrame implements PlugIn{
 				
 		
 
-		JMenuItem menuItemModifyPatients = new JMenuItem("Modify");
+		JMenuItem menuItemModifyPatients = new JMenuItem("Show tags/ Modify");
 		menuItemModifyPatients.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
@@ -439,7 +439,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.tableauStudies.setRowSorter(sorterStudies);
 		this.tableauStudies.setDefaultRenderer(Date.class, new DateRendererAnon());
 		
-		JMenuItem menuItemModifyStudy = new JMenuItem("Modify");
+		JMenuItem menuItemModifyStudy = new JMenuItem("Show tags / Modify");
 		menuItemModifyStudy.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
@@ -500,7 +500,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		sorterSeries.sort();
 		this.tableauSeries.setRowSorter(sorterSeries);
 
-		JMenuItem menuItemModifySeries = new JMenuItem("Modify");
+		JMenuItem menuItemModifySeries = new JMenuItem("Show tags / Modify");
 		menuItemModifySeries.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
@@ -1486,13 +1486,58 @@ public class VueAnon extends JFrame implements PlugIn{
 								
 								String AnonymizedFrom=cdfResponse.get("AnonymizedFrom").toString();
 								
-								String newPatientName =cdfResponseMainPatientTags.get("PatientName").toString();
-								String newPatientId =cdfResponseMainPatientTags.get("PatientID").toString();
-								String newStudyDesc =cdfResponseMainDicomTags.get("StudyDescription").toString();
-								String studyInstanceUid=cdfResponseMainDicomTags.get("StudyInstanceUID").toString();
-								String nbSeries = cdfResponseStats.get("CountSeries").toString();
-								String nbInstances = cdfResponseStats.get("CountInstances").toString();
-								String size = cdfResponseStats.get("DiskSizeMB").toString();
+								String newPatientName ;
+								String newPatientId ;
+								String newStudyDesc;
+								String studyInstanceUid;
+								String nbSeries;
+								String nbInstances ;
+								String size;
+								
+								// On recupere les data apres anonymization
+								
+								if (cdfResponseMainPatientTags.containsKey("PatientName") ) {
+									newPatientName =cdfResponseMainPatientTags.get("PatientName").toString();
+								} else {
+									newPatientName ="";
+								}
+								
+								if (cdfResponseMainPatientTags.containsKey(("PatientID"))) {
+									newPatientId= cdfResponseMainPatientTags.get("PatientID").toString();
+								}else {
+									newPatientId="";
+								}
+								
+								if (cdfResponseMainDicomTags.containsKey("StudyDescription")) {
+									newStudyDesc =cdfResponseMainDicomTags.get("StudyDescription").toString();
+								}else {
+									newStudyDesc="";
+								}
+								
+								if (cdfResponseMainDicomTags.containsKey("StudyInstanceUID")) {
+									studyInstanceUid=cdfResponseMainDicomTags.get("StudyInstanceUID").toString();
+								}else {
+									studyInstanceUid="";
+								}
+								
+								if (cdfResponseStats.containsKey("CountSeries")) {
+									nbSeries = cdfResponseStats.get("CountSeries").toString();
+								}else {
+									nbSeries="";
+								}
+								
+								if(cdfResponseStats.containsKey("CountInstances")) {
+									nbInstances = cdfResponseStats.get("CountInstances").toString();
+								} else {
+									nbInstances ="";
+								}
+								
+								if(cdfResponseStats.containsKey("DiskSizeMB")) {
+									size = cdfResponseStats.get("DiskSizeMB").toString();
+								} else {
+									size ="";
+								}
+								
 								
 								//Recupere data avant anonymization
 								StringBuilder sb3 =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + AnonymizedFrom);
@@ -1501,11 +1546,35 @@ public class VueAnon extends JFrame implements PlugIn{
 								JSONObject cdfOriginalStudyDataResponseMainPatientTags=(JSONObject) cdfOriginalStudyDataResponse.get("PatientMainDicomTags");
 								JSONObject cdfOriginalStudyDataResponseMainDicomTags=(JSONObject) cdfOriginalStudyDataResponse.get("MainDicomTags");
 								
-								String oldPatientName = cdfOriginalStudyDataResponseMainPatientTags.get("PatientName").toString();
-								String oldPatientId = cdfOriginalStudyDataResponseMainPatientTags.get("PatientID").toString();
-								String oldStudyDate = cdfOriginalStudyDataResponseMainDicomTags.get("StudyDate").toString();
-								String oldStudyDesc = cdfOriginalStudyDataResponseMainDicomTags.get("StudyDescription").toString();
-
+								String oldPatientName;
+								String oldPatientId;
+								String oldStudyDate;
+								String oldStudyDesc;
+								
+								if (cdfOriginalStudyDataResponseMainPatientTags.containsKey("PatientName")){
+									oldPatientName=cdfOriginalStudyDataResponseMainPatientTags.get("PatientName").toString();
+								} else {
+									oldPatientName="";
+								}
+								
+								if (cdfOriginalStudyDataResponseMainPatientTags.containsKey("PatientID")){
+									oldPatientId=cdfOriginalStudyDataResponseMainPatientTags.get("PatientID").toString();
+								} else {
+									oldPatientId="";
+								}
+								
+								if (cdfOriginalStudyDataResponseMainPatientTags.containsKey("StudyDate")){
+									oldStudyDate=cdfOriginalStudyDataResponseMainDicomTags.get("StudyDate").toString();
+								} else {
+									oldStudyDate="";
+								}
+								
+								if (cdfOriginalStudyDataResponseMainPatientTags.containsKey("StudyDescription")){
+									oldStudyDesc=cdfOriginalStudyDataResponseMainDicomTags.get("StudyDescription").toString();
+								} else {
+									oldStudyDesc="";
+								}
+								
 								csv.addStudy(oldPatientName, oldPatientId, newPatientName, newPatientId, oldStudyDate, oldStudyDesc, newStudyDesc, nbSeries, nbInstances, size, studyInstanceUid);
 								csv.genCSV();
 							} catch (IOException | org.json.simple.parser.ParseException e1) {
@@ -1523,7 +1592,15 @@ public class VueAnon extends JFrame implements PlugIn{
 							for(Study study : modeleExportStudies.getStudiesList()){
 								StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + study.getId() +"/statistics");
 								JSONObject cdfResponseStats = (JSONObject) parser.parse(sb.toString());
-								String size = cdfResponseStats.get("DiskSizeMB").toString();
+								
+								String size;
+								
+								if (cdfResponseStats.containsKey("DiskSizeMB")) {
+									size=cdfResponseStats.get("DiskSizeMB").toString();
+								}else {
+									size="";
+								}
+								
 								if(!jdbc.sendSizeAndNewUID(study.getPatientName(), size, study.getNewStudyInstanceUID())){
 									dataSent[0] = false;
 								}
