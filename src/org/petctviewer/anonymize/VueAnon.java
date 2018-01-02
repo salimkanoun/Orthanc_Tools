@@ -2304,7 +2304,7 @@ public class VueAnon extends JFrame implements PlugIn{
 				}else{
 					exportBtn.setEnabled(true);
 				}
-				if(tabbedPane.getSelectedIndex() == 0){
+				/*if(tabbedPane.getSelectedIndex() == 0){
 					if(!modeleAnonStudies.getOldOrthancUIDs().isEmpty()){
 						anonTablesPanel.setVisible(true);
 						displayAnonTool.setText("Close anonymization tool");
@@ -2315,7 +2315,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					displayAnonTool.setText("Anonymize");
 					openCloseAnonTool(false);
 					pack();
-				}
+				}*/
 				pack();
 			}
 		});
@@ -2331,7 +2331,6 @@ public class VueAnon extends JFrame implements PlugIn{
 
 		Image image = new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage();
 		this.setIconImage(image);
-
 		this.getContentPane().add(tabbedPane);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.getRootPane().setDefaultButton(search);
@@ -2675,9 +2674,12 @@ public class VueAnon extends JFrame implements PlugIn{
 					anonBtn.setText("Anonymize");
 					if(dialogResult == JOptionPane.YES_OPTION){
 						state.setText("<html><font color='green'>The data has successfully been anonymized.</font></html>");
+						openCloseAnonTool(false);
+						pack();
 						tabbedPane.setSelectedIndex(1);
 						modeleAnonPatients.clear();
 						modeleAnonStudies.empty();
+						
 					}
 					if(tableauExportStudies.getRowCount() > 0){
 						tableauExportStudies.setRowSelectionInterval(tableauExportStudies.getRowCount() - 1, tableauExportStudies.getRowCount() - 1);
