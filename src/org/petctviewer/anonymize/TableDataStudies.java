@@ -128,7 +128,8 @@ public class TableDataStudies extends AbstractTableModel{
 			}
 			
 			if (mainDicomTag.containsKey("StudyDate")) {
-				date[i]=parser.parse(mainDicomTag.get("StudyDate").toString());
+				String dateString=mainDicomTag.get("StudyDate").toString();
+				if (!dateString.equals("")) date[i]=parser.parse(dateString); else date[i]=null;
 			} else {
 				date[i]=null;
 			}

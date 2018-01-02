@@ -124,7 +124,7 @@ public class TableDataPatientsAnon extends AbstractTableModel{
 			
 			if (mainDicomTag.containsKey("PatientBirthDate")) {
 				String birthdateBrut=(String) mainDicomTag.get("PatientBirthDate");
-				birthdate[i]= parser.parse(birthdateBrut);
+				if (!birthdateBrut.equals("")) birthdate[i]= parser.parse(birthdateBrut); else birthdate[i]=null;
 			}else {
 				birthdate[i]=null;
 			}
