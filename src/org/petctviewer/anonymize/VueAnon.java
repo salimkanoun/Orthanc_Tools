@@ -305,7 +305,6 @@ public class VueAnon extends JFrame implements PlugIn{
 				try {
 					VueRest.main();
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 				
