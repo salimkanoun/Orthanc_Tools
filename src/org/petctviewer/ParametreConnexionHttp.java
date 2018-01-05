@@ -46,7 +46,7 @@ public class ParametreConnexionHttp {
 	
 	public ParametreConnexionHttp() {
 			int curDb = jprefer.getInt("current database", 0);
-			int typeDb = jprefer.getInt("db type" + curDb, 5);
+			int typeDb = jprefer.getInt("db type" + curDb, 0);
 			String ip=null;
 			String port=null;
 			
