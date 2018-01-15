@@ -66,6 +66,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
@@ -381,6 +382,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.tableauPatients.setPreferredScrollableViewportSize(new Dimension(290,267));
 
 		this.tableauPatients.setDefaultRenderer(Date.class, new DateRendererAnon());
+		this.tableauPatients.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		this.tableauPatients.addMouseListener(new TablePatientsMouseListener(
 				this, this.tableauPatients, this.modelePatients, this.tableauStudies, this.modeleStudies, this.modeleSeries, 
 				tableauPatients.getSelectionModel()));
@@ -427,6 +429,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.tableauStudies.getColumnModel().getColumn(3).setMaxWidth(0);
 		this.tableauStudies.getColumnModel().getColumn(3).setResizable(false);
 		this.tableauStudies.setPreferredScrollableViewportSize(new Dimension(410,267));
+		this.tableauStudies.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
 		this.tableauStudies.addMouseListener(new TableStudiesMouseListener(this, this.tableauStudies, this.modeleStudies,
 				this.tableauSeries, this.modeleSeries, tableauStudies.getSelectionModel()));
@@ -478,6 +481,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.tableauSeries.getColumnModel().getColumn(5).setMaxWidth(70);
 		this.tableauSeries.getColumnModel().getColumn(5).setResizable(false);
 		this.tableauSeries.setPreferredScrollableViewportSize(new Dimension(530,267));
+		this.tableauSeries.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
 		TableColumn serieDescCol = tableauSeries.getColumnModel().getColumn(0);
 		serieDescCol.setCellEditor(new DialogCellEditor());
@@ -709,18 +713,25 @@ public class VueAnon extends JFrame implements PlugIn{
 						deletePatients.add("/patients/"+manageContent.get(i));
 					}
 				}
-				state.setText("Deleting please wait");
+				state.setText("<html><font color='red'>Deleting please wait</font></html>");
 				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 					@Override
 					protected Void doInBackground() throws IOException {
+						int progress=0;
 						for (int i=0 ; i<deleteSeries.size(); i++){
 							connexionHttp.makeDeleteConnection(deleteSeries.get(i));
+							progress++;
+							state.setText("<html><font color='red'>Deleted "+ progress +"/"+manageContent.size()+"</font></html>");
 						}
 						for (int i=0 ; i<deleteStudies.size(); i++){
 							connexionHttp.makeDeleteConnection(deleteStudies.get(i));
+							progress++;
+							state.setText("<html><font color='red'>Deleted "+ progress +"/"+manageContent.size()+"</font></html>");
 						}
 						for (int i=0 ; i<deletePatients.size(); i++){
 							connexionHttp.makeDeleteConnection(deletePatients.get(i));
+							progress++;
+							state.setText("<html><font color='red'>Deleted "+ progress +"/"+manageContent.size()+"</font></html>");
 						}
 						return null;
 					}
@@ -1473,7 +1484,6 @@ public class VueAnon extends JFrame implements PlugIn{
 					if(!modeleExportStudies.getOrthancIds().isEmpty()){
 						for(String uid : modeleExportStudies.getOrthancIds()){
 							try {
-								
 								StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + uid);
 								JSONObject cdfResponse = (JSONObject) parser.parse(sb.toString());
 								StringBuilder sb2 =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + uid +"/statistics");
@@ -1562,23 +1572,28 @@ public class VueAnon extends JFrame implements PlugIn{
 									oldPatientId="";
 								}
 								
-								if (cdfOriginalStudyDataResponseMainPatientTags.containsKey("StudyDate")){
+								if (cdfOriginalStudyDataResponseMainDicomTags.containsKey("StudyDate")){
 									oldStudyDate=cdfOriginalStudyDataResponseMainDicomTags.get("StudyDate").toString();
 								} else {
 									oldStudyDate="";
 								}
 								
-								if (cdfOriginalStudyDataResponseMainPatientTags.containsKey("StudyDescription")){
+								if (cdfOriginalStudyDataResponseMainDicomTags.containsKey("StudyDescription")){
 									oldStudyDesc=cdfOriginalStudyDataResponseMainDicomTags.get("StudyDescription").toString();
 								} else {
 									oldStudyDesc="";
 								}
 								
 								csv.addStudy(oldPatientName, oldPatientId, newPatientName, newPatientId, oldStudyDate, oldStudyDesc, newStudyDesc, nbSeries, nbInstances, size, studyInstanceUid);
-								csv.genCSV();
-							} catch (IOException | org.json.simple.parser.ParseException e1) {
+								
+							} catch (org.json.simple.parser.ParseException | IOException e1) {
 								e1.printStackTrace();
 							}
+						}
+						try {
+							csv.genCSV();
+						} catch (FileNotFoundException e1) {
+							e1.printStackTrace();
 						}
 						
 					}

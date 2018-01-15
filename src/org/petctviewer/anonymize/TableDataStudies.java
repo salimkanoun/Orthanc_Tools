@@ -115,8 +115,8 @@ public class TableDataStudies extends AbstractTableModel{
 			JSONObject mainDicomTag=(JSONObject) jsonResponsesPatient.get(i).get("MainDicomTags");
 			id[i]=(String) jsonResponsesPatient.get(i).get("ID");
 			
-			if (mainDicomTag.containsKey("SeriesDescription")) {
-				description[i]=((String) mainDicomTag.get("SeriesDescription"));
+			if (mainDicomTag.containsKey("StudyDescription")) {
+				description[i]=((String) mainDicomTag.get("StudyDescription"));
 			} else {
 				description[i]="";
 			}
