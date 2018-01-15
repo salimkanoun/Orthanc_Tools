@@ -1599,7 +1599,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					}
 				}else{
 					jprefer.put("reportType", "CTP");
-					boolean[] dataSent = {true};
+					boolean dataSent = true;
 					if(!modeleExportStudies.getOrthancIds().isEmpty()){
 						try {
 							JDBCConnector jdbc = new JDBCConnector();
@@ -1616,17 +1616,17 @@ public class VueAnon extends JFrame implements PlugIn{
 								}
 								
 								if(!jdbc.sendSizeAndNewUID(study.getPatientName(), size, study.getNewStudyInstanceUID())){
-									dataSent[0] = false;
+									dataSent = false;
 								}
 								if(remoteFileName != null){
 									if(!jdbc.sendFileName(study.getPatientName(), remoteFileName.toString())){
-										dataSent[0] = false;										
+										dataSent = false;										
 									}
 								}
 							}
 							remoteFileName = null;
 							jdbc.disconnect();
-							if(!dataSent[0]){
+							if(!dataSent){
 								stateExports.setText("<html><font color = 'red'>The report was not sent to the database</font></html>");
 							}else{
 								stateExports.setText("<html><font color = 'green'>The report was sent to the database</font></html>");
