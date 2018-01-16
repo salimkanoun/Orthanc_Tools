@@ -3,7 +3,7 @@ DICOM tools built on Orthanc API in Java
 
 Features : 
 
-- Anonymization : Fine tunable anonymization and sharing services of Anonymized DICOMs (FTP/SHH/WebDAV)
+- Anonymization : Fine tunable anonymization and sharing services of Anonymized DICOMs (FTP/SSH/WebDAV)
 
 - Modification : Edit DICOM tags in Patient / Study / Serie levels
 
@@ -12,7 +12,7 @@ Features :
    - CD/DVD image generation with patient's DICOM and ImageJ viewer (zip or ISO)
    
  - Manage : 
-   - Deletion of Patients / Studies / Series in Orthanc
+   - Single and Batch deletion of Patients / Studies / Series in Orthanc
    
  - Query : 
    - Query / Retrieve from remote AET
