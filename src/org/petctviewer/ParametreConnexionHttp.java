@@ -54,8 +54,14 @@ public class ParametreConnexionHttp {
 				
 				if(!jprefer.get("db path" + curDb, "none").equals("none") && !jprefer.get("db path" + curDb, "none").equals("")){
 					String pathBrut = jprefer.get("db path" + curDb, "none") + "/";
-					int index = ordinalIndexOf(pathBrut, "/", 3);
-					this.fullAddress = pathBrut.substring(0, index);
+					if (pathBrut.contains("http://")) {
+						int index = ordinalIndexOf(pathBrut, "/", 3);
+						this.fullAddress = pathBrut.substring(0, index);
+					}
+					else {
+						this.fullAddress = "http://"+ pathBrut;
+					}
+					
 				}
 				else{
 					//Si le path string non defini on utilise le port par defaut et l'adresse du champ AET
