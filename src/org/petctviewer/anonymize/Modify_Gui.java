@@ -324,7 +324,10 @@ public class Modify_Gui extends JDialog {
 					queryRemove.clear();
 					table_SharedTags.putClientProperty("terminateEditOnFocusLost", true);
 					table_SharedTags.getModel().addTableModelListener(tablechangeListenerSharedTags);
+					table_SharedTags.setAutoCreateRowSorter(true);
+					table_SharedTags.getRowSorter().toggleSortOrder(0);
 					btnSharedTags.setEnabled(false);
+					
 					}
 
 			}
