@@ -33,8 +33,6 @@ import org.json.simple.JSONObject;
 
 import org.petctviewer.*;
 
-// SK MODIFIE POUR PASSER L EDITION DANS LE MODIFY SEULEMENT A VALIDER SI TEST OK
-
 public class TableDataSeries extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
 
@@ -42,9 +40,6 @@ public class TableDataSeries extends AbstractTableModel{
 	private ArrayList<Serie> series = new ArrayList<Serie>();
 	private ArrayList<String> instancesWithSecondaryCapture = new ArrayList<String>();
 	private String url;
-	//private JLabel state;
-	//private JFrame frame;
-	//private String studyID = "";
 	private ParametreConnexionHttp connexionHttp;
 
 	public TableDataSeries(ParametreConnexionHttp connexionHttp, JLabel state, JFrame frame){
@@ -101,49 +96,6 @@ public class TableDataSeries extends AbstractTableModel{
 		//}
 		return false;
 	}
-
-	/*public void setValueAt(Object value, int row, int col) {
-		String uid = this.getValueAt(row, 4).toString();
-		String oldDesc = this.getValueAt(row, 0).toString();
-		if(!oldDesc.equals(value.toString()) && col == 0){
-			series.get(row).setSerieDescription(value.toString());
-			fireTableCellUpdated(row, col);
-		}
-		SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-
-			@Override
-			protected Void doInBackground() {
-				try {
-					url="/series/" + uid + "/modify";
-					state.setText("<html>Modifying a serie description <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
-					HttpURLConnection conn = connexionHttp.makePostConnection(url, ("{\"Replace\":{\"SeriesDescription\":\"" + value.toString() + "\"}}"));
-					conn.disconnect();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				return null;
-			}
-			@Override
-			protected void done(){
-				clear();
-				try {
-					addSerie(studyID);
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (ParseException e) {
-					e.printStackTrace();
-				}
-				state.setText("<html><font color='green'>The description has been changed.</font></html>");
-				frame.pack();
-			}
-		};
-		if(!oldDesc.equals(value.toString()) && col == 0){
-			worker.execute();
-		}else if(col == 3){
-			series.get(row).setSecondaryCapture((boolean) value);
-			fireTableCellUpdated(row, col);
-		}
-	}*/
 
 	public boolean checkSopClassUid(String instanceUid) throws IOException{
 		this.url="/instances/" + instanceUid + "/metadata/SopClassUid";

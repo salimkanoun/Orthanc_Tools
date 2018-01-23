@@ -17,14 +17,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.anonymize;
 
-import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 
 
 public class TablePatientsMouseListener extends MouseAdapter {
@@ -35,7 +33,6 @@ public class TablePatientsMouseListener extends MouseAdapter {
 	private TableDataPatientsAnon modele;
 	private TableDataStudies modeleStudies;
 	private TableDataSeries modeleSeries;
-	private ListSelectionModel listSelection;
 
 	public TablePatientsMouseListener(JFrame frame, JTable tableau, TableDataPatientsAnon modele, 
 			JTable tableauStudies, TableDataStudies modeleStudies, TableDataSeries modeleSeries, 
@@ -46,19 +43,13 @@ public class TablePatientsMouseListener extends MouseAdapter {
 		this.modele = modele;
 		this.modeleStudies = modeleStudies;
 		this.modeleSeries = modeleSeries;
-		this.listSelection = listSelection;
 	}
 
 	@Override
-	public void mousePressed(MouseEvent event) {
+	public void mouseClicked(MouseEvent event) {
 		this.modeleStudies.clear();
 		this.modeleSeries.clear();
-		if(!event.isControlDown()){
-			// selects the row at which point the mouse is clicked
-			Point point = event.getPoint();
-			int currentRow = tableau.rowAtPoint(point);
-			tableau.setRowSelectionInterval(currentRow, currentRow);
-		}
+
 		try {
 			if(this.modele.getRowCount() != 0){
 				String patientName = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 0);
@@ -73,11 +64,5 @@ public class TablePatientsMouseListener extends MouseAdapter {
 		frame.pack();
 	}
 
-	@Override
-	public void mouseClicked(MouseEvent event) {
-		if (event.isControlDown() && SwingUtilities.isLeftMouseButton(event) && event.getClickCount() == 1) {
-            int row = tableau.rowAtPoint(event.getPoint());
-            listSelection.addSelectionInterval(row, row);
-        }
-	}
+	
 }

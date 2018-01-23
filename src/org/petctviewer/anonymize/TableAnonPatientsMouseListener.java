@@ -17,7 +17,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.anonymize;
 
-import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -39,11 +38,7 @@ public class TableAnonPatientsMouseListener extends MouseAdapter {
 	}
 
 	@Override
-	public void mousePressed(MouseEvent event) {
-		// selects the row at which point the mouse is clicked
-		Point point = event.getPoint();
-		int currentRow = tableau.rowAtPoint(point);
-		tableau.setRowSelectionInterval(currentRow, currentRow);
+	public void mouseClicked(MouseEvent event) {
 		try {
 			if(this.modele.getRowCount() != 0){
 				// We clear the details

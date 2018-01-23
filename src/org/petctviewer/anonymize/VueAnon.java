@@ -485,16 +485,6 @@ public class VueAnon extends JFrame implements PlugIn{
 
 		TableColumn serieDescCol = tableauSeries.getColumnModel().getColumn(0);
 		serieDescCol.setCellEditor(new DialogCellEditor());
-		
-		this.tableauSeries.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent event) {
-				// selects the row at which point the mouse is clicked
-				Point point = event.getPoint();
-				int currentRow = tableauSeries.rowAtPoint(point);
-				tableauSeries.setRowSelectionInterval(currentRow, currentRow);
-			}
-		});
 
 		List<RowSorter.SortKey> sortKeysSeries = new ArrayList<>();
 		sortKeysSeries.add(new RowSorter.SortKey(1, SortOrder.ASCENDING));
@@ -714,6 +704,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					}
 				}
 				state.setText("<html><font color='red'>Deleting please wait</font></html>");
+				enableManageButtons(false);
 				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 					@Override
 					protected Void doInBackground() throws IOException {
@@ -739,6 +730,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					@Override
 					protected void done(){
 						state.setText("<html><font color='green'>Delete Done</font></html>");
+						enableManageButtons(true);
 						manageSize.setText("empty list");
 						manageShownContent.removeAllItems();
 						manageShownContentList.removeAll(manageShownContentList);
@@ -2398,6 +2390,18 @@ public class VueAnon extends JFrame implements PlugIn{
 			displayAnonTool.setVisible(true);
 			displayExportTool.setVisible(true);
 		}
+	}
+	
+	private void enableManageButtons(boolean enable) {
+		if (enable) {
+			addManage.setEnabled(true);
+			removeFromManage.setEnabled(true);
+		}
+		else {
+			addManage.setEnabled(false);
+			removeFromManage.setEnabled(false);
+		}
+		
 	}
 	// Ajoute seletion a la tool list
 	private void addToToolList(ArrayList<String> zipContent, JComboBox<Object> zipShownContent, ArrayList<String > zipShownContentList, JLabel zipSize){

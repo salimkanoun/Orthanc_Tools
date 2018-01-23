@@ -17,7 +17,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.anonymize;
 
-import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -25,7 +24,6 @@ import java.io.IOException;
 import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 
 
 public class TableStudiesMouseListener extends MouseAdapter {
@@ -35,7 +33,6 @@ public class TableStudiesMouseListener extends MouseAdapter {
 	private JTable tableauSeries;
 	private TableDataStudies modele;
 	private TableDataSeries modeleSeries;
-	private ListSelectionModel listSelection;
 
 	public TableStudiesMouseListener(JFrame frame, JTable tableau, TableDataStudies modele, JTable tableauSeries,
 			TableDataSeries modeleSeries, ListSelectionModel listSelection) {
@@ -44,19 +41,12 @@ public class TableStudiesMouseListener extends MouseAdapter {
 		this.tableauSeries = tableauSeries;
 		this.modele = modele;
 		this.modeleSeries = modeleSeries;
-		this.listSelection = listSelection;
 	}
 
 	@Override
-	public void mousePressed(MouseEvent event) {
+	public void mouseClicked(MouseEvent event) {
 		// We clear the details
 		this.modeleSeries.clear();
-		if(!event.isControlDown()){
-			// selects the row at which point the mouse is clicked
-			Point point = event.getPoint();
-			int currentRow = tableau.rowAtPoint(point);
-			tableau.setRowSelectionInterval(currentRow, currentRow);
-		}
 		try {
 			if(this.modele.getRowCount() != 0){
 				String studyID = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 3);
@@ -72,11 +62,5 @@ public class TableStudiesMouseListener extends MouseAdapter {
 		frame.pack();
 	}
 	
-	@Override
-	public void mouseClicked(MouseEvent event) {
-		if (event.isControlDown() && SwingUtilities.isLeftMouseButton(event) && event.getClickCount() == 1) {
-            int row = tableau.rowAtPoint(event.getPoint());
-            listSelection.addSelectionInterval(row, row);
-        }
-	}
+	
 }
