@@ -49,6 +49,7 @@ public class ParametreConnexionHttp {
 			int typeDb = jprefer.getInt("db type" + curDb, 0);
 			String ip=null;
 			String port=null;
+			boolean test=false;
 			
 			if(typeDb == 5){
 				
@@ -75,15 +76,36 @@ public class ParametreConnexionHttp {
 				if(jprefer.get("db user" + curDb, null) != null && jprefer.get("db pass" + curDb, null) != null){
 					authentication = Base64.getEncoder().encodeToString((jprefer.get("db user" + curDb, null) + ":" + jprefer.get("db pass" + curDb, null)).getBytes());
 				}
-		}else{
+				test=testConnexion();
+		}
+		else if (typeDb != 5){
 			ip = jpreferPerso.get("ip", "http://localhost");
 			port = jpreferPerso.get("port", "8042");
 			this.fullAddress = ip + ":" + port;
 			if(jpreferPerso.get("username", null) != null && jpreferPerso.get("username", null) != null){
 				authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
 			}
+			test=testConnexion();
+			
 		}
-		testConnexion();
+			
+		//Si Echec de la connexion defini dans le registery on retente avec les parametres manuels
+		if (!test && typeDb == 5) {
+			ip = jpreferPerso.get("ip", "http://localhost");
+			port = jpreferPerso.get("port", "8042");
+			this.fullAddress = ip + ":" + port;
+			if(jpreferPerso.get("username", null) != null && jpreferPerso.get("username", null) != null){
+				authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
+			}
+			test=testConnexion();
+		}
+		
+		//Si Toujours echec on signal et on demande d'ouvrir le panneau
+		if (!test) {
+		JOptionPane.showMessageDialog(null,"Check Connexion Parameters","Connexion",JOptionPane.ERROR_MESSAGE);
+		ConnectionSetup.main();
+		}
+		
 		
 	}
 	
@@ -228,20 +250,17 @@ public class ParametreConnexionHttp {
 	}
 	
 	// Display Error message if connexion failed
-	private void testConnexion(){
-				
+	private boolean testConnexion(){	
+		boolean test=true;
 		try {
-			HttpURLConnection conn = makeGetConnection("/system");
-			conn.getResponseMessage();
+		HttpURLConnection conn = makeGetConnection("/system");
+		conn.getResponseMessage();
 		} catch (IOException e2) {
-			e2.printStackTrace();
-			System.out.println("ici");
-			JOptionPane.showMessageDialog(null,
-				    "Check Connexion Parameters",
-				    "Connexion",
-				    JOptionPane.ERROR_MESSAGE);
-			ConnectionSetup.main();
+			test=false;
+			//JOptionPane.showMessageDialog(null,"Check Connexion Parameters","Connexion",JOptionPane.ERROR_MESSAGE);
+			//ConnectionSetup.main();
 		}
+		return test;
 	}
 
 	
