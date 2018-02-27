@@ -33,10 +33,10 @@ import java.util.prefs.Preferences;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.StringUtils;
 
 
 

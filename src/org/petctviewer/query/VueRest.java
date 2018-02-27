@@ -63,8 +63,9 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
-import org.apache.commons.codec.binary.StringUtils;
+
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
 

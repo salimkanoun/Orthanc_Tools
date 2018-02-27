@@ -1,10 +1,44 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+    <repositories>
+    <repository>
+      <id>central</id>
+      <name>Central Repository</name>
+      <url>http://repo.maven.apache.org/maven2</url>
+      <layout>default</layout>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
   <groupId>Orthanc_Tools</groupId>
   <artifactId>Orthanc_Tools</artifactId>
-  <version>0.2.1-SNAPSHOT</version>
+  <version>0.1.2-SNAPSHOT</version>
   <name>Orthanc Tools</name>
-  <description>DICOM Tools built on Orthanc APIs</description>
+  <description>DICOM Tools based on Orthanc APIs</description>
+  <dependencies>
+	<dependency>
+		<groupId>net.imagej</groupId>
+		<artifactId>ij</artifactId>
+		<version>1.51s</version>
+	</dependency>
+	<dependency>
+		<groupId>org.kie.modules</groupId>
+		<artifactId>org-apache-commons-lang3</artifactId>
+		<version>6.5.0.Final</version>
+		<type>pom</type>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.commons</groupId>
+		<artifactId>commons-io</artifactId>
+		<version>1.3.2</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.commons</groupId>
+		<artifactId>commons-csv</artifactId>
+		<version>1.5</version>
+	</dependency>
+  </dependencies>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <resources>
