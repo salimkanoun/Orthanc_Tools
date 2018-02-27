@@ -105,7 +105,7 @@
                 <archive>
                     <index>true</index>
                     <manifest>
-                        <mainClass>org.petctviewer.anonymize.vueAnon</mainClass>
+                        <mainClass>org.petctviewer.anonymize.VueAnon</mainClass>
                     </manifest>
                 </archive>
             </configuration>
