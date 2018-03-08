@@ -74,5 +74,17 @@
 		<artifactId>commons-vfs2</artifactId>
 		<version>2.2</version>
 	</dependency>
+	
+	<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-csv</artifactId>
+    <version>1.5</version>
+</dependency>
+	<dependency>
+		<groupId>com.michaelbaranov</groupId>
+		<artifactId>microba</artifactId>
+		<version>0.4.4.3</version>
+		<type>pom.lastUpdated</type>
+	</dependency>
   </dependencies>
 </project>
