@@ -2119,7 +2119,7 @@ public class VueAnon extends JFrame implements PlugIn{
 						@Override
 						protected Void doInBackground() {
 							try {
-								FileUtils.copyURLToFile(new URL("http://163.172.169.15/owncloud/index.php/s/oCblQNWH9q3jLyo/download"), chooser.getSelectedFile());
+								FileUtils.copyURLToFile(new URL("http://petctviewer.org/images/ImageJ.zip"), chooser.getSelectedFile());
 								//Message confirmation
 								JOptionPane.showMessageDialog(gui, "Viewer distribution sucessfully downloaded");
 							} catch (IOException e) {
