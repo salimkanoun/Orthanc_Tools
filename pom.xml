@@ -10,6 +10,16 @@
         <enabled>false</enabled>
       </snapshots>
     </repository>
+    <repository>
+      <id>Atlassian</id>
+      <name>Atlassian Repository</name>
+      <url>https://maven.atlassian.com/content/repositories/atlassian-public/</url>
+      <layout>default</layout>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    
   </repositories>
   <groupId>Orthanc_Tools</groupId>
   <artifactId>Orthanc_Tools</artifactId>
@@ -79,12 +89,13 @@
     <groupId>org.apache.commons</groupId>
     <artifactId>commons-csv</artifactId>
     <version>1.5</version>
-</dependency>
-	<dependency>
-		<groupId>com.michaelbaranov</groupId>
-		<artifactId>microba</artifactId>
-		<version>0.4.4.3</version>
-		<type>pom.lastUpdated</type>
+    </dependency>
+    
+    <dependency>
+    <groupId>com.michaelbaranov</groupId>
+    <artifactId>microba</artifactId>
+    <version>0.4.4.3</version>
 	</dependency>
+	
   </dependencies>
 </project>
