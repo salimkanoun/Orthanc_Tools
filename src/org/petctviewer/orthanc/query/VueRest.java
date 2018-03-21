@@ -98,8 +98,7 @@ public class VueRest extends JFrame implements PlugIn{
 	private JTable tableauH; // displayed table in the history tab
 	private JTable tableauDetailsH; // displayed table containing the details in the history tab
 	private JPopupMenu popMenu = new JPopupMenu(); // popMenu that will pop when the user right-clicks on a row
-	//	private JPopupMenu popMenuH = new JPopupMenu(); // popMenu that will pop when the user right-clicks on a row
-	private Preferences jPrefer;
+	
 	/*
 	 * The following components will be used to filter the tables, or make new searches
 	 */
@@ -1012,11 +1011,7 @@ public class VueRest extends JFrame implements PlugIn{
 				autoQuery.discard=options.getDiscard();
 				autoQuery.fTEN_PM=options.getHour();
 				autoQuery.fZERO_MINUTES=options.getMin();
-				jPrefer = Preferences.userNodeForPackage(AutoQuery.class);
-				jPrefer = jPrefer.node("AutoQuery");
-				jPrefer.putInt("discard", options.getDiscard());
-				jPrefer.putInt("hour", options.getHour());
-				jPrefer.putInt("minutes", options.getMin());
+				
 			}
 		});
 		panel_Bottom.add(btnOptions);

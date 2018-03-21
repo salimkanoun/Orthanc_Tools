@@ -13,7 +13,15 @@ import javax.swing.JSpinner;
 import java.awt.GridLayout;
 import javax.swing.SpinnerNumberModel;
 import java.awt.event.ActionListener;
+import java.util.prefs.Preferences;
 import java.awt.event.ActionEvent;
+import javax.swing.SwingConstants;
+import javax.swing.JTextField;
+import javax.swing.JCheckBox;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 @SuppressWarnings("serial")
 public class Option_Auto_Query extends JDialog {
@@ -22,7 +30,9 @@ public class Option_Auto_Query extends JDialog {
 	private JSpinner spinnerDiscard;
 	private JSpinner spinnerHour;
 	private JSpinner spinnerMin;
-
+	private JTextField serieDescriptionContains,serieDescriptionExclude, serieNumberExclude, serieNumberMatch;
+	private JCheckBox chckbxCr ,chckbxCt,chckbxCmr,chckbxNm,chckbxPt,chckbxUs ,chckbxXa , chckbxMg, chckbxSeriesFilter;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -45,6 +55,7 @@ public class Option_Auto_Query extends JDialog {
 		contentPanel.setLayout(new BorderLayout(0, 0));
 		{
 			JPanel Title_panel = new JPanel();
+			Title_panel.setBorder(new LineBorder(Color.RED, 2));
 			contentPanel.add(Title_panel, BorderLayout.NORTH);
 			{
 				JLabel lblAutoQueryOptions = new JLabel("Auto Query Options");
@@ -54,48 +65,162 @@ public class Option_Auto_Query extends JDialog {
 		{
 			JPanel Option_panel = new JPanel();
 			contentPanel.add(Option_panel, BorderLayout.CENTER);
-			Option_panel.setLayout(new GridLayout(2, 1, 0, 0));
+			Option_panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 			{
 				JPanel panel_discard = new JPanel();
 				Option_panel.add(panel_discard);
+				panel_discard.setLayout(new BorderLayout(0, 0));
 				{
-					JLabel lblDiscardIfQuery = new JLabel("Discard if Query size over");
-					panel_discard.add(lblDiscardIfQuery);
-				}
-				{
-					spinnerDiscard = new JSpinner();
-					spinnerDiscard.setModel(new SpinnerNumberModel(new Integer(10), null, null, new Integer(1)));
-					spinnerDiscard.setValue(discard);
-					panel_discard.add(spinnerDiscard);
-				}
-			}
-			{
-				JPanel panel_schedule = new JPanel();
-				Option_panel.add(panel_schedule);
-				panel_schedule.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-				{
-					JLabel lblScheduleTime = new JLabel("Schedule Time : ");
-					panel_schedule.add(lblScheduleTime);
-				}
-				{
-					JLabel lblHh = new JLabel("HH");
-					panel_schedule.add(lblHh);
-				}
-				{
-					spinnerHour = new JSpinner();
-					spinnerHour.setModel(new SpinnerNumberModel(22, 0, 23, 1));
-					spinnerHour.setValue(hour);
-					panel_schedule.add(spinnerHour);
-				}
-				{
-					JLabel lblMm = new JLabel("mm");
-					panel_schedule.add(lblMm);
-				}
-				{
-					spinnerMin = new JSpinner();
-					spinnerMin.setModel(new SpinnerNumberModel(0, 0, 59, 1));
-					spinnerMin.setValue(min);
-					panel_schedule.add(spinnerMin);
+					JPanel panel = new JPanel();
+					panel.setBorder(new LineBorder(Color.LIGHT_GRAY));
+					panel_discard.add(panel);
+					panel.setLayout(new BorderLayout(0, 0));
+					{
+						JPanel panel_Discard = new JPanel();
+						panel_Discard.setBorder(new LineBorder(new Color(0, 0, 0)));
+						panel.add(panel_Discard, BorderLayout.NORTH);
+						{
+							JLabel lblDiscardIfQuery = new JLabel("Discard if Study Query size over");
+							panel_Discard.add(lblDiscardIfQuery);
+						}
+						{
+							spinnerDiscard = new JSpinner();
+							panel_Discard.add(spinnerDiscard);
+							spinnerDiscard.setModel(new SpinnerNumberModel(new Integer(10), null, null, new Integer(1)));
+							spinnerDiscard.setValue(discard);
+						}
+					}
+					{
+						JPanel Series_Filter = new JPanel();
+						Series_Filter.setBorder(new LineBorder(new Color(0, 0, 0)));
+						panel.add(Series_Filter, BorderLayout.CENTER);
+						Series_Filter.setLayout(new BorderLayout(0, 0));
+						{
+							chckbxSeriesFilter = new JCheckBox("Series Filter");
+							chckbxSeriesFilter.addChangeListener(new ChangeListener() {
+								public void stateChanged(ChangeEvent arg0) {
+									if (chckbxSeriesFilter.isSelected()) unactivateSeriesFiler(false);
+									else if (!chckbxSeriesFilter.isSelected()) unactivateSeriesFiler(true);
+								}
+							});
+							Series_Filter.add(chckbxSeriesFilter, BorderLayout.NORTH);
+							chckbxSeriesFilter.setHorizontalAlignment(SwingConstants.CENTER);
+						}
+						{
+							JPanel panel_1_1 = new JPanel();
+							Series_Filter.add(panel_1_1);
+							panel_1_1.setLayout(new GridLayout(0, 1, 0, 0));
+							{
+								JPanel panel_serieDescription = new JPanel();
+								panel_1_1.add(panel_serieDescription);
+								{
+									JLabel lblSerieDescription = new JLabel("Serie Description : ");
+									panel_serieDescription.add(lblSerieDescription);
+								}
+								{
+									JLabel lblContains = new JLabel("Contains");
+									panel_serieDescription.add(lblContains);
+								}
+								{
+									serieDescriptionContains = new JTextField();
+									serieDescriptionContains.setEnabled(false);
+									panel_serieDescription.add(serieDescriptionContains);
+									serieDescriptionContains.setColumns(10);
+								}
+								{
+									JLabel lblExclude = new JLabel("Exclude");
+									panel_serieDescription.add(lblExclude);
+								}
+								{
+									serieDescriptionExclude = new JTextField();
+									serieDescriptionExclude.setEnabled(false);
+									panel_serieDescription.add(serieDescriptionExclude);
+									serieDescriptionExclude.setColumns(10);
+								}
+							}
+							{
+								JPanel panel_serieNumber = new JPanel();
+								panel_1_1.add(panel_serieNumber);
+								{
+									JLabel lblSerieNumber = new JLabel("Serie Number :");
+									panel_serieNumber.add(lblSerieNumber);
+								}
+								{
+									JLabel lblMatch = new JLabel("Match : ");
+									panel_serieNumber.add(lblMatch);
+								}
+								{
+									serieNumberMatch = new JTextField();
+									serieNumberMatch.setEnabled(false);
+									panel_serieNumber.add(serieNumberMatch);
+									serieNumberMatch.setColumns(10);
+								}
+								{
+									JLabel lblExclude_1 = new JLabel("Exclude");
+									panel_serieNumber.add(lblExclude_1);
+								}
+								{
+									serieNumberExclude = new JTextField();
+									serieNumberExclude.setEnabled(false);
+									panel_serieNumber.add(serieNumberExclude);
+									serieNumberExclude.setColumns(10);
+								}
+							}
+							{
+								JPanel panel_serieModality = new JPanel();
+								panel_1_1.add(panel_serieModality);
+								{
+									JLabel lblSerieModality = new JLabel("Serie Modality :");
+									panel_serieModality.add(lblSerieModality);
+								}
+								{
+									JPanel panel_modalities = new JPanel();
+									panel_serieModality.add(panel_modalities);
+									panel_modalities.setLayout(new GridLayout(0, 4, 0, 0));
+									{
+										chckbxCr = new JCheckBox("CR");
+										chckbxCr.setEnabled(false);
+										panel_modalities.add(chckbxCr);
+									}
+									{
+										chckbxCt = new JCheckBox("CT");
+										chckbxCt.setEnabled(false);
+										panel_modalities.add(chckbxCt);
+									}
+									{
+										chckbxCmr = new JCheckBox("CMR");
+										chckbxCmr.setEnabled(false);
+										panel_modalities.add(chckbxCmr);
+									}
+									{
+										chckbxNm = new JCheckBox("NM");
+										chckbxNm.setEnabled(false);
+										panel_modalities.add(chckbxNm);
+									}
+									{
+										chckbxPt = new JCheckBox("PT");
+										chckbxPt.setEnabled(false);
+										panel_modalities.add(chckbxPt);
+									}
+									{
+										chckbxUs = new JCheckBox("US");
+										chckbxUs.setEnabled(false);
+										panel_modalities.add(chckbxUs);
+									}
+									{
+										chckbxXa = new JCheckBox("XA");
+										chckbxXa.setEnabled(false);
+										panel_modalities.add(chckbxXa);
+									}
+									{
+										chckbxMg = new JCheckBox("MG");
+										chckbxMg.setEnabled(false);
+										panel_modalities.add(chckbxMg);
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -107,9 +232,59 @@ public class Option_Auto_Query extends JDialog {
 				JButton okButton = new JButton("OK");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
+						//Save in registery
+						Preferences jPrefer;
+						jPrefer = Preferences.userNodeForPackage(AutoQuery.class);
+						jPrefer = jPrefer.node("AutoQuery");
+						jPrefer.putInt("discard", getDiscard());
+						jPrefer.putInt("hour", getHour());
+						jPrefer.putInt("minutes", getMin());
+						jPrefer.putBoolean("useSeriesFilter", getUseSeriesFilter());
+						jPrefer.put("seriesDescriptionContains", serieDescriptionContains.getText());
+						jPrefer.put("seriesDescriptionExclude", serieDescriptionExclude.getText());
+						jPrefer.put("seriesNumberContains", serieNumberExclude.getText());
+						jPrefer.put("seriesNumberExclude", serieNumberMatch.getText());
+						jPrefer.putBoolean("useSeriesCRFilter", chckbxCr.isSelected());
+						jPrefer.putBoolean("useSeriesCTFilter", chckbxCt.isSelected());
+						jPrefer.putBoolean("useSeriesCMRFilter", chckbxCmr.isSelected());
+						jPrefer.putBoolean("useSeriesNMFilter", chckbxNm.isSelected());
+						jPrefer.putBoolean("useSeriesPTFilter", chckbxPt.isSelected());
+						jPrefer.putBoolean("useSeriesUSFilter", chckbxUs.isSelected());
+						jPrefer.putBoolean("useSeriesXAFilter", chckbxXa.isSelected());
+						jPrefer.putBoolean("useSeriesMGFilter", chckbxMg.isSelected());
+						//dispose
 						dispose();
 					}
 				});
+				{
+					JPanel panel_schedule = new JPanel();
+					buttonPane.add(panel_schedule);
+					panel_schedule.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+					{
+						JLabel lblScheduleTime = new JLabel("Schedule Time : ");
+						panel_schedule.add(lblScheduleTime);
+					}
+					{
+						JLabel lblHh = new JLabel("HH");
+						panel_schedule.add(lblHh);
+					}
+					{
+						spinnerHour = new JSpinner();
+						spinnerHour.setModel(new SpinnerNumberModel(22, 0, 23, 1));
+						spinnerHour.setValue(hour);
+						panel_schedule.add(spinnerHour);
+					}
+					{
+						JLabel lblMm = new JLabel("mm");
+						panel_schedule.add(lblMm);
+					}
+					{
+						spinnerMin = new JSpinner();
+						spinnerMin.setModel(new SpinnerNumberModel(0, 0, 59, 1));
+						spinnerMin.setValue(min);
+						panel_schedule.add(spinnerMin);
+					}
+				}
 				okButton.setActionCommand("OK");
 				buttonPane.add(okButton);
 				getRootPane().setDefaultButton(okButton);
@@ -120,6 +295,38 @@ public class Option_Auto_Query extends JDialog {
 		setSize(getPreferredSize());
 	}
 	
+	protected void unactivateSeriesFiler(boolean unactivate) {
+		if (unactivate) {
+			serieDescriptionContains.setEnabled(false);
+			serieDescriptionExclude.setEnabled(false);
+			serieNumberExclude.setEnabled(false);
+			serieNumberMatch.setEnabled(false);
+			chckbxCr.setEnabled(false);
+			chckbxCt.setEnabled(false);
+			chckbxCmr.setEnabled(false);
+			chckbxNm.setEnabled(false);
+			chckbxPt.setEnabled(false);
+			chckbxUs.setEnabled(false);
+			chckbxXa.setEnabled(false);
+			chckbxMg.setEnabled(false);
+		}
+		else {
+			serieDescriptionContains.setEnabled(true);
+			serieDescriptionExclude.setEnabled(true);
+			serieNumberExclude.setEnabled(true);
+			serieNumberMatch.setEnabled(true);
+			chckbxCr.setEnabled(true);
+			chckbxCt.setEnabled(true);
+			chckbxCmr.setEnabled(true);
+			chckbxNm.setEnabled(true);
+			chckbxPt.setEnabled(true);
+			chckbxUs.setEnabled(true);
+			chckbxXa.setEnabled(true);
+			chckbxMg.setEnabled(true);
+		}
+		
+	}
+
 	public int getDiscard() {
 		return (int) spinnerDiscard.getValue();
 	}
@@ -131,5 +338,24 @@ public class Option_Auto_Query extends JDialog {
 	public int getMin() {
 		return (int) spinnerMin.getValue();
 	}
+	
+	public boolean getUseSeriesFilter() {
+		return chckbxSeriesFilter.isSelected();
+	}
+	
+	//SK GETTEURS A FAIRE
+	// Probablement faire une liste de boutton pour les modalites
+	/*jPrefer.put("seriesDescriptionContains", serieDescriptionContains.getText());
+	jPrefer.put("seriesDescriptionExclude", serieDescriptionExclude.getText());
+	jPrefer.put("seriesNumberContains", serieNumberExclude.getText());
+	jPrefer.put("seriesNumberExclude", serieNumberMatch.getText());
+	jPrefer.putBoolean("useSeriesCRFilter", chckbxCr.isSelected());
+	jPrefer.putBoolean("useSeriesCTFilter", chckbxCt.isSelected());
+	jPrefer.putBoolean("useSeriesCMRFilter", chckbxCmr.isSelected());
+	jPrefer.putBoolean("useSeriesNMFilter", chckbxNm.isSelected());
+	jPrefer.putBoolean("useSeriesPTFilter", chckbxPt.isSelected());
+	jPrefer.putBoolean("useSeriesUSFilter", chckbxUs.isSelected());
+	jPrefer.putBoolean("useSeriesXAFilter", chckbxXa.isSelected());
+	jPrefer.putBoolean("useSeriesMGFilter", chckbxMg.isSelected());*/
 
 }
