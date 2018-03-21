@@ -213,6 +213,7 @@ public class Rest {
 	/*
 	 * This method returns the series's description's (index 0) and modalities (index 1) values in an array
 	 */
+	// SK METHODE A UTILISER DANS AUTOQUERY POUR FILTER LE LEVEL SERIE
 	public String[] [] getSeriesDescriptionValues(String idURL) throws Exception{
 		JSONArray serverResponseArray=(JSONArray) parser.parse(connexion.makeGetConnectionAndStringBuilder("/queries/" + idURL + "/answers/").toString());
 		
@@ -223,7 +224,6 @@ public class Rest {
 		String[] [] values = new String[3][serverResponseArray.size()];
 		for(int i = 0; i < serverResponseArray.size(); i++){
 			contentJson= (JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/queries/" + idURL + "/answers/" + i + "/content").toString());
-			
 			if (contentJson.containsKey("0008,103e")) {
 				JSONObject studyDescriptionJson=(JSONObject) parser.parse(contentJson.get("0008,103e").toString());
 				values[0][i]=(String) studyDescriptionJson.get("Value");	
@@ -237,7 +237,7 @@ public class Rest {
 			}else {
 				values[1][i]="";
 			}
-			//SK SERIE NUMBER RECUPEREE A AJOUTER DANS LE DISPLAY
+			
 			if (contentJson.containsKey("0020,0011")) {
 				JSONObject serieNumberJson=(JSONObject) parser.parse(contentJson.get("0020,0011").toString());
 				values[2][i]=(String) serieNumberJson.get("Value");

@@ -850,16 +850,46 @@ public class VueRest extends JFrame implements PlugIn{
 											String[] results=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox.getSelectedItem().toString());
 											//On retrieve toutes les studies 
 											if (results!=null) {
-												autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery.discard);
+												// SK WORK IN PROGRESS HERE
+												// SK IMPLEMENTER ICI LE FILTRE PAR SERIE
+												boolean filterSerie=false;
+												if (filterSerie) {
+													//On scann tous les results la 1ere dimension contient l'ID de la query et la deuxime le nombre de reponse study a scanner
+													for (int j=0 ; j<Integer.parseInt(results[1]); j++) {
+														String content=rest.getIndexContent(results[0], j);
+														//On recupere le study ID de la response au niveau study
+														String studyID=rest.getSeriesDescriptionID((String) rest.getValue(content, "StudyInstanceUID"), comboBox.getSelectedItem().toString());
+														// On recupere les series disponible via une nouvelle requette demandant ce studyID
+														String[][] seriesDetails=rest.getSeriesDescriptionValues(studyID);
+														System.out.println("nombre Serie="+seriesDetails[0].length);
+														for (int k=0; k<seriesDetails[0].length ; k++) {
+															//System.out.println(seriesDetails[0][k]);
+															//System.out.println(seriesDetails[1][k]);
+															//System.out.println(seriesDetails[2][k]);
+															//SK ICI IMPLEMENTER LE FILTRE PAR VALEUR
+															//ET LANCER LES RETRIEVE AU NIVEAU SERIE
+														}
+													
+													// En position 0 = Serie Description
+													// En position 1= Serie Modality
+													// en position 2= Serie Number
+													}
+												}
+												else {
+													autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery.discard);
+												}
+												
 											}
 											
 											else { JOptionPane.showMessageDialog(null,"Empty Results", "Empty Results", JOptionPane.WARNING_MESSAGE);}
 											
 											
-											
-											} catch (IOException e) {e.printStackTrace();}
+											} catch (Exception e) {e.printStackTrace();}
+										
+										
 									}
 						}
+						
 					
 					else {
 							//On construit la string modalities

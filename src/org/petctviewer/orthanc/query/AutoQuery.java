@@ -121,6 +121,7 @@ public class AutoQuery  {
 	 * @throws IOException
 	 */
 	public void retrieveQuery(String[] results, String aetRetrieve, int discard) throws IOException {
+	
 		if (results.length<=discard){		
 			for (int i=0; i<Integer.valueOf(results[1]); i++) {
 			api.retrieve(results[0], String.valueOf(i), aetRetrieve );
