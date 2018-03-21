@@ -851,8 +851,19 @@ public class VueRest extends JFrame implements PlugIn{
 											if (results!=null) {
 												// SK WORK IN PROGRESS HERE
 												// SK IMPLEMENTER ICI LE FILTRE PAR SERIE
-												boolean filterSerie=false;
-												if (filterSerie) {
+												if (autoQuery.chckbxSeriesFilter) {
+													StringBuilder seriesModalities=new StringBuilder();
+													if (autoQuery.chckbxCr) seriesModalities.append("/CR/");
+													if (autoQuery.chckbxCt) seriesModalities.append("/CT/");
+													if (autoQuery.chckbxCmr) seriesModalities.append("/CMR/");
+													if (autoQuery.chckbxNm) seriesModalities.append("/NM/");
+													if (autoQuery.chckbxPt) seriesModalities.append("/PT/");
+													if (autoQuery.chckbxUs) seriesModalities.append("/US/");
+													if (autoQuery.chckbxXa) seriesModalities.append("/XA/");
+													if (autoQuery.chckbxMg) seriesModalities.append("/MG/");
+													
+													
+													//protected boolean chckbxCr , chckbxCt, chckbxCmr, chckbxNm, chckbxPt, chckbxUs, chckbxXa , chckbxMg, chckbxSeriesFilter;
 													//On scann tous les results la 1ere dimension contient l'ID de la query et la deuxime le nombre de reponse study a scanner
 													for (int j=0 ; j<Integer.parseInt(results[1]); j++) {
 														String content=rest.getIndexContent(results[0], j);
@@ -861,7 +872,29 @@ public class VueRest extends JFrame implements PlugIn{
 														// On recupere les series disponible via une nouvelle requette demandant ce studyID
 														String[][] seriesDetails=rest.getSeriesDescriptionValues(studyID);
 														System.out.println("nombre Serie="+seriesDetails[0].length);
-														for (int k=0; k<seriesDetails[0].length ; k++) {
+														//On verifie qu'un parameter est bien defini
+														if (!StringUtils.isEmpty(seriesModalities) || !StringUtils.isEmpty(autoQuery.serieDescriptionContains) || !StringUtils.isEmpty(autoQuery.serieNumberMatch)  || !StringUtils.isEmpty(autoQuery.serieDescriptionExclude) || !StringUtils.isEmpty(autoQuery.serieNumberExclude)) {
+														//Alors on boucle les reponse	
+															for (int k=0; k<seriesDetails[0].length ; k++) {
+																	//On definit le candidat:
+																	String seriesDescription=seriesDetails[0][k];
+																	String modality=seriesDetails[1][k];
+																	String seriesNumber=seriesDetails[2][k];
+																	if ( ! ((!StringUtils.isEmpty(autoQuery.serieDescriptionExclude) && StringUtils.contains(autoQuery.serieDescriptionExclude, seriesDescription)) || (!StringUtils.isEmpty(autoQuery.serieNumberExclude) && StringUtils.contains(autoQuery.serieNumberExclude, seriesNumber)) )  ) {
+																		//System.out.println(seriesDescription);
+																		//System.out.println(modality);
+																		//System.out.println(seriesNumber);
+																		//System.out.println(autoQuery.serieDescriptionContains);
+																		if ( (!StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.contains(seriesModalities.toString(), modality)) || (!StringUtils.isEmpty(autoQuery.serieDescriptionContains) && StringUtils.contains(seriesDescription, autoQuery.serieDescriptionContains)) || ( !StringUtils.isEmpty(autoQuery.serieNumberMatch) && StringUtils.contains(modality, autoQuery.serieNumberMatch))  ) {
+																			//SK RESTE A FAIRE GUI OPTION OUVERTURE FERMETURE
+																			//PROGRESS DES RETRIEVE
+																			rest.retrieve(studyID, String.valueOf(k),  Aet_Retrieve.getSelectedItem().toString());
+																			System.out.println("Oui");
+																		}
+																	}
+																	
+																	
+															}
 															//System.out.println(seriesDetails[0][k]);
 															//System.out.println(seriesDetails[1][k]);
 															//System.out.println(seriesDetails[2][k]);

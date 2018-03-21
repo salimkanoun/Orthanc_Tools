@@ -30,7 +30,9 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.prefs.Preferences;
 
+import javax.swing.JCheckBox;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 import org.apache.commons.csv.CSVFormat;
@@ -51,6 +53,8 @@ public class AutoQuery  {
 	protected int fTEN_PM=22;
 	protected int fZERO_MINUTES=00;
 	protected int discard=10;
+	protected String serieDescriptionContains, serieDescriptionExclude, serieNumberExclude, serieNumberMatch;
+	protected boolean chckbxCr , chckbxCt, chckbxCmr, chckbxNm, chckbxPt, chckbxUs, chckbxXa , chckbxMg, chckbxSeriesFilter;
 	private DateFormat df = new SimpleDateFormat("yyyyMMdd");
 	
 	
@@ -65,9 +69,25 @@ public class AutoQuery  {
 		//Get Jprefer Value
 		jPrefer = Preferences.userNodeForPackage(AutoQuery.class);
 		jPrefer = jPrefer.node("AutoQuery");
+		//dicard value
 		discard=jPrefer.getInt("discard", 10);
+		//time value
 		fTEN_PM=jPrefer.getInt("hour", 22);
 		fZERO_MINUTES=jPrefer.getInt("minutes", 00);
+		//serie filter
+		chckbxSeriesFilter=jPrefer.getBoolean("useSeriesFilter", false);
+		serieDescriptionContains=jPrefer.get("seriesDescriptionContains", "");
+		serieDescriptionExclude=jPrefer.get("seriesDescriptionExclude", "");
+		serieNumberMatch=jPrefer.get("seriesNumberContains", "");
+		serieNumberExclude=jPrefer.get("seriesNumberExclude", "");
+		chckbxCr=jPrefer.getBoolean("useSeriesCRFilter", false);
+		chckbxCt=jPrefer.getBoolean("useSeriesCTFilter", false);
+		chckbxCmr=jPrefer.getBoolean("useSeriesCMRFilter", false);
+		chckbxNm=jPrefer.getBoolean("useSeriesNMFilter", false);
+		chckbxPt=jPrefer.getBoolean("useSeriesPTFilter", false);
+		chckbxUs=jPrefer.getBoolean("useSeriesUSFilter", false);
+		chckbxXa=jPrefer.getBoolean("useSeriesXAFilter", false);
+		chckbxMg=jPrefer.getBoolean("useSeriesMGFilter", false);
 		
 	}
 	/***
@@ -204,6 +224,8 @@ public class AutoQuery  {
 		
 		
 	}
+	
+	
 	
 	
 	

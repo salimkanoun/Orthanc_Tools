@@ -13,6 +13,8 @@ import javax.swing.JSpinner;
 import java.awt.GridLayout;
 import javax.swing.SpinnerNumberModel;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.Preferences;
 import java.awt.event.ActionEvent;
 import javax.swing.SwingConstants;
@@ -32,6 +34,7 @@ public class Option_Auto_Query extends JDialog {
 	private JSpinner spinnerMin;
 	private JTextField serieDescriptionContains,serieDescriptionExclude, serieNumberExclude, serieNumberMatch;
 	private JCheckBox chckbxCr ,chckbxCt,chckbxCmr,chckbxNm,chckbxPt,chckbxUs ,chckbxXa , chckbxMg, chckbxSeriesFilter;
+	private List<JCheckBox> checkboxList=new ArrayList<JCheckBox>();
 	
 	/**
 	 * Launch the application.
@@ -181,41 +184,49 @@ public class Option_Auto_Query extends JDialog {
 										chckbxCr = new JCheckBox("CR");
 										chckbxCr.setEnabled(false);
 										panel_modalities.add(chckbxCr);
+										checkboxList.add(chckbxCr);
 									}
 									{
 										chckbxCt = new JCheckBox("CT");
 										chckbxCt.setEnabled(false);
 										panel_modalities.add(chckbxCt);
+										checkboxList.add(chckbxCt);
 									}
 									{
 										chckbxCmr = new JCheckBox("CMR");
 										chckbxCmr.setEnabled(false);
 										panel_modalities.add(chckbxCmr);
+										checkboxList.add(chckbxCmr);
 									}
 									{
 										chckbxNm = new JCheckBox("NM");
 										chckbxNm.setEnabled(false);
 										panel_modalities.add(chckbxNm);
+										checkboxList.add(chckbxNm);
 									}
 									{
 										chckbxPt = new JCheckBox("PT");
 										chckbxPt.setEnabled(false);
 										panel_modalities.add(chckbxPt);
+										checkboxList.add(chckbxPt);
 									}
 									{
 										chckbxUs = new JCheckBox("US");
 										chckbxUs.setEnabled(false);
 										panel_modalities.add(chckbxUs);
+										checkboxList.add(chckbxUs);
 									}
 									{
 										chckbxXa = new JCheckBox("XA");
 										chckbxXa.setEnabled(false);
 										panel_modalities.add(chckbxXa);
+										checkboxList.add(chckbxXa);
 									}
 									{
 										chckbxMg = new JCheckBox("MG");
 										chckbxMg.setEnabled(false);
 										panel_modalities.add(chckbxMg);
+										checkboxList.add(chckbxMg);
 									}
 								}
 							}
@@ -242,8 +253,8 @@ public class Option_Auto_Query extends JDialog {
 						jPrefer.putBoolean("useSeriesFilter", getUseSeriesFilter());
 						jPrefer.put("seriesDescriptionContains", serieDescriptionContains.getText());
 						jPrefer.put("seriesDescriptionExclude", serieDescriptionExclude.getText());
-						jPrefer.put("seriesNumberContains", serieNumberExclude.getText());
-						jPrefer.put("seriesNumberExclude", serieNumberMatch.getText());
+						jPrefer.put("seriesNumberContains", serieNumberMatch.getText());
+						jPrefer.put("seriesNumberExclude", serieNumberExclude.getText());
 						jPrefer.putBoolean("useSeriesCRFilter", chckbxCr.isSelected());
 						jPrefer.putBoolean("useSeriesCTFilter", chckbxCt.isSelected());
 						jPrefer.putBoolean("useSeriesCMRFilter", chckbxCmr.isSelected());
@@ -343,19 +354,26 @@ public class Option_Auto_Query extends JDialog {
 		return chckbxSeriesFilter.isSelected();
 	}
 	
-	//SK GETTEURS A FAIRE
-	// Probablement faire une liste de boutton pour les modalites
-	/*jPrefer.put("seriesDescriptionContains", serieDescriptionContains.getText());
-	jPrefer.put("seriesDescriptionExclude", serieDescriptionExclude.getText());
-	jPrefer.put("seriesNumberContains", serieNumberExclude.getText());
-	jPrefer.put("seriesNumberExclude", serieNumberMatch.getText());
-	jPrefer.putBoolean("useSeriesCRFilter", chckbxCr.isSelected());
-	jPrefer.putBoolean("useSeriesCTFilter", chckbxCt.isSelected());
-	jPrefer.putBoolean("useSeriesCMRFilter", chckbxCmr.isSelected());
-	jPrefer.putBoolean("useSeriesNMFilter", chckbxNm.isSelected());
-	jPrefer.putBoolean("useSeriesPTFilter", chckbxPt.isSelected());
-	jPrefer.putBoolean("useSeriesUSFilter", chckbxUs.isSelected());
-	jPrefer.putBoolean("useSeriesXAFilter", chckbxXa.isSelected());
-	jPrefer.putBoolean("useSeriesMGFilter", chckbxMg.isSelected());*/
+	public String getSerieDescriptionContains() {
+		return serieDescriptionContains.getText();
+	}
+	
+	public String getSerieDescriptionExclude() {
+		return serieDescriptionExclude.getText();
+	}
+	
+	public String getSerieNumberContains() {
+		return serieNumberMatch.getText();
+	}
+	
+	public String getSerieNumberExclude() {
+		return serieNumberExclude.getText();
+	}
+	
+	public List<JCheckBox> getSeriesModalities(){
+		return checkboxList;
+	}
+	
+	
 
 }
