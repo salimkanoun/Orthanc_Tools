@@ -885,10 +885,18 @@ public class VueRest extends JFrame implements PlugIn{
 																		//System.out.println(modality);
 																		//System.out.println(seriesNumber);
 																		//System.out.println(autoQuery.serieDescriptionContains);
+																		//Si on a defini un contains ou un modalitie on prend que si existe un match
 																		if ( (!StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.contains(seriesModalities.toString(), modality)) || (!StringUtils.isEmpty(autoQuery.serieDescriptionContains) && StringUtils.contains(seriesDescription, autoQuery.serieDescriptionContains)) || ( !StringUtils.isEmpty(autoQuery.serieNumberMatch) && StringUtils.contains(modality, autoQuery.serieNumberMatch))  ) {
 																			//SK RESTE A FAIRE GUI OPTION OUVERTURE FERMETURE
 																			//PROGRESS DES RETRIEVE
 																			rest.retrieve(studyID, String.valueOf(k),  Aet_Retrieve.getSelectedItem().toString());
+																			System.out.println("Oui");
+																		}
+																		//Si on a pas defini de contains ou de modalitie on telecharge tout ce qui n'est pas exclu
+																		else if ( StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.isEmpty(autoQuery.serieDescriptionContains) && StringUtils.isEmpty(autoQuery.serieNumberMatch) ) {
+																			//SK RESTE A FAIRE GUI OPTION OUVERTURE FERMETURE
+																			//PROGRESS DES RETRIEVE
+																			rest.retrieve(studyID, String.valueOf(k), Aet_Retrieve.getSelectedItem().toString());
 																			System.out.println("Oui");
 																		}
 																	}
