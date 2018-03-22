@@ -30,9 +30,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.prefs.Preferences;
 
-import javax.swing.JCheckBox;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 import org.apache.commons.csv.CSVFormat;

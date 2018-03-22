@@ -35,13 +35,14 @@ public class Option_Auto_Query extends JDialog {
 	private JTextField serieDescriptionContains,serieDescriptionExclude, serieNumberExclude, serieNumberMatch;
 	private JCheckBox chckbxCr ,chckbxCt,chckbxCmr,chckbxNm,chckbxPt,chckbxUs ,chckbxXa , chckbxMg, chckbxSeriesFilter;
 	private List<JCheckBox> checkboxList=new ArrayList<JCheckBox>();
+	private int discard, hour, min;
 	
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
 		try {
-			Option_Auto_Query dialog = new Option_Auto_Query(10,22,10);
+			Option_Auto_Query dialog = new Option_Auto_Query();
 			dialog.setVisible(true);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -51,7 +52,8 @@ public class Option_Auto_Query extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public Option_Auto_Query(int discard, int hour, int min) {
+	public Option_Auto_Query() {
+		
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -89,8 +91,8 @@ public class Option_Auto_Query extends JDialog {
 						{
 							spinnerDiscard = new JSpinner();
 							panel_Discard.add(spinnerDiscard);
-							spinnerDiscard.setModel(new SpinnerNumberModel(new Integer(10), null, null, new Integer(1)));
-							spinnerDiscard.setValue(discard);
+							spinnerDiscard.setModel(new SpinnerNumberModel(10, 0, 100, 1));
+							
 						}
 					}
 					{
@@ -282,7 +284,6 @@ public class Option_Auto_Query extends JDialog {
 					{
 						spinnerHour = new JSpinner();
 						spinnerHour.setModel(new SpinnerNumberModel(22, 0, 23, 1));
-						spinnerHour.setValue(hour);
 						panel_schedule.add(spinnerHour);
 					}
 					{
@@ -292,7 +293,6 @@ public class Option_Auto_Query extends JDialog {
 					{
 						spinnerMin = new JSpinner();
 						spinnerMin.setModel(new SpinnerNumberModel(0, 0, 59, 1));
-						spinnerMin.setValue(min);
 						panel_schedule.add(spinnerMin);
 					}
 				}
@@ -304,6 +304,35 @@ public class Option_Auto_Query extends JDialog {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		pack();
 		setSize(getPreferredSize());
+		setOptionValuefromRegistery();
+	}
+	
+	private void setOptionValuefromRegistery() {
+		Preferences jPrefer = Preferences.userNodeForPackage(AutoQuery.class);
+		jPrefer = jPrefer.node("AutoQuery");
+		discard=jPrefer.getInt("discard", 10);
+		spinnerDiscard.setValue(discard);
+		hour=jPrefer.getInt("hour", 22);
+		spinnerHour.setValue(hour);
+		min=jPrefer.getInt("minutes", 00);
+		spinnerMin.setValue(min);
+		
+		//serie filter
+		chckbxSeriesFilter.setSelected(jPrefer.getBoolean("useSeriesFilter", false));
+		serieDescriptionContains.setText(jPrefer.get("seriesDescriptionContains", ""));
+		serieDescriptionExclude.setText(jPrefer.get("seriesDescriptionExclude", ""));
+		serieNumberMatch.setText(jPrefer.get("seriesNumberContains", ""));
+		serieNumberExclude.setText(jPrefer.get("seriesNumberExclude", ""));
+		
+		chckbxCr.setSelected(jPrefer.getBoolean("useSeriesCRFilter", false));
+		chckbxCt.setSelected(jPrefer.getBoolean("useSeriesCTFilter", false));
+		chckbxCmr.setSelected(jPrefer.getBoolean("useSeriesCMRFilter", false));
+		chckbxNm.setSelected(jPrefer.getBoolean("useSeriesNMFilter", false));
+		chckbxPt.setSelected(jPrefer.getBoolean("useSeriesPTFilter", false));
+		chckbxUs.setSelected(jPrefer.getBoolean("useSeriesUSFilter", false));
+		chckbxXa.setSelected(jPrefer.getBoolean("useSeriesXAFilter", false));
+		chckbxMg.setSelected(jPrefer.getBoolean("useSeriesMGFilter", false));
+		
 	}
 	
 	protected void unactivateSeriesFiler(boolean unactivate) {
