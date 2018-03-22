@@ -74,8 +74,8 @@ public class AutoQuery  {
 		fZERO_MINUTES=jPrefer.getInt("minutes", 00);
 		//serie filter
 		chckbxSeriesFilter=jPrefer.getBoolean("useSeriesFilter", false);
-		serieDescriptionContains=jPrefer.get("seriesDescriptionContains", "");
-		serieDescriptionExclude=jPrefer.get("seriesDescriptionExclude", "");
+		serieDescriptionContains=jPrefer.get("seriesDescriptionContains", "").toLowerCase();
+		serieDescriptionExclude=jPrefer.get("seriesDescriptionExclude", "").toLowerCase();
 		serieNumberMatch=jPrefer.get("seriesNumberContains", "");
 		serieNumberExclude=jPrefer.get("seriesNumberExclude", "");
 		chckbxCr=jPrefer.getBoolean("useSeriesCRFilter", false);
@@ -140,7 +140,7 @@ public class AutoQuery  {
 	 */
 	public void retrieveQuery(String[] results, String aetRetrieve, int discard) throws IOException {
 	
-		if (results.length<=discard){		
+		if (Integer.valueOf(results[1])<=discard){		
 			for (int i=0; i<Integer.valueOf(results[1]); i++) {
 			api.retrieve(results[0], String.valueOf(i), aetRetrieve );
 			}

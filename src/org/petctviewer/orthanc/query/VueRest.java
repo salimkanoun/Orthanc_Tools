@@ -905,7 +905,7 @@ public class VueRest extends JFrame implements PlugIn{
 														//Alors on boucle les reponse	
 															for (int k=0; k<seriesDetails[0].length ; k++) {
 																	//On definit le candidat:
-																	String seriesDescription=seriesDetails[0][k];
+																	String seriesDescription=seriesDetails[0][k].toLowerCase();
 																	String modality=seriesDetails[1][k];
 																	String seriesNumber=seriesDetails[2][k];
 																	
@@ -980,11 +980,12 @@ public class VueRest extends JFrame implements PlugIn{
 													}
 												}
 												else if (autoQuery.chckbxSeriesFilter && Integer.parseInt(results[1])>autoQuery.discard) {
-													//Faire un compteur des discarded ???
+													//SK Faire un compteur des discarded et les loguer dans la console???
 													info.setText("Analyze discarded because study result over limit");
 												}
 												else {
 													info.setText("Retrieve "+(i+1)+" From "+table.getRowCount());
+													System.out.println(autoQuery.discard);
 													autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery.discard);
 												}
 												
