@@ -138,7 +138,7 @@ public class AutoQuery  {
 	 * @param discard
 	 * @throws IOException
 	 */
-	public void retrieveQuery(String[] results, String aetRetrieve, int discard) throws IOException {
+	public void retrieveQuery(String[] results, String aetRetrieve, int discard, int queryNumberList) throws IOException {
 	
 		if (Integer.valueOf(results[1])<=discard){		
 			for (int i=0; i<Integer.valueOf(results[1]); i++) {
@@ -146,7 +146,7 @@ public class AutoQuery  {
 			}
 		}
 		else {
-			System.out.println("Retrieve discarted because Query answers over discard limit");
+			System.out.println("Retrieve for Query number " + queryNumberList + " discarted because Query answers over discard limit");
 		}
 	}
 	

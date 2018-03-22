@@ -923,7 +923,6 @@ public class VueRest extends JFrame implements PlugIn{
 																					if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
 																						info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
 																						rest.retrieve(studyID, String.valueOf(k),  Aet_Retrieve.getSelectedItem().toString());
-																						System.out.println(seriesDescription);
 																					}
 																				}
 																				//Si deux filtre il faut chercher le match des deux conditions
@@ -932,14 +931,12 @@ public class VueRest extends JFrame implements PlugIn{
 																						if ( StringUtils.contains(seriesModalities.toString(), modality) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
 																							info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
 																							rest.retrieve(studyID, String.valueOf(k),  Aet_Retrieve.getSelectedItem().toString());
-																							System.out.println(seriesDescription);
 																						}
 																					}
 																					else if (!filtreSerieNumber) {
 																						if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) ){
 																							info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
 																							rest.retrieve(studyID, String.valueOf(k),  Aet_Retrieve.getSelectedItem().toString());
-																							System.out.println(seriesDescription);
 																						}
 																						
 																					}
@@ -947,7 +944,6 @@ public class VueRest extends JFrame implements PlugIn{
 																						if ( (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
 																							info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
 																							rest.retrieve(studyID, String.valueOf(k),  Aet_Retrieve.getSelectedItem().toString());
-																							System.out.println(seriesDescription);
 																						}
 																						
 																					}
@@ -957,7 +953,6 @@ public class VueRest extends JFrame implements PlugIn{
 																			else {
 																				info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
 																				rest.retrieve(studyID, String.valueOf(k),  Aet_Retrieve.getSelectedItem().toString());
-																				System.out.println(seriesDescription);
 																			}
 										
 																			
@@ -967,7 +962,6 @@ public class VueRest extends JFrame implements PlugIn{
 																		else if ( StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.isEmpty(autoQuery.serieDescriptionContains) && StringUtils.isEmpty(autoQuery.serieNumberMatch) ) {
 																			info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1)+" Query "+(i+1)+"/"+table.getRowCount());
 																			rest.retrieve(studyID, String.valueOf(k), Aet_Retrieve.getSelectedItem().toString());
-																			System.out.println(seriesDescription);
 																		}
 																	}
 																	
@@ -981,12 +975,11 @@ public class VueRest extends JFrame implements PlugIn{
 												}
 												else if (autoQuery.chckbxSeriesFilter && Integer.parseInt(results[1])>autoQuery.discard) {
 													//SK Faire un compteur des discarded et les loguer dans la console???
-													info.setText("Analyze discarded because study result over limit");
+													System.out.println("Analyze discarded because Query result number "+ i +" is over discard limit");
 												}
 												else {
 													info.setText("Retrieve "+(i+1)+" From "+table.getRowCount());
-													System.out.println(autoQuery.discard);
-													autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery.discard);
+													autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery.discard, i);
 												}
 												
 											}
@@ -1045,7 +1038,7 @@ public class VueRest extends JFrame implements PlugIn{
 							String[] results=autoQuery.sendQuery("*","*",df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),"*", comboBox.getSelectedItem().toString());
 							//On retrieve toutes les studies 
 							if (results!=null) {
-								autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery.discard);
+								autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery.discard, 1);
 							}
 							else { System.out.println("Empty results");}
 						} catch (IOException e) {

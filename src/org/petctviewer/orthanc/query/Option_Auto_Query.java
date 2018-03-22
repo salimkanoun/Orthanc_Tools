@@ -85,7 +85,7 @@ public class Option_Auto_Query extends JDialog {
 						panel_Discard.setBorder(new LineBorder(new Color(0, 0, 0)));
 						panel.add(panel_Discard, BorderLayout.NORTH);
 						{
-							JLabel lblDiscardIfQuery = new JLabel("Discard if Study Query size over");
+							JLabel lblDiscardIfQuery = new JLabel("Discard if Study Query result size over");
 							panel_Discard.add(lblDiscardIfQuery);
 						}
 						{
