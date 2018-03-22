@@ -128,6 +128,7 @@ public class Option_Auto_Query extends JDialog {
 								}
 								{
 									serieDescriptionContains = new JTextField();
+									serieDescriptionContains.setToolTipText("Split term with ; (example : \"dose report;scout\")");
 									serieDescriptionContains.setEnabled(false);
 									panel_serieDescription.add(serieDescriptionContains);
 									serieDescriptionContains.setColumns(10);
@@ -138,6 +139,7 @@ public class Option_Auto_Query extends JDialog {
 								}
 								{
 									serieDescriptionExclude = new JTextField();
+									serieDescriptionExclude.setToolTipText("Split term with ; (example : \"dose report;scout\")");
 									serieDescriptionExclude.setEnabled(false);
 									panel_serieDescription.add(serieDescriptionExclude);
 									serieDescriptionExclude.setColumns(10);
@@ -156,6 +158,7 @@ public class Option_Auto_Query extends JDialog {
 								}
 								{
 									serieNumberMatch = new JTextField();
+									serieNumberMatch.setToolTipText("Split term with ; (example : \"dose report;scout\")");
 									serieNumberMatch.setEnabled(false);
 									panel_serieNumber.add(serieNumberMatch);
 									serieNumberMatch.setColumns(10);
@@ -166,6 +169,7 @@ public class Option_Auto_Query extends JDialog {
 								}
 								{
 									serieNumberExclude = new JTextField();
+									serieNumberExclude.setToolTipText("Split term with ; (example : \"dose report;scout\")");
 									serieNumberExclude.setEnabled(false);
 									panel_serieNumber.add(serieNumberExclude);
 									serieNumberExclude.setColumns(10);

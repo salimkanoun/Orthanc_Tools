@@ -871,9 +871,9 @@ public class VueRest extends JFrame implements PlugIn{
 													boolean filtreSerieModality = false;
 													String[] serieDescriptionArray = null;
 													String[] serieNumberArray = null;
-													//SK A FAIRE LES EXCLUDE EN ARRAY POUR LES TEST
 													String[] serieNumberExcludeArray = null;
 													String[] serieDescriptionExcludeArray = null;
+													//Convert string in Array splited by ; in which we will look at correspondencies
 													if (!StringUtils.isEmpty(seriesModalities.toString())) {
 														filtreSerieModality=true; 
 														nombreFiltre++;}
@@ -886,8 +886,13 @@ public class VueRest extends JFrame implements PlugIn{
 														filtreSerieNumber=true; 
 														nombreFiltre++;
 														}
+													if(!StringUtils.isEmpty(autoQuery.serieDescriptionExclude)) {
+														serieDescriptionExcludeArray=autoQuery.serieDescriptionExclude.split(";");
+													}
+													if(!StringUtils.isEmpty(autoQuery.serieNumberExclude)) {
+														serieNumberExcludeArray=autoQuery.serieNumberExclude.split(";");
+													}
 													
-													//protected boolean chckbxCr , chckbxCt, chckbxCmr, chckbxNm, chckbxPt, chckbxUs, chckbxXa , chckbxMg, chckbxSeriesFilter;
 													//On scann tous les results la 1ere dimension contient l'ID de la query et la deuxime le nombre de reponse study a scanner
 													for (int j=0 ; j<Integer.parseInt(results[1]); j++) {
 														String content=rest.getIndexContent(results[0], j);
@@ -904,7 +909,7 @@ public class VueRest extends JFrame implements PlugIn{
 																	String modality=seriesDetails[1][k];
 																	String seriesNumber=seriesDetails[2][k];
 																	
-																	if ( ! ((!StringUtils.isEmpty(autoQuery.serieDescriptionExclude) && StringUtils.contains(autoQuery.serieDescriptionExclude, seriesDescription)) || (!StringUtils.isEmpty(autoQuery.serieNumberExclude) && StringUtils.contains(autoQuery.serieNumberExclude, seriesNumber)) )  ) {
+																	if ( ! ((!StringUtils.isEmpty(autoQuery.serieDescriptionExclude) && StringUtils.indexOfAny(seriesDescription,serieDescriptionExcludeArray )!=(-1) ) || (!StringUtils.isEmpty(autoQuery.serieNumberExclude) && (StringUtils.indexOfAny(seriesNumber ,serieNumberExcludeArray)) !=(-1) ) )  ) {
 																		
 																		//Si on a defini un contains ou un modalitie on prend que si existe un match
 																		if ( (!StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.contains(seriesModalities.toString(), modality)) || (!StringUtils.isEmpty(autoQuery.serieDescriptionContains) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray))!=-1) || ( !StringUtils.isEmpty(autoQuery.serieNumberMatch) && (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)))  ) {
