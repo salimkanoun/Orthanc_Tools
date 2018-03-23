@@ -17,7 +17,7 @@ Features :
  - Query : 
    - Query / Retrieve from remote AET
    - Automatic / Batch retrieve of studies (with Schedule feature)
-   - Possibility to make series based filters for selective retrieve
+      - Possibility to make series based filters for selective auto - retrieve
    
  - Import :
    - Recursive import to Orthanc of local DICOMs
