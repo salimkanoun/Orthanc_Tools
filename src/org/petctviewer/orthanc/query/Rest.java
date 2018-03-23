@@ -47,7 +47,7 @@ public class Rest {
 		
 		JSONObject answer;
 		try {
-			answer = (JSONObject) parser.parse(connexion.makePostConnectionAndStringBuilder("/modalities/" + aet + "/query", query).toString());
+			answer = (JSONObject) parser.parse(connexion.makePostConnectionAndStringBuilder("/modalities/" + aet + "/query/", query).toString());
 			ID=(String) answer.get("ID");
 		} catch (ParseException e) {
 			e.printStackTrace();
@@ -68,7 +68,6 @@ public class Rest {
 		String[] resultatQueryIDSize = new String[2];
 		resultatQueryIDSize[0]=idQuery;
 		resultatQueryIDSize[1]=String.valueOf(contentArray.size());
-		
 		return resultatQueryIDSize;
 	}
 
@@ -201,7 +200,7 @@ public class Rest {
 		JSONObject answer;
 		String idURL =null;
 		try {
-			answer = (JSONObject) parser.parse(connexion.makePostConnectionAndStringBuilder("/modalities/" + aet + "/query", query).toString());
+			answer = (JSONObject) parser.parse(connexion.makePostConnectionAndStringBuilder("/modalities/" + aet + "/query/", query).toString());
 			idURL=(String) answer.get("ID");
 		} catch (ParseException e) {
 			e.printStackTrace();
@@ -254,7 +253,7 @@ public class Rest {
 	 * This method retrieves an instance, depending on its query ID 
 	 */
 	public void retrieve(String queryID, String answer, String retrieveAET) throws IOException{
-		connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve", retrieveAET);
+		connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve/", retrieveAET);
 	}
 
 	/*
@@ -264,7 +263,7 @@ public class Rest {
 	public Object[] getAET() throws IOException{
 		JSONArray contentArray = null;
 		try {
-			contentArray=(JSONArray) parser.parse(connexion.makeGetConnectionAndStringBuilder("/modalities").toString());
+			contentArray=(JSONArray) parser.parse(connexion.makeGetConnectionAndStringBuilder("/modalities/").toString());
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
@@ -282,7 +281,7 @@ public class Rest {
 	 */
 	public Object[] getLocalAET() throws IOException{
 		try {
-			contentJson=(JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/system").toString());
+			contentJson=(JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/system/").toString());
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}

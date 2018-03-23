@@ -144,9 +144,10 @@ public class AutoQuery  {
 			for (int i=0; i<Integer.valueOf(results[1]); i++) {
 			api.retrieve(results[0], String.valueOf(i), aetRetrieve );
 			}
+			System.out.println( results[1] + " studies Retrieved");
 		}
 		else {
-			System.out.println("Retrieve for Query number " + queryNumberList + " discarted because Query answers over discard limit");
+			System.out.println("Discarted because Study Query answers over discard limit");
 		}
 	}
 	
@@ -180,10 +181,13 @@ public class AutoQuery  {
   	  CSVParser csvParser=CSVParser.parse(file, StandardCharsets.UTF_8,  csvFileFormat);
   	  //On met les records dans une list
   	  List<CSVRecord> csvRecord=csvParser.getRecords();
+  	  System.out.println(csvRecord);
   	  // On balaie le fichier ligne par ligne
   	  for (int i=0 ; i<csvRecord.size(); i++) {
   		  //On recupere les variables
+  		  System.out.println(i);
   		  String name=csvRecord.get(i).get(0);
+  		 System.out.println(name);
   		  String prenom=csvRecord.get(i).get(1);
   		  String id=csvRecord.get(i).get(2);
   		  String accession=csvRecord.get(i).get(3);
@@ -217,7 +221,6 @@ public class AutoQuery  {
 			
 			Patient patient=new Patient(name, id, date, studyDesc, accNumber, studyUID, modality);
 			patientArray.add(patient);
-			//buildCSV(name,id,accNumber,date,modality,studyDesc,csv);
 		}
 		
 		

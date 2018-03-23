@@ -148,7 +148,7 @@ public class VueRest extends JFrame implements PlugIn{
 	private JComboBox<String> Aet_Retrieve;
 	private JCheckBox chckbxCr , chckbxCt , chckbxCmr ,chckbxNm , chckbxPt ,chckbxUs ,chckbxXa ,chckbxMg ,chckbxToday;
 	private JTextField textFieldNameIDAcc;
-	private JButton btnScheduleDaily;
+	private JButton btnScheduleDaily, btnSchedule_1 ;
 	private JLabel info;
 	private AutoQuery autoQuery=new AutoQuery(rest);
 	
@@ -811,10 +811,20 @@ public class VueRest extends JFrame implements PlugIn{
 		for (int i=0; i<autoQuery.aet.length;i++) {
 			comboBox.addItem(autoQuery.aet[i].toString());
 		}
+		if (jpreferPerso.getInt("retrieveSelection", 0) <= comboBox.getItemCount()) comboBox.setSelectedIndex(jpreferPerso.getInt("retrieveSelection", 0));
+		
+		comboBox.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent arg0) {
+				if (arg0.getStateChange()==ItemEvent.SELECTED) {
+					//On sauve dans le registery chaque changement de selection pour le prochain lancement
+					jpreferPerso.putInt("retrieveSelection", comboBox.getSelectedIndex());
+				}
+				
+			}});
 		
 		JLabel lblRetrieveFrom = new JLabel("Retrieve From :");
 		Panel_Top.add(lblRetrieveFrom);
-		
 		Panel_Top.add(comboBox);
 		
 		JPanel panel_Bottom = new JPanel();
@@ -825,6 +835,7 @@ public class VueRest extends JFrame implements PlugIn{
 		}
 		panel_Bottom.add(Aet_Retrieve);
 		
+		
 		JButton btnStart = new JButton("Start Retrieve");
 		btnStart.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -833,12 +844,13 @@ public class VueRest extends JFrame implements PlugIn{
 
 					@Override
 					protected Void doInBackground()  {
-					
+					btnStart.setEnabled(false);
+					btnSchedule_1.setEnabled(false);
 					
 						if (table.getRowCount()!=0) {
 							for (int i=0; i<table.getRowCount(); i++) {
+								System.out.println("Processing Query "+ (i+1) +" /"+ table.getRowCount() );
 								working=true;
-								
 										try {
 											//Construction String Name
 											StringBuilder name=new StringBuilder();
@@ -849,11 +861,14 @@ public class VueRest extends JFrame implements PlugIn{
 											String[] results=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox.getSelectedItem().toString());
 											//On retrieve toutes les studies 
 											if (results!=null) {
-												// SK WORK IN PROGRESS HERE
-												// SK IMPLEMENTER ICI LE FILTRE PAR SERIE
-												// SK RESTE A TESTER LE CONTAINS DANS UNE LISTE DE POSSIBILITE
+												System.out.println("Found "+ Integer.parseInt(results[1]) +" studies match");
+												
+												// If using Serie filter
 												if (autoQuery.chckbxSeriesFilter && Integer.parseInt(results[1])<=autoQuery.discard) {
+													//counter to log number of series retrieved
+													int serieCountRevtrieved=0;
 													info.setText("Analyzing Serie from Query "+(i+1)+"/"+table.getRowCount());
+													
 													StringBuilder seriesModalities=new StringBuilder();
 													if (autoQuery.chckbxCr) seriesModalities.append("/CR/");
 													if (autoQuery.chckbxCt) seriesModalities.append("/CT/");
@@ -923,6 +938,7 @@ public class VueRest extends JFrame implements PlugIn{
 																					if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
 																						info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
 																						rest.retrieve(studyID, String.valueOf(k),  Aet_Retrieve.getSelectedItem().toString());
+																						serieCountRevtrieved++;
 																					}
 																				}
 																				//Si deux filtre il faut chercher le match des deux conditions
@@ -931,12 +947,14 @@ public class VueRest extends JFrame implements PlugIn{
 																						if ( StringUtils.contains(seriesModalities.toString(), modality) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
 																							info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
 																							rest.retrieve(studyID, String.valueOf(k),  Aet_Retrieve.getSelectedItem().toString());
+																							serieCountRevtrieved++;
 																						}
 																					}
 																					else if (!filtreSerieNumber) {
 																						if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) ){
 																							info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
 																							rest.retrieve(studyID, String.valueOf(k),  Aet_Retrieve.getSelectedItem().toString());
+																							serieCountRevtrieved++;
 																						}
 																						
 																					}
@@ -944,6 +962,7 @@ public class VueRest extends JFrame implements PlugIn{
 																						if ( (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
 																							info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
 																							rest.retrieve(studyID, String.valueOf(k),  Aet_Retrieve.getSelectedItem().toString());
+																							serieCountRevtrieved++;
 																						}
 																						
 																					}
@@ -953,6 +972,7 @@ public class VueRest extends JFrame implements PlugIn{
 																			else {
 																				info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
 																				rest.retrieve(studyID, String.valueOf(k),  Aet_Retrieve.getSelectedItem().toString());
+																				serieCountRevtrieved++;
 																			}
 										
 																			
@@ -962,6 +982,7 @@ public class VueRest extends JFrame implements PlugIn{
 																		else if ( StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.isEmpty(autoQuery.serieDescriptionContains) && StringUtils.isEmpty(autoQuery.serieNumberMatch) ) {
 																			info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1)+" Query "+(i+1)+"/"+table.getRowCount());
 																			rest.retrieve(studyID, String.valueOf(k), Aet_Retrieve.getSelectedItem().toString());
+																			serieCountRevtrieved++;
 																		}
 																	}
 																	
@@ -972,10 +993,13 @@ public class VueRest extends JFrame implements PlugIn{
 													
 													
 													}
+													
+												System.out.println("Downloaded " + serieCountRevtrieved + " series");
+												
 												}
 												else if (autoQuery.chckbxSeriesFilter && Integer.parseInt(results[1])>autoQuery.discard) {
-													//SK Faire un compteur des discarded et les loguer dans la console???
-													System.out.println("Analyze discarded because Query result number "+ i +" is over discard limit");
+													System.out.println("Discarded because over Study result discard limit");
+									
 												}
 												else {
 													info.setText("Retrieve "+(i+1)+" From "+table.getRowCount());
@@ -984,7 +1008,10 @@ public class VueRest extends JFrame implements PlugIn{
 												
 											}
 											
-											else { JOptionPane.showMessageDialog(null,"Empty Results", "Empty Results", JOptionPane.WARNING_MESSAGE);}
+											else { 
+												info.setText("Empty Results");
+												System.out.println("Empty results");
+											}
 											
 											
 											} catch (Exception e) {e.printStackTrace();}
@@ -1010,10 +1037,13 @@ public class VueRest extends JFrame implements PlugIn{
 					
 				@Override
 				protected void done(){
-					info.setText("<html><font color='green'>Done.</font></html>");
+					info.setText("<html><font color='green'>Done, see Console for details</font></html>");
+					btnStart.setEnabled(true);
+					btnSchedule_1.setEnabled(true);
 					working=false;
 				}
 			};
+			//SK CHANGER LE BOUTTON START EN STOP POUR INTERROMPRE LE THREAD ET ARRETER L OPERATION
 			workerRetrieve.execute();
 			
 			
@@ -1064,7 +1094,7 @@ public class VueRest extends JFrame implements PlugIn{
 			}
 		});
 		
-		JButton btnSchedule_1 = new JButton("Schedule");
+		btnSchedule_1 = new JButton("Schedule");
 		btnSchedule_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//Switcher On/off 
