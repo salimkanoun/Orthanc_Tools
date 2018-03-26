@@ -741,10 +741,12 @@ public class VueRest extends JFrame implements PlugIn{
 		
 		JComboBox<String> comboBox_NameIDAcc = new JComboBox<String>();
 		comboBox_NameIDAcc.setModel(new DefaultComboBoxModel<String>(new String[] {"Name", "ID", "Accession"}));
+		
 		AutoRetrieve_Panel.add(comboBox_NameIDAcc);
 		
 		textFieldNameIDAcc = new JTextField();
 		textFieldNameIDAcc.setText("*");
+		textFieldNameIDAcc.setToolTipText("Name Format : LastName^FirstName");
 		AutoRetrieve_Panel.add(textFieldNameIDAcc);
 		textFieldNameIDAcc.setColumns(10);
 		
