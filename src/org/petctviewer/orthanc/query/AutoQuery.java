@@ -30,6 +30,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.prefs.Preferences;
 
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
@@ -181,24 +182,36 @@ public class AutoQuery  {
   	  CSVParser csvParser=CSVParser.parse(file, StandardCharsets.UTF_8,  csvFileFormat);
   	  //On met les records dans une list
   	  List<CSVRecord> csvRecord=csvParser.getRecords();
-  	  System.out.println(csvRecord);
   	  // On balaie le fichier ligne par ligne
-  	  for (int i=0 ; i<csvRecord.size(); i++) {
-  		  //On recupere les variables
-  		  System.out.println(i);
-  		  String name=csvRecord.get(i).get(0);
-  		 System.out.println(name);
-  		  String prenom=csvRecord.get(i).get(1);
-  		  String id=csvRecord.get(i).get(2);
-  		  String accession=csvRecord.get(i).get(3);
-  		  String dateFrom=csvRecord.get(i).get(4);
-  		  String dateTo=csvRecord.get(i).get(5);
-  		  String modality=csvRecord.get(i).get(6);
-  		  String studyDescription=csvRecord.get(i).get(7);
-  		  //On les pousse dans le tableau
-  		  DefaultTableModel model = (DefaultTableModel) table.getModel();
-  		  model.addRow(new Object[] {name, prenom, id, accession,dateFrom, dateTo, modality, studyDescription });
-  		  }
+  	  int discarded=0;
+  	  Boolean error=false;
+  	 
+	  for (int i=0 ; i<csvRecord.size(); i++) { 
+			  try {
+			  //On recupere les variables
+	  		  String name=csvRecord.get(i).get(0);
+	  		  String prenom=csvRecord.get(i).get(1);
+	  		  String id=csvRecord.get(i).get(2);
+	  		  String accession=csvRecord.get(i).get(3);
+	  		  String dateFrom=csvRecord.get(i).get(4);
+	  		  String dateTo=csvRecord.get(i).get(5);
+	  		  String modality=csvRecord.get(i).get(6);
+	  		  String studyDescription=csvRecord.get(i).get(7);
+	  		  //On les pousse dans le tableau
+	  		  DefaultTableModel model = (DefaultTableModel) table.getModel();
+	  		  model.addRow(new Object[] {name, prenom, id, accession,dateFrom, dateTo, modality, studyDescription });
+	  		  }
+		   catch(NullPointerException | ArrayIndexOutOfBoundsException e) {
+			  System.out.println("Error in line "+ i +" discarding");
+			  discarded++;
+			  error=true;
+		  
+		   }
+	  	}
+  		if (error)  JOptionPane.showMessageDialog(null,
+  				discarded +" lines discarded, see console for more details",
+  			    "Wrong Input",
+  			    JOptionPane.WARNING_MESSAGE);
   	  }
 	/**
 	 * Get content of a result.
