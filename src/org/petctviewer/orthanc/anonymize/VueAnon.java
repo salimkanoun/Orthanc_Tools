@@ -32,6 +32,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -134,6 +136,8 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JButton addToZip = new JButton("Add to list");
 	private JLabel zipSize= new JLabel("");
 	private JLabel manageSize= new JLabel("");
+	private JTextField userInputFirstName = new JTextField();
+	
 	//Manage Buttons
 	JButton addManage = new JButton("Add to List");
 	JButton removeFromManage = new JButton("Remove from List");
@@ -231,14 +235,31 @@ public class VueAnon extends JFrame implements PlugIn{
 
 		String[] patientParam = {"Patient name", "Patient ID", "Accession number"};
 		JComboBox<String> inputType = new JComboBox<String>(patientParam);
-		inputType.setSelectedIndex(jpreferPerso.getInt("InputParameter", 0));
+		
 		topPanel.add(inputType);
-
+		inputType.addItemListener(new ItemListener() {
+				@Override
+			    public void itemStateChanged(ItemEvent event) {
+			       if (event.getStateChange() == ItemEvent.SELECTED) {
+			          if (inputType.getSelectedIndex()==0) {
+			        	  userInputFirstName.setEnabled(true);
+			          }
+			          else userInputFirstName.setEnabled(false);
+			       }
+				}
+		});
+		inputType.setSelectedIndex(jpreferPerso.getInt("InputParameter", 0));
+		
 		JTextField userInput = new JTextField();
 		userInput.setToolTipText("Set your input accordingly to the field combobox on the left. ('*' stands for any character)");
 		userInput.setText("*");
 		userInput.setPreferredSize(new Dimension(125,20));
+		userInputFirstName.setText("*");
+		userInputFirstName.setToolTipText("Set your input accordingly to the field combobox on the left. ('*' stands for any character)");
+		userInputFirstName.setPreferredSize(new Dimension(125,20));
 		topPanel.add(userInput);
+		topPanel.add(new JLabel("First Name : "));
+		topPanel.add(userInputFirstName);
 
 		topPanel.add(new JLabel("Study description"));
 		JTextField studyDesc = new JTextField("*");
@@ -277,8 +298,12 @@ public class VueAnon extends JFrame implements PlugIn{
 
 					DateFormat df = new SimpleDateFormat("yyyyMMdd");
 					date = df.format(from.getDate())+"-"+df.format(to.getDate());
-
-					modelePatients.addPatient(inputType.getSelectedItem().toString(), userInput.getText(), date, 
+					String userInputString=null;
+					if (inputType.getSelectedIndex()==0) {
+						userInputString=userInput.getText()+"^"+userInputFirstName.getText();
+					}
+					else userInputString=userInput.getText();
+					modelePatients.addPatient(inputType.getSelectedItem().toString(), userInputString, date, 
 							studyDesc.getText());
 					tableauPatients.setRowSelectionInterval(0,0);
 					pack();

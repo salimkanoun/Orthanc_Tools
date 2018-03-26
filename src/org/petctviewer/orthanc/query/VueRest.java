@@ -107,6 +107,7 @@ public class VueRest extends JFrame implements PlugIn{
 	private JComboBox<Object> retrieveAET; // indexes every AETs available that the user can retrieve instances to
 	private JLabel state; // allows the user to know the state of the retrieve query 
 	private JTextField userInput; // associated with searchingParam to get the input
+	private JTextField userInputFirstName = new JTextField("*"); //First Name input in case of Name search
 	private JPanel checkboxes; // contains every checkboxes
 	private JCheckBox cr,ct,cmr,nm,pt,us,xa,mg; // the chosen modalities 
 	private JTextField description; // allows to search for a particular description
@@ -336,7 +337,6 @@ public class VueRest extends JFrame implements PlugIn{
 		JPanel textInput = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		String[] patientParam = {"Patient name", "Patient ID", "Accession number"};
 		searchingParam = new JComboBox<String>(patientParam);
-		searchingParam.setSelectedIndex(jpreferPerso.getInt("InputParameter", 0));
 		userInput = new JTextField();
 		userInput.setToolTipText("Set your input accordingly to the field combobox on the left. ('*' stands for any character)");
 		description = new JTextField();
@@ -345,7 +345,23 @@ public class VueRest extends JFrame implements PlugIn{
 		description.setText("*");
 		userInput.setPreferredSize(new Dimension(90,20));
 		description.setPreferredSize(new Dimension(90,20));
+		
+		searchingParam.addItemListener(new ItemListener() {
 
+			@Override
+			public void itemStateChanged(ItemEvent arg0) {
+				if (arg0.getStateChange()==ItemEvent.SELECTED) {
+					if (searchingParam.getSelectedIndex()==0) {
+						userInputFirstName.setEnabled(true);
+					}
+					else userInputFirstName.setEnabled(false);
+				}
+				
+			}
+			
+		});
+		searchingParam.setSelectedIndex(jpreferPerso.getInt("InputParameter", 0));
+		
 		retrieveAET = new JComboBox<Object>(new Object[]{""});
 
 		// Creating the "search" button (ajouter)
@@ -1175,6 +1191,9 @@ public class VueRest extends JFrame implements PlugIn{
 		// Adding the components for the main tab p1
 		textInput.add(searchingParam);
 		textInput.add(userInput);
+		textInput.add(new JLabel("First name : "));
+		userInputFirstName.setPreferredSize(new Dimension(90,20));
+		textInput.add(userInputFirstName);
 		textInput.add(new JLabel("Description"));
 		textInput.add(description);
 		northG.add(textInput);
@@ -1318,7 +1337,8 @@ public class VueRest extends JFrame implements PlugIn{
 
 				// Query with the patient's name
 				if (searchingParam.getSelectedItem().equals("Patient name")){
-					successful = modele.addPatient(userInput.getText().toUpperCase(), "*", 
+					String inputString=userInput.getText()+"^"+userInputFirstName.getText();
+					successful = modele.addPatient(inputString.toUpperCase(), "*", 
 							df.format(from.getDate().getTime())+"-"+df.format(to.getDate().getTime()), 
 							modalities.toString(), description.getText(),"*", queryAET.getSelectedItem().toString());
 				}
