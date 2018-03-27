@@ -328,12 +328,15 @@ public class VueAnon extends JFrame implements PlugIn{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// SK Voir PQ LE TRY CATCH
-				try {
-					VueRest.main();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-				
+				SwingUtilities.invokeLater(new Runnable () {
+
+					@Override
+					public void run() {
+						VueRest.main();
+					}
+					
+				});
+
 			}
 		});
 		
@@ -342,7 +345,14 @@ public class VueAnon extends JFrame implements PlugIn{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ImportDCM.main();
+				SwingUtilities.invokeLater(new Runnable () {
+
+					@Override
+					public void run() {
+						ImportDCM.main();
+					}
+					
+				});
 			}
 		});
 

@@ -1527,7 +1527,7 @@ public class VueRest extends JFrame implements PlugIn{
 	/*
 	 * Displaying the frame
 	 */
-	public static void main(String... args) throws IOException{
+	public static void main(String... args) {
 		VueRest vue = new VueRest();
 		vue.setSize(1200, 400);
 		vue.pack();
