@@ -649,26 +649,24 @@ public class VueRest extends JFrame implements PlugIn{
 							ArrayList<Patient> patientArray =new ArrayList<Patient>();
 							for (int i=0; i<table.getRowCount(); i++) {
 								info.setText("Query "+(i+1)+"/"+(table.getRowCount()));
-								try {
-										//Construction String Name
-										StringBuilder name=new StringBuilder();
-										if (StringUtils.equals(table.getValueAt(i, 1).toString(),"*")==true && StringUtils.equals(table.getValueAt(i, 0).toString(),"*")==false) name.append(table.getValueAt(i, 0).toString()); if(name.toString().endsWith("*")==false) name.append("*");
-										if (StringUtils.equals(table.getValueAt(i, 1).toString(),"*")==true && StringUtils.equals(table.getValueAt(i, 0).toString(),"*")==true) name.append("*");
-										if (StringUtils.equals(table.getValueAt(i, 1).toString(),"*")==false && StringUtils.equals(table.getValueAt(i, 0).toString(),"*")==false) name.append(table.getValueAt(i, 0).toString()+"^"+table.getValueAt(i, 1).toString());
+								try {		
+										String name=(table.getValueAt(i, 0).toString()+"^"+table.getValueAt(i, 1).toString());
 								
 										String[] results=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox.getSelectedItem().toString() );
 										
 										//On recupe les infos toutes les studies 
 										if (results!=null) {
 											autoQuery.getContent(results, patientArray);
+											//On a les resulats en stock on appelle la fonction pour creer et recuperer les results de la dialogbox
+											if (patientArray.size()!=0) showResultTable(patientArray);
 										}
 										
-										//else { JOptionPane.showMessageDialog(null,"Empty Results, no CSV generated", "Empty Results", JOptionPane.WARNING_MESSAGE);}
+										else { System.out.println("Query "+ (i+1) +" Empty result or undefined parameters"); }
 										
 								} catch (IOException | ParseException e) {e.printStackTrace();}
 							}
-							//On a les resulats en stock on appelle la fonction pour creer et recuperer les results de la dialogbox
-							if (patientArray.size()!=0) showResultTable(patientArray);
+							
+							
 							return null;
 							
 					}
@@ -871,11 +869,7 @@ public class VueRest extends JFrame implements PlugIn{
 								working=true;
 										try {
 											//Construction String Name
-											StringBuilder name=new StringBuilder();
-											if (StringUtils.equals(table.getValueAt(i, 1).toString(),"*")==true && StringUtils.equals(table.getValueAt(i, 0).toString(),"*")==false) name.append(table.getValueAt(i, 0).toString()); if(name.toString().endsWith("*")==false) name.append("*") ;
-											if (StringUtils.equals(table.getValueAt(i, 1).toString(),"*")==true && StringUtils.equals(table.getValueAt(i, 0).toString(),"*")==true) name.append("*");
-											if (StringUtils.equals(table.getValueAt(i, 1).toString(),"*")==false && StringUtils.equals(table.getValueAt(i, 0).toString(),"*")==false) name.append(table.getValueAt(i, 0).toString()+"^"+table.getValueAt(i, 1).toString());
-											
+											String name=(table.getValueAt(i, 0).toString()+"^"+table.getValueAt(i, 1).toString());
 											String[] results=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox.getSelectedItem().toString());
 											//On retrieve toutes les studies 
 											if (results!=null) {
@@ -1267,9 +1261,9 @@ public class VueRest extends JFrame implements PlugIn{
 		p3.add(panel_Bottom, BorderLayout.SOUTH);
 				
 		tabbedPane = new JTabbedPane();
-		tabbedPane.add("Queries/Retrieve", p1);
+		tabbedPane.add("Query/Retrieve", p1);
 		tabbedPane.add("History", p2);
-		tabbedPane.add("Auto Query", p3);
+		tabbedPane.add("Auto Retrieve", p3);
 		
 		
 
