@@ -144,7 +144,7 @@ public class AutoQueryResultTableDialog extends JDialog {
 							
 						}
 						//On ecrit le CSV
-						writeCSV(csv, fileChooser.getSelectedFile().getAbsolutePath().toString());
+						writeCSV(csv.toString(), fileChooser.getSelectedFile().getAbsolutePath().toString());
 					
 						
 						
@@ -205,30 +205,18 @@ public class AutoQueryResultTableDialog extends JDialog {
 	 * @param csv
 	 */
 	private void buildCSV(String nom, String prenom, String id, String accession, String dateFrom, String dateTo, String modality, String studyDescription, StringBuilder csv) {
-		/*String nom;
-		String prenom;
-		//On split le name
-		int separateur=name.indexOf("^");
-		if (separateur!=-1) {
-		nom=name.substring(0, separateur);
-		prenom=name.substring(separateur+1, name.length());
-		}
-		else {
-			nom=name;
-			prenom=null;
-		}*/
 		
 		csv.append(nom+","+prenom+","+id+","+accession+","+dateFrom+","+dateTo+","+modality+","+studyDescription+"\n");
 	}
 	
-	protected void writeCSV(StringBuilder csv, String path) {
+	protected static void writeCSV(String csv, String path) {
 		File f = new File(path);
 
 		// On ecrit les CSV
 		PrintWriter pw = null;
 		try {
 			pw = new PrintWriter(f);
-			pw.write(csv.toString());
+			pw.write(csv);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {

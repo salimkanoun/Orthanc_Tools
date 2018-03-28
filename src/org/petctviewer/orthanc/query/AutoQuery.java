@@ -88,6 +88,7 @@ public class AutoQuery  {
 		chckbxXa=jPrefer.getBoolean("useSeriesXAFilter", false);
 		chckbxMg=jPrefer.getBoolean("useSeriesMGFilter", false);
 		
+		
 	}
 	/***
 	 * Send a Query to a remote AET

@@ -273,6 +273,7 @@ public class Option_Auto_Query extends JDialog {
 						dispose();
 					}
 				});
+			
 				{
 					JPanel panel_schedule = new JPanel();
 					buttonPane.add(panel_schedule);
@@ -406,6 +407,7 @@ public class Option_Auto_Query extends JDialog {
 	public List<JCheckBox> getSeriesModalities(){
 		return checkboxList;
 	}
+	
 	
 	
 

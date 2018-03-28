@@ -52,6 +52,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
@@ -62,7 +63,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
-
+import javax.swing.text.DefaultCaret;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -71,6 +72,7 @@ import com.michaelbaranov.microba.calendar.DatePicker;
 
 import ij.plugin.PlugIn;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -152,6 +154,7 @@ public class VueRest extends JFrame implements PlugIn{
 	private JButton btnScheduleDaily, btnSchedule_1 ;
 	private JLabel info;
 	private AutoQuery autoQuery=new AutoQuery(rest);
+	private JTextArea textAreaConsole;
 	
 	//timer
 	private boolean timerOn;
@@ -860,21 +863,24 @@ public class VueRest extends JFrame implements PlugIn{
 
 					@Override
 					protected Void doInBackground()  {
+					showConsoleFrame();
+					textAreaConsole.append("Retrieved AET,"+comboBox.getSelectedItem().toString()+"\n");
 					btnStart.setEnabled(false);
 					btnSchedule_1.setEnabled(false);
 					
 						if (table.getRowCount()!=0) {
 							for (int i=0; i<table.getRowCount(); i++) {
-								System.out.println("Processing Query "+ (i+1) +" /"+ table.getRowCount() );
+								textAreaConsole.append("Query "+(i+1)+ "/" + table.getRowCount()+",");
+								
 								working=true;
 										try {
 											//Construction String Name
 											String name=(table.getValueAt(i, 0).toString()+"^"+table.getValueAt(i, 1).toString());
 											String[] results=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox.getSelectedItem().toString());
+											textAreaConsole.append("["+ name.toString() + "_"+ table.getValueAt(i, 2).toString()+ "_"+ table.getValueAt(i, 4).toString().replaceAll("/", "") + "_" +table.getValueAt(i, 5).toString().replaceAll("/", "")+"_"+table.getValueAt(i, 6).toString()+"_"+table.getValueAt(i, 7).toString()+"_"+table.getValueAt(i, 3).toString()+"],");
 											//On retrieve toutes les studies 
 											if (results!=null) {
-												System.out.println("Found "+ Integer.parseInt(results[1]) +" studies match");
-												
+												textAreaConsole.append(results[1]+" Studies match,");
 												// If using Serie filter
 												if (autoQuery.chckbxSeriesFilter && Integer.parseInt(results[1])<=autoQuery.discard) {
 													//counter to log number of series retrieved
@@ -1006,23 +1012,24 @@ public class VueRest extends JFrame implements PlugIn{
 													
 													}
 													
-												System.out.println("Downloaded " + serieCountRevtrieved + " series");
+												textAreaConsole.append("Downloaded " + serieCountRevtrieved + " series \n");
 												
 												}
 												else if (autoQuery.chckbxSeriesFilter && Integer.parseInt(results[1])>autoQuery.discard) {
-													System.out.println("Discarded because over Study result discard limit");
+													textAreaConsole.append("over limits, discarded,");
 									
 												}
 												else {
 													info.setText("Retrieve "+(i+1)+" From "+table.getRowCount());
 													autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery.discard, i);
+													textAreaConsole.append(results[1] + " studies Retrieved \n");
 												}
 												
 											}
 											
 											else { 
 												info.setText("Empty Results");
-												System.out.println("Empty results");
+												textAreaConsole.append("empty Results,");
 											}
 											
 											
@@ -1030,6 +1037,7 @@ public class VueRest extends JFrame implements PlugIn{
 										
 										
 									}
+							
 						}
 						
 					
@@ -1173,6 +1181,7 @@ public class VueRest extends JFrame implements PlugIn{
 				autoQuery.chckbxUs=options.getSeriesModalities().get(5).isSelected();
 				autoQuery.chckbxXa=options.getSeriesModalities().get(6).isSelected();
 				autoQuery.chckbxMg=options.getSeriesModalities().get(7).isSelected();
+				
 				
 			}
 		});
@@ -1523,6 +1532,45 @@ public class VueRest extends JFrame implements PlugIn{
 				model.addRow(new Object[] {tableNouvelle.getValueAt(i, 0), tableNouvelle.getValueAt(i, 1), tableNouvelle.getValueAt(i, 2), tableNouvelle.getValueAt(i, 3), tableNouvelle.getValueAt(i, 4),tableNouvelle.getValueAt(i, 5), tableNouvelle.getValueAt(i, 6), tableNouvelle.getValueAt(i, 7)} );
 			}
 		}
+	}
+	/**
+	 * Create GUI to display log message during retrieve operations
+	 */
+	private void showConsoleFrame() {
+		JFrame console=new JFrame();
+		JPanel panel=new JPanel();
+		panel.setLayout(new BorderLayout());
+		console.add(panel);
+		JScrollPane scrollPane=new JScrollPane();
+		textAreaConsole = new JTextArea(10, 80);
+		textAreaConsole.setAutoscrolls(true);
+		DefaultCaret caret = (DefaultCaret) textAreaConsole.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.OUT_BOTTOM);
+		scrollPane.setViewportView(textAreaConsole);
+		panel.add(scrollPane, BorderLayout.CENTER);
+		
+		JButton btnCsvRetrieveReport = new JButton("Save To CSV");
+		btnCsvRetrieveReport.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JFileChooser csvReport=new JFileChooser();
+				csvReport.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				csvReport.setSelectedFile(new File("Report_AutoRetrieve_"+df.format(new Date())+".csv"));
+				int ok=csvReport.showSaveDialog(null);
+				if (ok==JFileChooser.APPROVE_OPTION ) {
+					AutoQueryResultTableDialog.writeCSV(textAreaConsole.getText(), csvReport.getSelectedFile().getAbsolutePath().toString());
+					}
+			}
+		});
+		JPanel button=new JPanel();
+		btnCsvRetrieveReport.setToolTipText("Set Folder to generate report of AutoQuery");
+		button.add(btnCsvRetrieveReport);
+		panel.add(button, BorderLayout.SOUTH);
+		
+		console.pack();
+		console.setLocationRelativeTo(null);
+		console.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		console.setVisible(true);
+		
 	}
 	/*
 	 * Displaying the frame
