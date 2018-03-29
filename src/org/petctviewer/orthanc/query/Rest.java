@@ -40,7 +40,7 @@ public class Rest {
 	/*
 	 *  This method is usually called within other methods to get an Orthanc query ID
 	 */
-	private String getQueryID(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber, String aet) throws IOException{
+	private String getQueryID(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber, String aet) {
 		// We re-define the new query
 		String query =setQuery(level, name, id, studyDate, modality, studyDescription, accessionNumber);
 		String ID = null;
@@ -49,7 +49,7 @@ public class Rest {
 		try {
 			answer = (JSONObject) parser.parse(connexion.makePostConnectionAndStringBuilder("/modalities/" + aet + "/query/", query).toString());
 			ID=(String) answer.get("ID");
-		} catch (ParseException e) {
+		} catch (ParseException | IOException e) {
 			e.printStackTrace();
 		}
 		return ID;
@@ -60,10 +60,16 @@ public class Rest {
 	 * This method gets the answer's indexes to an Orthanc query, as an Object[].
 	 * An Object[] should be instantiated to store the values inside it.
 	 */
-	public String[] getQueryAnswerIndexes(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber, String aet) throws Exception{
+	public String[] getQueryAnswerIndexes(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber, String aet) {
 		// We call getQueryID to generate a query ID
 		String idQuery =  this.getQueryID(level, name, id, studyDate, modality, studyDescription, accessionNumber, aet);
-		JSONArray contentArray=(JSONArray) parser.parse(connexion.makeGetConnectionAndStringBuilder("/queries/" + idQuery + "/answers/").toString());
+		JSONArray contentArray = null;
+		try {
+			contentArray = (JSONArray) parser.parse(connexion.makeGetConnectionAndStringBuilder("/queries/" + idQuery + "/answers/").toString());
+		} catch (ParseException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		String[] resultatQueryIDSize = new String[2];
 		resultatQueryIDSize[0]=idQuery;
@@ -75,8 +81,14 @@ public class Rest {
 	 * This method returns the content of a specified index.
 	 * The index is obtained by using the getQueryAnswerIndexes.
 	 */
-	public String getIndexContent(String queryId, int index) throws IOException{
-		String content = connexion.makeGetConnectionAndStringBuilder( "/queries/" + queryId + "/answers/" + index + "/content/").toString();
+	public String getIndexContent(String queryId, int index) {
+		String content = null;
+		try {
+			content = connexion.makeGetConnectionAndStringBuilder( "/queries/" + queryId + "/answers/" + index + "/content/").toString();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return content;
 	}
 
@@ -187,7 +199,7 @@ public class Rest {
 	 * This method returns the series's descriptions's ID.
 	 * It is treated separately because we only need the sole series's descriptions here. 
 	 */
-	public String getSeriesDescriptionID(String studyInstanceUID, String aet) throws Exception{
+	public String getSeriesDescriptionID(String studyInstanceUID, String aet) {
 		// getting the query ID
 		String query = "{ \"Level\" : \"" + "Series" + "\", \"Query\" : "
 				+ "{\"Modality\" : \"" + "*" + "\","
@@ -202,7 +214,7 @@ public class Rest {
 		try {
 			answer = (JSONObject) parser.parse(connexion.makePostConnectionAndStringBuilder("/modalities/" + aet + "/query/", query).toString());
 			idURL=(String) answer.get("ID");
-		} catch (ParseException e) {
+		} catch (ParseException | IOException e) {
 			e.printStackTrace();
 		}
 		
@@ -213,47 +225,62 @@ public class Rest {
 	 * This method returns the series's description's (index 0) and modalities (index 1) values in an array
 	 */
 	// SK METHODE A UTILISER DANS AUTOQUERY POUR FILTER LE LEVEL SERIE
-	public String[] [] getSeriesDescriptionValues(String idURL) throws Exception{
-		JSONArray serverResponseArray=(JSONArray) parser.parse(connexion.makeGetConnectionAndStringBuilder("/queries/" + idURL + "/answers/").toString());
-		
-		if(serverResponseArray.size() == 0){
-			throw new Exception("No Answer for this Query");
-		}
-		
-		String[] [] values = new String[3][serverResponseArray.size()];
-		for(int i = 0; i < serverResponseArray.size(); i++){
-			contentJson= (JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/queries/" + idURL + "/answers/" + i + "/content").toString());
-			if (contentJson.containsKey("0008,103e")) {
-				JSONObject studyDescriptionJson=(JSONObject) parser.parse(contentJson.get("0008,103e").toString());
-				values[0][i]=(String) studyDescriptionJson.get("Value");	
-			} else {
-				values[0][i]="";	
+	public String[] [] getSeriesDescriptionValues(String idURL) {
+		String[] [] values=null;
+		try {
+				JSONArray serverResponseArray=(JSONArray) parser.parse(connexion.makeGetConnectionAndStringBuilder("/queries/" + idURL + "/answers/").toString());
+			
+			if(serverResponseArray.size() == 0){
+				throw new Exception("No Answer for this Query");
 			}
 			
-			if (contentJson.containsKey("0008,0060")) {
-				JSONObject modalityJson=(JSONObject) parser.parse(contentJson.get("0008,0060").toString());
-				values[1][i]=(String) modalityJson.get("Value");
-			}else {
-				values[1][i]="";
+			values = new String[3][serverResponseArray.size()];
+			for(int i = 0; i < serverResponseArray.size(); i++){
+				contentJson= (JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/queries/" + idURL + "/answers/" + i + "/content").toString());
+				if (contentJson.containsKey("0008,103e")) {
+					JSONObject studyDescriptionJson=(JSONObject) parser.parse(contentJson.get("0008,103e").toString());
+					values[0][i]=(String) studyDescriptionJson.get("Value");	
+				} else {
+					values[0][i]="";	
+				}
+				
+				if (contentJson.containsKey("0008,0060")) {
+					JSONObject modalityJson=(JSONObject) parser.parse(contentJson.get("0008,0060").toString());
+					values[1][i]=(String) modalityJson.get("Value");
+				}else {
+					values[1][i]="";
+				}
+				
+				if (contentJson.containsKey("0020,0011")) {
+					JSONObject serieNumberJson;
+				
+						serieNumberJson = (JSONObject) parser.parse(contentJson.get("0020,0011").toString());
+					
+					values[2][i]=(String) serieNumberJson.get("Value");
+				}else {
+					values[2][i]="";
+				}
+				
+				
 			}
 			
-			if (contentJson.containsKey("0020,0011")) {
-				JSONObject serieNumberJson=(JSONObject) parser.parse(contentJson.get("0020,0011").toString());
-				values[2][i]=(String) serieNumberJson.get("Value");
-			}else {
-				values[2][i]="";
-			}
-			
-			
-		}
+		} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 		return values;
 	}
 
 	/*
 	 * This method retrieves an instance, depending on its query ID 
 	 */
-	public void retrieve(String queryID, String answer, String retrieveAET) throws IOException{
-		connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve/", retrieveAET);
+	public void retrieve(String queryID, String answer, String retrieveAET) {
+		try {
+			connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve/", retrieveAET);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/*

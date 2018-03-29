@@ -389,11 +389,11 @@ public class Option_Auto_Query extends JDialog {
 	}
 	
 	public String getSerieDescriptionContains() {
-		return serieDescriptionContains.getText();
+		return serieDescriptionContains.getText().toLowerCase();
 	}
 	
 	public String getSerieDescriptionExclude() {
-		return serieDescriptionExclude.getText();
+		return serieDescriptionExclude.getText().toLowerCase();
 	}
 	
 	public String getSerieNumberContains() {

@@ -103,7 +103,7 @@ public class AutoQuery  {
 	 * @return
 	 * @throws IOException
 	 */
-	public String[] sendQuery(String name, String id, String dateFrom, String dateTo, String modality, String studyDescription, String accessionNumber, String aet) throws IOException {
+	public String[] sendQuery(String name, String id, String dateFrom, String dateTo, String modality, String studyDescription, String accessionNumber, String aet) {
 		String[] results=null;
 		try {
 			//Selectionne l'AET de query
@@ -142,7 +142,7 @@ public class AutoQuery  {
 	 * @param discard
 	 * @throws IOException
 	 */
-	public void retrieveQuery(String[] results, String aetRetrieve, int discard, int queryNumberList) throws IOException {
+	public void retrieveQuery(String[] results, String aetRetrieve, int discard, int queryNumberList) {
 	
 		if (Integer.valueOf(results[1])<=discard){		
 			for (int i=0; i<Integer.valueOf(results[1]); i++) {
