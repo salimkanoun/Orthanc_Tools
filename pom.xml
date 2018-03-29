@@ -1,4 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+  
   <modelVersion>4.0.0</modelVersion>
     <repositories>
     <repository>
@@ -28,17 +33,9 @@
   <description>DICOM Tools based on Orthanc APIs</description>
   <build>
     <sourceDirectory>src</sourceDirectory>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
-    </plugins>
   </build>
   <dependencies>
+  
 	<dependency>
 		<groupId>net.imagej</groupId>
 		<artifactId>ij</artifactId>
@@ -66,16 +63,16 @@
 		<version>1.1</version>
 	</dependency>
 	<dependency>
-		<groupId>com.github.stephenc.java-iso-tools</groupId>
-		<artifactId>iso9660-maven-plugin</artifactId>
-		<version>2.0.1</version>
-		<type>maven-plugin</type>
-	</dependency>
-	<dependency>
 		<groupId>com.google.code.gson</groupId>
 		<artifactId>gson</artifactId>
 		<version>2.8.2</version>
 	</dependency>
+	<dependency>
+    	<groupId>com.github.stephenc.java-iso-tools</groupId>
+    	<artifactId>iso9660-writer</artifactId>
+    	<version>2.0.1</version>
+	</dependency>
+	
 	<dependency>
 		<groupId>com.github.lookfirst</groupId>
 		<artifactId>sardine</artifactId>
@@ -98,16 +95,17 @@
 	</dependency>
 	
 	<dependency>
-    <groupId>org.apache.commons</groupId>
-    <artifactId>commons-csv</artifactId>
-    <version>1.5</version>
+    	<groupId>org.apache.commons</groupId>
+    	<artifactId>commons-csv</artifactId>
+    	<version>1.5</version>
     </dependency>
     
     <dependency>
-    <groupId>com.michaelbaranov</groupId>
-    <artifactId>microba</artifactId>
-    <version>0.4.4.3</version>
+   		<groupId>com.michaelbaranov</groupId>
+    	<artifactId>microba</artifactId>
+    	<version>0.4.4.3</version>
 	</dependency>
 	
   </dependencies>
+  
 </project>
