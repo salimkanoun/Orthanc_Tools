@@ -662,7 +662,6 @@ public class VueRest extends JFrame implements PlugIn{
 										//On recupe les infos toutes les studies 
 										if (results!=null) {
 											autoQuery.getContent(results, patientArray);
-											//On a les resulats en stock on appelle la fonction pour creer et recuperer les results de la dialogbox
 											
 										}
 										
@@ -673,6 +672,7 @@ public class VueRest extends JFrame implements PlugIn{
 							
 							}
 							
+							//On a les resulats en stock on appelle la fonction pour creer et recuperer les results de la dialogbox
 							if (patientArray.size()!=0) showResultTable(patientArray);
 							
 							return null;
