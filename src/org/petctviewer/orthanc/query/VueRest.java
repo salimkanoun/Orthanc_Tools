@@ -663,14 +663,17 @@ public class VueRest extends JFrame implements PlugIn{
 										if (results!=null) {
 											autoQuery.getContent(results, patientArray);
 											//On a les resulats en stock on appelle la fonction pour creer et recuperer les results de la dialogbox
-											if (patientArray.size()!=0) showResultTable(patientArray);
+											
 										}
 										
 										else { System.out.println("Query "+ (i+1) +" Empty result or undefined parameters"); }
 										
 								} catch (IOException | ParseException e) {e.printStackTrace();}
+								
+							
 							}
 							
+							if (patientArray.size()!=0) showResultTable(patientArray);
 							
 							return null;
 							

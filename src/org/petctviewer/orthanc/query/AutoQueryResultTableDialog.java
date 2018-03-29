@@ -92,13 +92,14 @@ public class AutoQueryResultTableDialog extends JDialog {
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
 				JButton okButton = new JButton("Import to retrieve list");
+				okButton.setActionCommand("OK");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						validate=true;
 						dispose();
 					}
 				});
-				okButton.setActionCommand("OK");
+				
 				buttonPane.add(okButton);
 				getRootPane().setDefaultButton(okButton);
 			}
