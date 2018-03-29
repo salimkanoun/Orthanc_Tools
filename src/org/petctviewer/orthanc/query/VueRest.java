@@ -1372,7 +1372,7 @@ public class VueRest extends JFrame implements PlugIn{
 		panel.add(button, BorderLayout.SOUTH);
 		
 		console.pack();
-		console.setLocationRelativeTo(null);
+		console.setLocationRelativeTo(this);
 		console.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		console.setVisible(true);
 		
