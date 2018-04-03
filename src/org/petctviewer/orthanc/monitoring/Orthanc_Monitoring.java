@@ -1,6 +1,8 @@
 package org.petctviewer.orthanc.monitoring;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -13,19 +15,26 @@ public class Orthanc_Monitoring {
 	private JSONParser parser=new JSONParser();
 	private int last=0;
 	private boolean done;
+	
+	//CD Burner variable
 	private boolean cdBurnerService;
+	protected List<String> newStudyID = new ArrayList<String>();
+	
+	//Connxion API
 	ParametreConnexionHttp connexion=new ParametreConnexionHttp();
 	
 public static void main(String[] args) throws IOException, ParseException {
-	new Orthanc_Monitoring(false);
+	Orthanc_Monitoring monitor=new Orthanc_Monitoring(false);
+	monitor.makeMonitor();
+	
+	
 }
 
 public Orthanc_Monitoring(boolean cdBurnerService) {
 	this.cdBurnerService=cdBurnerService;
-	startMonitor();
 }
 
-public void startMonitor() {
+public void makeMonitor() {
 	try {
 		StringBuilder sb;
 		do {
@@ -77,8 +86,8 @@ private void parseOutput(String outputStream) throws ParseException {
 		
 		if (changeEvent.get("ChangeType").equals("NewStudy")) {
 			if (cdBurnerService) {
-				//SK Il faut monitorer quand la study devient stable
-				parseStudyIsStable((String) changeEvent.get("ID"));
+				newStudyID.add((String) changeEvent.get("ID"));
+				
 			}
 			else parseStudy((String) changeEvent.get("ID"));
 		}
@@ -118,7 +127,7 @@ private void parseStudy(String id) {
  * @param id
  */
 
-private boolean parseStudyIsStable(String id) {
+public boolean studyIsStable(String id) {
 	StringBuilder sb = null;
 	boolean isStable = false;
 	try { 

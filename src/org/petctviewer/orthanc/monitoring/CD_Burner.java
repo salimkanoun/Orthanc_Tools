@@ -258,10 +258,23 @@ public class CD_Burner {
 		}
 		
 	}*/
+	
 	//SK Remplace le WatchFolder
 	//A Faire
 	public void watchOrthancStableStudies() {
-		
+		Orthanc_Monitoring monitoring=new Orthanc_Monitoring(true);
+		monitoring.makeMonitor();
+		for (int i=0; i<monitoring.newStudyID.size(); i++) {
+			boolean stable=monitoring.studyIsStable(monitoring.newStudyID.get(i));
+			if (stable) {
+				
+			}
+			//Necessite d'attendre qu'elle soit stable
+			else {
+				
+			}
+			
+		}
 		
 	}
 	
