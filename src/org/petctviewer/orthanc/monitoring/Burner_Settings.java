@@ -24,7 +24,6 @@ public class Burner_Settings extends JDialog {
 	private JLabel imageJPath;
 	private JLabel epsonDirectoryLabel;
 	private JLabel labelFilePath;
-	private JLabel monitoringFolderLabel;
 	
 	private Preferences jPrefer = null;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
@@ -113,25 +112,6 @@ public class Burner_Settings extends JDialog {
 			contentPanel.add(epsonDirectoryLabel);
 		}
 		{
-			JButton monitoringFolder = new JButton("Set Monitoring Folder");
-			monitoringFolder.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					JFileChooser fc=new JFileChooser();
-					fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-					int ouvrir=fc.showOpenDialog(null);
-					if (ouvrir==JFileChooser.APPROVE_OPTION){
-						CD_Burner.arriveRep=fc.getSelectedFile().getAbsolutePath().toString();
-						monitoringFolderLabel.setText(CD_Burner.arriveRep);
-					}
-				}
-			});
-			contentPanel.add(monitoringFolder);
-		}
-		{
-			monitoringFolderLabel = new JLabel(CD_Burner.arriveRep);
-			contentPanel.add(monitoringFolderLabel);
-		}
-		{
 			JPanel panel = new JPanel();
 			contentPanel.add(panel);
 			panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
@@ -181,9 +161,6 @@ public class Burner_Settings extends JDialog {
 						jPrefer = Preferences.userNodeForPackage(Burner_Settings.class);
 						jPrefer = jPrefer.node("CDburner");
 						//On sauve dans le registery
-						if (CD_Burner.fijiDirectory!=null) jPrefer.put("fijiDirectory", CD_Burner.fijiDirectory);
-						if (CD_Burner.arriveRep!=null) jPrefer.put("arriveRep", CD_Burner.arriveRep);
-						//if (CD_Burner.destinationRep!=null) jPrefer.put("destinationRep", CD_Burner.destinationRep);
 						if (CD_Burner.epsonDirectory!=null) jPrefer.put("epsonDirectory", CD_Burner.epsonDirectory);
 						if (CD_Burner.fijiDirectory!=null) jPrefer.put("fijiDirectory", CD_Burner.fijiDirectory);
 						if (CD_Burner.labelFile!=null) jPrefer.put("labelFile", CD_Burner.labelFile);

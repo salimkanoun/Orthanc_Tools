@@ -4,15 +4,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -27,12 +22,10 @@ import javax.swing.JTextArea;
 
 public class CD_Burner {
 	
-	protected static String arriveRep;
 	protected static String dateFormatChoix;
 	protected static String labelFile;
 	protected static String epsonDirectory;
 	protected static String fijiDirectory;
-	private WatchService watcher;
 	private JTextArea textArea;
 	private Path folder;
 	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");

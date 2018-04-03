@@ -159,6 +159,7 @@ private void parseSerie(String id) {
 	} catch (ParseException | IOException e1) {e1.printStackTrace();}	
 }
 
+@SuppressWarnings("unchecked")
 private void parseCT(String id, JSONObject mainSerieTag) {
 	StringBuilder sb = null;
 	try {

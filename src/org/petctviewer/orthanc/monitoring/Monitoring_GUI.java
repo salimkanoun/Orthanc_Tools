@@ -1,11 +1,8 @@
 package org.petctviewer.orthanc.monitoring;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
@@ -17,14 +14,15 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.text.DefaultCaret;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.imageio.ImageIO;
 import javax.swing.JButton;
 
+@SuppressWarnings("serial")
 public class Monitoring_GUI extends JFrame {
 
 	private JPanel contentPane;
 	
 	private JButton btnStopMonitoring, btnStartMonitoring;
+	//SK Penser a interrompre ce Thread a la sortie
 	private Thread background;
 	private Preferences jPrefer;
 	private CD_Burner cdBurner;
@@ -73,7 +71,6 @@ public class Monitoring_GUI extends JFrame {
 				jPrefer = Preferences.userNodeForPackage(Burner_Settings.class);
 				jPrefer = jPrefer.node("CDburner");
 				CD_Burner.fijiDirectory=jPrefer.get("fijiDirectory", null);
-				CD_Burner.arriveRep=jPrefer.get("arriveRep", null);
 				CD_Burner.epsonDirectory=jPrefer.get("epsonDirectory", null);
 				CD_Burner.labelFile=jPrefer.get("labelFile", null);
 				CD_Burner.dateFormatChoix=jPrefer.get("DateFormat", null);
@@ -97,18 +94,19 @@ public class Monitoring_GUI extends JFrame {
 				btnStartMonitoring = new JButton("Start monitoring");
 				btnStartMonitoring.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
-						if ( CD_Burner.arriveRep==null ||CD_Burner.epsonDirectory==null ||CD_Burner.fijiDirectory==null ||CD_Burner.labelFile==null || CD_Burner.dateFormatChoix==null ){
+						if ( CD_Burner.epsonDirectory==null ||CD_Burner.fijiDirectory==null ||CD_Burner.labelFile==null || CD_Burner.dateFormatChoix==null ){
 							//Message d'erreur doit faire le set de output folder
 							JOptionPane.showMessageDialog(null, "Go to settings Menu to set missing paths", "Set directories and date format", JOptionPane.ERROR_MESSAGE);
 						}
 						
 						else {
-								textArea.append("Monitoring : "+CD_Burner.arriveRep+"\n");
+								textArea.append("Monitoring Orthanc \n");
 								//On ouvre le watcher dans un nouveau thread pour ne pas bloquer l'interface
 								background=new Thread (new Runnable() 
 							    {
 							      public void run()
 							      {
+							    	  cdBurner.watchOrthancStableStudies();
 							    	 /*try {
 							    		  //SK ICI A IMPLEMENTER
 							    		 // Remplacer par le Watch API
@@ -133,7 +131,6 @@ public class Monitoring_GUI extends JFrame {
 						settings.setModal(true);
 						//On refresh les changement de variable à la fin de l'operation
 						CD_Burner.fijiDirectory=jPrefer.get("fijiDirectory", null);
-						CD_Burner.arriveRep=jPrefer.get("arriveRep", null);
 						CD_Burner.epsonDirectory=jPrefer.get("epsonDirectory", null);
 						CD_Burner.labelFile=jPrefer.get("labelFile", null);
 						CD_Burner.dateFormatChoix=jPrefer.get("DateFormat", null);
@@ -142,19 +139,7 @@ public class Monitoring_GUI extends JFrame {
 				panel.add(btnSettings);
 				panel.add(btnStartMonitoring);
 				
-				JButton btnMonitoring = new JButton("Quit");
-				btnMonitoring.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent arg0) {
-						//Fermer le thread si il existe
-						if (background!=null){
-							background.interrupt();
-						}
-						
-						//file.deleteOnExit()
-						//On ferme la GUI
-						//System.exit(0);
-					}
-				});
+				
 				
 				btnStopMonitoring = new JButton("Stop Monitoring");
 				btnStopMonitoring.setEnabled(false);
@@ -168,7 +153,7 @@ public class Monitoring_GUI extends JFrame {
 					}
 				});
 				panel.add(btnStopMonitoring);
-				panel.add(btnMonitoring);
+				
 				
 				JPanel Title = new JPanel();
 				contentPane.add(Title, BorderLayout.NORTH);
@@ -182,7 +167,7 @@ public class Monitoring_GUI extends JFrame {
 	
 	public void autostart() {
 		//Si parametre OK on monitor dès le startup
-		if ( CD_Burner.arriveRep!=null && CD_Burner.epsonDirectory!=null && CD_Burner.fijiDirectory!=null && CD_Burner.labelFile!=null && CD_Burner.dateFormatChoix!=null ){
+		if ( CD_Burner.epsonDirectory!=null && CD_Burner.fijiDirectory!=null && CD_Burner.labelFile!=null && CD_Burner.dateFormatChoix!=null ){
 			btnStartMonitoring.doClick();
 		}
 		
