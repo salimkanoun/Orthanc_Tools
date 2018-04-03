@@ -17,21 +17,24 @@ public class Orthanc_Monitoring {
 	private boolean done;
 	
 	//CD Burner variable
-	private boolean cdBurnerService;
+	protected List<String> newStableStudyID = new ArrayList<String>();
+	protected List<String> newStablePatientID = new ArrayList<String>();
+	protected List<String> newPatientID = new ArrayList<String>();
 	protected List<String> newStudyID = new ArrayList<String>();
+	protected List<String> newSerieID = new ArrayList<String>();
 	
 	//Connxion API
 	ParametreConnexionHttp connexion=new ParametreConnexionHttp();
 	
 public static void main(String[] args) throws IOException, ParseException {
-	Orthanc_Monitoring monitor=new Orthanc_Monitoring(false);
+	Orthanc_Monitoring monitor=new Orthanc_Monitoring();
 	monitor.makeMonitor();
 	
 	
 }
 
-public Orthanc_Monitoring(boolean cdBurnerService) {
-	this.cdBurnerService=cdBurnerService;
+public Orthanc_Monitoring() {
+	
 }
 
 public void makeMonitor() {
@@ -83,18 +86,31 @@ private void parseOutput(String outputStream) throws ParseException {
 	JSONArray changesArray=(JSONArray) changes.get("Changes");
 	for (int i=0; i<changesArray.size(); i++) {
 		JSONObject changeEvent=(JSONObject) changesArray.get(i);
+		String ID= (String) changeEvent.get("ID");
 		
-		if (changeEvent.get("ChangeType").equals("NewStudy")) {
-			if (cdBurnerService) {
-				newStudyID.add((String) changeEvent.get("ID"));
-				
-			}
-			else parseStudy((String) changeEvent.get("ID"));
+		if (changeEvent.get("ChangeType").equals("NewPatient")) {
+			newPatientID.add(ID);
+		}
+		 
+		else if (changeEvent.get("ChangeType").equals("NewStudy")) {
+			newStudyID.add(ID);
+			System.out.println(ID);
+			//parseStudy(ID);
 		}
 		
 		else if (changeEvent.get("ChangeType").equals("NewSeries")) {
-			parseSerie((String) changeEvent.get("ID"));
+			newSerieID.add(ID);
+			//parseSerie(ID);
 		}
+		
+		else if (changeEvent.get("ChangeType").equals("StablePatient")) {
+			newStablePatientID.add((String) changeEvent.get("ID"));
+		}
+		
+		else if (changeEvent.get("ChangeType").equals("StableStudy")) {
+			newStableStudyID.add((String) changeEvent.get("ID"));
+		}
+		
 	}
 	
 	last=Integer.parseInt(changes.get("Last").toString());
@@ -122,24 +138,7 @@ private void parseStudy(String id) {
 
 	} catch (ParseException | IOException e) {e.printStackTrace();}
 }
-/**
- * test if study is stable
- * @param id
- */
 
-public boolean studyIsStable(String id) {
-	StringBuilder sb = null;
-	boolean isStable = false;
-	try { 
-		sb = connexion.makeGetConnectionAndStringBuilder("/studies/"+id+"/");
-		JSONObject getStudiesInfo = (JSONObject) parser.parse(sb.toString());	
-		isStable= (boolean) getStudiesInfo.get("IsStable");
-	
-	} catch (ParseException | IOException e) {e.printStackTrace();}
-	
-	return isStable;
-	
-}
 /**
  * Parse info Series pour determiner modalite
  * @param id

@@ -255,17 +255,14 @@ public class CD_Burner {
 	//SK Remplace le WatchFolder
 	//A Faire
 	public void watchOrthancStableStudies() {
-		Orthanc_Monitoring monitoring=new Orthanc_Monitoring(true);
+		Orthanc_Monitoring monitoring=new Orthanc_Monitoring();
+		//Met la derniere ligne pour commencer le monitoring
+		int last=monitoring.getChangeLastLine();
+		monitoring.setChangeLastLine(last);
+		//SK
 		monitoring.makeMonitor();
-		for (int i=0; i<monitoring.newStudyID.size(); i++) {
-			boolean stable=monitoring.studyIsStable(monitoring.newStudyID.get(i));
-			if (stable) {
-				
-			}
-			//Necessite d'attendre qu'elle soit stable
-			else {
-				
-			}
+		for (int i=0; i<monitoring.newStableStudyID.size(); i++) {
+			// SK TELECHARGER LES ZIP ET FAIRE LE PROCESSING
 			
 		}
 		
