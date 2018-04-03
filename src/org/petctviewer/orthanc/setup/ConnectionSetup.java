@@ -123,7 +123,7 @@ public class ConnectionSetup extends JFrame implements PlugIn{
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (ipTxt.getText().toLowerCase().startsWith("http://")) {
+				if (ipTxt.getText().toLowerCase().startsWith("http://") || ipTxt.getText().toLowerCase().startsWith("https://")) {
 					jpreferPerso.put("ip", ipTxt.getText());
 					jpreferPerso.put("port", portTxt.getText());
 					jpreferPerso.put("password", new String(passwordTxt.getPassword()));
