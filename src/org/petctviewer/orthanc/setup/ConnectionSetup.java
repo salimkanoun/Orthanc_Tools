@@ -123,13 +123,22 @@ public class ConnectionSetup extends JFrame implements PlugIn{
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				jpreferPerso.put("ip", ipTxt.getText());
-				jpreferPerso.put("port", portTxt.getText());
-				jpreferPerso.put("password", new String(passwordTxt.getPassword()));
-				jpreferPerso.put("username", usernameTxt.getText());
-				JOptionPane.showMessageDialog(gui,
+				if (ipTxt.getText().toLowerCase().startsWith("http://")) {
+					jpreferPerso.put("ip", ipTxt.getText());
+					jpreferPerso.put("port", portTxt.getText());
+					jpreferPerso.put("password", new String(passwordTxt.getPassword()));
+					jpreferPerso.put("username", usernameTxt.getText());
+					JOptionPane.showMessageDialog(gui,
 					    "please restart app");
-				dispose();
+					dispose();
+				}
+				else {
+					JOptionPane.showMessageDialog(gui,
+						    "IP should start with http://");
+					
+				}
+				
+				
 			}
 		});
 		

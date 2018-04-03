@@ -66,7 +66,7 @@ public class Rest {
 		JSONArray contentArray = null;
 		try {
 			contentArray = (JSONArray) parser.parse(connexion.makeGetConnectionAndStringBuilder("/queries/" + idQuery + "/answers/").toString());
-		} catch (ParseException | IOException e) {
+		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -83,12 +83,7 @@ public class Rest {
 	 */
 	public String getIndexContent(String queryId, int index) {
 		String content = null;
-		try {
-			content = connexion.makeGetConnectionAndStringBuilder( "/queries/" + queryId + "/answers/" + index + "/content/").toString();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		content = connexion.makeGetConnectionAndStringBuilder( "/queries/" + queryId + "/answers/" + index + "/content/").toString();
 		return content;
 	}
 

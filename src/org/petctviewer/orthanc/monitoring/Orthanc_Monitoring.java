@@ -46,7 +46,7 @@ public void makeMonitor() {
 		}
 		while(!done);
 		
-	} catch (ParseException | IOException e) {
+	} catch (ParseException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
@@ -62,7 +62,7 @@ public int getChangeLastLine() {
 	try {
 		sb = connexion.makeGetConnectionAndStringBuilder("/changes");
 		changes=(JSONObject) parser.parse(sb.toString());
-	} catch (IOException | ParseException e) {
+	} catch (ParseException e) {
 		e.printStackTrace();
 	}
 	
@@ -136,7 +136,7 @@ private void parseStudy(String id) {
 		System.out.println(infoSerie.get("ID"));
 	}
 
-	} catch (ParseException | IOException e) {e.printStackTrace();}
+	} catch (ParseException e) {e.printStackTrace();}
 }
 
 /**
@@ -155,16 +155,13 @@ private void parseSerie(String id) {
 			parseCT(id, mainSerieTag);
 		}
 		
-	} catch (ParseException | IOException e1) {e1.printStackTrace();}	
+	} catch (ParseException e1) {e1.printStackTrace();}	
 }
 
 @SuppressWarnings("unchecked")
 private void parseCT(String id, JSONObject mainSerieTag) {
 	StringBuilder sb = null;
-	try {
-		
-		sb = connexion.makeGetConnectionAndStringBuilder("/series/"+id+"/shared-tags");
-	} catch (IOException e1) {e1.printStackTrace();}
+	sb = connexion.makeGetConnectionAndStringBuilder("/series/"+id+"/shared-tags");
 	
 	try {
 		JSONObject sharedTag=(JSONObject) parser.parse(sb.toString());

@@ -210,7 +210,6 @@ public class VueAnon extends JFrame implements PlugIn{
 		
 		super("Orthanc Tools");
 		
-		//On remplis les parametre de connexion pour la session
 		connexionHttp= new ParametreConnexionHttp();
 		//On set les objets necessaires
 		modelePatients = new TableDataPatientsAnon(connexionHttp);
@@ -1613,7 +1612,7 @@ public class VueAnon extends JFrame implements PlugIn{
 								
 								csv.addStudy(oldPatientName, oldPatientId, newPatientName, newPatientId, oldStudyDate, oldStudyDesc, newStudyDesc, nbSeries, nbInstances, size, studyInstanceUid);
 								
-							} catch (org.json.simple.parser.ParseException | IOException e1) {
+							} catch (org.json.simple.parser.ParseException e1) {
 								e1.printStackTrace();
 							}
 						}
@@ -1658,7 +1657,7 @@ public class VueAnon extends JFrame implements PlugIn{
 							}else{
 								stateExports.setText("<html><font color = 'green'>The report was sent to the database</font></html>");
 							}
-						} catch (ClassNotFoundException | SQLException |IOException |org.json.simple.parser.ParseException e1) {
+						} catch (ClassNotFoundException | SQLException |org.json.simple.parser.ParseException e1) {
 							e1.printStackTrace();
 						} 
 					}

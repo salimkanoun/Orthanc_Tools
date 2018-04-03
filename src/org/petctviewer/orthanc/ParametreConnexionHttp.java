@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Base64;
 import java.util.prefs.Preferences;
@@ -44,12 +45,11 @@ public class ParametreConnexionHttp {
 	private String authentication;
 	
 	
-	public ParametreConnexionHttp() {
+	public ParametreConnexionHttp()  {
 			int curDb = jprefer.getInt("current database", 0);
 			int typeDb = jprefer.getInt("db type" + curDb, 0);
 			String ip=null;
 			String port=null;
-			boolean test=false;
 			
 			if(typeDb == 5){
 				
@@ -76,7 +76,12 @@ public class ParametreConnexionHttp {
 				if(jprefer.get("db user" + curDb, null) != null && jprefer.get("db pass" + curDb, null) != null){
 					authentication = Base64.getEncoder().encodeToString((jprefer.get("db user" + curDb, null) + ":" + jprefer.get("db pass" + curDb, null)).getBytes());
 				}
-				test=testConnexion();
+				try {
+					testConnexion();
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 		}
 		else if (typeDb != 5){
 			ip = jpreferPerso.get("ip", "http://localhost");
@@ -85,76 +90,89 @@ public class ParametreConnexionHttp {
 			if(jpreferPerso.get("username", null) != null && jpreferPerso.get("username", null) != null){
 				authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
 			}
-			test=testConnexion();
+			try {
+				testConnexion();
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 		}
 			
 		//Si Echec de la connexion defini dans le registery on retente avec les parametres manuels
-		if (!test && typeDb == 5) {
+		/*if (!testConnexion() && typeDb == 5) {
 			ip = jpreferPerso.get("ip", "http://localhost");
 			port = jpreferPerso.get("port", "8042");
 			this.fullAddress = ip + ":" + port;
 			if(jpreferPerso.get("username", null) != null && jpreferPerso.get("username", null) != null){
 				authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
 			}
-			test=testConnexion();
-		}
+			testConnexion();
+		}*/
 		
-		//Si Toujours echec on signal et on demande d'ouvrir le panneau
-		if (!test) {
-		JOptionPane.showMessageDialog(null,"Check Connexion Parameters","Connexion",JOptionPane.ERROR_MESSAGE);
-		ConnectionSetup.main();
-		}
-		
+	
 		
 	}
 	
 	public HttpURLConnection makeGetConnection(String apiUrl) throws IOException {
 		
 		HttpURLConnection conn=null;
-		try {
-			URL url = new URL(fullAddress+apiUrl);
+		URL url = null;
+		
+			url = new URL(fullAddress+apiUrl);
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setDoOutput(true);
 			conn.setRequestMethod("GET");
-		} catch (IOException e2) {
-			e2.printStackTrace();
-		}
-		if((fullAddress != null && fullAddress.contains("https"))){
+			if((fullAddress != null && fullAddress.contains("https"))){
 			try{
 				HttpsTrustModifier.Trust(conn);
 			}catch (Exception e){
 				throw new IOException("Cannot allow self-signed certificates");
 			}
-		}
-		if(authentication != null){
-			conn.setRequestProperty("Authorization", "Basic " + authentication);
-		}
-		conn.getResponseMessage();
+			}
+		
+			if(authentication != null){
+				conn.setRequestProperty("Authorization", "Basic " + authentication);
+			}
+			conn.getResponseMessage();
+			
+		
+
 		return conn;
 	
 	}
 
-	public StringBuilder makeGetConnectionAndStringBuilder(String apiUrl) throws IOException {
-		
-		HttpURLConnection conn=makeGetConnection(apiUrl);
-		BufferedReader br = new BufferedReader(new InputStreamReader(
-			(conn.getInputStream())));
-	
-		StringBuilder sb = new StringBuilder();
-		String output;
-		while ((output = br.readLine()) != null) {
-			sb.append(output);
+	public StringBuilder makeGetConnectionAndStringBuilder(String apiUrl) {
+		HttpURLConnection conn = null;
+		StringBuilder sb = new StringBuilder() ;
+		try {
+			conn = makeGetConnection(apiUrl);
+			if (conn !=null) {
+				BufferedReader br = new BufferedReader(new InputStreamReader(
+				(conn.getInputStream())));
+				String output;
+				while ((output = br.readLine()) != null) {
+					sb.append(output);
+				}
+				conn.disconnect();
+			}
+			
+			
+		} catch (IOException | NullPointerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		conn.disconnect();
+		
 		return sb;
 	}
 	
 	
 	
 	public HttpURLConnection makePostConnection(String apiUrl, String post) throws IOException {
-		
-		URL url = new URL(fullAddress+apiUrl);
+		URL url = null;
+		try {
+		url = new URL(fullAddress+apiUrl);
+		} catch ( MalformedURLException ex) { }
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setDoOutput(true);
 		conn.setRequestMethod("POST");
@@ -172,6 +190,8 @@ public class ParametreConnexionHttp {
 		os.write(post.getBytes());
 		os.flush();
 		conn.getResponseMessage();
+		
+		
 		return conn;
 	}
 
@@ -250,16 +270,16 @@ public class ParametreConnexionHttp {
 	}
 	
 	// Display Error message if connexion failed
-	private boolean testConnexion(){	
-		boolean test=true;
+	private Boolean testConnexion() throws MalformedURLException{	
+		Boolean test=true;
 		try {
-		HttpURLConnection conn = makeGetConnection("/system");
-		conn.getResponseMessage();
+		makeGetConnection("/system");
 		} catch (IOException e2) {
 			test=false;
-			//JOptionPane.showMessageDialog(null,"Check Connexion Parameters","Connexion",JOptionPane.ERROR_MESSAGE);
-			//ConnectionSetup.main();
+			JOptionPane.showMessageDialog(null,"Check Connexion Parameters "+e2.getMessage(),"Connexion",JOptionPane.ERROR_MESSAGE);
+			ConnectionSetup.main();
 		}
+	
 		return test;
 	}
 

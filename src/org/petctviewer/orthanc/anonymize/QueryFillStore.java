@@ -135,7 +135,7 @@ public class QueryFillStore {
 			sb=connexion.makePostConnectionAndStringBuilder(url, this.toolboxListContent);
 		}
 		else {
-			connexion.makeGetConnection(this.url);
+			//connexion.makeGetConnection(this.url);
 			sb=connexion.makeGetConnectionAndStringBuilder(this.url);
 		}
 		
