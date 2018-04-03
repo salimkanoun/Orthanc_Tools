@@ -27,7 +27,6 @@ public class Monitoring_GUI extends JFrame {
 	private JButton btnStopMonitoring, btnStartMonitoring;
 	private Thread background;
 	private Preferences jPrefer;
-	private JFrame gui;
 	private CD_Burner cdBurner;
 
 	/**
@@ -78,27 +77,7 @@ public class Monitoring_GUI extends JFrame {
 				CD_Burner.epsonDirectory=jPrefer.get("epsonDirectory", null);
 				CD_Burner.labelFile=jPrefer.get("labelFile", null);
 				CD_Burner.dateFormatChoix=jPrefer.get("DateFormat", null);
-				//On ouvre la frame
-				/*window = new JFrame();
-				window.setPreferredSize(new Dimension(900, 700));
-				window.setTitle("DVD Burner");
 				
-				window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-				window.addWindowListener(new java.awt.event.WindowAdapter() {
-				    @Override
-				    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-				    	if (background!=null){
-							background.interrupt();
-						}
-				    	window.dispose();
-				    }
-				});
-				//On met le logo
-				window.setIconImage(ImageIO.read(getClass().getResource("/logo/logo.png")));
-				
-				window.pack();
-				window.setBounds(200, 200, 900, 600);
-				*/
 				JPanel contentPane = new JPanel();
 				contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 				contentPane.setLayout(new BorderLayout(0, 0));

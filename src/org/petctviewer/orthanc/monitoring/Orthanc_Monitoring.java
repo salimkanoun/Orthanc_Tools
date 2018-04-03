@@ -1,4 +1,5 @@
 package org.petctviewer.orthanc.monitoring;
+
 import java.io.IOException;
 
 import org.json.simple.JSONArray;
@@ -10,24 +11,57 @@ import org.petctviewer.orthanc.ParametreConnexionHttp;
 public class Orthanc_Monitoring {
 	private JSONObject changes=new JSONObject();
 	private JSONParser parser=new JSONParser();
-	private int last;
+	private int last=0;
 	private boolean done;
+	private boolean cdBurnerService;
 	ParametreConnexionHttp connexion=new ParametreConnexionHttp();
 	
-	public static void main(String[] args) throws IOException, ParseException {
-		Orthanc_Monitoring monitoring=new Orthanc_Monitoring();
-		StringBuilder sb=monitoring.connexion.makeGetConnectionAndStringBuilder("/changes");
-		monitoring.parseOutput(sb.toString());
-		monitoring.getData();
-		System.out.println(monitoring.done);
-		System.out.println(monitoring.last);
-		
+public static void main(String[] args) throws IOException, ParseException {
+	new Orthanc_Monitoring(false);
+}
 
+public Orthanc_Monitoring(boolean cdBurnerService) {
+	this.cdBurnerService=cdBurnerService;
+	startMonitor();
+}
+
+public void startMonitor() {
+	try {
+		StringBuilder sb;
+		do {
+			sb = connexion.makeGetConnectionAndStringBuilder("/changes?since="+String.valueOf(last));
+			parseOutput(sb.toString());
+		}
+		while(!done);
+		
+	} catch (ParseException | IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+}
+
+/**
+ * Return curent last line of the change API
+ * @return
+ */
+public int getChangeLastLine() {
+	StringBuilder sb;
+	JSONObject changes = null;
+	try {
+		sb = connexion.makeGetConnectionAndStringBuilder("/changes");
+		changes=(JSONObject) parser.parse(sb.toString());
+	} catch (IOException | ParseException e) {
+		e.printStackTrace();
 	}
 	
-	public Orthanc_Monitoring() {
+	int last=(int) changes.get("Last");
+	
+	return last;
+}
 
-	}
+public void setChangeLastLine(int last) {
+	this.last=last;
+}
 
 /**
  * Parse le 1er niveau de message avec les valeurs des 100 derniers changements
@@ -40,25 +74,24 @@ private void parseOutput(String outputStream) throws ParseException {
 	JSONArray changesArray=(JSONArray) changes.get("Changes");
 	for (int i=0; i<changesArray.size(); i++) {
 		JSONObject changeEvent=(JSONObject) changesArray.get(i);
-		parseChangeObject(changeEvent);
+		
+		if (changeEvent.get("ChangeType").equals("NewStudy")) {
+			if (cdBurnerService) {
+				//SK Il faut monitorer quand la study devient stable
+				parseStudyIsStable((String) changeEvent.get("ID"));
+			}
+			else parseStudy((String) changeEvent.get("ID"));
+		}
+		
+		else if (changeEvent.get("ChangeType").equals("NewSeries")) {
+			parseSerie((String) changeEvent.get("ID"));
+		}
 	}
 	
 	last=Integer.parseInt(changes.get("Last").toString());
 	done=Boolean.parseBoolean(changes.get("Done").toString());
 }
 
-/**
- * Parse chaque changement
- * @param Change
- */
-private void parseChangeObject (JSONObject change) {
-	if (change.get("ChangeType").equals("NewStudy")) {
-		parseStudy((String) change.get("ID"));
-	}
-	if (change.get("ChangeType").equals("NewSeries")) {
-		parseSerie((String) change.get("ID"));
-	}
-}
 
 /**
  * Parse Study Level
@@ -68,15 +101,7 @@ private void parseChangeObject (JSONObject change) {
 private void parseStudy(String id) {
 	StringBuilder sb = null;
 	try {
-		
 		sb = connexion.makeGetConnectionAndStringBuilder("/studies/"+id+"/series?simplify");
-	} catch (IOException e1) {
-		// TODO Auto-generated catch block
-		e1.printStackTrace();
-	}
-	//setUrl("studies/"+id+"/series?simplify");
-		
-	try { 
 		JSONArray getserieInfo = (JSONArray) parser.parse(sb.toString());	
 		int nombreSerie=getserieInfo.size();
 	//Pour chaque Serie on recupere un objet JSON avec les informations
@@ -86,7 +111,25 @@ private void parseStudy(String id) {
 		System.out.println(infoSerie.get("ID"));
 	}
 
-	} catch (ParseException e) {e.printStackTrace();}
+	} catch (ParseException | IOException e) {e.printStackTrace();}
+}
+/**
+ * test if study is stable
+ * @param id
+ */
+
+private boolean parseStudyIsStable(String id) {
+	StringBuilder sb = null;
+	boolean isStable = false;
+	try { 
+		sb = connexion.makeGetConnectionAndStringBuilder("/studies/"+id+"/");
+		JSONObject getStudiesInfo = (JSONObject) parser.parse(sb.toString());	
+		isStable= (boolean) getStudiesInfo.get("IsStable");
+	
+	} catch (ParseException | IOException e) {e.printStackTrace();}
+	
+	return isStable;
+	
 }
 /**
  * Parse info Series pour determiner modalite
@@ -128,18 +171,7 @@ private void parseCT(String id, JSONObject mainSerieTag) {
 	
 }
 
-/**
- * Fait une boucle jusqu'a épuiser les message, méthode à relancer periodiquement
- * @throws ParseException
- * @throws IOException
- */
-private void getData() throws ParseException, IOException {
-	do {
-		StringBuilder sb = connexion.makeGetConnectionAndStringBuilder("/changes?since="+String.valueOf(last));
-		parseOutput(sb.toString());
-	}
-	while(!done);
-}
+
 		
 
 }
