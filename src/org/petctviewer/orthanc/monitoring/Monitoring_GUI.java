@@ -12,6 +12,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.DefaultCaret;
+
+import org.petctviewer.orthanc.ParametreConnexionHttp;
+
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JButton;
@@ -47,7 +50,8 @@ public class Monitoring_GUI extends JFrame {
 	 * Create the frame.
 	 */
 	public Monitoring_GUI() {
-		cdBurner=new CD_Burner();
+		// SK A CORRIGER
+		cdBurner=new CD_Burner(new ParametreConnexionHttp());
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();

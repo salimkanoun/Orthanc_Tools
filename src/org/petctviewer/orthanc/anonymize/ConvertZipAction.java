@@ -55,6 +55,13 @@ public ConvertZipAction(ParametreConnexionHttp connexion){
 		this.zipContent = zipContent;
 		this.temporary = temporary;
 	}
+	
+	public void setConvertZipAction(String file, String zipContent, boolean temporary){
+		this.setupPath = file;
+		this.zipContent.clear(); 
+		this.zipContent.add(zipContent);
+		this.temporary = temporary;
+	}
 
 	public void generateZip(boolean dicomDir) throws IOException {
 		// storing the IDs in a stringbuilder

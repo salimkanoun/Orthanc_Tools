@@ -17,6 +17,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.petctviewer.orthanc.ParametreConnexionHttp;
+import org.petctviewer.orthanc.anonymize.ConvertZipAction;
 
 import javax.swing.JTextArea;
 
@@ -30,8 +32,11 @@ public class CD_Burner {
 	private Path folder;
 	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 	private Date datenow;
+	private ParametreConnexionHttp connexion;
 	
-	
+	public CD_Burner (ParametreConnexionHttp connexion) {
+		this.connexion=connexion;
+	}
 
 	public void unzip(File zipFile, String nomId){
 	     byte[] buffer = new byte[1024];
@@ -117,7 +122,7 @@ public class CD_Burner {
 	}
 	
 	//Creer le fichier DAT pour injecter NOM, Date, Modalite
-	public File printDat(String nom, String id, String date, String studyDescription, String nomId) throws ParseException {
+	private File printDat(String nom, String id, String date, String studyDescription, String nomId) throws ParseException {
 		
 		//On parse la date pour avoir le format francais
 		//SK A AJOUTER DANS LES SETTINGS
@@ -262,7 +267,29 @@ public class CD_Burner {
 		//SK
 		monitoring.makeMonitor();
 		for (int i=0; i<monitoring.newStableStudyID.size(); i++) {
+			ConvertZipAction zipDownloader=new ConvertZipAction(connexion);
+			Path file;
+			File zip = null;
+			try {
+				file = Files.createTempFile("CD_"+dateFormat.format(datenow) , ".zip");
+				file.toFile().deleteOnExit();
+				zipDownloader.setConvertZipAction(file.toString(), monitoring.newStableStudyID.get(i), true);
+				zipDownloader.generateZip(true);
+				zip=zipDownloader.getGeneratedZipFile();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			//A Faire SK
+			//A recuperer String nom, String id, String date, String studyDescription, String nomId
+			unzip(zip,"nomID");
 			// SK TELECHARGER LES ZIP ET FAIRE LE PROCESSING
+			//On ecrit le DAT pour remplacer les champs nom, id, date et study
+        	//File dat = printDat(nom, id, date, study, nomId);
+        	//On lance la requette au robot
+        	//createCdBurner(nom, id, date, study, nomId, dat);
+        	//ajout des fichiers dans la liste de delete
+        	//recursiveDeleteOnExit(folder);
 			
 		}
 		
