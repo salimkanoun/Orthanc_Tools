@@ -13,10 +13,15 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
 import org.petctviewer.orthanc.anonymize.ConvertZipAction;
 
@@ -33,12 +38,14 @@ public class CD_Burner {
 	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 	private Date datenow;
 	private ParametreConnexionHttp connexion;
+	private Timer timer;
 	
-	public CD_Burner (ParametreConnexionHttp connexion) {
+	public CD_Burner (ParametreConnexionHttp connexion, JTextArea textArea) {
 		this.connexion=connexion;
+		this.textArea=textArea;
 	}
 
-	public void unzip(File zipFile, String nomId){
+	public void unzip(File zipFile){
 	     byte[] buffer = new byte[1024];
 	     try {
 	    	//create output directory is not exists
@@ -80,8 +87,8 @@ public class CD_Burner {
 	        zis.closeEntry();
 	    	zis.close();
 	    	//On efface le ZIP et le repertoier qu'on a extrait
-	    	FileUtils.deleteDirectory(zipFile.getParentFile());
-	    	textArea.append("original file deleted \n");
+	    	//FileUtils.deleteDirectory(zipFile.getParentFile());
+	    	//textArea.append("original file deleted \n");
 	    
 	     } catch (IOException e) {
 				e.printStackTrace();
@@ -90,7 +97,7 @@ public class CD_Burner {
 	
 	
 	// Creation du JDF Pour le gaveur
-	public void createCdBurner(String nom, String id, String date, String studyDescription, String nomId, File dat){
+	public void createCdBurner(String nom, String id, String date, String studyDescription, File dat){
 		
 		//REalisation du texte pour le Robot
 		
@@ -122,7 +129,7 @@ public class CD_Burner {
 	}
 	
 	//Creer le fichier DAT pour injecter NOM, Date, Modalite
-	private File printDat(String nom, String id, String date, String studyDescription, String nomId) throws ParseException {
+	private File printDat(String nom, String id, String date, String studyDescription) throws ParseException {
 		
 		//On parse la date pour avoir le format francais
 		//SK A AJOUTER DANS LES SETTINGS
@@ -260,20 +267,50 @@ public class CD_Burner {
 	//SK Remplace le WatchFolder
 	//A Faire
 	public void watchOrthancStableStudies() {
+		
 		Orthanc_Monitoring monitoring=new Orthanc_Monitoring();
 		//Met la derniere ligne pour commencer le monitoring
 		int last=monitoring.getChangeLastLine();
 		monitoring.setChangeLastLine(last);
-		//SK
-		monitoring.makeMonitor();
-		for (int i=0; i<monitoring.newStableStudyID.size(); i++) {
+		
+		TimerTask timerTask = new TimerTask() {
+
+			@Override
+			public void run() {
+				System.out.println("starting scann");
+				monitoring.makeMonitor();
+				makeCD(monitoring.newStableStudyID);
+				monitoring.newStableStudyID.clear();
+				
+			}
+			
+		};
+		
+        //running timer task as daemon thread
+        timer = new Timer(true);
+        //Toutes les 90 seconds
+        timer.scheduleAtFixedRate(timerTask, 0, (10*1000));
+               
+ 
+
+		
+	}
+	
+	public void stopMonitoring() {
+		timer.cancel();
+		System.out.println("Stoping scann");
+	}
+	
+	public void makeCD(List<String> newStableStudyID) {
+		for (int i=0; i<newStableStudyID.size(); i++) {
 			ConvertZipAction zipDownloader=new ConvertZipAction(connexion);
 			Path file;
 			File zip = null;
 			try {
+				datenow=new Date();
 				file = Files.createTempFile("CD_"+dateFormat.format(datenow) , ".zip");
 				file.toFile().deleteOnExit();
-				zipDownloader.setConvertZipAction(file.toString(), monitoring.newStableStudyID.get(i), true);
+				zipDownloader.setConvertZipAction(file.toString(), newStableStudyID.get(i), true);
 				//SK METHODE A MODIFIER POUR AVOIR LES SERIES NAME
 				zipDownloader.generateZip(true);
 				zip=zipDownloader.getGeneratedZipFile();
@@ -281,19 +318,43 @@ public class CD_Burner {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			//A Faire SK
-			//A recuperer String nom, String id, String date, String studyDescription, String nomId
-			unzip(zip,"nomID");
-			// SK TELECHARGER LES ZIP ET FAIRE LE PROCESSING
-			//On ecrit le DAT pour remplacer les champs nom, id, date et study
-        	//File dat = printDat(nom, id, date, study, nomId);
+			JSONParser parser=new JSONParser();
+			JSONObject response = null;
+			try {
+				response=(JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/studies/"+ newStableStudyID.get(i)).toString());
+			} catch (org.json.simple.parser.ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			JSONObject mainPatientTag=(JSONObject) response.get("PatientMainDicomTags");
+			String nom=(String) mainPatientTag.get("PatientName");
+			String id=(String) mainPatientTag.get("PatientID");
+			JSONObject mainDicomTag=(JSONObject) response.get("MainDicomTags");
+			String date=(String) mainDicomTag.get("StudyDate");
+			String studyDescription=(String) mainDicomTag.get("StudyDescription");
+			if (studyDescription==null) studyDescription="N/A";
+			
+			
+			unzip(zip);
+			
+			File dat=null;
+			try {
+				dat = printDat(nom, id, date, studyDescription);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         	//On lance la requette au robot
-        	//createCdBurner(nom, id, date, study, nomId, dat);
+        	createCdBurner(nom, id, date, studyDescription, dat);
         	//ajout des fichiers dans la liste de delete
-        	//recursiveDeleteOnExit(folder);
+        	try {
+				recursiveDeleteOnExit(folder);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 		}
-		
 	}
 	
 	

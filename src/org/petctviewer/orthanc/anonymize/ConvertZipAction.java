@@ -58,7 +58,7 @@ public ConvertZipAction(ParametreConnexionHttp connexion){
 	
 	public void setConvertZipAction(String file, String zipContent, boolean temporary){
 		this.setupPath = file;
-		this.zipContent.clear(); 
+		this.zipContent = new ArrayList<String>(); 
 		this.zipContent.add(zipContent);
 		this.temporary = temporary;
 	}

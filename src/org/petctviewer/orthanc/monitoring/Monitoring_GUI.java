@@ -29,6 +29,7 @@ public class Monitoring_GUI extends JFrame {
 	private Thread background;
 	private Preferences jPrefer;
 	private CD_Burner cdBurner;
+	private JTextArea textAreaCD = new JTextArea();
 
 	/**
 	 * Launch the application.
@@ -51,7 +52,7 @@ public class Monitoring_GUI extends JFrame {
 	 */
 	public Monitoring_GUI() {
 		// SK A CORRIGER
-		cdBurner=new CD_Burner(new ParametreConnexionHttp());
+		cdBurner=new CD_Burner(new ParametreConnexionHttp(), textAreaCD);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
@@ -83,13 +84,12 @@ public class Monitoring_GUI extends JFrame {
 				contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 				contentPane.setLayout(new BorderLayout(0, 0));
 				
-				JTextArea textArea = new JTextArea();
-				textArea.setRows(5);
-				DefaultCaret caret = (DefaultCaret) textArea.getCaret();
+				textAreaCD.setRows(5);
+				DefaultCaret caret = (DefaultCaret) textAreaCD.getCaret();
 				caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
 				JScrollPane scrollPane = new JScrollPane();
-				scrollPane.setViewportView(textArea);
+				scrollPane.setViewportView(textAreaCD);
 				contentPane.add(scrollPane, BorderLayout.CENTER);
 				
 				JPanel panel = new JPanel();
@@ -104,20 +104,13 @@ public class Monitoring_GUI extends JFrame {
 						}
 						
 						else {
-								textArea.append("Monitoring Orthanc \n");
+								textAreaCD.append("Monitoring Orthanc \n");
 								//On ouvre le watcher dans un nouveau thread pour ne pas bloquer l'interface
 								background=new Thread (new Runnable() 
 							    {
 							      public void run()
 							      {
 							    	  cdBurner.watchOrthancStableStudies();
-							    	 /*try {
-							    		  //SK ICI A IMPLEMENTER
-							    		 // Remplacer par le Watch API
-							    		 //cdBurner.watchFolder();
-										} catch (IOException | InterruptedException | ParseException e) {
-											e.printStackTrace();
-										}*/
 							      }
 							    });
 							   background.start();
@@ -149,8 +142,9 @@ public class Monitoring_GUI extends JFrame {
 				btnStopMonitoring.setEnabled(false);
 				btnStopMonitoring.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
-						background.interrupt();
-						textArea.append("Monitoring Terminated \n");
+						cdBurner.stopMonitoring();
+						//background.interrupt();
+						textAreaCD.append("Monitoring Terminated \n");
 						btnStartMonitoring.setEnabled(true);
 						btnStopMonitoring.setEnabled(false);
 						

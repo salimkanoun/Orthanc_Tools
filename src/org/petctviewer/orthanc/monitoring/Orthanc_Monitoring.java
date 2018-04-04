@@ -60,13 +60,14 @@ public int getChangeLastLine() {
 	StringBuilder sb;
 	JSONObject changes = null;
 	try {
-		sb = connexion.makeGetConnectionAndStringBuilder("/changes");
+		sb = connexion.makeGetConnectionAndStringBuilder("/changes?last");
 		changes=(JSONObject) parser.parse(sb.toString());
 	} catch (ParseException e) {
 		e.printStackTrace();
 	}
 	
-	int last=(int) changes.get("Last");
+	int last=Integer.parseInt(changes.get("Last").toString());
+	System.out.println(last);
 	
 	return last;
 }
@@ -83,6 +84,7 @@ public void setChangeLastLine(int last) {
 private void parseOutput(String outputStream) throws ParseException {
 	
 	changes=(JSONObject) parser.parse(outputStream);
+	System.out.println(changes.toString());
 	JSONArray changesArray=(JSONArray) changes.get("Changes");
 	for (int i=0; i<changesArray.size(); i++) {
 		JSONObject changeEvent=(JSONObject) changesArray.get(i);
@@ -94,7 +96,7 @@ private void parseOutput(String outputStream) throws ParseException {
 		 
 		else if (changeEvent.get("ChangeType").equals("NewStudy")) {
 			newStudyID.add(ID);
-			System.out.println(ID);
+			
 			//parseStudy(ID);
 		}
 		
@@ -105,6 +107,7 @@ private void parseOutput(String outputStream) throws ParseException {
 		
 		else if (changeEvent.get("ChangeType").equals("StablePatient")) {
 			newStablePatientID.add((String) changeEvent.get("ID"));
+			System.out.println("StablePatient");
 		}
 		
 		else if (changeEvent.get("ChangeType").equals("StableStudy")) {
