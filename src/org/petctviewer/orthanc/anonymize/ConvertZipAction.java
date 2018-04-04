@@ -83,14 +83,32 @@ public ConvertZipAction(ParametreConnexionHttp connexion){
 		if(!zipContent.isEmpty()){
 			InputStream is = null;
 			FileOutputStream fos = null;
+			HttpURLConnection conn = null;
 			try {
 				//On defini l'adresse de l'API
 				String url = null;
+				
 				// SK DANS NOUVELLE VERSION D ORTHANC CHANGER A NOUVELLE API AVEC LES SERIES DESCRIPTION
 				// SK AJOUTER NOUVELLE API SI UNE SEULE ID POUR AVOIR LES TAGS SERIES
-				if (!dicomDir) url="/tools/create-archive" ; else url="/tools/create-media?extended";
-				HttpURLConnection conn=connexion.makePostConnection(url, ids.toString());
 				
+				if (!dicomDir) {
+					url="/tools/create-archive" ;
+					conn=connexion.makePostConnection(url, ids.toString());
+				}
+				
+				//SK A MODIFIER SUR LA PROCHAINE VERSION ORTHANC POUR NOUVELLE API
+				//SUIVA CREATMEDIA QUELQUE SOIT LE NOMBRE
+				else if (dicomDir && (zipContent.size()==1)) {
+					url="/studies/"+zipContent.get(0)+"/media?extended";
+					conn=connexion.makeGetConnection(url);
+				}
+				
+				else if (dicomDir && (zipContent.size()>1)) {
+					url="/tools/create-media";
+					conn=connexion.makePostConnection(url, ids.toString());
+					
+				}
+
 				is = conn.getInputStream();
 				fos = new FileOutputStream(f);
 				int bytesRead = -1;

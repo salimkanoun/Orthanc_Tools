@@ -1,6 +1,4 @@
 package org.petctviewer.orthanc.monitoring;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,16 +22,10 @@ public class Orthanc_Monitoring {
 	protected List<String> newSerieID = new ArrayList<String>();
 	
 	//Connxion API
-	ParametreConnexionHttp connexion=new ParametreConnexionHttp();
-	
-public static void main(String[] args) throws IOException, ParseException {
-	Orthanc_Monitoring monitor=new Orthanc_Monitoring();
-	monitor.makeMonitor();
-	
-	
-}
+	ParametreConnexionHttp connexion;
 
-public Orthanc_Monitoring() {
+public Orthanc_Monitoring(ParametreConnexionHttp connexion) {
+	this.connexion=connexion;
 	
 }
 

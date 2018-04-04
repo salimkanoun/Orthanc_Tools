@@ -18,6 +18,7 @@ import org.petctviewer.orthanc.ParametreConnexionHttp;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JButton;
+import java.awt.GridLayout;
 
 @SuppressWarnings("serial")
 public class Monitoring_GUI extends JFrame {
@@ -29,7 +30,8 @@ public class Monitoring_GUI extends JFrame {
 	private Thread background;
 	private Preferences jPrefer;
 	private CD_Burner cdBurner;
-	private JTextArea textAreaCD = new JTextArea();
+	private JTextArea textAreaCD;
+	ParametreConnexionHttp parametre=new ParametreConnexionHttp();
 
 	/**
 	 * Launch the application.
@@ -51,8 +53,7 @@ public class Monitoring_GUI extends JFrame {
 	 * Create the frame.
 	 */
 	public Monitoring_GUI() {
-		// SK A CORRIGER
-		cdBurner=new CD_Burner(new ParametreConnexionHttp(), textAreaCD);
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
@@ -65,9 +66,38 @@ public class Monitoring_GUI extends JFrame {
 		
 		JPanel Main_Tab = new JPanel();
 		tabbedPane.addTab("Main", null, Main_Tab, null);
+		Main_Tab.setLayout(new BorderLayout(0, 0));
+		
+		JPanel main_Panel = new JPanel();
+		Main_Tab.add(main_Panel);
+		main_Panel.setLayout(new BorderLayout(0, 0));
+		
+		JPanel panel = new JPanel();
+		main_Panel.add(panel, BorderLayout.NORTH);
+		panel.setLayout(new BorderLayout(0, 0));
+		
+		JLabel MainLabelTitle = new JLabel("Monitoring Services");
+		panel.add(MainLabelTitle, BorderLayout.NORTH);
+		
+		JPanel panel_1 = new JPanel();
+		main_Panel.add(panel_1);
+		panel_1.setLayout(new GridLayout(0, 2, 0, 0));
+		
+		JLabel lblCdBurner = new JLabel("CD Burner");
+		panel_1.add(lblCdBurner);
+		
+		JLabel lblStop = new JLabel("Stop");
+		panel_1.add(lblStop);
+		
+		JLabel lblDoseMonitoring = new JLabel("Dose Monitoring");
+		panel_1.add(lblDoseMonitoring);
+		
+		JLabel lblStop_1 = new JLabel("Stop");
+		panel_1.add(lblStop_1);
 		
 		JPanel CD_Burner_Tab = new JPanel();
 		CD_Burner_Tab.add(buildCDPanel());
+		cdBurner=new CD_Burner(parametre, textAreaCD);
 		tabbedPane.addTab("CD Burner", null, CD_Burner_Tab, null);
 	}
 	
@@ -84,6 +114,7 @@ public class Monitoring_GUI extends JFrame {
 				contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 				contentPane.setLayout(new BorderLayout(0, 0));
 				
+				textAreaCD = new JTextArea();
 				textAreaCD.setRows(5);
 				DefaultCaret caret = (DefaultCaret) textAreaCD.getCaret();
 				caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);

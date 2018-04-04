@@ -19,7 +19,6 @@ import java.util.TimerTask;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.io.FileUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
@@ -45,7 +44,91 @@ public class CD_Burner {
 		this.textArea=textArea;
 	}
 
-	public void unzip(File zipFile){
+	
+	/**
+	 * Start Monitoring of Orthanc Change API every 90secs
+	 */
+	public void watchOrthancStableStudies() {
+		
+		Orthanc_Monitoring monitoring=new Orthanc_Monitoring(connexion);
+		//Met la derniere ligne pour commencer le monitoring
+		int last=monitoring.getChangeLastLine();
+		monitoring.setChangeLastLine(last);
+		
+		TimerTask timerTask = new TimerTask() {
+
+			@Override
+			public void run() {
+				System.out.println("starting scann");
+				monitoring.makeMonitor();
+				makeCD(monitoring.newStableStudyID);
+				monitoring.newStableStudyID.clear();
+				
+			}
+			
+		};
+		
+        //running timer task as daemon thread
+        timer = new Timer(true);
+        //Toutes les 90 seconds
+        timer.scheduleAtFixedRate(timerTask, 0, (90*1000));
+               
+ 
+
+		
+	}
+	
+	/**
+	 * Stop the monitoring every 90secs
+	 */
+	public void stopMonitoring() {
+		timer.cancel();
+		System.out.println("Stoping scann");
+	}
+	
+	/**
+	 * Make CD structure, download ZIP from Orthanc at study level and make CD process creation
+	 * @param newStableStudyID
+	 */
+	public void makeCD(List<String> newStableStudyID) {
+		for (int i=0; i<newStableStudyID.size(); i++) {
+			ConvertZipAction zipDownloader=new ConvertZipAction(connexion);
+			Path file;
+			try {
+				datenow=new Date();
+				file = Files.createTempFile("CD_"+dateFormat.format(datenow) , ".zip");
+				file.toFile().deleteOnExit();
+				zipDownloader.setConvertZipAction(file.toString(), newStableStudyID.get(i), true);
+				//SK METHODE A MODIFIER POUR AVOIR LES SERIES NAME
+				zipDownloader.generateZip(true);
+				File zip=zipDownloader.getGeneratedZipFile();
+				// Recuperation des données patients
+				JSONParser parser=new JSONParser();
+				JSONObject response=(JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/studies/"+ newStableStudyID.get(i)).toString());			JSONObject mainPatientTag=(JSONObject) response.get("PatientMainDicomTags");
+				String nom=(String) mainPatientTag.get("PatientName");
+				String id=(String) mainPatientTag.get("PatientID");
+				JSONObject mainDicomTag=(JSONObject) response.get("MainDicomTags");
+				String date=(String) mainDicomTag.get("StudyDate");
+				String studyDescription=(String) mainDicomTag.get("StudyDescription");
+				if (studyDescription==null) studyDescription="N/A";
+				// Unzip du fichier ZIP recupere
+				unzip(zip);
+				//Generation du Dat
+				File dat = printDat(nom, id, date, studyDescription);
+				//On efface tout a la sortie JVM
+				recursiveDeleteOnExit(folder);
+				// Creation du Cd
+				createCdBurner(nom, id, date, studyDescription, dat);
+				//On efface la study de Orthanc
+				connexion.makeDeleteConnection("/studies/"+newStableStudyID.get(i));
+			} catch (IOException | org.json.simple.parser.ParseException | ParseException e) {
+				e.printStackTrace();
+			}
+			
+		}
+	}
+	
+	private void unzip(File zipFile){
 	     byte[] buffer = new byte[1024];
 	     try {
 	    	//create output directory is not exists
@@ -82,13 +165,8 @@ public class CD_Burner {
 	            }
 	            ze = zis.getNextEntry();
 	     	}
-	    	
-
 	        zis.closeEntry();
 	    	zis.close();
-	    	//On efface le ZIP et le repertoier qu'on a extrait
-	    	//FileUtils.deleteDirectory(zipFile.getParentFile());
-	    	//textArea.append("original file deleted \n");
 	    
 	     } catch (IOException e) {
 				e.printStackTrace();
@@ -96,11 +174,17 @@ public class CD_Burner {
 	}
 	
 	
-	// Creation du JDF Pour le gaveur
-	public void createCdBurner(String nom, String id, String date, String studyDescription, File dat){
+	/**
+	 * Cree fichier JDF pour le graveur (parametrage de la gravure)
+	 * @param nom
+	 * @param id
+	 * @param date
+	 * @param studyDescription
+	 * @param dat
+	 */
+	private void createCdBurner(String nom, String id, String date, String studyDescription, File dat){
 		
 		//REalisation du texte pour le Robot
-		
 		String txtRobot= "# Making data CD\n"
 				//Peut definir le Job ID et le mettre le compteur dans registery si besoin de tracer les operation avec fichier STF
 				+ "#nombre de copies\n"
@@ -125,27 +209,26 @@ public class CD_Burner {
 				} finally {
 					pw.close();
 				}
+				
 		textArea.append("Request Sent , Patient name "+nom+" id "+id+" date "+date+" study "+studyDescription+"\n");
 	}
 	
 	//Creer le fichier DAT pour injecter NOM, Date, Modalite
 	private File printDat(String nom, String id, String date, String studyDescription) throws ParseException {
 		
-		//On parse la date pour avoir le format francais
-		//SK A AJOUTER DANS LES SETTINGS
-        SimpleDateFormat parser = new SimpleDateFormat("yyyyMMdd");
-        Date dateExamen = parser.parse(date);
-        //dateExamen=DateUtils.truncate(dateExamen, Calendar.DAY_OF_MONTH);
-        SimpleDateFormat formatter = new SimpleDateFormat(CD_Burner.dateFormatChoix);
-        String formattedDate = formatter.format(dateExamen);
-        
-        //On parse le nom pour enlever les _ et passer le prenom en minuscule
-        int separationNomPrenom=nom.indexOf("_", 0);
-        if (separationNomPrenom!=-1) {
-        	nom=nom.substring(0, separationNomPrenom+2)+nom.substring(separationNomPrenom+2).toLowerCase();
-        }
-        
-        
+       SimpleDateFormat parser = new SimpleDateFormat("yyyyMMdd");
+       Date dateExamen = parser.parse(date);
+       //dateExamen=DateUtils.truncate(dateExamen, Calendar.DAY_OF_MONTH);
+       SimpleDateFormat formatter = new SimpleDateFormat(CD_Burner.dateFormatChoix);
+       String formattedDate = formatter.format(dateExamen);
+       
+       //On parse le nom pour enlever les _ et passer le prenom en minuscule
+       int separationNomPrenom=nom.indexOf("_", 0);
+       if (separationNomPrenom!=-1) {
+       	nom=nom.substring(0, separationNomPrenom+2)+nom.substring(separationNomPrenom+2).toLowerCase();
+       }
+       
+       
 		String datFile = "patientName="+nom.replaceAll("_", " ")+"\n"
 					+ "patientId=" + id +"\n"
 					+ "patientDate="+ formattedDate + "\n"
@@ -165,214 +248,20 @@ public class CD_Burner {
 		return dat;
 	}
 	
-	/*public void watchFolder() throws IOException, InterruptedException, ParseException{
-		//On set le watcher
-		watcher = FileSystems.getDefault().newWatchService();
-		//On defini le repertoire du watch
-		Path dir = Paths.get(arriveRep);
-		dir.register(watcher, java.nio.file.StandardWatchEventKinds.ENTRY_CREATE);
-		//Initialize la variable qui contiendra le ZIP a traiter et les donnes patients
-		
-		File zipFile = null;
-		String nom=null;
-		String id=null;
-		String date=null;
-		String study=null;
-		String nomId=null;
-		
-		while (true) {
-		    WatchKey key;
-		    try {
-		        // wait for a key to be available
-		        key = watcher.take();
-		    } catch (InterruptedException ex) {
-		        return;
-		    }
-		 
-		    for (WatchEvent<?> event : key.pollEvents()) {
-		        // get event type
-		        WatchEvent.Kind<?> kind = event.kind();
-
-		        //Overflow si la JVM n'a pas pu suivre
-		        if (kind == java.nio.file.StandardWatchEventKinds.OVERFLOW) {
-		            continue;
-		        //Si on detecte une creation
-		        } else if (kind == java.nio.file.StandardWatchEventKinds.ENTRY_CREATE) {
-		        	//On attends 2 secondes pour verifier que le repertoire a ete cree
-		        	Thread.sleep(2000);
-		        	//On recupere l'ID et le nom du patient
-		        	File[] contenuRep=dir.toAbsolutePath().toFile().listFiles();
-		        	if (contenuRep.length==1 && contenuRep[0].isDirectory()){
-		        		nomId=contenuRep[0].toString();
-		        		int finRacine=nomId.lastIndexOf("\\");
-		        		nomId=nomId.substring(finRacine+1, nomId.length());
-		        		int delemiteuridNom=nomId.indexOf(" --- ");
-		        		int delimiteurPatientDate=nomId.indexOf(" --- ", delemiteuridNom+1);
-		        		int delemiteurPatientStudy=nomId.indexOf(" --- ", delimiteurPatientDate+1);
-		        		//System.out.println(nomId+delemiteuridNom+delimiteurPatientDate+delemiteurPatientStudy);
-		        		if (delemiteuridNom!=(-1) && delimiteurPatientDate!=(-1) &&delemiteurPatientStudy!=(-1)) {
-		        			id=nomId.substring(0,delemiteuridNom-1);
-		        			nom=nomId.substring(delemiteuridNom+5, delimiteurPatientDate);
-		        			date=nomId.substring(delimiteurPatientDate+5, delemiteurPatientStudy);
-		        			study=nomId.substring(delemiteurPatientStudy+5,nomId.length());
-		        			textArea.append("Recieved Patient "+nom+ " Date "+ "ID "+id+" Study "+study+"\n");
-		        		}
-		        	//On descend d'un niveau pour recuperer le zip
-		        	File[] repzip=contenuRep[0].listFiles();
-		        	
-		        	if (repzip.length==1 && repzip[0].isFile()) {
-		        		//System.out.println("un seul fichier tout va bien");
-		        		//On verifie que l'ecriture du fichier est terminee boucle d' attente
-		        		boolean isFileUnlocked = false;
-		        		do {
-		        			try {
-		        			org.apache.commons.io.FileUtils.touch(repzip[0]);
-		        		    isFileUnlocked = true;
-		        			} catch (IOException e) {
-		        				isFileUnlocked = false;
-		        				//On attends 1 sec avant de retester
-		        				Thread.sleep(1000);
-		        			}
-		        		
-		        		} while (isFileUnlocked==false);
-		        		//on lance l'unzip
-		        		zipFile=new File(repzip[0].getAbsoluteFile().toString());
-		        		}
-		        		
-		        	}
-		        	//On prend la date du processing
-		        	datenow = new Date();
-		    		// On fait l'unzip
-		        	unzip(zipFile, nomId);
-		        	//On ecrit le DAT pour remplacer les champs nom, id, date et study
-		        	File dat = printDat(nom, id, date, study, nomId);
-		        	//On lance la requette au robot
-		        	createCdBurner(nom, id, date, study, nomId, dat);
-		        	//ajout des fichiers dans la liste de delete
-		        	recursiveDeleteOnExit(folder);
-
-		        } 
-		       
-		    }
-		 
-		    // IMPORTANT: The key must be reset after processed
-		    boolean valid = key.reset();
-		    if (!valid) {
-		        break;
-		    }
-		}
-		
-	}*/
-	
-	//SK Remplace le WatchFolder
-	//A Faire
-	public void watchOrthancStableStudies() {
-		
-		Orthanc_Monitoring monitoring=new Orthanc_Monitoring();
-		//Met la derniere ligne pour commencer le monitoring
-		int last=monitoring.getChangeLastLine();
-		monitoring.setChangeLastLine(last);
-		
-		TimerTask timerTask = new TimerTask() {
-
-			@Override
-			public void run() {
-				System.out.println("starting scann");
-				monitoring.makeMonitor();
-				makeCD(monitoring.newStableStudyID);
-				monitoring.newStableStudyID.clear();
-				
-			}
-			
-		};
-		
-        //running timer task as daemon thread
-        timer = new Timer(true);
-        //Toutes les 90 seconds
-        timer.scheduleAtFixedRate(timerTask, 0, (10*1000));
-               
- 
-
-		
-	}
-	
-	public void stopMonitoring() {
-		timer.cancel();
-		System.out.println("Stoping scann");
-	}
-	
-	public void makeCD(List<String> newStableStudyID) {
-		for (int i=0; i<newStableStudyID.size(); i++) {
-			ConvertZipAction zipDownloader=new ConvertZipAction(connexion);
-			Path file;
-			File zip = null;
-			try {
-				datenow=new Date();
-				file = Files.createTempFile("CD_"+dateFormat.format(datenow) , ".zip");
-				file.toFile().deleteOnExit();
-				zipDownloader.setConvertZipAction(file.toString(), newStableStudyID.get(i), true);
-				//SK METHODE A MODIFIER POUR AVOIR LES SERIES NAME
-				zipDownloader.generateZip(true);
-				zip=zipDownloader.getGeneratedZipFile();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			JSONParser parser=new JSONParser();
-			JSONObject response = null;
-			try {
-				response=(JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/studies/"+ newStableStudyID.get(i)).toString());
-			} catch (org.json.simple.parser.ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			JSONObject mainPatientTag=(JSONObject) response.get("PatientMainDicomTags");
-			String nom=(String) mainPatientTag.get("PatientName");
-			String id=(String) mainPatientTag.get("PatientID");
-			JSONObject mainDicomTag=(JSONObject) response.get("MainDicomTags");
-			String date=(String) mainDicomTag.get("StudyDate");
-			String studyDescription=(String) mainDicomTag.get("StudyDescription");
-			if (studyDescription==null) studyDescription="N/A";
-			
-			
-			unzip(zip);
-			
-			File dat=null;
-			try {
-				dat = printDat(nom, id, date, studyDescription);
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        	//On lance la requette au robot
-        	createCdBurner(nom, id, date, studyDescription, dat);
-        	//ajout des fichiers dans la liste de delete
-        	try {
-				recursiveDeleteOnExit(folder);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		}
-	}
-	
-	
-        
-	public static void recursiveDeleteOnExit(Path path) throws IOException {
+	private static void recursiveDeleteOnExit(Path path) throws IOException {
 		  Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 		    @Override
 		    public FileVisitResult visitFile(Path file,
-		        @SuppressWarnings("unused") BasicFileAttributes attrs) {
+		        BasicFileAttributes attrs) {
 		      file.toFile().deleteOnExit();
 		      return FileVisitResult.CONTINUE;
 		    }
 		    @Override
 		    public FileVisitResult preVisitDirectory(Path dir,
-		        @SuppressWarnings("unused") BasicFileAttributes attrs) {
+		        BasicFileAttributes attrs) {
 		      dir.toFile().deleteOnExit();
 		      return FileVisitResult.CONTINUE;
 		    }
 		  });
-		}
+	}
 }
