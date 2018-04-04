@@ -87,6 +87,7 @@ public ConvertZipAction(ParametreConnexionHttp connexion){
 				//On defini l'adresse de l'API
 				String url = null;
 				// SK DANS NOUVELLE VERSION D ORTHANC CHANGER A NOUVELLE API AVEC LES SERIES DESCRIPTION
+				// SK AJOUTER NOUVELLE API SI UNE SEULE ID POUR AVOIR LES TAGS SERIES
 				if (!dicomDir) url="/tools/create-archive" ; else url="/tools/create-media?extended";
 				HttpURLConnection conn=connexion.makePostConnection(url, ids.toString());
 				

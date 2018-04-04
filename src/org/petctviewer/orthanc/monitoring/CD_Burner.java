@@ -274,6 +274,7 @@ public class CD_Burner {
 				file = Files.createTempFile("CD_"+dateFormat.format(datenow) , ".zip");
 				file.toFile().deleteOnExit();
 				zipDownloader.setConvertZipAction(file.toString(), monitoring.newStableStudyID.get(i), true);
+				//SK METHODE A MODIFIER POUR AVOIR LES SERIES NAME
 				zipDownloader.generateZip(true);
 				zip=zipDownloader.getGeneratedZipFile();
 			} catch (IOException e) {
