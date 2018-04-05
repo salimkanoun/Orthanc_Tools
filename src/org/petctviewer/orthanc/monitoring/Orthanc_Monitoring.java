@@ -68,6 +68,11 @@ public void setChangeLastLine(int last) {
 	this.last=last;
 }
 
+public void autoSetChangeLastLine() {
+	int last=getChangeLastLine();
+	this.last=last;
+}
+
 /**
  * Parse le 1er niveau de message avec les valeurs des 100 derniers changements
  * @param outputStream

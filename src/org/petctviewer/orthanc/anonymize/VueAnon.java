@@ -92,6 +92,7 @@ import ij.plugin.PlugIn;
 
 import org.petctviewer.orthanc.*;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
+import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.*;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
 
@@ -372,16 +373,22 @@ public class VueAnon extends JFrame implements PlugIn{
 					// memorise le dernier focus de table
 					JTable source= (JTable) e.getSource();
 					lastTableFocus=source;
+					//SK IMPLEMENTER TRACKING VISUEL
+					//source.setSelectionBackground(Color.white);
+					
+					
+					
 				}
 
 			@Override
 			public void focusLost(FocusEvent e) {
-				// rien a faire
+				JTable source= (JTable) e.getSource();
+				//source.setSelectionBackground(Color.lightGray);
 				
 			}
 		};
 		
-		JPanel tablesPanel = new JPanel(new GridBagLayout());
+		JPanel tablesPanel = new JPanel(new FlowLayout());
 		this.tableauPatients = new JTable(modelePatients);
 		this.tableauStudies = new JTable(modeleStudies);
 		this.tableauSeries = new JTable(modeleSeries);
@@ -2229,6 +2236,17 @@ public class VueAnon extends JFrame implements PlugIn{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////// END TAB 3 : SETUP //////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		Monitoring_GUI monitoring = new Monitoring_GUI();
+		JPanel panelMonitoring = (JPanel) monitoring.getContentPane();
+		
+		
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////// TAB 4 : Monitor //////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+				
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////// END TAB 4 : Monitor //////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		tabbedPane = new JTabbedPane();
 		tabbedPane.addChangeListener(new ChangeListener() {
@@ -2365,9 +2383,14 @@ public class VueAnon extends JFrame implements PlugIn{
 
 		p2.add(mainPanelExport);
 		tabbedPane.add("Export Anonymized", p2);
+		
+		//Add monitoring
+		tabbedPane.addTab("Monitoring", panelMonitoring);
 
 		p3.add(mainPanelSetup);
 		tabbedPane.add("Setup", p3);
+		
+		
 
 		Image image = new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage();
 		this.setIconImage(image);

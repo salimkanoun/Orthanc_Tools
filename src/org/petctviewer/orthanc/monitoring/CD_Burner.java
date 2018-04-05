@@ -48,12 +48,11 @@ public class CD_Burner {
 	/**
 	 * Start Monitoring of Orthanc Change API every 90secs
 	 */
-	public void watchOrthancStableStudies() {
+	public void startCDMonitoring() {
 		
 		Orthanc_Monitoring monitoring=new Orthanc_Monitoring(connexion);
 		//Met la derniere ligne pour commencer le monitoring
-		int last=monitoring.getChangeLastLine();
-		monitoring.setChangeLastLine(last);
+		monitoring.autoSetChangeLastLine();
 		
 		TimerTask timerTask = new TimerTask() {
 
@@ -81,7 +80,7 @@ public class CD_Burner {
 	/**
 	 * Stop the monitoring every 90secs
 	 */
-	public void stopMonitoring() {
+	public void stopCDMonitoring() {
 		timer.cancel();
 		System.out.println("Stoping scann");
 	}
@@ -102,7 +101,7 @@ public class CD_Burner {
 				//SK METHODE A MODIFIER POUR AVOIR LES SERIES NAME
 				zipDownloader.generateZip(true);
 				File zip=zipDownloader.getGeneratedZipFile();
-				// Recuperation des données patients
+				// Recuperation des donnï¿½es patients
 				JSONParser parser=new JSONParser();
 				JSONObject response=(JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/studies/"+ newStableStudyID.get(i)).toString());			JSONObject mainPatientTag=(JSONObject) response.get("PatientMainDicomTags");
 				String nom=(String) mainPatientTag.get("PatientName");
