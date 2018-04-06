@@ -366,27 +366,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		////////////////////////// TABLES ///////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////
 		
-		//Listener pour savoir quelle table a le dernier focus
-		FocusListener tableFocus=new FocusListener() {
-			@Override
-				public void focusGained(FocusEvent e) {
-					// memorise le dernier focus de table
-					JTable source= (JTable) e.getSource();
-					lastTableFocus=source;
-					//SK IMPLEMENTER TRACKING VISUEL
-					//source.setSelectionBackground(Color.white);
-					
-					
-					
-				}
 
-			@Override
-			public void focusLost(FocusEvent e) {
-				JTable source= (JTable) e.getSource();
-				//source.setSelectionBackground(Color.lightGray);
-				
-			}
-		};
 		
 		JPanel tablesPanel = new JPanel(new FlowLayout());
 		this.tableauPatients = new JTable(modelePatients);
@@ -398,6 +378,43 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.sorterPatients.setSortsOnUpdates(true);
 		this.sorterStudies.setSortsOnUpdates(true);
 		this.sorterSeries.setSortsOnUpdates(true);
+		
+		//Listener pour savoir quelle table a le dernier focus
+		FocusListener tableFocus=new FocusListener() {
+			Color background= tableauSeries.getSelectionBackground();
+			@Override
+				public void focusGained(FocusEvent e) {
+					// memorise le dernier focus de table
+					JTable source= (JTable) e.getSource();
+					lastTableFocus=source;
+					//SK IMPLEMENTER TRACKING VISUEL
+					if (source== tableauStudies){
+						tableauPatients.setSelectionBackground(Color.LIGHT_GRAY);
+						tableauStudies.setSelectionBackground(background);
+					}
+					else if (source==tableauPatients){
+						tableauStudies.setSelectionBackground(background);
+						tableauPatients.setSelectionBackground(background);
+					}
+					
+					
+					
+					
+				}
+
+			@Override
+			public void focusLost(FocusEvent e) {
+				JTable source= (JTable) e.getSource();
+				if ( source==tableauPatients) {
+					tableauPatients.setSelectionBackground(Color.lightGray);
+				}
+				else if(source==tableauStudies){
+					tableauStudies.setSelectionBackground(Color.lightGray);
+				}
+				
+				
+			}
+		};
 		
 		//Ajout des listener focus tableau
 		
@@ -494,10 +511,12 @@ public class VueAnon extends JFrame implements PlugIn{
 		JMenuItem menuItemDeleteStudy = new JMenuItem("Delete this study");
 		menuItemDeleteStudy.addActionListener(new DeleteActionMainPanel(connexionHttp, "Study", this.modeleStudies, this.tableauStudies, 
 				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this.state, this, search));
-
+		
 		popMenuStudies.add(menuItemModifyStudy);
 		popMenuStudies.addSeparator();
 		popMenuStudies.add(menuItemDeleteStudy);
+		//SK VOIR COMMENT TRANSFERER LE FOCUS VERS LA TABLE
+		//popMenuStudies.transferFocusBackward();
 		this.tableauStudies.setComponentPopupMenu(popMenuStudies);
 
 		////////////////////////// SERIES ///////////////////////////////
