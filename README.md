@@ -23,6 +23,8 @@ Features :
  - Import :
    - Recursive import to Orthanc of local DICOMs
    
+ - Monitoring : Work In Progress
+   
  Contribution from http://petctviewer.org, free and open source PET/CT viewer based on Fiji/ImageJ
  
  GPL v.3 Licence
