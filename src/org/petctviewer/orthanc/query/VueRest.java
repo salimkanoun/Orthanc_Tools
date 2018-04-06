@@ -896,21 +896,24 @@ public class VueRest extends JFrame implements PlugIn{
 						else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "ID")) results=autoQuery.sendQuery("*",textFieldNameIDAcc.getText(),df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),"*", comboBox.getSelectedItem().toString());
 						else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "Accession")) results=autoQuery.sendQuery("*","*",df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),textFieldNameIDAcc.getText(), comboBox.getSelectedItem().toString());
 						
+						textAreaConsole.append("found "+ results[1] +" studies,");
+						
 						//On retrieve toutes les studies 
 						if (autoQuery.chckbxSeriesFilter && Integer.parseInt(results[1])<=autoQuery.discard) {
 							filterSerie(0, results, null);
 						}
 						else if (!autoQuery.chckbxSeriesFilter && Integer.parseInt(results[1])<=autoQuery.discard) {
 							autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery. discard, 1);
+							textAreaConsole.append("Retrieved \n");
 						}
 						else if(Integer.parseInt(results[1])>autoQuery.discard) {
-							System.out.println("Result over limit discard");
+							textAreaConsole.append("Discarded (over limits) \n");
 						}
 						else if(results.length==0) {
-							System.out.println("empty results");
+							textAreaConsole.append("Empty results \n");
 						}
 						
-				    	
+						
 				    	
 				    }};
 				    

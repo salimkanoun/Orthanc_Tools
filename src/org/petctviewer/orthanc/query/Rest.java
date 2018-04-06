@@ -63,7 +63,6 @@ public class Rest {
 	public String[] getQueryAnswerIndexes(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber, String aet) {
 		// We call getQueryID to generate a query ID
 		String idQuery =  this.getQueryID(level, name, id, studyDate, modality, studyDescription, accessionNumber, aet);
-		System.out.println(idQuery);
 		JSONArray contentArray = null;
 		try {
 			contentArray = (JSONArray) parser.parse(connexion.makeGetConnectionAndStringBuilder("/queries/" + idQuery + "/answers/").toString());
