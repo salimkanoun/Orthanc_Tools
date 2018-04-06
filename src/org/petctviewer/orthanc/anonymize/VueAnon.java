@@ -76,6 +76,8 @@ import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
@@ -469,6 +471,34 @@ public class VueAnon extends JFrame implements PlugIn{
 		popMenuPatients.addSeparator();
 		popMenuPatients.add(menuItemDeletePatients);
 		
+		popMenuPatients.addPopupMenuListener(new PopupMenuListener() {
+
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        int rowAtPoint = tableauPatients.rowAtPoint(SwingUtilities.convertPoint(popMenuPatients, new Point(0, 0), tableauPatients));
+                        if (rowAtPoint > -1) {
+                        	tableauPatients.setRowSelectionInterval(rowAtPoint, rowAtPoint);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+        });
+		
 		this.tableauPatients.setComponentPopupMenu(popMenuPatients);
 
 		////////////////////////// STUDIES ///////////////////////////////
@@ -515,8 +545,35 @@ public class VueAnon extends JFrame implements PlugIn{
 		popMenuStudies.add(menuItemModifyStudy);
 		popMenuStudies.addSeparator();
 		popMenuStudies.add(menuItemDeleteStudy);
-		//SK VOIR COMMENT TRANSFERER LE FOCUS VERS LA TABLE
-		//popMenuStudies.transferFocusBackward();
+		popMenuStudies.addPopupMenuListener(new PopupMenuListener() {
+
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        int rowAtPoint = tableauStudies.rowAtPoint(SwingUtilities.convertPoint(popMenuStudies, new Point(0, 0), tableauStudies));
+                        if (rowAtPoint > -1) {
+                        	tableauStudies.setRowSelectionInterval(rowAtPoint, rowAtPoint);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+        });
+		
+		
 		this.tableauStudies.setComponentPopupMenu(popMenuStudies);
 
 		////////////////////////// SERIES ///////////////////////////////
@@ -617,6 +674,34 @@ public class VueAnon extends JFrame implements PlugIn{
 		popMenuSeries.add(menuItemDeleteAllSop);
 		popMenuSeries.addSeparator();
 		popMenuSeries.add(menuItemDeleteSeries);
+		popMenuSeries.addPopupMenuListener(new PopupMenuListener() {
+
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        int rowAtPoint = tableauSeries.rowAtPoint(SwingUtilities.convertPoint(popMenuSeries, new Point(0, 0), tableauSeries));
+                        if (rowAtPoint > -1) {
+                        	tableauSeries.setRowSelectionInterval(rowAtPoint, rowAtPoint);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+        });
+		
 		this.tableauSeries.setComponentPopupMenu(popMenuSeries);
 
 		this.tableauSeries.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){

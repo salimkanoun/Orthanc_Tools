@@ -51,7 +51,6 @@ public class TableStudiesMouseListener extends MouseAdapter {
 			if(this.modele.getRowCount() != 0){
 				String studyID = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 3);
 				this.modeleSeries.addSerie(studyID);
-				this.tableauSeries.setRowSelectionInterval(0,0);
 			}
 		} catch (IOException e1) {
 			e1.printStackTrace();

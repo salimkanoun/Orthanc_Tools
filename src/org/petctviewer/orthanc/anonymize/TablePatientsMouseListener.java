@@ -56,7 +56,6 @@ public class TablePatientsMouseListener extends MouseAdapter {
 				String patientID = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 1);
 				String patientUID = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 2);
 				this.modeleStudies.addStudy(patientName, patientID, patientUID);
-				this.tableauStudies.setRowSelectionInterval(0,0);
 			}
 		}catch (Exception e1) {
 			e1.printStackTrace();
