@@ -386,17 +386,21 @@ public class VueAnon extends JFrame implements PlugIn{
 			Color background= tableauSeries.getSelectionBackground();
 			@Override
 				public void focusGained(FocusEvent e) {
-					// memorise le dernier focus de table
+					//memorise le dernier focus de table
 					JTable source= (JTable) e.getSource();
 					lastTableFocus=source;
-					//SK IMPLEMENTER TRACKING VISUEL
-					if (source== tableauStudies){
+					//Tracking Visuel de la selection
+					if (source==tableauStudies){
 						tableauPatients.setSelectionBackground(Color.LIGHT_GRAY);
 						tableauStudies.setSelectionBackground(background);
 					}
 					else if (source==tableauPatients){
 						tableauStudies.setSelectionBackground(background);
 						tableauPatients.setSelectionBackground(background);
+					}
+					else if (source==tableauSeries){
+						tableauStudies.setSelectionBackground(Color.LIGHT_GRAY);
+						tableauPatients.setSelectionBackground(Color.LIGHT_GRAY);
 					}
 					
 					
@@ -407,12 +411,15 @@ public class VueAnon extends JFrame implements PlugIn{
 			@Override
 			public void focusLost(FocusEvent e) {
 				JTable source= (JTable) e.getSource();
-				if ( source==tableauPatients) {
-					tableauPatients.setSelectionBackground(Color.lightGray);
+				if (e.getOppositeComponent() instanceof JTable) {
+					if (source==tableauPatients) {
+						tableauPatients.setSelectionBackground(Color.lightGray);
+					}
+						else if(source==tableauStudies){
+							tableauStudies.setSelectionBackground(Color.lightGray);
+					}
 				}
-				else if(source==tableauStudies){
-					tableauStudies.setSelectionBackground(Color.lightGray);
-				}
+				
 				
 				
 			}
@@ -444,7 +451,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.tableauPatients.setDefaultRenderer(Date.class, new DateRendererAnon());
 		this.tableauPatients.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		this.tableauPatients.addMouseListener(new TablePatientsMouseListener(
-				this, this.tableauPatients, this.modelePatients, this.tableauStudies, this.modeleStudies, this.modeleSeries, 
+				this, this.tableauPatients, this.modelePatients, this.modeleStudies, this.modeleSeries, 
 				tableauPatients.getSelectionModel()));
 		List<RowSorter.SortKey> sortKeysPatients = new ArrayList<>();
 		sortKeysPatients.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
@@ -470,7 +477,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		popMenuPatients.add(menuItemModifyPatients);
 		popMenuPatients.addSeparator();
 		popMenuPatients.add(menuItemDeletePatients);
-		
+		//Selectionne la ligne avant affichage du popupMenu
 		popMenuPatients.addPopupMenuListener(new PopupMenuListener() {
 
             @Override
@@ -488,14 +495,10 @@ public class VueAnon extends JFrame implements PlugIn{
 
             @Override
             public void popupMenuCanceled(PopupMenuEvent e) {
-                // TODO Auto-generated method stub
-
             }
 
 			@Override
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
-				// TODO Auto-generated method stub
-				
 			}
         });
 		
@@ -519,8 +522,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.tableauStudies.setPreferredScrollableViewportSize(new Dimension(410,267));
 		this.tableauStudies.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
-		this.tableauStudies.addMouseListener(new TableStudiesMouseListener(this, this.tableauStudies, this.modeleStudies,
-				this.tableauSeries, this.modeleSeries, tableauStudies.getSelectionModel()));
+		this.tableauStudies.addMouseListener(new TableStudiesMouseListener(this, this.tableauStudies, this.modeleStudies, this.modeleSeries, tableauStudies.getSelectionModel()));
 		List<RowSorter.SortKey> sortKeysStudies = new ArrayList<>();
 		sortKeysStudies.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
 		sortKeysStudies.add(new RowSorter.SortKey(2, SortOrder.ASCENDING));
