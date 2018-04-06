@@ -111,7 +111,7 @@ public class AutoQuery  {
 			Date From=null;
 			Date To=null;
 			String date=null;
-			
+
 			if (StringUtils.equals(dateFrom, "*")==false) {From=df.parse(dateFrom);};
 			if (StringUtils.equals(dateTo, "*")==false) {To=df.parse(dateTo);};
 			
@@ -163,14 +163,36 @@ public class AutoQuery  {
 	 * @return
 	 */
 	protected Date tenPM() {
-		Calendar today =new GregorianCalendar();
-		Calendar tenPM =new GregorianCalendar(
-		today.get(Calendar.YEAR),
-		today.get(Calendar.MONTH),
-		today.get(Calendar.DAY_OF_MONTH),
-		fTEN_PM,
-		fZERO_MINUTES
-		);
+		
+		Calendar currentDate = new GregorianCalendar();
+        
+        Calendar currentTheoricalDate = new GregorianCalendar();
+        currentTheoricalDate.set(Calendar.HOUR_OF_DAY, fTEN_PM );
+        currentTheoricalDate.set(Calendar.MINUTE, fZERO_MINUTES);
+        
+        Calendar tenPM;
+        
+        if (currentDate.before(currentTheoricalDate)) {
+        	tenPM =new GregorianCalendar(
+        	currentDate.get(Calendar.YEAR),
+        	currentDate.get(Calendar.MONTH),
+        	currentDate.get(Calendar.DAY_OF_MONTH),
+			fTEN_PM,
+			fZERO_MINUTES
+        	);
+        }
+        else {
+        	currentDate.add(Calendar.DAY_OF_MONTH, 1);
+        	//SK AJOUTER 24h
+        	tenPM =new GregorianCalendar(
+                	currentDate.get(Calendar.YEAR),
+                	currentDate.get(Calendar.MONTH),
+                	currentDate.get(Calendar.DAY_OF_MONTH),
+        			fTEN_PM,
+        			fZERO_MINUTES
+        			);
+        }
+		
 		return tenPM.getTime();
 	}
 	

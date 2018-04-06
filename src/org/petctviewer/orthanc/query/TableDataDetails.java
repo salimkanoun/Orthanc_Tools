@@ -69,10 +69,7 @@ public class TableDataDetails extends AbstractTableModel{
 	public void addDetails(String patientName, String patientID, String studyDate, 
 			String studyDescription, String accessionNumber, String studyInstanceUID, String aet) throws Exception{
 		this.listIndexes = new ArrayList<String>();
-		//rest.setAET(aet);
-		//rest.getSeriesDescriptionID(studyInstanceUID);
 		this.idURL = rest.getSeriesDescriptionID(studyInstanceUID, aet);
-		// SK INSERER ICI LES AUTRE INFO INTERESSANTE NOTAMMENT LE SERIE NUMBER
 		String[][] studyDescriptionAndModality = rest.getSeriesDescriptionValues(idURL);
 		
 		Details d;
@@ -90,7 +87,7 @@ public class TableDataDetails extends AbstractTableModel{
 				}
 			}
 		}
-		//rest.resetURL(aet);
+
 	}
 
 	public void removeDetails(int rowIndex){

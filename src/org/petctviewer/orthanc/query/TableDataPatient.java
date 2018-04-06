@@ -76,7 +76,7 @@ public class TableDataPatient extends AbstractTableModel{
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
-	public boolean addPatient(String patientName, String patientID, String studyDate, String modality, 
+	public void addPatient(String patientName, String patientID, String studyDate, String modality, 
 			String studyDescription, String accessionNumber, String aet) throws Exception{
 		DateFormat parser = new SimpleDateFormat("yyyyMMdd");
 		int i;
@@ -97,7 +97,7 @@ public class TableDataPatient extends AbstractTableModel{
 				fireTableRowsInserted(patients.size() - 1, patients.size() - 1);
 			}
 		}
-		return true;
+
 	}
 
 	public void removePatient(int rowIndex){

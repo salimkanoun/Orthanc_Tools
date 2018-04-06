@@ -63,11 +63,11 @@ public class Rest {
 	public String[] getQueryAnswerIndexes(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber, String aet) {
 		// We call getQueryID to generate a query ID
 		String idQuery =  this.getQueryID(level, name, id, studyDate, modality, studyDescription, accessionNumber, aet);
+		System.out.println(idQuery);
 		JSONArray contentArray = null;
 		try {
 			contentArray = (JSONArray) parser.parse(connexion.makeGetConnectionAndStringBuilder("/queries/" + idQuery + "/answers/").toString());
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -219,7 +219,6 @@ public class Rest {
 	/*
 	 * This method returns the series's description's (index 0) and modalities (index 1) values in an array
 	 */
-	// SK METHODE A UTILISER DANS AUTOQUERY POUR FILTER LE LEVEL SERIE
 	public String[] [] getSeriesDescriptionValues(String idURL) {
 		String[] [] values=null;
 		try {
@@ -260,7 +259,6 @@ public class Rest {
 			}
 			
 		} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 		return values;
@@ -273,7 +271,6 @@ public class Rest {
 		try {
 			connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve/", retrieveAET);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
