@@ -24,6 +24,11 @@ import java.awt.Color;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import java.awt.Dimension;
+import javax.swing.JComboBox;
+import javax.swing.JCheckBox;
+import javax.swing.JTextField;
+import java.awt.Component;
+import javax.swing.Box;
 
 @SuppressWarnings("serial")
 public class Monitoring_GUI extends JFrame {
@@ -35,13 +40,16 @@ public class Monitoring_GUI extends JFrame {
 	
 	private CD_Burner cdBurner;
 	private JTextArea textAreaCD;
-	private ParametreConnexionHttp parametre=new ParametreConnexionHttp();
 	
 	private JLabel lbl_CD_Status, lbl_DoseMonitoring_Status;
 	
 	
 	private boolean cdMonitoringStarted, doseMonitoringStarted;
 	private JTable table_1;
+	private JTextField textField_If_Autorouting;
+	private JTextField textField_Modality_Study_AutroRetrieve;
+	private JTextField textField_Date_AuToRetrieve;
+	private JTextField textField_StudyDescription_Study;
 
 	/**
 	 * Launch the application.
@@ -50,7 +58,7 @@ public class Monitoring_GUI extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Monitoring_GUI frame = new Monitoring_GUI();
+					Monitoring_GUI frame = new Monitoring_GUI(new ParametreConnexionHttp());
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -62,8 +70,7 @@ public class Monitoring_GUI extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public Monitoring_GUI() {
-		
+	public Monitoring_GUI(ParametreConnexionHttp parametre) {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
@@ -72,6 +79,7 @@ public class Monitoring_GUI extends JFrame {
 		setContentPane(contentPane);
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		contentPane.add(tabbedPane, BorderLayout.CENTER);
 		
 		JPanel panel_Main_Tab = new JPanel();
@@ -229,6 +237,116 @@ public class Monitoring_GUI extends JFrame {
 						
 						JButton btnRemove = new JButton("Remove");
 						panel_1.add(btnRemove);
+						
+						JPanel panel_AutoRouting = new JPanel();
+						tabbedPane.addTab("Auto Routing", null, panel_AutoRouting, null);
+						
+						JPanel panel_AutoRouting_main = new JPanel();
+						panel_AutoRouting.add(panel_AutoRouting_main);
+						panel_AutoRouting_main.setLayout(new BorderLayout(0, 0));
+						
+						JPanel panel_sendTo = new JPanel();
+						panel_AutoRouting_main.add(panel_sendTo, BorderLayout.SOUTH);
+						
+						JLabel lblSendTo = new JLabel("Send To");
+						panel_sendTo.add(lblSendTo);
+						
+						JComboBox comboBox_remoteAET = new JComboBox();
+						panel_sendTo.add(comboBox_remoteAET);
+						
+						JPanel panel_4 = new JPanel();
+						panel_AutoRouting_main.add(panel_4, BorderLayout.WEST);
+						panel_4.setLayout(new GridLayout(0, 1, 0, 0));
+						
+						JPanel panel_Each = new JPanel();
+						panel_4.add(panel_Each);
+						
+						JLabel lblEach_1 = new JLabel("Each ");
+						panel_Each.add(lblEach_1);
+						
+						JCheckBox chckbxStablePatient = new JCheckBox("Stable Patient");
+						panel_Each.add(chckbxStablePatient);
+						
+						JCheckBox chckbxStableStudy = new JCheckBox("Stable Study");
+						panel_Each.add(chckbxStableStudy);
+						
+						JCheckBox chckbxStableSerie = new JCheckBox("Stable Serie");
+						panel_Each.add(chckbxStableSerie);
+						
+						JPanel panel_If = new JPanel();
+						panel_4.add(panel_If);
+						
+						JLabel lblIf = new JLabel("If");
+						panel_If.add(lblIf);
+						
+						JComboBox comboBox_If = new JComboBox();
+						panel_If.add(comboBox_If);
+						
+						JLabel label = new JLabel("=");
+						panel_If.add(label);
+						
+						textField_If_Autorouting = new JTextField();
+						panel_If.add(textField_If_Autorouting);
+						textField_If_Autorouting.setColumns(10);
+						
+						JPanel panel_AutoRetrieve = new JPanel();
+						tabbedPane.addTab("Auto-Retrieve", null, panel_AutoRetrieve, null);
+						
+						JPanel panel_AutoRetrieve_Main = new JPanel();
+						panel_AutoRetrieve.add(panel_AutoRetrieve_Main);
+						panel_AutoRetrieve_Main.setLayout(new BorderLayout(0, 0));
+						
+						JPanel panel_3 = new JPanel();
+						panel_AutoRetrieve_Main.add(panel_3, BorderLayout.NORTH);
+						
+						JLabel lblRetrieveFrom = new JLabel("Retrieve Patient's studies From :");
+						panel_3.add(lblRetrieveFrom);
+						
+						JComboBox comboBox = new JComboBox();
+						panel_3.add(comboBox);
+						
+						JLabel lblEach = new JLabel("each");
+						panel_3.add(lblEach);
+						
+						JCheckBox chckbxNewPatient = new JCheckBox("New Patient");
+						panel_3.add(chckbxNewPatient);
+						
+						JCheckBox chckbxNewStudy = new JCheckBox("New Study");
+						panel_3.add(chckbxNewStudy);
+						
+						JPanel panel_AutoRetrieve_Filter = new JPanel();
+						panel_AutoRetrieve.add(panel_AutoRetrieve_Filter);
+						panel_AutoRetrieve_Filter.setLayout(new GridLayout(0, 2, 10, 10));
+						
+						JLabel lblFilters = new JLabel("Filters : ");
+						panel_AutoRetrieve_Filter.add(lblFilters);
+						
+						Component horizontalStrut = Box.createHorizontalStrut(20);
+						panel_AutoRetrieve_Filter.add(horizontalStrut);
+						
+						JLabel lblModalityInStudy = new JLabel("Modality in study");
+						panel_AutoRetrieve_Filter.add(lblModalityInStudy);
+						
+						textField_Modality_Study_AutroRetrieve = new JTextField();
+						textField_Modality_Study_AutroRetrieve.setText("*");
+						panel_AutoRetrieve_Filter.add(textField_Modality_Study_AutroRetrieve);
+						textField_Modality_Study_AutroRetrieve.setColumns(10);
+						
+						JLabel lblDateFilter = new JLabel("Date");
+						panel_AutoRetrieve_Filter.add(lblDateFilter);
+						
+						textField_Date_AuToRetrieve = new JTextField();
+						textField_Date_AuToRetrieve.setText("*-*");
+						panel_AutoRetrieve_Filter.add(textField_Date_AuToRetrieve);
+						textField_Date_AuToRetrieve.setColumns(10);
+						
+						JLabel lblStudyDescription = new JLabel("Study Description Contains");
+						panel_AutoRetrieve_Filter.add(lblStudyDescription);
+						
+						textField_StudyDescription_Study = new JTextField();
+						textField_StudyDescription_Study.setText("*");
+						panel_AutoRetrieve_Filter.add(textField_StudyDescription_Study);
+						textField_StudyDescription_Study.setColumns(10);
 	}
 	
 	private void setCDPreference() {

@@ -303,24 +303,12 @@ public class VueRest extends JFrame implements PlugIn{
 		// Creating the queryAET comboBox
 		try{
 			tabAETs = modele.getAETs();
-			queryAET = new JComboBox<Object>(tabAETs);
-		}catch(IOException e1){
+			
+		}catch(IOException | NullPointerException e1){
 			e1.printStackTrace();
-		}catch(NullPointerException e){
-			JOptionPane.showMessageDialog(null, "Please set an AET before using this app (You will have to close it).",
-					"No AET found", JOptionPane.INFORMATION_MESSAGE);
-		}finally{
-			queryAET = new JComboBox<Object>(tabAETs);
-			try {
-				tabAETs = modele.getAETs();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			} catch (NullPointerException e){
-				//Ignore
-			}
-
 		}
 
+		queryAET = new JComboBox<Object>(tabAETs);
 		queryAET.setBorder(new EmptyBorder(0, 30, 0, 0));
 		if(tabAETs.length > 0){
 			if(jpreferPerso.getInt("SearchAET", 99) < tabAETs.length){

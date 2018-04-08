@@ -279,16 +279,18 @@ public class Rest {
 	 * except it gives every available AETs instead of queries's answer's indexes.
 	 */
 	public Object[] getAET() throws IOException{
-		JSONArray contentArray = null;
+		
+		ArrayList<String> indexes=null;
 		try {
-			contentArray=(JSONArray) parser.parse(connexion.makeGetConnectionAndStringBuilder("/modalities/").toString());
-		} catch (ParseException e) {
+			JSONArray contentArray=(JSONArray) parser.parse(connexion.makeGetConnectionAndStringBuilder("/modalities/").toString());
+			indexes = new ArrayList<String>();
+			for (int i=0; i<contentArray.size(); i++) {
+				indexes.add((String) contentArray.get(i));
+			}
+		} catch (ParseException | NullPointerException e) {
 			e.printStackTrace();
 		}
-		ArrayList<String> indexes = new ArrayList<String>();
-		for (int i=0; i<contentArray.size(); i++) {
-			indexes.add((String) contentArray.get(i));
-		}
+		
 		
 		return indexes.toArray();
 	}

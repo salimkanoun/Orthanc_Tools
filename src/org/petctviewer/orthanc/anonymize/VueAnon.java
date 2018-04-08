@@ -329,7 +329,7 @@ public class VueAnon extends JFrame implements PlugIn{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// SK Voir PQ LE TRY CATCH
+				
 				SwingUtilities.invokeLater(new Runnable () {
 
 					@Override
@@ -2342,7 +2342,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////// END TAB 3 : SETUP //////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
-		Monitoring_GUI monitoring = new Monitoring_GUI();
+		Monitoring_GUI monitoring = new Monitoring_GUI(connexionHttp);
 		JPanel panelMonitoring = (JPanel) monitoring.getContentPane();
 		
 		
