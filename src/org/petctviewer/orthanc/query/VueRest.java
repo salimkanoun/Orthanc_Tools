@@ -1152,6 +1152,7 @@ public class VueRest extends JFrame implements PlugIn{
 				// Query with the patient's name
 				if (searchingParam.getSelectedItem().equals("Patient name")){
 					String inputString=userInput.getText()+"^"+userInputFirstName.getText();
+					if (inputString.equals("*^*")) inputString="*";
 					modele.addPatient(inputString.toUpperCase(), "*", 
 					df.format(from.getDate().getTime())+"-"+df.format(to.getDate().getTime()), 
 					modalities.toString(), description.getText(),"*", queryAET.getSelectedItem().toString());
@@ -1408,6 +1409,7 @@ public class VueRest extends JFrame implements PlugIn{
 					working=true;
 					//Construction String Name
 					String name=(table.getValueAt(i, 0).toString()+"^"+table.getValueAt(i, 1).toString());
+					if (name.equals("*^*")) name="*" ;
 					String[] results=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox.getSelectedItem().toString());
 					textAreaConsole.append("["+ name.toString() + "_"+ table.getValueAt(i, 2).toString()+ "_"+ table.getValueAt(i, 4).toString().replaceAll("/", "") + "_" +table.getValueAt(i, 5).toString().replaceAll("/", "")+"_"+table.getValueAt(i, 6).toString()+"_"+table.getValueAt(i, 7).toString()+"_"+table.getValueAt(i, 3).toString()+"],");
 					//On retrieve toutes les studies 

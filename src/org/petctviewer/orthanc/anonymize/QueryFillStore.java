@@ -129,16 +129,14 @@ public class QueryFillStore {
 	private String sendQuery(String action) throws IOException{
 		StringBuilder sb = new StringBuilder();
 		
-		if(action.equals("storeIDs")&& this.url.toString().contains("tools/find")){
+		if(action.equals("storeIDs") && this.url.toString().contains("tools/find")){
 			sb=connexion.makePostConnectionAndStringBuilder(url, this.query);
 		}else if(action.equals("store")){
 			sb=connexion.makePostConnectionAndStringBuilder(url, this.toolboxListContent);
 		}
 		else {
-			//connexion.makeGetConnection(this.url);
 			sb=connexion.makeGetConnectionAndStringBuilder(this.url);
 		}
-		
 		return sb.toString();
 	}
 	

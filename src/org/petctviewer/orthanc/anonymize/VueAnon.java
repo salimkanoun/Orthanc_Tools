@@ -303,19 +303,13 @@ public class VueAnon extends JFrame implements PlugIn{
 					String userInputString=null;
 					if (inputType.getSelectedIndex()==0) {
 						userInputString=userInput.getText()+"^"+userInputFirstName.getText();
+						if (userInputString.equals("*^*")) userInputString="*"; 
 					}
 					else userInputString=userInput.getText();
 					modelePatients.addPatient(inputType.getSelectedItem().toString(), userInputString, date, 
 							studyDesc.getText());
-					tableauPatients.setRowSelectionInterval(0,0);
 					pack();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				} catch (ParseException e1) {
-					e1.printStackTrace();
-				} catch (Exception e1){
-					// Ignore
-				}
+				} catch (Exception e1) { System.out.println("Exception"+e1);}
 				finally{
 					state.setText("");
 					search.setEnabled(true);
