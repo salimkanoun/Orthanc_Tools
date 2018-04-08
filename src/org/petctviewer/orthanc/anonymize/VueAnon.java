@@ -2900,15 +2900,21 @@ public class VueAnon extends JFrame implements PlugIn{
 
 	@Override
 	public void run(String string) {
-		System.setProperty("org.apache.commons.logging.Log",
-				"org.apache.commons.logging.impl.NoOpLog");
-		VueAnon vue = new VueAnon();
-		vue.pack();
-		vue.setLocationRelativeTo(null);
-		WindowManager.addWindow(gui);
-		IJ.register(VueAnon.class);
-		vue.setVisible(true);
-		}
+		SwingUtilities.invokeLater(new Runnable(){
+
+			@Override
+			public void run() {
+				VueAnon vue = new VueAnon();
+				vue.pack();
+				vue.setLocationRelativeTo(null);
+				WindowManager.addWindow(gui);
+				IJ.register(VueAnon.class);
+				vue.setVisible(true);
+			}
+		
+		});
+	}
+		
 		
 	
 }
