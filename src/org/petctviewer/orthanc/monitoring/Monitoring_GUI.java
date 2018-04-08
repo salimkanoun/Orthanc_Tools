@@ -59,6 +59,7 @@ public class Monitoring_GUI extends JFrame {
 			public void run() {
 				try {
 					Monitoring_GUI frame = new Monitoring_GUI(new ParametreConnexionHttp());
+					frame.pack();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -298,24 +299,28 @@ public class Monitoring_GUI extends JFrame {
 						
 						JPanel panel_3 = new JPanel();
 						panel_AutoRetrieve_Main.add(panel_3, BorderLayout.NORTH);
+						panel_3.setLayout(new BorderLayout(0, 0));
+						
+						JPanel panel_5 = new JPanel();
+						panel_3.add(panel_5, BorderLayout.CENTER);
 						
 						JLabel lblRetrieveFrom = new JLabel("Retrieve Patient's studies From :");
-						panel_3.add(lblRetrieveFrom);
+						panel_5.add(lblRetrieveFrom);
 						
 						JComboBox comboBox = new JComboBox();
-						panel_3.add(comboBox);
+						panel_5.add(comboBox);
 						
 						JLabel lblEach = new JLabel("each");
-						panel_3.add(lblEach);
+						panel_5.add(lblEach);
 						
 						JCheckBox chckbxNewPatient = new JCheckBox("New Patient");
-						panel_3.add(chckbxNewPatient);
+						panel_5.add(chckbxNewPatient);
 						
 						JCheckBox chckbxNewStudy = new JCheckBox("New Study");
-						panel_3.add(chckbxNewStudy);
+						panel_5.add(chckbxNewStudy);
 						
 						JPanel panel_AutoRetrieve_Filter = new JPanel();
-						panel_AutoRetrieve.add(panel_AutoRetrieve_Filter);
+						panel_3.add(panel_AutoRetrieve_Filter, BorderLayout.SOUTH);
 						panel_AutoRetrieve_Filter.setLayout(new GridLayout(0, 2, 10, 10));
 						
 						JLabel lblFilters = new JLabel("Filters : ");
@@ -347,6 +352,12 @@ public class Monitoring_GUI extends JFrame {
 						textField_StudyDescription_Study.setText("*");
 						panel_AutoRetrieve_Filter.add(textField_StudyDescription_Study);
 						textField_StudyDescription_Study.setColumns(10);
+						
+						JPanel panel_6 = new JPanel();
+						panel_AutoRetrieve_Main.add(panel_6, BorderLayout.SOUTH);
+						
+						JButton btnStartAutoretrieve = new JButton("Start Auto-Retrieve");
+						panel_6.add(btnStartAutoretrieve);
 	}
 	
 	private void setCDPreference() {

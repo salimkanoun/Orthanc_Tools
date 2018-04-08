@@ -822,7 +822,7 @@ public class VueRest extends JFrame implements PlugIn{
 		for (int i=0; i<autoQuery.aet.length;i++) {
 			comboBox.addItem(autoQuery.aet[i].toString());
 		}
-		if (jpreferPerso.getInt("retrieveSelection", 0) <= comboBox.getItemCount()) comboBox.setSelectedIndex(jpreferPerso.getInt("retrieveSelection", 0));
+		if ((jpreferPerso.getInt("retrieveSelection", 0) <= comboBox.getItemCount()) && (comboBox.getItemCount() !=0) ) comboBox.setSelectedIndex(jpreferPerso.getInt("retrieveSelection", 0));
 		
 		comboBox.addItemListener(new ItemListener() {
 			@Override

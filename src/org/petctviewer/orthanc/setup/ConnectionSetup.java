@@ -96,7 +96,7 @@ public class ConnectionSetup extends JFrame implements PlugIn{
 		gbc.insets = new Insets(10, 10, 10, 10);
 		gbc.gridx = 0;
 		gbc.gridy = 0;
-		setupPanel.add(new JLabel("IP"), gbc);
+		setupPanel.add(new JLabel("Address"), gbc);
 		gbc.gridx = 1;
 		setupPanel.add(ipTxt, gbc);
 		
@@ -134,7 +134,7 @@ public class ConnectionSetup extends JFrame implements PlugIn{
 				}
 				else {
 					JOptionPane.showMessageDialog(gui,
-						    "IP should start with http://");
+						    "IP should start with http:// or https://");
 					
 				}
 				
