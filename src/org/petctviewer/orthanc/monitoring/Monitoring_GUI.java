@@ -46,6 +46,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JTextField;
 import java.awt.Component;
 import javax.swing.Box;
+import java.awt.FlowLayout;
 
 @SuppressWarnings("serial")
 public class Monitoring_GUI extends JFrame {
@@ -67,6 +68,8 @@ public class Monitoring_GUI extends JFrame {
 	private JTextField textField_Modality_Study_AutroRetrieve;
 	private JTextField textField_Date_AuToRetrieve;
 	private JTextField textField_StudyDescription_Study;
+	private JTable table;
+	private JTable table_2;
 
 	/**
 	 * Launch the application.
@@ -137,7 +140,7 @@ public class Monitoring_GUI extends JFrame {
 		
 		JPanel CD_Burner_Tab = new JPanel();
 		
-		tabbedPane.addTab("CD Burner", null, CD_Burner_Tab, null);
+		tabbedPane.addTab("CD-Burner", null, CD_Burner_Tab, null);
 		
 		textAreaCD = new JTextArea();
 		textAreaCD.setColumns(30);
@@ -217,21 +220,76 @@ public class Monitoring_GUI extends JFrame {
 						Title.add(lblCdburnerBySassa);
 						
 						JPanel panel_tag_monitoring = new JPanel();
-						tabbedPane.addTab("Tag Monitoring", null, panel_tag_monitoring, null);
+						tabbedPane.addTab("Tag-Monitoring", null, panel_tag_monitoring, null);
+						panel_tag_monitoring.setLayout(new BorderLayout(0, 0));
 						
 						JPanel panel_2 = new JPanel();
 						panel_tag_monitoring.add(panel_2);
-						panel_2.setLayout(new BorderLayout(0, 0));
+						panel_2.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+						
+						JPanel panel_TagMonitoring_Patients = new JPanel();
+						panel_2.add(panel_TagMonitoring_Patients);
+						panel_TagMonitoring_Patients.setLayout(new BorderLayout(0, 0));
 						
 						JLabel lblNewPatients = new JLabel("New Patients");
-						panel_2.add(lblNewPatients, BorderLayout.NORTH);
+						panel_TagMonitoring_Patients.add(lblNewPatients, BorderLayout.NORTH);
 						
 						JScrollPane scrollPane_1 = new JScrollPane();
-						panel_2.add(scrollPane_1, BorderLayout.CENTER);
+						panel_TagMonitoring_Patients.add(scrollPane_1, BorderLayout.CENTER);
 						
 						table_1 = new JTable();
 						table_1.setPreferredScrollableViewportSize(new Dimension(50, 50));
 						table_1.setModel(new DefaultTableModel(
+							new Object[][] {
+								{"0010,0010", "Name", Boolean.FALSE},
+								{"0010,0020", "ID", null},
+								{"0010,0030", "Date Of Birth", null},
+								{"0010,0040", "Sex", null},
+							},
+							new String[] {
+								"Tag", "Name", "New column"
+							}
+						) {
+							Class[] columnTypes = new Class[] {
+								String.class, Object.class, Boolean.class
+							};
+							public Class getColumnClass(int columnIndex) {
+								return columnTypes[columnIndex];
+							}
+						});
+						scrollPane_1.setViewportView(table_1);
+						
+						JPanel panel_1 = new JPanel();
+						panel_TagMonitoring_Patients.add(panel_1, BorderLayout.SOUTH);
+						
+						JButton btnAdd = new JButton("Add");
+						panel_1.add(btnAdd);
+						
+						JButton btnRemove = new JButton("Remove");
+						panel_1.add(btnRemove);
+						
+						JPanel panel_TagMonitoring_Studies = new JPanel();
+						panel_2.add(panel_TagMonitoring_Studies);
+						panel_TagMonitoring_Studies.setLayout(new BorderLayout(0, 0));
+						
+						JLabel lblNewStudies = new JLabel("New Studies");
+						panel_TagMonitoring_Studies.add(lblNewStudies, BorderLayout.NORTH);
+						
+						JPanel panel_9 = new JPanel();
+						panel_TagMonitoring_Studies.add(panel_9, BorderLayout.SOUTH);
+						
+						JButton btnAdd_1 = new JButton("Add");
+						panel_9.add(btnAdd_1);
+						
+						JButton btnRemove_1 = new JButton("Remove");
+						panel_9.add(btnRemove_1);
+						
+						JScrollPane scrollPane_2 = new JScrollPane();
+						panel_TagMonitoring_Studies.add(scrollPane_2, BorderLayout.CENTER);
+						
+						table = new JTable();
+						table.setPreferredScrollableViewportSize(new Dimension(50, 50));
+						table.setModel(new DefaultTableModel(
 							new Object[][] {
 							},
 							new String[] {
@@ -245,19 +303,53 @@ public class Monitoring_GUI extends JFrame {
 								return columnTypes[columnIndex];
 							}
 						});
-						scrollPane_1.setViewportView(table_1);
+						scrollPane_2.setViewportView(table);
 						
-						JPanel panel_1 = new JPanel();
-						panel_2.add(panel_1, BorderLayout.SOUTH);
+						JPanel panel_TagMonitoring_Series = new JPanel();
+						panel_2.add(panel_TagMonitoring_Series);
+						panel_TagMonitoring_Series.setLayout(new BorderLayout(0, 0));
 						
-						JButton btnAdd = new JButton("Add");
-						panel_1.add(btnAdd);
+						JLabel lblNewSeries = new JLabel("New Series");
+						panel_TagMonitoring_Series.add(lblNewSeries, BorderLayout.NORTH);
 						
-						JButton btnRemove = new JButton("Remove");
-						panel_1.add(btnRemove);
+						JPanel panel_11 = new JPanel();
+						panel_TagMonitoring_Series.add(panel_11, BorderLayout.SOUTH);
+						
+						JButton btnAdd_2 = new JButton("Add");
+						panel_11.add(btnAdd_2);
+						
+						JButton btnRemove_2 = new JButton("Remove");
+						panel_11.add(btnRemove_2);
+						
+						JScrollPane scrollPane_3 = new JScrollPane();
+						panel_TagMonitoring_Series.add(scrollPane_3, BorderLayout.CENTER);
+						
+						table_2 = new JTable();
+						table_2.setModel(new DefaultTableModel(
+							new Object[][] {
+							},
+							new String[] {
+								"Tag"
+							}
+						) {
+							Class[] columnTypes = new Class[] {
+								String.class
+							};
+							public Class getColumnClass(int columnIndex) {
+								return columnTypes[columnIndex];
+							}
+						});
+						table_2.setPreferredScrollableViewportSize(new Dimension(50, 50));
+						scrollPane_3.setViewportView(table_2);
+						
+						JPanel panel_7 = new JPanel();
+						panel_tag_monitoring.add(panel_7, BorderLayout.SOUTH);
+						
+						JButton btnStart = new JButton("Start Collecting");
+						panel_7.add(btnStart);
 						
 						JPanel panel_AutoRouting = new JPanel();
-						tabbedPane.addTab("Auto Routing", null, panel_AutoRouting, null);
+						tabbedPane.addTab("Auto-Routing", null, panel_AutoRouting, null);
 						
 						JPanel panel_AutoRouting_main = new JPanel();
 						panel_AutoRouting.add(panel_AutoRouting_main);
@@ -307,11 +399,11 @@ public class Monitoring_GUI extends JFrame {
 						panel_If.add(textField_If_Autorouting);
 						textField_If_Autorouting.setColumns(10);
 						
-						JPanel panel_AutoRetrieve = new JPanel();
-						tabbedPane.addTab("Auto-Retrieve", null, panel_AutoRetrieve, null);
+						JPanel panel_AutoFetch = new JPanel();
+						tabbedPane.addTab("Auto-Fetch", null, panel_AutoFetch, null);
 						
 						JPanel panel_AutoRetrieve_Main = new JPanel();
-						panel_AutoRetrieve.add(panel_AutoRetrieve_Main);
+						panel_AutoFetch.add(panel_AutoRetrieve_Main);
 						panel_AutoRetrieve_Main.setLayout(new BorderLayout(0, 0));
 						
 						JPanel panel_3 = new JPanel();
@@ -403,5 +495,4 @@ public class Monitoring_GUI extends JFrame {
 		if (doseMonitoringStarted) lbl_DoseMonitoring_Status.setText("Start");
 		else lbl_DoseMonitoring_Status.setText("Stop");
 	}
-
 }
