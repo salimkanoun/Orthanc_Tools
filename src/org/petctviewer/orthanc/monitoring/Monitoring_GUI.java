@@ -291,13 +291,18 @@ public class Monitoring_GUI extends JFrame {
 						table.setPreferredScrollableViewportSize(new Dimension(50, 50));
 						table.setModel(new DefaultTableModel(
 							new Object[][] {
+								{"0008,0020", "StudyDate", null},
+								{"0008,0030", "StudyTime", null},
+								{"0008,1030", "StudyDescription", null},
+								{"0008,0050", "AccessionNumber", null},
+								{"0020,0010", "", null},
 							},
 							new String[] {
-								"Tag"
+								"Tag", "Name", "New column"
 							}
 						) {
 							Class[] columnTypes = new Class[] {
-								String.class
+								String.class, Object.class, Boolean.class
 							};
 							public Class getColumnClass(int columnIndex) {
 								return columnTypes[columnIndex];
