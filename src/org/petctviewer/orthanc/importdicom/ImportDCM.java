@@ -17,6 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.importdicom;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -53,9 +54,11 @@ public class ImportDCM extends JFrame implements PlugIn{
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	private JLabel state;
 	private ParametreConnexionHttp connexion=new ParametreConnexionHttp();
+	private JFrame gui;
 
 	public ImportDCM(){
 		super("Import DICOM files");
+		this.gui=this;
 		JPanel mainPanel = new JPanel(new GridBagLayout());
 		JLabel labelPath = new JLabel("DICOM files path");
 		JTextField path = new JTextField(jpreferPerso.get("filesLocation", System.getProperty("user.dir")));
@@ -78,7 +81,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 			}
 		});
 
-		state = new JLabel("");
+		state = new JLabel("Select folder and start sending process");
 
 		JButton importBtn = new JButton("Import");
 		importBtn.addActionListener(new ActionListener() {
@@ -92,6 +95,13 @@ public class ImportDCM extends JFrame implements PlugIn{
 						protected Void doInBackground() throws Exception { 
 							importFiles(Paths.get(jpreferPerso.get("filesLocation", System.getProperty("user.dir"))));
 							return null;
+						}
+						
+						@Override 
+						protected void done() {
+							state.setText(state.getText()+" - Finished");
+							state.setForeground(Color.BLUE);
+							gui.pack();
 						}
 					};
 					worker.execute();
@@ -137,6 +147,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 			Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 				int successCount = 0;
 				long totalFiles = 0;
+				
 				@Override
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 					System.out.println("Importing " + file);
@@ -162,6 +173,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 		} catch (IOException e) {
 			System.out.println("=> Unable to connect (Is Orthanc running ? Is there a password ?)\n");
 		}
+		
 	}
 
 
