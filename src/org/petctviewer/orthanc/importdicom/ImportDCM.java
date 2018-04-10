@@ -158,7 +158,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 						System.out.println("=> Success \n");
 						successCount++;
 					}else{
-						System.out.println("=> Failure (Is it a DICOM file ? is there a password ?)\n");
+						System.out.println("=> Failure (Is it a DICOM file ?)\n");
 					}
 					conn.disconnect();
 					totalFiles++;
