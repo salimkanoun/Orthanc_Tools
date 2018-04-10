@@ -146,7 +146,7 @@ public class AutoQuery  {
 	
 		if (Integer.valueOf(results[1])<=discard){		
 			for (int i=0; i<Integer.valueOf(results[1]); i++) {
-			api.retrieve(results[0], String.valueOf(i), aetRetrieve );
+			api.retrieve(results[0], i, aetRetrieve );
 			}
 			System.out.println( results[1] + " studies Retrieved");
 		}

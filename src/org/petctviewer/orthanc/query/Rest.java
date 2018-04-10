@@ -29,11 +29,12 @@ import org.petctviewer.orthanc.ParametreConnexionHttp;
 
 public class Rest {
 
-	private ParametreConnexionHttp connexion =new ParametreConnexionHttp();
+	private ParametreConnexionHttp connexion;
 	private JSONObject contentJson=new JSONObject();
 	private JSONParser parser = new JSONParser();
 
-	public Rest(){
+	public Rest(ParametreConnexionHttp connexion){
+		this.connexion=connexion;
 	}
 
 
@@ -266,7 +267,7 @@ public class Rest {
 	/*
 	 * This method retrieves an instance, depending on its query ID 
 	 */
-	public void retrieve(String queryID, String answer, String retrieveAET) {
+	public void retrieve(String queryID, int answer, String retrieveAET) {
 		try {
 			connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve/", retrieveAET);
 		} catch (IOException e) {

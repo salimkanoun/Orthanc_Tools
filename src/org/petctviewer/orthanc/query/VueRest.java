@@ -67,6 +67,7 @@ import javax.swing.text.DefaultCaret;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.petctviewer.orthanc.ParametreConnexionHttp;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
 
@@ -88,7 +89,7 @@ public class VueRest extends JFrame implements PlugIn{
 	
 	private static final long serialVersionUID = 1L;
 	// Instancie la classe rest qui fournit les services de connexion et input
-	private Rest rest =new Rest();
+	private Rest rest =new Rest(new ParametreConnexionHttp());
 	
 	private JTabbedPane tabbedPane;
 	private TableDataPatient modele = new TableDataPatient(rest); // model for the main JTable (tableau)
@@ -1247,7 +1248,7 @@ public class VueRest extends JFrame implements PlugIn{
 								for(int i = 0; i < tableauDetails.getRowCount(); i++){
 									state.setText("<html>Patient " + (row+1) + "/" + tableau.getSelectedRows().length + " - Retrieve state  " + (i+1) + "/" + tableauDetails.getRowCount() + 
 											" <font color='red'> (Do not touch any buttons or any tables while the retrieve is not done)</font></html>");
-									modeleDetails.retrieve(modeleDetails.getQueryID(i), String.valueOf(i), 
+									modeleDetails.retrieve(modeleDetails.getQueryID(i), i, 
 											retrieveAET.getSelectedItem().toString());
 								}
 							}
@@ -1258,7 +1259,7 @@ public class VueRest extends JFrame implements PlugIn{
 							for(int j : rowsModelsIndexes){
 								state.setText("<html>Retrieve state  " + (i+1) + "/" + rowsModelsIndexes.size()  + 
 										" <font color='red'>(Do not touch any buttons or any tables while the retrieve is not done)</font></html>");
-								modeleDetails.retrieve(modeleDetails.getQueryID(j), String.valueOf(j), 
+								modeleDetails.retrieve(modeleDetails.getQueryID(j), j, 
 										retrieveAET.getSelectedItem().toString());
 							}
 							i++;
@@ -1557,7 +1558,7 @@ public class VueRest extends JFrame implements PlugIn{
 								if (nombreFiltre==3) {
 									if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
 										info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-										rest.retrieve(studyID, String.valueOf(k),  Aet_Retrieve.getSelectedItem().toString());
+										rest.retrieve(studyID, k,  Aet_Retrieve.getSelectedItem().toString());
 										serieCountRevtrieved++;
 									}
 								}
@@ -1566,14 +1567,14 @@ public class VueRest extends JFrame implements PlugIn{
 									if (!filtreSerieDescription) {
 										if ( StringUtils.contains(seriesModalities.toString(), modality) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
 											info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-											rest.retrieve(studyID, String.valueOf(k),  Aet_Retrieve.getSelectedItem().toString());
+											rest.retrieve(studyID, k,  Aet_Retrieve.getSelectedItem().toString());
 											serieCountRevtrieved++;
 										}
 									}
 									else if (!filtreSerieNumber) {
 										if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) ){
 											info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-											rest.retrieve(studyID, String.valueOf(k),  Aet_Retrieve.getSelectedItem().toString());
+											rest.retrieve(studyID, k,  Aet_Retrieve.getSelectedItem().toString());
 											serieCountRevtrieved++;
 										}
 										
@@ -1581,7 +1582,7 @@ public class VueRest extends JFrame implements PlugIn{
 									else if (!filtreSerieModality) {
 										if ( (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
 											info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-											rest.retrieve(studyID, String.valueOf(k),  Aet_Retrieve.getSelectedItem().toString());
+											rest.retrieve(studyID, k,  Aet_Retrieve.getSelectedItem().toString());
 											serieCountRevtrieved++;
 										}
 										
@@ -1591,7 +1592,7 @@ public class VueRest extends JFrame implements PlugIn{
 							//Si un seul filtre on retrieve la serie qui a matche
 							else {
 								info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-								rest.retrieve(studyID, String.valueOf(k),  Aet_Retrieve.getSelectedItem().toString());
+								rest.retrieve(studyID, k,  Aet_Retrieve.getSelectedItem().toString());
 								serieCountRevtrieved++;
 							}
 
@@ -1601,7 +1602,7 @@ public class VueRest extends JFrame implements PlugIn{
 						//Si on a pas defini de contains ou de modalitie on telecharge tout ce qui n'est pas exclu
 						else if ( StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.isEmpty(autoQuery.serieDescriptionContains) && StringUtils.isEmpty(autoQuery.serieNumberMatch) ) {
 							info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1)+" Query "+(i+1)+"/"+table.getRowCount());
-							rest.retrieve(studyID, String.valueOf(k), Aet_Retrieve.getSelectedItem().toString());
+							rest.retrieve(studyID, k, Aet_Retrieve.getSelectedItem().toString());
 							serieCountRevtrieved++;
 						}
 					}
