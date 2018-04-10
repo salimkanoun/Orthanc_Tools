@@ -163,7 +163,6 @@ public class ImportDCM extends JFrame implements PlugIn{
 					conn.disconnect();
 					totalFiles++;
 					state.setText(successCount + "/" + totalFiles + " files were imported. (Fiji>Window>Console)");
-					System.out.println(successCount + "/" + totalFiles + " files were imported.");
 					return FileVisitResult.CONTINUE;
 				}
 			});		
