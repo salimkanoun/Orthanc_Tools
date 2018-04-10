@@ -65,7 +65,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 		path.setMinimumSize(new Dimension(250, 27));
 		path.setMaximumSize(new Dimension(250, 27));
 		path.setEditable(false);
-		JButton browse = new JButton("...");
+		JButton browse = new JButton("Browse");
 		browse.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
