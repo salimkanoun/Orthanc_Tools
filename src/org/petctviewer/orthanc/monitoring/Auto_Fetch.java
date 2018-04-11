@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.swing.JLabel;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -16,12 +18,13 @@ public class Auto_Fetch {
 	private ParametreConnexionHttp parametre;
 	private String level, studyDate, modality, studyDescription, queryAet , retrieveAet;
 	private JSONParser parser=new JSONParser();
-	Rest restApi=new Rest(parametre);
+	private Rest restApi=new Rest(parametre);
+	private JLabel status;
 	
 	//sert a etre arrete via methode
 	private Timer timer;
 	
-	public Auto_Fetch(ParametreConnexionHttp parametre, String level, String studyDate, String modality, String studyDescription, String queryAet) {
+	public Auto_Fetch(ParametreConnexionHttp parametre, String level, String studyDate, String modality, String studyDescription, String queryAet, JLabel status) {
 		this.parametre=parametre;
 		this.level=level;
 		this.studyDate=studyDate;
@@ -35,6 +38,7 @@ public class Auto_Fetch {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		this.status=status;
 		
 	}
 	
@@ -101,12 +105,15 @@ public class Auto_Fetch {
 	 * @param patientID
 	 * @throws IOException
 	 */
-	public void makeRetrieve(String patientID) {
+	private void makeRetrieve(String patientID) {
 		
 		String[] results=restApi.getQueryAnswerIndexes("Study", "*", patientID, studyDate, modality, studyDescription, "*", queryAet);
-		for (int i=0 ; i<Integer.parseInt(results[1]) ; i++) {
+		int numberofAnswers=Integer.parseInt(results[1]);
+		for (int i=0 ; i<numberofAnswers ; i++) {
 			restApi.retrieve(results[0], i, retrieveAet);
+			status.setText("Retriving "+(i+1)+ "/"+ (numberofAnswers+1) );
 		}
+		status.setText("Done, waiting");
 		
 	}
 

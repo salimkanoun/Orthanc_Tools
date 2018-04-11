@@ -73,11 +73,15 @@ public class Monitoring_GUI extends JFrame {
 	private JTable table_2;
 	
 	//AutoFetch
-	JComboBox<String> comboBoxAET;
+	JComboBox<String> comboBoxAET_AutoFetch;
 	JCheckBox chckbxNewPatientAutoFetch, chckbxNewStudyAutoFetch;
-	ButtonGroup levelAutoFecth;
+	ButtonGroup levelAutoFecth= new ButtonGroup();;
 	JTextField textField_AutoFecth_Modality_Study, textField_AutoFecth_Date, textField_AutoFetch_StudyDescription;
 
+	//AutoRouting
+	JComboBox<String> comboBox_remoteAET_AutoRouting;
+	ButtonGroup levelAutoRouting= new ButtonGroup();
+	JComboBox<String> comboBox_If_AutoRouting;
 	
 	// parametre http
 	ParametreConnexionHttp parametre;
@@ -372,42 +376,52 @@ public class Monitoring_GUI extends JFrame {
 						panel_AutoRouting.add(panel_AutoRouting_main);
 						panel_AutoRouting_main.setLayout(new BorderLayout(0, 0));
 						
-						JPanel panel_sendTo = new JPanel();
-						panel_AutoRouting_main.add(panel_sendTo, BorderLayout.SOUTH);
+						JPanel panel_AutoRouting_sendTo = new JPanel();
+						panel_AutoRouting_main.add(panel_AutoRouting_sendTo, BorderLayout.SOUTH);
 						
 						JLabel lblSendTo = new JLabel("Send To");
-						panel_sendTo.add(lblSendTo);
+						panel_AutoRouting_sendTo.add(lblSendTo);
 						
-						JComboBox comboBox_remoteAET = new JComboBox();
-						panel_sendTo.add(comboBox_remoteAET);
+						comboBox_remoteAET_AutoRouting = new JComboBox<String>();
+						panel_AutoRouting_sendTo.add(comboBox_remoteAET_AutoRouting);
 						
-						JPanel panel_4 = new JPanel();
-						panel_AutoRouting_main.add(panel_4, BorderLayout.WEST);
-						panel_4.setLayout(new GridLayout(0, 1, 0, 0));
+						JPanel panel_AutoRouting_selection = new JPanel();
+						panel_AutoRouting_main.add(panel_AutoRouting_selection, BorderLayout.WEST);
+						panel_AutoRouting_selection.setLayout(new GridLayout(0, 1, 0, 0));
 						
 						JPanel panel_Each = new JPanel();
-						panel_4.add(panel_Each);
+						panel_AutoRouting_selection.add(panel_Each);
 						
 						JLabel lblEach_1 = new JLabel("Each ");
 						panel_Each.add(lblEach_1);
 						
 						JCheckBox chckbxStablePatient = new JCheckBox("Stable Patient");
+						chckbxStablePatient.setActionCommand("Stable Patient");
+						levelAutoRouting.add(chckbxStablePatient);
 						panel_Each.add(chckbxStablePatient);
 						
 						JCheckBox chckbxStableStudy = new JCheckBox("Stable Study");
+						chckbxStableStudy.setSelected(true);
+						chckbxStableStudy.setActionCommand("Stable Study");
+						levelAutoRouting.add(chckbxStableStudy);
 						panel_Each.add(chckbxStableStudy);
 						
 						JCheckBox chckbxStableSerie = new JCheckBox("Stable Serie");
+						chckbxStableSerie.setActionCommand("Stable Serie");
+						levelAutoRouting.add(chckbxStableSerie);
 						panel_Each.add(chckbxStableSerie);
 						
 						JPanel panel_If = new JPanel();
-						panel_4.add(panel_If);
+						panel_AutoRouting_selection.add(panel_If);
 						
 						JLabel lblIf = new JLabel("If");
 						panel_If.add(lblIf);
 						
-						JComboBox comboBox_If = new JComboBox();
-						panel_If.add(comboBox_If);
+						comboBox_If_AutoRouting = new JComboBox<String>();
+						//SK A FAIRE PRECISER
+						comboBox_If_AutoRouting.addItem("Modalities");
+						comboBox_If_AutoRouting.addItem("Description");
+						panel_If.add(comboBox_If_AutoRouting);
 						
 						JLabel label = new JLabel("=");
 						panel_If.add(label);
@@ -433,13 +447,13 @@ public class Monitoring_GUI extends JFrame {
 						JLabel lblRetrieveFrom = new JLabel("Retrieve Patient's studies From :");
 						panel_AutoFetch_AetLevel_Selection.add(lblRetrieveFrom);
 						
-						comboBoxAET = new JComboBox<String>();
-						panel_AutoFetch_AetLevel_Selection.add(comboBoxAET);
+						comboBoxAET_AutoFetch = new JComboBox<String>();
+						panel_AutoFetch_AetLevel_Selection.add(comboBoxAET_AutoFetch);
 						
 						JLabel lblEach = new JLabel("each");
 						panel_AutoFetch_AetLevel_Selection.add(lblEach);
 						
-						levelAutoFecth= new ButtonGroup();
+						
 						chckbxNewPatientAutoFetch = new JCheckBox("New Patient");
 						chckbxNewPatientAutoFetch.setActionCommand("patient");
 						levelAutoFecth.add(chckbxNewPatientAutoFetch);
@@ -488,13 +502,20 @@ public class Monitoring_GUI extends JFrame {
 						JPanel panel_AutoFetch_Start = new JPanel();
 						panel_AutoFetch_Main.add(panel_AutoFetch_Start, BorderLayout.SOUTH);
 						
+						JLabel lblStatus_AutoFetch = new JLabel("Status : Idle");
+						
 						JButton btnStartAutoFetch = new JButton("Start Auto-Fetch");
 						btnStartAutoFetch.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent arg0) {
-								Auto_Fetch autoFetch=new Auto_Fetch(parametre, levelAutoFecth.getSelection().getActionCommand(), textField_AutoFecth_Date.getText(), textField_AutoFecth_Modality_Study.getText(), textField_AutoFetch_StudyDescription.getText(), comboBoxAET.getSelectedItem().toString());
+								Auto_Fetch autoFetch=new Auto_Fetch(parametre, levelAutoFecth.getSelection().getActionCommand(), textField_AutoFecth_Date.getText(), textField_AutoFecth_Modality_Study.getText(), textField_AutoFetch_StudyDescription.getText(), comboBoxAET_AutoFetch.getSelectedItem().toString(), lblStatus_AutoFetch );
+								autoFetch.startAutoFetch();
 							}
 						});
+						
 						panel_AutoFetch_Start.add(btnStartAutoFetch);
+						
+					
+						panel_AutoFetch_Start.add(lblStatus_AutoFetch);
 	}
 	
 	private void setCDPreference() {
@@ -530,7 +551,9 @@ public class Monitoring_GUI extends JFrame {
 		try {
 			Object[] aets=restApi.getAET();
 			for (int i=0; i<aets.length ; i++) {
-				comboBoxAET.addItem((String) aets[i]);
+				comboBoxAET_AutoFetch.addItem((String) aets[i]);
+				comboBox_remoteAET_AutoRouting.addItem((String) aets[i]);
+				
 			}
 			
 		} catch (IOException e) {
