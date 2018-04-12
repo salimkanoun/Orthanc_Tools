@@ -158,6 +158,12 @@ public class Monitoring_GUI extends JFrame {
 		lbl_DoseMonitoring_Status = new JLabel("Stop");
 		panel_Status.add(lbl_DoseMonitoring_Status);
 		
+		JLabel lblAutorouting = new JLabel("Auto-Routing");
+		panel_Status.add(lblAutorouting);
+		
+		JLabel lblStop = new JLabel("Stop");
+		panel_Status.add(lblStop);
+		
 		JLabel lblAutofetch = new JLabel("Auto-Fetch");
 		panel_Status.add(lblAutofetch);
 		
