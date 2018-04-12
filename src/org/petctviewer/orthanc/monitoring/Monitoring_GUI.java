@@ -69,9 +69,12 @@ public class Monitoring_GUI extends JFrame {
 	//Boolean activity services
 	private boolean cdMonitoringStarted, doseMonitoringStarted, autoFetchStarted;
 	
-	private JTable table_1;
+	private JTable table_Patient_TagMonitoring;
 	private JTextField textField_If_Autorouting;
-	private JTable table;
+	private JTable table_Study_TagMonitoring;
+	
+	//Tag Monitoring
+	ButtonGroup levelTagMonitoring=new ButtonGroup();
 	
 	//AutoFetch
 	JComboBox<String> comboBoxAET_AutoFetch;
@@ -257,17 +260,17 @@ public class Monitoring_GUI extends JFrame {
 						JScrollPane scrollPane_1 = new JScrollPane();
 						panel_TagMonitoring_Patients.add(scrollPane_1, BorderLayout.CENTER);
 						
-						table_1 = new JTable();
-						table_1.setPreferredScrollableViewportSize(new Dimension(300, 100));
-						table_1.setModel(new DefaultTableModel(
+						table_Patient_TagMonitoring = new JTable();
+						table_Patient_TagMonitoring.setPreferredScrollableViewportSize(new Dimension(300, 100));
+						table_Patient_TagMonitoring.setModel(new DefaultTableModel(
 							new Object[][] {
 								{"0010,0010", "Name", Boolean.FALSE},
-								{"0010,0020", "ID", null},
-								{"0010,0030", "Date Of Birth", null},
-								{"0010,0040", "Sex", null},
+								{"0010,0020", "ID", Boolean.FALSE},
+								{"0010,0030", "Date Of Birth", Boolean.FALSE},
+								{"0010,0040", "Sex", Boolean.FALSE},
 							},
 							new String[] {
-								"Tag", "Name", "New column"
+								"Tag", "Name", "Select"
 							}
 						) {
 							Class[] columnTypes = new Class[] {
@@ -277,9 +280,11 @@ public class Monitoring_GUI extends JFrame {
 								return columnTypes[columnIndex];
 							}
 						});
-						scrollPane_1.setViewportView(table_1);
+						scrollPane_1.setViewportView(table_Patient_TagMonitoring);
 						
 						JCheckBox chckbxNewPatient = new JCheckBox("New Patient");
+						chckbxNewPatient.setActionCommand("patient");
+						levelTagMonitoring.add(chckbxNewPatient);
 						panel_TagMonitoring_Patients.add(chckbxNewPatient, BorderLayout.NORTH);
 						
 						JPanel panel_TagMonitoring_Studies = new JPanel();
@@ -289,19 +294,19 @@ public class Monitoring_GUI extends JFrame {
 						JScrollPane scrollPane_2 = new JScrollPane();
 						panel_TagMonitoring_Studies.add(scrollPane_2, BorderLayout.CENTER);
 						
-						table = new JTable();
-						table.setPreferredScrollableViewportSize(new Dimension(300, 100));
-						table.setModel(new DefaultTableModel(
+						table_Study_TagMonitoring = new JTable();
+						table_Study_TagMonitoring.setPreferredScrollableViewportSize(new Dimension(300, 100));
+						table_Study_TagMonitoring.setModel(new DefaultTableModel(
 							new Object[][] {
-								{"0008,0020", "StudyDate", null},
-								{"0008,0030", "StudyTime", null},
-								{"0008,1030", "StudyDescription", null},
-								{"0008,0050", "AccessionNumber", null},
-								{"0020,0010", "StudyID", null},
-								{"0020,000D", "StudyInstanceUID", null},
+								{"0008,0020", "StudyDate", Boolean.FALSE},
+								{"0008,0030", "StudyTime", Boolean.FALSE},
+								{"0008,1030", "StudyDescription", Boolean.FALSE},
+								{"0008,0050", "AccessionNumber", Boolean.FALSE},
+								{"0020,0010", "StudyID", Boolean.FALSE},
+								{"0020,000D", "StudyInstanceUID", Boolean.FALSE},
 							},
 							new String[] {
-								"Tag", "Name", "New column"
+								"Tag", "Name", "Select"
 							}
 						) {
 							Class[] columnTypes = new Class[] {
@@ -311,23 +316,22 @@ public class Monitoring_GUI extends JFrame {
 								return columnTypes[columnIndex];
 							}
 						});
-						scrollPane_2.setViewportView(table);
+						scrollPane_2.setViewportView(table_Study_TagMonitoring);
 						
 						JCheckBox chckbxNewStudy = new JCheckBox("New Study");
+						chckbxNewStudy.setActionCommand("study");
+						levelTagMonitoring.add(chckbxNewStudy);
 						panel_TagMonitoring_Studies.add(chckbxNewStudy, BorderLayout.NORTH);
 						
 						JPanel panel_TagMonitoring_Series = new JPanel();
 						panel_TagMonitoring_Main.add(panel_TagMonitoring_Series);
 						panel_TagMonitoring_Series.setLayout(new BorderLayout(0, 0));
 						
-						JPanel panel_11 = new JPanel();
-						panel_TagMonitoring_Series.add(panel_11, BorderLayout.SOUTH);
-						
-						JButton btn_getSharedSerie_TagMonitoring = new JButton("Shared Tags");
-						panel_11.add(btn_getSharedSerie_TagMonitoring);
-						
-						JCheckBox chckbxN = new JCheckBox("New Serie");
-						panel_TagMonitoring_Series.add(chckbxN, BorderLayout.NORTH);
+						JCheckBox chckbx_Serie_TagMonitoring = new JCheckBox("New Serie - Shared Tags");
+						chckbx_Serie_TagMonitoring.setSelected(true);
+						chckbx_Serie_TagMonitoring.setActionCommand("serie");
+						levelTagMonitoring.add(chckbx_Serie_TagMonitoring);
+						panel_TagMonitoring_Series.add(chckbx_Serie_TagMonitoring, BorderLayout.NORTH);
 						
 						JPanel panel_TagMonitoring_Buttons = new JPanel();
 						panel_tag_monitoring.add(panel_TagMonitoring_Buttons, BorderLayout.SOUTH);
