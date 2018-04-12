@@ -1,6 +1,7 @@
 package org.petctviewer.orthanc.monitoring;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -18,7 +19,7 @@ public class Auto_Fetch {
 	private ParametreConnexionHttp parametre;
 	private String level, studyDate, modality, studyDescription, queryAet , retrieveAet;
 	private JSONParser parser=new JSONParser();
-	private Rest restApi=new Rest(parametre);
+	private Rest restApi;
 	private JLabel status;
 	
 	//sert a etre arrete via methode
@@ -26,6 +27,7 @@ public class Auto_Fetch {
 	
 	public Auto_Fetch(ParametreConnexionHttp parametre, String level, String studyDate, String modality, String studyDescription, String queryAet, JLabel status) {
 		this.parametre=parametre;
+		restApi=new Rest(parametre);
 		this.level=level;
 		this.studyDate=studyDate;
 		this.studyDescription=studyDescription;
@@ -52,10 +54,9 @@ public class Auto_Fetch {
 			public void run() {
 				System.out.println("starting Auto-Fetch");
 				monitoring.makeMonitor();
-				List<String> idToProcess=null;
+				List<String> idToProcess=new ArrayList<String>();
 				//Si on monitore le level Study on parcours les study arrivees pour stocker les ID patients a retrieve
 				if (level.equals("study")) {
-					idToProcess=monitoring.newStudyID;
 					for (int i=0; i<monitoring.newStudyID.size(); i++) {
 						StringBuilder sb = parametre.makeGetConnectionAndStringBuilder("/studies/"+monitoring.newStudyID.get(i));
 						try {
@@ -88,7 +89,10 @@ public class Auto_Fetch {
 					makeRetrieve(idToProcess.get(i));
 				}
 				
-				monitoring.newStableStudyID.clear();
+				//On vide pour les messages suivant
+				idToProcess.clear();
+				monitoring.newPatientID.clear();
+				monitoring.newStudyID.clear();
 				
 			}
 			
@@ -111,10 +115,16 @@ public class Auto_Fetch {
 		int numberofAnswers=Integer.parseInt(results[1]);
 		for (int i=0 ; i<numberofAnswers ; i++) {
 			restApi.retrieve(results[0], i, retrieveAet);
-			status.setText("Retriving "+(i+1)+ "/"+ (numberofAnswers+1) );
+			status.setText("Retriving "+(i+1)+ "/"+ (numberofAnswers) );
 		}
 		status.setText("Done, waiting");
 		
+		
+	}
+	
+	
+	public void stopAutoFecth() {
+		timer.cancel();
 	}
 
 }
