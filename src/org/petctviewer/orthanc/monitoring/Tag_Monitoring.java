@@ -1,11 +1,8 @@
 package org.petctviewer.orthanc.monitoring;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -31,8 +28,40 @@ public class Tag_Monitoring {
 
 			@Override
 			public void run() {
-				System.out.println("starting Auto-Fetch");
+				System.out.println("starting Tag-Monitoring");
 				monitoring.makeMonitor();
+				
+				if (level.equals("patient")) {
+					for (int i=0 ; i<monitoring.newPatientID.size(); i++) {
+						StringBuilder sb=parametre.makeGetConnectionAndStringBuilder("/patients/"+monitoring.newPatientID.get(i));
+						JSONObject patientJson = null;
+						try {
+							patientJson = (JSONObject) parser.parse(sb.toString());
+						} catch (ParseException e) {
+							e.printStackTrace();
+						}
+						
+						getMainPatientTag((JSONObject) patientJson.get("MainDicomTags"));
+					}
+					
+				}
+				else if (level.equals("study")) {
+					for (int i=0 ; i<monitoring.newStudyID.size(); i++) {
+						StringBuilder sb=parametre.makeGetConnectionAndStringBuilder("/studies/"+monitoring.newStudyID.get(i));
+						try {
+							getMainStudyTag((JSONObject) parser.parse(sb.toString()));
+						} catch (ParseException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				else if (level.equals("serie")) {
+					for (int i=0 ; i<monitoring.newStableSeriesID.size(); i++) {
+						//SK GET SHARED TAG ET PARSER
+					}
+					
+					
+				}
 				
 				
 				
@@ -47,66 +76,35 @@ public class Tag_Monitoring {
         timer.scheduleAtFixedRate(timerTask, 0, (90*1000));
 	}
 	
+	private void getMainPatientTag(JSONObject mainPatientTag) {
+		System.out.println("patient"+mainPatientTag);
+		String birthDate=(String) mainPatientTag.get("PatientBirthDate");
+		String patientID=(String) mainPatientTag.get("PatientID");
+		String patientName=(String) mainPatientTag.get("PatientName");
+		String patientSex=(String) mainPatientTag.get("PatientSex");
+	}
+	
+	private void getMainStudyTag(JSONObject jsonStudy) {
+		System.out.println("study "+jsonStudy);
+		JSONObject jsonMainStudyTag=(JSONObject) jsonStudy.get("MainDicomTags");
+		
+		String accessionNumber=(String) jsonMainStudyTag.get("AccessionNumber");
+		String institutionName=(String) jsonMainStudyTag.get("InstitutionName");
+		String referringPhysicianName=(String) jsonMainStudyTag.get("ReferringPhysicianName");
+		String studyDate=(String) jsonMainStudyTag.get("StudyDate");
+		String studyDescription=(String) jsonMainStudyTag.get("StudyDescription");
+		String studyID=(String) jsonMainStudyTag.get("StudyID");
+		String studyInstanceUID=(String) jsonMainStudyTag.get("StudyInstanceUID");
+		String studyTime=(String) jsonMainStudyTag.get("StudyTime");
+		
+		getMainPatientTag((JSONObject) jsonStudy.get("PatientMainDicomTags"));
+		
+		
+	}
+	
 	public void stopTagMonitoring() {
 		timer.cancel();
 	}
 
-	
-	/**
-	 * Parse Study Level
-	 * @param id
-	 */
-	/*
-	private void parseStudy(String id) {
-		StringBuilder sb = null;
-		try {
-			sb = parametre.makeGetConnectionAndStringBuilder("/studies/"+id+"/series?simplify");
-			JSONArray getserieInfo = (JSONArray) parser.parse(sb.toString());	
-			int nombreSerie=getserieInfo.size();
-		//Pour chaque Serie on recupere un objet JSON avec les informations
-		for (int i=0; i<nombreSerie; i++) {
-			JSONObject infoSerie=(JSONObject) parser.parse(getserieInfo.get(i).toString());
-			//Nouvelle methode a creer pour parser le niveau Serie en evoyant le message
-			System.out.println(infoSerie.get("ID"));
-		}
-	
-		} catch (ParseException e) {e.printStackTrace();}
-	}
-	
-	
-	private void parseSerie(String id) {
-		StringBuilder sb = null;
-		try {
-			
-			sb = parametre.makeGetConnectionAndStringBuilder("/series/"+id+"/");
-			JSONObject seriesInfo=(JSONObject) parser.parse(sb.toString());
-			JSONObject mainSerieTag=(JSONObject) parser.parse(seriesInfo.get("MainDicomTags").toString());
-			if (mainSerieTag.get("Modality").equals("CT")) {
-				//SI CT on traite comme CT
-				parseCT(id, mainSerieTag);
-			}
-			
-		} catch (ParseException e1) {e1.printStackTrace();}	
-	}
-	
-	@SuppressWarnings("unchecked")
-	private void parseCT(String id, JSONObject mainSerieTag) {
-		StringBuilder sb = null;
-		sb = parametre.makeGetConnectionAndStringBuilder("/series/"+id+"/shared-tags");
-		
-		try {
-			JSONObject sharedTag=(JSONObject) parser.parse(sb.toString());
-			String[] tagcommun=new String [sharedTag.size()];
-			sharedTag.keySet().toArray(tagcommun);
-			for (int i=0; i<tagcommun.length; i++) {
-				JSONObject tag=(JSONObject) sharedTag.get(tagcommun[i]);
-				String name=(String) tag.get("Name");
-				System.out.println(name);
-			}
-			//System.out.println(tagcommun.toString());
-		} catch (ParseException e) {e.printStackTrace();}
-		
-
-*/
 
 }

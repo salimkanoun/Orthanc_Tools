@@ -67,7 +67,7 @@ public class Monitoring_GUI extends JFrame {
 	private JLabel lbl_CD_Status, lbl_DoseMonitoring_Status, lbl_AutoFecth_Status;
 	
 	//Boolean activity services
-	private boolean cdMonitoringStarted, doseMonitoringStarted, autoFetchStarted;
+	private boolean cdMonitoringStarted, doseMonitoringStarted, autoFetchStarted, tagMonitoringStarted;
 	
 	private JTable table_Patient_TagMonitoring;
 	private JTextField textField_If_Autorouting;
@@ -75,6 +75,7 @@ public class Monitoring_GUI extends JFrame {
 	
 	//Tag Monitoring
 	ButtonGroup levelTagMonitoring=new ButtonGroup();
+	Tag_Monitoring tagMonitoring;
 	
 	//AutoFetch
 	JComboBox<String> comboBoxAET_AutoFetch;
@@ -342,8 +343,27 @@ public class Monitoring_GUI extends JFrame {
 						JPanel panel_TagMonitoring_Buttons = new JPanel();
 						panel_tag_monitoring.add(panel_TagMonitoring_Buttons, BorderLayout.SOUTH);
 						
-						JButton btnStart = new JButton("Start Collecting");
-						panel_TagMonitoring_Buttons.add(btnStart);
+						JButton btnStart_tagMonitoring = new JButton("Start Collecting");
+						btnStart_tagMonitoring.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent arg0) {
+								if (!tagMonitoringStarted) {
+									tagMonitoring=new Tag_Monitoring(parametre, levelTagMonitoring.getSelection().getActionCommand());
+									tagMonitoring.startTagMonitoring();
+									btnStart_tagMonitoring.setText("Stop Collecting");
+									tagMonitoringStarted=true;
+									updateStatusLabel();
+									
+								}
+								else if (tagMonitoringStarted) {
+									tagMonitoring.stopTagMonitoring();
+									tagMonitoringStarted=false;
+									btnStart_tagMonitoring.setText("Start Collecting");
+									updateStatusLabel();
+								}
+								
+							}
+						});
+						panel_TagMonitoring_Buttons.add(btnStart_tagMonitoring);
 						
 						JPanel panel_AutoRouting = new JPanel();
 						tabbedPane.addTab("Auto-Routing", null, panel_AutoRouting, null);
@@ -539,6 +559,9 @@ public class Monitoring_GUI extends JFrame {
 		
 		if (autoFetchStarted) lbl_AutoFecth_Status.setText("Start");
 		else lbl_AutoFecth_Status.setText("Stop");
+		
+		if (tagMonitoringStarted) lbl_DoseMonitoring_Status.setText("Start");
+		else lbl_DoseMonitoring_Status.setText("Stop");
 	}
 	
 	private void setAET() {

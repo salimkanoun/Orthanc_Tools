@@ -16,7 +16,7 @@ import org.petctviewer.orthanc.query.Rest;
 
 public class Auto_Fetch {
 	
-	private ParametreConnexionHttp parametre;
+	private ParametreConnexionHttp connexion;
 	private String level, studyDate, modality, studyDescription, queryAet , retrieveAet;
 	private JSONParser parser=new JSONParser();
 	private Rest restApi;
@@ -25,9 +25,9 @@ public class Auto_Fetch {
 	//sert a etre arrete via methode
 	private Timer timer;
 	
-	public Auto_Fetch(ParametreConnexionHttp parametre, String level, String studyDate, String modality, String studyDescription, String queryAet, JLabel status) {
-		this.parametre=parametre;
-		restApi=new Rest(parametre);
+	public Auto_Fetch(ParametreConnexionHttp connexion, String level, String studyDate, String modality, String studyDescription, String queryAet, JLabel status) {
+		this.connexion=connexion;
+		restApi=new Rest(connexion);
 		this.level=level;
 		this.studyDate=studyDate;
 		this.studyDescription=studyDescription;
@@ -45,7 +45,7 @@ public class Auto_Fetch {
 	}
 	
 	public void startAutoFetch() {
-		Orthanc_Monitoring monitoring=new Orthanc_Monitoring(parametre);
+		Orthanc_Monitoring monitoring=new Orthanc_Monitoring(connexion);
 		monitoring.autoSetChangeLastLine();
 		
 		TimerTask timerTask = new TimerTask() {
@@ -58,7 +58,7 @@ public class Auto_Fetch {
 				//Si on monitore le level Study on parcours les study arrivees pour stocker les ID patients a retrieve
 				if (level.equals("study")) {
 					for (int i=0; i<monitoring.newStudyID.size(); i++) {
-						StringBuilder sb = parametre.makeGetConnectionAndStringBuilder("/studies/"+monitoring.newStudyID.get(i));
+						StringBuilder sb = connexion.makeGetConnectionAndStringBuilder("/studies/"+monitoring.newStudyID.get(i));
 						try {
 							JSONObject study = (JSONObject) parser.parse(sb.toString());
 							JSONObject patientMainTag= (JSONObject) study.get("PatientMainDicomTags");
@@ -72,7 +72,7 @@ public class Auto_Fetch {
 				//Si on monitore le level Patients on parcours les patients arrivees pour stocker les ID patients a retrieve
 				if (level.equals("patient")) {
 					for (int i=0; i<monitoring.newPatientID.size(); i++) {
-						StringBuilder sb = parametre.makeGetConnectionAndStringBuilder("/patients/"+monitoring.newPatientID.get(i));
+						StringBuilder sb = connexion.makeGetConnectionAndStringBuilder("/patients/"+monitoring.newPatientID.get(i));
 						try {
 							JSONObject patient = (JSONObject) parser.parse(sb.toString());
 							JSONObject patientMainTag= (JSONObject) patient.get("MainDicomTags");

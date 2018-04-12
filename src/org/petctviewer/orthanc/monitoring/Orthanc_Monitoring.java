@@ -35,6 +35,7 @@ public class Orthanc_Monitoring {
 	//CD Burner variable
 	protected List<String> newStableStudyID = new ArrayList<String>();
 	protected List<String> newStablePatientID = new ArrayList<String>();
+	protected List<String> newStableSeriesID = new ArrayList<String>();
 	protected List<String> newPatientID = new ArrayList<String>();
 	protected List<String> newStudyID = new ArrayList<String>();
 	protected List<String> newSerieID = new ArrayList<String>();
@@ -126,6 +127,10 @@ public class Orthanc_Monitoring {
 			
 			else if (changeEvent.get("ChangeType").equals("StableStudy")) {
 				newStableStudyID.add((String) changeEvent.get("ID"));
+			}
+
+			else if (changeEvent.get("ChangeType").equals("StableSeries")) {
+				newStablePatientID.add((String) changeEvent.get("ID"));
 			}
 			
 		}
