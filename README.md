@@ -24,6 +24,10 @@ Features :
    - Recursive import to Orthanc of local DICOMs
    
  - Monitoring : Work In Progress
+   - Auto-Fetch : Automatically retrieve patient's history for each new study/patient recieved in Orthanc
+   - CD-Burner : Generate DVD burning intruction for Epson PP100II diskmaker
+   - Tag-Monitoring : Autocollection of DICOM tag value of recieved patients/studies/series (monitoring injected dose, dlp...)
+   - Auto-Routing (Not desgigned yet)
    
  Contribution from http://petctviewer.org, free and open source PET/CT viewer based on Fiji/ImageJ
  
