@@ -26,7 +26,7 @@ import javax.swing.table.AbstractTableModel;
 public class TableDataDetails extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Series name", "Modality", "Serie n°"};
+	private String[] entetes = {"Series name", "Modality", "Serie nÂ°"};
 	private String idURL;
 	private ArrayList<Details> details = new ArrayList<Details>();
 	private ArrayList<String> listIndexes = null;
@@ -124,18 +124,12 @@ public class TableDataDetails extends AbstractTableModel{
 	}
 
 	/*
-	 * This method retrieves the instance
+	 * This method retrieves the needed result
 	 */
-	public void retrieve(String queryID, String answer, String retrieveAET) throws IOException{
+	public void retrieve(String queryID, int answer, String retrieveAET) throws IOException{
 		rest.retrieve(queryID, answer, retrieveAET);
 	}
 
-	/*
-	 * This method retrieves the whole study
-	 */
-	public void retrieveAll(String queryID, String answer, String retrieveAET) throws IOException{
-		rest.retrieve(queryID, answer, retrieveAET);
-	}
 
 	/*
 	 * This method clears the queries IDs list
