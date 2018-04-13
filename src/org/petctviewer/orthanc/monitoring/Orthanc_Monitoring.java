@@ -130,7 +130,7 @@ public class Orthanc_Monitoring {
 			}
 
 			else if (changeEvent.get("ChangeType").equals("StableSeries")) {
-				newStablePatientID.add((String) changeEvent.get("ID"));
+				newStableSeriesID.add((String) changeEvent.get("ID"));
 			}
 			
 		}
@@ -139,7 +139,14 @@ public class Orthanc_Monitoring {
 		done=Boolean.parseBoolean(changes.get("Done").toString());
 	}
 
-
+	public void clearAllList() {
+		newStableStudyID.clear();
+		newStablePatientID.clear();
+		newStableSeriesID.clear();
+		newPatientID.clear();
+		newStudyID.clear();
+		newSerieID.clear(); 
+	}
 
 		
 

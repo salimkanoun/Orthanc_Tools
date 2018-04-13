@@ -78,7 +78,7 @@ public class CD_Burner {
 				System.out.println("starting scann");
 				monitoring.makeMonitor();
 				makeCD(monitoring.newStableStudyID);
-				monitoring.newStableStudyID.clear();
+				monitoring.clearAllList();
 				
 			}
 			

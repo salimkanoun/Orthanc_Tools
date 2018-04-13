@@ -23,12 +23,13 @@ public class Tag_Monitoring {
 	public void startTagMonitoring() {
 		Orthanc_Monitoring monitoring=new Orthanc_Monitoring(parametre);
 		monitoring.autoSetChangeLastLine();
+		System.out.println("starting Tag-Monitoring");
 		
 		TimerTask timerTask = new TimerTask() {
 
 			@Override
 			public void run() {
-				System.out.println("starting Tag-Monitoring");
+				
 				monitoring.makeMonitor();
 				
 				if (level.equals("patient")) {
@@ -57,13 +58,27 @@ public class Tag_Monitoring {
 				}
 				else if (level.equals("serie")) {
 					for (int i=0 ; i<monitoring.newStableSeriesID.size(); i++) {
-						//SK GET SHARED TAG ET PARSER
+						StringBuilder sb=parametre.makeGetConnectionAndStringBuilder("/series/"+monitoring.newStableSeriesID.get(i));
+						JSONObject seriesTag = null;
+						try {
+							seriesTag = (JSONObject) parser.parse(sb.toString());	
+							String parentStudyID=(String) seriesTag.get("ParentStudy");
+							StringBuilder sbParentStudy=parametre.makeGetConnectionAndStringBuilder("/studies/"+parentStudyID);
+							JSONObject parentStudy=(JSONObject) parser.parse(sbParentStudy.toString());
+							getMainStudyTag(parentStudy);
+						} catch (ParseException e) {
+							e.printStackTrace();
+						}
+					
+						
+						StringBuilder sbSharedTags=parametre.makeGetConnectionAndStringBuilder("/series/"+monitoring.newStableSeriesID.get(i)+"/shared-tags");
+						System.out.println(sbSharedTags);
 					}
 					
 					
 				}
 				
-				
+				monitoring.clearAllList();
 				
 				
 			}
@@ -77,17 +92,27 @@ public class Tag_Monitoring {
 	}
 	
 	private void getMainPatientTag(JSONObject mainPatientTag) {
-		System.out.println("patient"+mainPatientTag);
+		
 		String birthDate=(String) mainPatientTag.get("PatientBirthDate");
 		String patientID=(String) mainPatientTag.get("PatientID");
 		String patientName=(String) mainPatientTag.get("PatientName");
 		String patientSex=(String) mainPatientTag.get("PatientSex");
+		System.out.println("Nouveau patient");
+		System.out.println("Nom "+patientName);
+		System.out.println("ID " + patientID);
+		System.out.println("Sexe "+ patientSex);
+		System.out.println("DOB " +birthDate);
+		
 	}
 	
 	private void getMainStudyTag(JSONObject jsonStudy) {
-		System.out.println("study "+jsonStudy);
+		System.out.println("Nouvelle Study");
 		JSONObject jsonMainStudyTag=(JSONObject) jsonStudy.get("MainDicomTags");
 		
+		//On recupere les info Patients
+		getMainPatientTag((JSONObject) jsonStudy.get("PatientMainDicomTags"));
+		
+		//Info Study
 		String accessionNumber=(String) jsonMainStudyTag.get("AccessionNumber");
 		String institutionName=(String) jsonMainStudyTag.get("InstitutionName");
 		String referringPhysicianName=(String) jsonMainStudyTag.get("ReferringPhysicianName");
@@ -97,7 +122,15 @@ public class Tag_Monitoring {
 		String studyInstanceUID=(String) jsonMainStudyTag.get("StudyInstanceUID");
 		String studyTime=(String) jsonMainStudyTag.get("StudyTime");
 		
-		getMainPatientTag((JSONObject) jsonStudy.get("PatientMainDicomTags"));
+		
+		System.out.println("accessionNumber "+accessionNumber);
+		System.out.println("institutionName " + institutionName);
+		System.out.println("referringPhysicianName "+ referringPhysicianName);
+		System.out.println("studyDate " +studyDate);
+		System.out.println("studyDescription "+studyDescription);
+		System.out.println("studyID " + studyID);
+		System.out.println("studyInstanceUID "+ studyInstanceUID);
+		System.out.println("studyTime " +studyTime);
 		
 		
 	}

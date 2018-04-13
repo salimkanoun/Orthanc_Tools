@@ -91,8 +91,7 @@ public class Auto_Fetch {
 				
 				//On vide pour les messages suivant
 				idToProcess.clear();
-				monitoring.newPatientID.clear();
-				monitoring.newStudyID.clear();
+				monitoring.clearAllList();
 				
 			}
 			
