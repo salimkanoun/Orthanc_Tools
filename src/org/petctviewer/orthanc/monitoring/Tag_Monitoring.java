@@ -1,12 +1,26 @@
 package org.petctviewer.orthanc.monitoring;
 
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.text.DefaultCaret;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
+import org.petctviewer.orthanc.query.AutoQueryResultTableDialog;
 
 public class Tag_Monitoring {
 	
@@ -14,6 +28,7 @@ public class Tag_Monitoring {
 	private String level;
 	private JSONParser parser=new JSONParser();
 	private Timer timer;
+	JTextArea textAreaConsole=new JTextArea(10,80);
 	
 	public Tag_Monitoring(ParametreConnexionHttp parametre, String level) {
 		this.parametre=parametre;
@@ -24,7 +39,8 @@ public class Tag_Monitoring {
 		Orthanc_Monitoring monitoring=new Orthanc_Monitoring(parametre);
 		monitoring.autoSetChangeLastLine();
 		System.out.println("starting Tag-Monitoring");
-		
+		textAreaConsole.append("starting Tag-Monitoring"+ "\n");
+		showConsoleFrame();
 		TimerTask timerTask = new TimerTask() {
 
 			@Override
@@ -73,6 +89,7 @@ public class Tag_Monitoring {
 						
 						StringBuilder sbSharedTags=parametre.makeGetConnectionAndStringBuilder("/series/"+monitoring.newStableSeriesID.get(i)+"/shared-tags");
 						System.out.println(sbSharedTags);
+						textAreaConsole.append("SeriesSharedTags " +sbSharedTags+ "\n");
 					}
 					
 					
@@ -103,10 +120,17 @@ public class Tag_Monitoring {
 		System.out.println("Sexe "+ patientSex);
 		System.out.println("DOB " +birthDate);
 		
+		textAreaConsole.append("Nouveau patient"+ "\n");
+		textAreaConsole.append("Nom= "+patientName+"\n");
+		textAreaConsole.append("ID= " + patientID+ "\n");
+		textAreaConsole.append("Sexe= "+ patientSex+ "\n");
+		textAreaConsole.append("DOB= " +birthDate+ "\n");
+		
 	}
 	
 	private void getMainStudyTag(JSONObject jsonStudy) {
 		System.out.println("Nouvelle Study");
+		textAreaConsole.append("Nouvelle Study"+ "\n");
 		JSONObject jsonMainStudyTag=(JSONObject) jsonStudy.get("MainDicomTags");
 		
 		//On recupere les info Patients
@@ -123,20 +147,63 @@ public class Tag_Monitoring {
 		String studyTime=(String) jsonMainStudyTag.get("StudyTime");
 		
 		
-		System.out.println("accessionNumber "+accessionNumber);
-		System.out.println("institutionName " + institutionName);
-		System.out.println("referringPhysicianName "+ referringPhysicianName);
-		System.out.println("studyDate " +studyDate);
-		System.out.println("studyDescription "+studyDescription);
-		System.out.println("studyID " + studyID);
-		System.out.println("studyInstanceUID "+ studyInstanceUID);
-		System.out.println("studyTime " +studyTime);
+		System.out.println("accessionNumber= "+accessionNumber);
+		System.out.println("institutionName= " + institutionName);
+		System.out.println("referringPhysicianName= "+ referringPhysicianName);
+		System.out.println("studyDate= " +studyDate);
+		System.out.println("studyDescription= "+studyDescription);
+		System.out.println("studyID= " + studyID);
+		System.out.println("studyInstanceUID= "+ studyInstanceUID);
+		System.out.println("studyTime= " +studyTime);
 		
+		textAreaConsole.append("accessionNumber= "+accessionNumber+ "\n");
+		textAreaConsole.append("institutionName= " + institutionName+ "\n");
+		textAreaConsole.append("referringPhysicianName= "+ referringPhysicianName+ "\n");
+		textAreaConsole.append("studyDate= " +studyDate+ "\n");
+		textAreaConsole.append("studyDescription= "+studyDescription+ "\n");
+		textAreaConsole.append("studyID= " + studyID+ "\n");
+		textAreaConsole.append("studyInstanceUID= "+ studyInstanceUID+ "\n");
+		textAreaConsole.append("studyTime= " +studyTime+ "\n");
 		
 	}
 	
 	public void stopTagMonitoring() {
 		timer.cancel();
+	}
+	
+	private void showConsoleFrame() {
+		JFrame console=new JFrame();
+		JPanel panel=new JPanel();
+		panel.setLayout(new BorderLayout());
+		console.add(panel);
+		JScrollPane scrollPane=new JScrollPane();
+		textAreaConsole.setAutoscrolls(true);
+		DefaultCaret caret = (DefaultCaret) textAreaConsole.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.OUT_BOTTOM);
+		scrollPane.setViewportView(textAreaConsole);
+		panel.add(scrollPane, BorderLayout.CENTER);
+		
+	/*JButton btnCsvRetrieveReport = new JButton("Save To CSV");
+		btnCsvRetrieveReport.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JFileChooser csvReport=new JFileChooser();
+				csvReport.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				csvReport.setSelectedFile(new File("Report_AutoRetrieve_"+df.format(new Date())+".csv"));
+				int ok=csvReport.showSaveDialog(null);
+				if (ok==JFileChooser.APPROVE_OPTION ) {
+					AutoQueryResultTableDialog.writeCSV(textAreaConsole.getText(), csvReport.getSelectedFile().getAbsolutePath().toString());
+					}
+			}
+		});*/
+		JPanel button=new JPanel();
+		//btnCsvRetrieveReport.setToolTipText("Set Folder to generate report of AutoQuery");
+		//button.add(btnCsvRetrieveReport);
+		panel.add(button, BorderLayout.SOUTH);
+		
+		console.pack();
+		console.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		console.setVisible(true);
+		
 	}
 
 
