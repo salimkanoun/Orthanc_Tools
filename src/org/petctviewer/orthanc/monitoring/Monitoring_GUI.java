@@ -67,7 +67,7 @@ public class Monitoring_GUI extends JFrame {
 	private JLabel lbl_CD_Status, lbl_DoseMonitoring_Status, lbl_AutoFecth_Status;
 	
 	//Boolean activity services
-	private boolean cdMonitoringStarted, doseMonitoringStarted, autoFetchStarted, tagMonitoringStarted;
+	private boolean cdMonitoringStarted, autoFetchStarted, tagMonitoringStarted;
 	
 	private JTable table_Patient_TagMonitoring;
 	private JTextField textField_If_Autorouting;
@@ -554,7 +554,7 @@ public class Monitoring_GUI extends JFrame {
 		if (cdMonitoringStarted) lbl_CD_Status.setText("Start");
 		else lbl_CD_Status.setText("Stop");
 		
-		if (doseMonitoringStarted) lbl_DoseMonitoring_Status.setText("Start");
+		if (tagMonitoringStarted) lbl_DoseMonitoring_Status.setText("Start");
 		else lbl_DoseMonitoring_Status.setText("Stop");
 		
 		if (autoFetchStarted) lbl_AutoFecth_Status.setText("Start");
@@ -579,5 +579,26 @@ public class Monitoring_GUI extends JFrame {
 			e.printStackTrace();
 		}
 		
+	}
+	/**
+	 * Stops all monitoring services (for exit call)
+	 */
+	public void closeAllMonitoringServices() {
+		//Boolean activity services
+		if (cdMonitoringStarted) cdBurner.stopCDMonitoring();
+		if(tagMonitoringStarted) tagMonitoring.stopTagMonitoring();
+		if(autoFetchStarted) autoFetch.stopAutoFecth();
+		
+	}
+	/**
+	 * check is existing running service (for exit call)
+	 * @return
+	 */
+	public boolean isRunningMonitoringService() {
+		boolean running=false;
+		if (cdMonitoringStarted ||tagMonitoringStarted ||autoFetchStarted) {
+			running=true;
+		}
+		return running;
 	}
 }

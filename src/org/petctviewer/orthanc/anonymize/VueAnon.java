@@ -172,7 +172,10 @@ public class VueAnon extends JFrame implements PlugIn{
 	private TableRowSorter<TableDataExportSeries> sorterExportSeries;
 	private StringBuilder remoteFileName;
 
-	// Tab Setup (p3)
+	//Monitoring (p3)
+	Monitoring_GUI monitoring;
+	
+	// Tab Setup (p4)
 	private JComboBox<Object> anonProfiles;
 	private Choice bodyCharChoice;
 	private Choice datesChoice;
@@ -199,6 +202,8 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JTextField dbUsername;
 	private JPasswordField dbPassword;
 	private JButton setupButton;
+	
+
 	
 	
 
@@ -2336,7 +2341,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////// END TAB 3 : SETUP //////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
-		Monitoring_GUI monitoring = new Monitoring_GUI(connexionHttp);
+		monitoring = new Monitoring_GUI(connexionHttp);
 		JPanel panelMonitoring = (JPanel) monitoring.getContentPane();
 		
 		
@@ -2497,7 +2502,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.getContentPane().add(tabbedPane);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.getRootPane().setDefaultButton(search);
-		this.addWindowListener(new CloseWindowAdapter(this, this.zipContent, this.modeleAnonStudies.getOldOrthancUIDs(), this.modeleExportStudies.getStudiesList()));
+		this.addWindowListener(new CloseWindowAdapter(this, this.zipContent, this.modeleAnonStudies.getOldOrthancUIDs(), this.modeleExportStudies.getStudiesList(), monitoring));
 	}
 	
 	private void openCloseAnonTool(boolean open) {
