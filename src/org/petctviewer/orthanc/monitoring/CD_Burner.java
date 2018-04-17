@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -41,14 +42,16 @@ import org.json.simple.parser.JSONParser;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
 import org.petctviewer.orthanc.anonymize.ConvertZipAction;
 
+import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 
 public class CD_Burner {
 	
-	protected static String dateFormatChoix;
-	protected static String labelFile;
-	protected static String epsonDirectory;
-	protected static String fijiDirectory;
+	private  String dateFormatChoix;
+	private  String labelFile;
+	private  String epsonDirectory;
+	private  String fijiDirectory;
+	private  Boolean deleteStudies;
 	private JTextArea textArea;
 	private Path folder;
 	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -59,6 +62,7 @@ public class CD_Burner {
 	public CD_Burner (ParametreConnexionHttp connexion, JTextArea textArea) {
 		this.connexion=connexion;
 		this.textArea=textArea;
+		setCDPreference();
 	}
 
 	
@@ -66,28 +70,36 @@ public class CD_Burner {
 	 * Start Monitoring of Orthanc Change API every 90secs
 	 */
 	public void startCDMonitoring() {
-		
-		Orthanc_Monitoring monitoring=new Orthanc_Monitoring(connexion);
-		//Met la derniere ligne pour commencer le monitoring
-		monitoring.autoSetChangeLastLine();
-		
-		TimerTask timerTask = new TimerTask() {
-
-			@Override
-			public void run() {
-				System.out.println("starting scann");
-				monitoring.makeMonitor();
-				makeCD(monitoring.newStableStudyID);
-				monitoring.clearAllList();
-				
-			}
+		if ( epsonDirectory==null ||fijiDirectory==null ||labelFile==null || dateFormatChoix==null ){
+			//Message d'erreur doit faire le set de output folder
+			JOptionPane.showMessageDialog(null, "Go to settings Menu to set missing paths", "Set directories and date format", JOptionPane.ERROR_MESSAGE);
+		}
+		else {
+			textArea.append("Monitoring Orthanc \n");
+			Orthanc_Monitoring monitoring=new Orthanc_Monitoring(connexion);
+			//Met la derniere ligne pour commencer le monitoring
+			monitoring.autoSetChangeLastLine();
 			
-		};
+			TimerTask timerTask = new TimerTask() {
+	
+				@Override
+				public void run() {
+					System.out.println("starting scann");
+					monitoring.makeMonitor();
+					makeCD(monitoring.newStableStudyID);
+					monitoring.clearAllList();
+					
+				}
+				
+			};
+			
+	        //running timer task as daemon thread
+	        timer = new Timer(true);
+	        //Toutes les 90 seconds
+	        timer.scheduleAtFixedRate(timerTask, 0, (90*1000));
+		}
 		
-        //running timer task as daemon thread
-        timer = new Timer(true);
-        //Toutes les 90 seconds
-        timer.scheduleAtFixedRate(timerTask, 0, (90*1000));
+
                
  
 
@@ -136,7 +148,7 @@ public class CD_Burner {
 				// Creation du Cd
 				createCdBurner(nom, id, date, studyDescription, dat);
 				//On efface la study de Orthanc
-				connexion.makeDeleteConnection("/studies/"+newStableStudyID.get(i));
+				if (deleteStudies) connexion.makeDeleteConnection("/studies/"+newStableStudyID.get(i));
 			} catch (IOException | org.json.simple.parser.ParseException | ParseException e) {
 				e.printStackTrace();
 			}
@@ -235,7 +247,7 @@ public class CD_Burner {
        SimpleDateFormat parser = new SimpleDateFormat("yyyyMMdd");
        Date dateExamen = parser.parse(date);
        //dateExamen=DateUtils.truncate(dateExamen, Calendar.DAY_OF_MONTH);
-       SimpleDateFormat formatter = new SimpleDateFormat(CD_Burner.dateFormatChoix);
+       SimpleDateFormat formatter = new SimpleDateFormat(dateFormatChoix);
        String formattedDate = formatter.format(dateExamen);
        
        //On parse le nom pour enlever les _ et passer le prenom en minuscule
@@ -279,5 +291,18 @@ public class CD_Burner {
 		      return FileVisitResult.CONTINUE;
 		    }
 		  });
+	}
+	
+	public void setCDPreference() {
+				//On prends les settings du registery
+				Preferences jPrefer = Preferences.userNodeForPackage(Burner_Settings.class);
+				jPrefer = jPrefer.node("CDburner");
+				fijiDirectory=jPrefer.get("fijiDirectory", null);
+				epsonDirectory=jPrefer.get("epsonDirectory", null);
+				labelFile=jPrefer.get("labelFile", null);
+				dateFormatChoix=jPrefer.get("DateFormat", null);
+				deleteStudies=jPrefer.getBoolean("deleteStudies", false);
+		
+				
 	}
 }

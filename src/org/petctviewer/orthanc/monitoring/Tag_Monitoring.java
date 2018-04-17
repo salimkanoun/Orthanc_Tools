@@ -16,6 +16,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.text.DefaultCaret;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -164,6 +165,22 @@ public class Tag_Monitoring {
 		textAreaConsole.append("studyID= " + studyID+ "\n");
 		textAreaConsole.append("studyInstanceUID= "+ studyInstanceUID+ "\n");
 		textAreaConsole.append("studyTime= " +studyTime+ "\n");
+		
+	}
+	
+	//SK A CONTINUER
+	private void getTagFromInstance(String seriesID) {
+		StringBuilder sbSeries=parametre.makeGetConnectionAndStringBuilder("/series/"+seriesID);
+		JSONObject seriesJson = null;
+		try {
+			seriesJson = (JSONObject) parser.parse(sbSeries.toString());
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		JSONArray instanceArray=(JSONArray) seriesJson.get("Instances");
+		StringBuilder instanceJson=parametre.makeGetConnectionAndStringBuilder("/instances/"+instanceArray.get(0)+"/tags");
+		
 		
 	}
 	

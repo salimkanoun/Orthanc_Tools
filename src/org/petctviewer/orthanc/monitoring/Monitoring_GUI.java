@@ -60,8 +60,8 @@ public class Monitoring_GUI extends JFrame {
 	//CD Burner Service
 	private JButton btnStopMonitoring, btnStartMonitoring;
 	private Preferences jPrefer;
-	private CD_Burner cdBurner;
 	private JTextArea textAreaCD;
+	CD_Burner cdBurner;
 	
 	//Service Status in Main tab
 	private JLabel lbl_CD_Status, lbl_DoseMonitoring_Status, lbl_AutoFecth_Status;
@@ -194,22 +194,15 @@ public class Monitoring_GUI extends JFrame {
 						btnStartMonitoring.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent arg0) {
 								cdBurner=new CD_Burner(parametre, textAreaCD);
-								setCDPreference();
-								if ( CD_Burner.epsonDirectory==null ||CD_Burner.fijiDirectory==null ||CD_Burner.labelFile==null || CD_Burner.dateFormatChoix==null ){
-									//Message d'erreur doit faire le set de output folder
-									JOptionPane.showMessageDialog(null, "Go to settings Menu to set missing paths", "Set directories and date format", JOptionPane.ERROR_MESSAGE);
-								}
-								
-								else {
-									textAreaCD.append("Monitoring Orthanc \n");
-									//On ouvre le watcher dans un nouveau thread pour ne pas bloquer l'interface				
-									cdBurner.startCDMonitoring();
-									cdMonitoringStarted=true;
-									//On grise le boutton pour empecher la creation d'un nouveau watcher
-									btnStartMonitoring.setEnabled(false);
-									btnStopMonitoring.setEnabled(true);
-									updateStatusLabel();
-									}			
+								cdBurner.setCDPreference();
+								//On ouvre le watcher dans un nouveau thread pour ne pas bloquer l'interface				
+								cdBurner.startCDMonitoring();
+								cdMonitoringStarted=true;
+								//On grise le boutton pour empecher la creation d'un nouveau watcher
+								btnStartMonitoring.setEnabled(false);
+								btnStopMonitoring.setEnabled(true);
+								updateStatusLabel();
+												
 							}
 						});
 						JButton btnSettings = new JButton("Settings");
@@ -218,11 +211,6 @@ public class Monitoring_GUI extends JFrame {
 								Burner_Settings settings=new Burner_Settings();
 								settings.setVisible(true);
 								settings.setModal(true);
-								//On refresh les changement de variable � la fin de l'operation
-								CD_Burner.fijiDirectory=jPrefer.get("fijiDirectory", null);
-								CD_Burner.epsonDirectory=jPrefer.get("epsonDirectory", null);
-								CD_Burner.labelFile=jPrefer.get("labelFile", null);
-								CD_Burner.dateFormatChoix=jPrefer.get("DateFormat", null);
 							}
 						});
 						panel.add(btnSettings);
@@ -530,24 +518,14 @@ public class Monitoring_GUI extends JFrame {
 						setAET();
 	}
 	
-	private void setCDPreference() {
-		//On prends les settings du registery
-				jPrefer = Preferences.userNodeForPackage(Burner_Settings.class);
-				jPrefer = jPrefer.node("CDburner");
-				CD_Burner.fijiDirectory=jPrefer.get("fijiDirectory", null);
-				CD_Burner.epsonDirectory=jPrefer.get("epsonDirectory", null);
-				CD_Burner.labelFile=jPrefer.get("labelFile", null);
-				CD_Burner.dateFormatChoix=jPrefer.get("DateFormat", null);
-		
-				
-	}
 	
 	
-	private void autoStart(){
+	
+	/*private void autoStart(){
 		if ( CD_Burner.epsonDirectory!=null && CD_Burner.fijiDirectory!=null && CD_Burner.labelFile!=null && CD_Burner.dateFormatChoix!=null ){
 			btnStartMonitoring.doClick();
 		}
-	}
+	}*/
 	
 	
 	private void updateStatusLabel(){

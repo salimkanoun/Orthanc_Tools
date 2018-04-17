@@ -26,12 +26,16 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import java.awt.GridLayout;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.awt.event.ActionListener;
 import java.util.prefs.Preferences;
 import java.awt.event.ActionEvent;
 import javax.swing.JRadioButton;
 import javax.swing.SwingConstants;
 import javax.swing.ButtonGroup;
+import javax.swing.JTextField;
+import javax.swing.JCheckBox;
 
 @SuppressWarnings("serial")
 public class Burner_Settings extends JDialog {
@@ -44,7 +48,15 @@ public class Burner_Settings extends JDialog {
 	
 	private Preferences jPrefer = null;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
+	
+	private JDialog dialogSettings;
 
+	private  String dateFormatChoix;
+	private  String labelFile;
+	private  String epsonDirectory;
+	private  String fijiDirectory;
+	private  Boolean deleteStudies;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -61,8 +73,10 @@ public class Burner_Settings extends JDialog {
 	 * Create the dialog.
 	 */
 	public Burner_Settings() {
+		dialogSettings=this;
 		jPrefer = Preferences.userNodeForPackage(Burner_Settings.class);
 		jPrefer = jPrefer.node("CDburner");
+		setCDPreference();
 		
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setModal(true);
@@ -79,15 +93,15 @@ public class Burner_Settings extends JDialog {
 					fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 					int ouvrir=fc.showOpenDialog(null);
 					if (ouvrir==JFileChooser.APPROVE_OPTION){
-						CD_Burner.fijiDirectory=fc.getSelectedFile().getAbsolutePath().toString();
-						imageJPath.setText(CD_Burner.fijiDirectory);
+						fijiDirectory=fc.getSelectedFile().getAbsolutePath().toString();
+						imageJPath.setText(fijiDirectory);
 					}
 				}
 			});
 			contentPanel.add(imageJ);
 		}
 		{
-			imageJPath = new JLabel(CD_Burner.fijiDirectory);
+			imageJPath = new JLabel(fijiDirectory);
 			contentPanel.add(imageJPath);
 		}
 		{
@@ -98,15 +112,15 @@ public class Burner_Settings extends JDialog {
 					fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 					int ouvrir=fc.showOpenDialog(null);
 					if (ouvrir==JFileChooser.APPROVE_OPTION){
-						CD_Burner.labelFile=fc.getSelectedFile().getAbsolutePath().toString();
-						labelFilePath.setText(CD_Burner.labelFile);
+						labelFile=fc.getSelectedFile().getAbsolutePath().toString();
+						labelFilePath.setText(labelFile);
 					}
 				}
 			});
 			contentPanel.add(labelFileButton);
 		}
 		{
-			labelFilePath = new JLabel(CD_Burner.labelFile);
+			labelFilePath = new JLabel(labelFile);
 			contentPanel.add(labelFilePath);
 		}
 		{
@@ -117,15 +131,15 @@ public class Burner_Settings extends JDialog {
 					fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 					int ouvrir=fc.showOpenDialog(null);
 					if (ouvrir==JFileChooser.APPROVE_OPTION){
-						CD_Burner.epsonDirectory=fc.getSelectedFile().getAbsolutePath().toString();
-						epsonDirectoryLabel.setText(CD_Burner.epsonDirectory);
+						epsonDirectory=fc.getSelectedFile().getAbsolutePath().toString();
+						epsonDirectoryLabel.setText(epsonDirectory);
 					}
 				}
 			});
 			contentPanel.add(epsonDirectoryButton);
 		}
 		{
-			epsonDirectoryLabel = new JLabel(CD_Burner.epsonDirectory);
+			epsonDirectoryLabel = new JLabel(epsonDirectory);
 			contentPanel.add(epsonDirectoryLabel);
 		}
 		{
@@ -153,8 +167,6 @@ public class Burner_Settings extends JDialog {
 				rdbtnDdmmyyyy.setActionCommand("dd/MM/yyyy");
 				buttonGroup.add(rdbtnDdmmyyyy);
 				panel.add(rdbtnDdmmyyyy);
-				jPrefer = Preferences.userNodeForPackage(Burner_Settings.class);
-				jPrefer = jPrefer.node("CDburner");
 				if (rdbtnDdmmyyyy.getActionCommand().equals(jPrefer.get("DateFormat", null))==true) rdbtnDdmmyyyy.setSelected(true);
 			}
 			{
@@ -162,8 +174,6 @@ public class Burner_Settings extends JDialog {
 				rdbtnMmddyyyy.setActionCommand("MM/dd/yyyy");
 				buttonGroup.add(rdbtnMmddyyyy);
 				panel.add(rdbtnMmddyyyy);
-				jPrefer = Preferences.userNodeForPackage(Burner_Settings.class);
-				jPrefer = jPrefer.node("CDburner");
 				if (rdbtnMmddyyyy.getActionCommand().equals(jPrefer.get("DateFormat", null))==true) rdbtnMmddyyyy.setSelected(true);
 			}
 		}
@@ -175,23 +185,52 @@ public class Burner_Settings extends JDialog {
 				JButton okButton = new JButton("OK");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						jPrefer = Preferences.userNodeForPackage(Burner_Settings.class);
-						jPrefer = jPrefer.node("CDburner");
 						//On sauve dans le registery
-						if (CD_Burner.epsonDirectory!=null) jPrefer.put("epsonDirectory", CD_Burner.epsonDirectory);
-						if (CD_Burner.fijiDirectory!=null) jPrefer.put("fijiDirectory", CD_Burner.fijiDirectory);
-						if (CD_Burner.labelFile!=null) jPrefer.put("labelFile", CD_Burner.labelFile);
+						if (epsonDirectory!=null) jPrefer.put("epsonDirectory", epsonDirectory);
+						if (fijiDirectory!=null) jPrefer.put("fijiDirectory", fijiDirectory);
+						if (labelFile!=null) jPrefer.put("labelFile", labelFile);
+						if (deleteStudies!=null) jPrefer.putBoolean("deleteStudies", deleteStudies);
 						//On ajoute la string du format date
 						jPrefer.put("DateFormat", buttonGroup.getSelection().getActionCommand());
 						//on dispose 
 						dispose();
 					}
 				});
+				{
+					JCheckBox chckbxDeleteSentStudies = new JCheckBox("Delete Sent Studies");
+					chckbxDeleteSentStudies.setSelected(jPrefer.getBoolean("deleteStudies", false));
+					chckbxDeleteSentStudies.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent arg0) {
+							if (chckbxDeleteSentStudies.isSelected()) {
+								JOptionPane.showMessageDialog(dialogSettings,
+									    "With this Options, once sent to the burner Orthanc will remove stored studies \n"
+									    + "This will mean Orthanc will act only as a Burner manager and will not act as a storage/PACS system",
+									    "Delete warning",
+									    JOptionPane.WARNING_MESSAGE);
+								
+							}
+							deleteStudies=chckbxDeleteSentStudies.isSelected();
+								
+						}
+					});
+					buttonPane.add(chckbxDeleteSentStudies);
+				}
 				okButton.setActionCommand("OK");
 				buttonPane.add(okButton);
 				getRootPane().setDefaultButton(okButton);
 			}
 		}
+	}
+	
+	public void setCDPreference() {
+		//On prends les settings du registery
+		fijiDirectory=jPrefer.get("fijiDirectory", null);
+		epsonDirectory=jPrefer.get("epsonDirectory", null);
+		labelFile=jPrefer.get("labelFile", null);
+		dateFormatChoix=jPrefer.get("DateFormat", null);
+		deleteStudies=jPrefer.getBoolean("deleteStudies", false);
+
+		
 	}
 
 }
