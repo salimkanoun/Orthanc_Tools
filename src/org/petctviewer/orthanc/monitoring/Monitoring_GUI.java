@@ -51,6 +51,8 @@ import javax.swing.Box;
 import javax.swing.ButtonGroup;
 
 import java.awt.FlowLayout;
+import javax.swing.JList;
+import javax.swing.DefaultComboBoxModel;
 
 @SuppressWarnings("serial")
 public class Monitoring_GUI extends JFrame {
@@ -91,6 +93,10 @@ public class Monitoring_GUI extends JFrame {
 	
 	// parametre http
 	ParametreConnexionHttp parametre;
+	/**
+	 * @wbp.nonvisual location=-24,419
+	 */
+	private final JList list = new JList();
 	/**
 	 * Launch the application.
 	 */
@@ -246,10 +252,14 @@ public class Monitoring_GUI extends JFrame {
 						
 						JPanel panel_TagMonitoring_Main = new JPanel();
 						panel_tag_monitoring.add(panel_TagMonitoring_Main);
-						panel_TagMonitoring_Main.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+						panel_TagMonitoring_Main.setLayout(new GridLayout(0, 1, 0, 0));
+						
+						JPanel panel_1 = new JPanel();
+						panel_TagMonitoring_Main.add(panel_1);
+						panel_1.setLayout(new GridLayout(0, 3, 0, 0));
 						
 						JPanel panel_TagMonitoring_Patients = new JPanel();
-						panel_TagMonitoring_Main.add(panel_TagMonitoring_Patients);
+						panel_1.add(panel_TagMonitoring_Patients);
 						panel_TagMonitoring_Patients.setLayout(new BorderLayout(0, 0));
 						
 						JScrollPane scrollPane_1 = new JScrollPane();
@@ -259,17 +269,17 @@ public class Monitoring_GUI extends JFrame {
 						table_Patient_TagMonitoring.setPreferredScrollableViewportSize(new Dimension(300, 100));
 						table_Patient_TagMonitoring.setModel(new DefaultTableModel(
 							new Object[][] {
-								{"0010,0010", "Name", Boolean.FALSE},
-								{"0010,0020", "ID", Boolean.FALSE},
-								{"0010,0030", "Date Of Birth", Boolean.FALSE},
-								{"0010,0040", "Sex", Boolean.FALSE},
+								{"0010,0010", "Name"},
+								{"0010,0020", "ID"},
+								{"0010,0030", "Date Of Birth"},
+								{"0010,0040", "Sex"},
 							},
 							new String[] {
-								"Tag", "Name", "Select"
+								"Tag", "Name"
 							}
 						) {
 							Class[] columnTypes = new Class[] {
-								String.class, Object.class, Boolean.class
+								String.class, Object.class
 							};
 							public Class getColumnClass(int columnIndex) {
 								return columnTypes[columnIndex];
@@ -283,7 +293,7 @@ public class Monitoring_GUI extends JFrame {
 						panel_TagMonitoring_Patients.add(chckbxNewPatient, BorderLayout.NORTH);
 						
 						JPanel panel_TagMonitoring_Studies = new JPanel();
-						panel_TagMonitoring_Main.add(panel_TagMonitoring_Studies);
+						panel_1.add(panel_TagMonitoring_Studies);
 						panel_TagMonitoring_Studies.setLayout(new BorderLayout(0, 0));
 						
 						JScrollPane scrollPane_2 = new JScrollPane();
@@ -293,19 +303,19 @@ public class Monitoring_GUI extends JFrame {
 						table_Study_TagMonitoring.setPreferredScrollableViewportSize(new Dimension(300, 100));
 						table_Study_TagMonitoring.setModel(new DefaultTableModel(
 							new Object[][] {
-								{"0008,0020", "StudyDate", Boolean.FALSE},
-								{"0008,0030", "StudyTime", Boolean.FALSE},
-								{"0008,1030", "StudyDescription", Boolean.FALSE},
-								{"0008,0050", "AccessionNumber", Boolean.FALSE},
-								{"0020,0010", "StudyID", Boolean.FALSE},
-								{"0020,000D", "StudyInstanceUID", Boolean.FALSE},
+								{"0008,0020", "StudyDate"},
+								{"0008,0030", "StudyTime"},
+								{"0008,1030", "StudyDescription"},
+								{"0008,0050", "AccessionNumber"},
+								{"0020,0010", "StudyID"},
+								{"0020,000D", "StudyInstanceUID"},
 							},
 							new String[] {
-								"Tag", "Name", "Select"
+								"Tag", "Name"
 							}
 						) {
 							Class[] columnTypes = new Class[] {
-								String.class, String.class, Boolean.class
+								String.class, String.class
 							};
 							public Class getColumnClass(int columnIndex) {
 								return columnTypes[columnIndex];
@@ -319,14 +329,30 @@ public class Monitoring_GUI extends JFrame {
 						panel_TagMonitoring_Studies.add(chckbxNewStudy, BorderLayout.NORTH);
 						
 						JPanel panel_TagMonitoring_Series = new JPanel();
-						panel_TagMonitoring_Main.add(panel_TagMonitoring_Series);
+						panel_1.add(panel_TagMonitoring_Series);
 						panel_TagMonitoring_Series.setLayout(new BorderLayout(0, 0));
 						
-						JCheckBox chckbx_Serie_TagMonitoring = new JCheckBox("New Serie - Shared Tags");
+						JCheckBox chckbx_Serie_TagMonitoring = new JCheckBox("New Serie");
 						chckbx_Serie_TagMonitoring.setSelected(true);
 						chckbx_Serie_TagMonitoring.setActionCommand("serie");
 						levelTagMonitoring.add(chckbx_Serie_TagMonitoring);
 						panel_TagMonitoring_Series.add(chckbx_Serie_TagMonitoring, BorderLayout.NORTH);
+						
+						JPanel panel_SeriesTagChooser = new JPanel();
+						panel_TagMonitoring_Series.add(panel_SeriesTagChooser, BorderLayout.CENTER);
+						panel_SeriesTagChooser.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+						
+						JComboBox comboBox = new JComboBox();
+						comboBox.setModel(new DefaultComboBoxModel(new String[] {"Shared-Tags", "Defined List"}));
+						panel_SeriesTagChooser.add(comboBox);
+						
+						JScrollPane scrollPane_3 = new JScrollPane();
+						panel_TagMonitoring_Main.add(scrollPane_3);
+						
+						JTextArea textArea_Log_tagMonitoring = new JTextArea();
+						textArea_Log_tagMonitoring.setColumns(30);
+						textArea_Log_tagMonitoring.setRows(5);
+						scrollPane_3.setViewportView(textArea_Log_tagMonitoring);
 						
 						JPanel panel_TagMonitoring_Buttons = new JPanel();
 						panel_tag_monitoring.add(panel_TagMonitoring_Buttons, BorderLayout.SOUTH);
@@ -335,7 +361,7 @@ public class Monitoring_GUI extends JFrame {
 						btnStart_tagMonitoring.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent arg0) {
 								if (!tagMonitoringStarted) {
-									tagMonitoring=new Tag_Monitoring(parametre, levelTagMonitoring.getSelection().getActionCommand());
+									tagMonitoring=new Tag_Monitoring(parametre, levelTagMonitoring.getSelection().getActionCommand(), textArea_Log_tagMonitoring);
 									tagMonitoring.startTagMonitoring();
 									btnStart_tagMonitoring.setText("Stop Collecting");
 									tagMonitoringStarted=true;

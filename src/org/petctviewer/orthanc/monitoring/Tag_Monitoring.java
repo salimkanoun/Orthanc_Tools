@@ -23,19 +23,18 @@ public class Tag_Monitoring {
 	private String level;
 	private JSONParser parser=new JSONParser();
 	private Timer timer;
-	JTextArea textAreaConsole=new JTextArea(10,80);
+	JTextArea textAreaConsole;
 	
-	public Tag_Monitoring(ParametreConnexionHttp parametre, String level) {
+	public Tag_Monitoring(ParametreConnexionHttp parametre, String level, JTextArea textAreaConsole) {
 		this.parametre=parametre;
 		this.level=level;
+		this.textAreaConsole=textAreaConsole;
 	}
 	
 	public void startTagMonitoring() {
 		Orthanc_Monitoring monitoring=new Orthanc_Monitoring(parametre);
 		monitoring.autoSetChangeLastLine();
-		System.out.println("starting Tag-Monitoring");
-		textAreaConsole.append("starting Tag-Monitoring"+ "\n");
-		showConsoleFrame();
+		textAreaConsole.append("Starting Tag-Monitoring"+ "\n");
 		TimerTask timerTask = new TimerTask() {
 
 			@Override
@@ -83,10 +82,8 @@ public class Tag_Monitoring {
 						//Methode parsing Series
 						getTagFromInstance(monitoring.newStableSeriesID.get(i));
 					
-						
-						StringBuilder sbSharedTags=parametre.makeGetConnectionAndStringBuilder("/series/"+monitoring.newStableSeriesID.get(i)+"/shared-tags");
-						System.out.println(sbSharedTags);
-						textAreaConsole.append("SeriesSharedTags " +sbSharedTags+ "\n");
+						//SK A FAIRE POUR SHARED TAGS
+						//StringBuilder sbSharedTags=parametre.makeGetConnectionAndStringBuilder("/series/"+monitoring.newStableSeriesID.get(i)+"/shared-tags");
 					}
 					
 					
@@ -111,23 +108,17 @@ public class Tag_Monitoring {
 		String patientID=(String) mainPatientTag.get("PatientID");
 		String patientName=(String) mainPatientTag.get("PatientName");
 		String patientSex=(String) mainPatientTag.get("PatientSex");
-		System.out.println("Nouveau patient");
-		System.out.println("Nom "+patientName);
-		System.out.println("ID " + patientID);
-		System.out.println("Sexe "+ patientSex);
-		System.out.println("DOB " +birthDate);
 		
-		textAreaConsole.append("Nouveau patient"+ "\n");
-		textAreaConsole.append("Nom= "+patientName+"\n");
+		textAreaConsole.append("New patient"+ "\n");
+		textAreaConsole.append("Name= "+patientName+"\n");
 		textAreaConsole.append("ID= " + patientID+ "\n");
-		textAreaConsole.append("Sexe= "+ patientSex+ "\n");
+		textAreaConsole.append("Sex= "+ patientSex+ "\n");
 		textAreaConsole.append("DOB= " +birthDate+ "\n");
 		
 	}
 	
 	private void getMainStudyTag(JSONObject jsonStudy) {
-		System.out.println("Nouvelle Study");
-		textAreaConsole.append("Nouvelle Study"+ "\n");
+		textAreaConsole.append("New Study"+ "\n");
 		JSONObject jsonMainStudyTag=(JSONObject) jsonStudy.get("MainDicomTags");
 		
 		//On recupere les info Patients
@@ -142,16 +133,6 @@ public class Tag_Monitoring {
 		String studyID=(String) jsonMainStudyTag.get("StudyID");
 		String studyInstanceUID=(String) jsonMainStudyTag.get("StudyInstanceUID");
 		String studyTime=(String) jsonMainStudyTag.get("StudyTime");
-		
-		
-		System.out.println("accessionNumber= "+accessionNumber);
-		System.out.println("institutionName= " + institutionName);
-		System.out.println("referringPhysicianName= "+ referringPhysicianName);
-		System.out.println("studyDate= " +studyDate);
-		System.out.println("studyDescription= "+studyDescription);
-		System.out.println("studyID= " + studyID);
-		System.out.println("studyInstanceUID= "+ studyInstanceUID);
-		System.out.println("studyTime= " +studyTime);
 		
 		textAreaConsole.append("accessionNumber= "+accessionNumber+ "\n");
 		textAreaConsole.append("institutionName= " + institutionName+ "\n");
@@ -189,7 +170,7 @@ public class Tag_Monitoring {
 				JSONObject jsonTag=(JSONObject) tags.get(Tag_Of_Interest.tagOfInterestPatient[i]);
 				String name=(String) jsonTag.get("Name");
 				String value=(String) jsonTag.get("Value");
-				System.out.println(name +" "+value);
+				textAreaConsole.append(name +" "+value +"\n");
 			}
 			
 		}
@@ -199,7 +180,7 @@ public class Tag_Monitoring {
 				JSONObject jsonTag=(JSONObject) tags.get(Tag_Of_Interest.tagOfInterestStudy[i]);
 				String name=(String) jsonTag.get("Name");
 				String value=(String) jsonTag.get("Value");
-				System.out.println(name +" "+value);
+				textAreaConsole.append(name +" "+value +"\n");
 			}
 			
 		}
@@ -209,65 +190,35 @@ public class Tag_Monitoring {
 				JSONObject jsonTag=(JSONObject) tags.get(Tag_Of_Interest.tagOfInterestSeries[i]);
 				String name=(String) jsonTag.get("Name");
 				String value=(String) jsonTag.get("Value");
-				System.out.println(name +" "+value);
+				textAreaConsole.append(name +" "+value+"\n");
 			}
 			
 		}
 		
-		JSONObject radiopharmaceuticalSequence = (JSONObject) tags.get(Tag_Of_Interest.radiopharmaceuticalTag);
-		JSONArray radiopharmaceuticalSequenceTags= (JSONArray) radiopharmaceuticalSequence.get("Value");
-		JSONObject radiopharmaceuticalSequenceTagsValue = (JSONObject) radiopharmaceuticalSequenceTags.get(0);
-		for (int i=0 ; i<Tag_Of_Interest.radiopharmaceutical.length; i++) {
-			if (tags.containsKey(Tag_Of_Interest.radiopharmaceutical[i])) {
-				JSONObject jsonTag=(JSONObject) radiopharmaceuticalSequenceTagsValue.get(Tag_Of_Interest.radiopharmaceutical[i]);
-				String name=(String) jsonTag.get("Name");
-				String value=(String) jsonTag.get("Value");
-				System.out.println(name +" "+value);
+		if (tags.containsKey(Tag_Of_Interest.radiopharmaceuticalTag)) {
+			JSONObject radiopharmaceuticalSequence = (JSONObject) tags.get(Tag_Of_Interest.radiopharmaceuticalTag);
+			JSONArray radiopharmaceuticalSequenceTags= (JSONArray) radiopharmaceuticalSequence.get("Value");
+			JSONObject radiopharmaceuticalSequenceTagsValue = (JSONObject) radiopharmaceuticalSequenceTags.get(0);
+			for (int i=0 ; i<Tag_Of_Interest.radiopharmaceutical.length; i++) {
+				if (tags.containsKey(Tag_Of_Interest.radiopharmaceutical[i])) {
+					JSONObject jsonTag=(JSONObject) radiopharmaceuticalSequenceTagsValue.get(Tag_Of_Interest.radiopharmaceutical[i]);
+					String name=(String) jsonTag.get("Name");
+					String value=(String) jsonTag.get("Value");
+					textAreaConsole.append(name +" "+value+"\n");
+				}
+				
 			}
-			
 		}
+
 		
 		
 	}
 	
 	public void stopTagMonitoring() {
 		timer.cancel();
+		textAreaConsole.append("Tag-Monitoring Stoped"+ "\n");
 	}
 	
-	private void showConsoleFrame() {
-		JFrame console=new JFrame();
-		JPanel panel=new JPanel();
-		panel.setLayout(new BorderLayout());
-		console.add(panel);
-		JScrollPane scrollPane=new JScrollPane();
-		textAreaConsole.setAutoscrolls(true);
-		DefaultCaret caret = (DefaultCaret) textAreaConsole.getCaret();
-		caret.setUpdatePolicy(DefaultCaret.OUT_BOTTOM);
-		scrollPane.setViewportView(textAreaConsole);
-		panel.add(scrollPane, BorderLayout.CENTER);
-		
-	/*JButton btnCsvRetrieveReport = new JButton("Save To CSV");
-		btnCsvRetrieveReport.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				JFileChooser csvReport=new JFileChooser();
-				csvReport.setFileSelectionMode(JFileChooser.FILES_ONLY);
-				csvReport.setSelectedFile(new File("Report_AutoRetrieve_"+df.format(new Date())+".csv"));
-				int ok=csvReport.showSaveDialog(null);
-				if (ok==JFileChooser.APPROVE_OPTION ) {
-					AutoQueryResultTableDialog.writeCSV(textAreaConsole.getText(), csvReport.getSelectedFile().getAbsolutePath().toString());
-					}
-			}
-		});*/
-		JPanel button=new JPanel();
-		//btnCsvRetrieveReport.setToolTipText("Set Folder to generate report of AutoQuery");
-		//button.add(btnCsvRetrieveReport);
-		panel.add(button, BorderLayout.SOUTH);
-		
-		console.pack();
-		console.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		console.setVisible(true);
-		
-	}
 
 
 }
