@@ -69,17 +69,19 @@ public class Tag_Monitoring {
 				}
 				else if (level.equals("serie")) {
 					for (int i=0 ; i<monitoring.newStableSeriesID.size(); i++) {
+						
+						/* methode using Orthanc Level
 						StringBuilder sb=parametre.makeGetConnectionAndStringBuilder("/series/"+monitoring.newStableSeriesID.get(i));
 						JSONObject seriesTag = null;
-						try {
-							seriesTag = (JSONObject) parser.parse(sb.toString());	
-							String parentStudyID=(String) seriesTag.get("ParentStudy");
-							StringBuilder sbParentStudy=parametre.makeGetConnectionAndStringBuilder("/studies/"+parentStudyID);
-							JSONObject parentStudy=(JSONObject) parser.parse(sbParentStudy.toString());
-							getMainStudyTag(parentStudy);
-						} catch (ParseException e) {
-							e.printStackTrace();
-						}
+						seriesTag = (JSONObject) parser.parse(sb.toString());	
+						String parentStudyID=(String) seriesTag.get("ParentStudy");
+						StringBuilder sbParentStudy=parametre.makeGetConnectionAndStringBuilder("/studies/"+parentStudyID);
+						JSONObject parentStudy=(JSONObject) parser.parse(sbParentStudy.toString());
+						getMainStudyTag(parentStudy);
+						*/
+						
+						//Methode parsing Series
+						getTagFromInstance(monitoring.newStableSeriesID.get(i));
 					
 						
 						StringBuilder sbSharedTags=parametre.makeGetConnectionAndStringBuilder("/series/"+monitoring.newStableSeriesID.get(i)+"/shared-tags");
@@ -183,34 +185,46 @@ public class Tag_Monitoring {
 		}
 				
 		for (int i=0 ; i<Tag_Of_Interest.tagOfInterestPatient.length; i++) {
-			JSONObject jsonTag=(JSONObject) tags.get(Tag_Of_Interest.tagOfInterestPatient[i]);
-			String name=(String) jsonTag.get("Name");
-			String value=(String) jsonTag.get("Value");
-			System.out.println(name +" "+value);
+			if (tags.containsKey(Tag_Of_Interest.tagOfInterestPatient[i])) {
+				JSONObject jsonTag=(JSONObject) tags.get(Tag_Of_Interest.tagOfInterestPatient[i]);
+				String name=(String) jsonTag.get("Name");
+				String value=(String) jsonTag.get("Value");
+				System.out.println(name +" "+value);
+			}
+			
 		}
 		
 		for (int i=0 ; i<Tag_Of_Interest.tagOfInterestStudy.length; i++) {
-			JSONObject jsonTag=(JSONObject) tags.get(Tag_Of_Interest.tagOfInterestStudy[i]);
-			String name=(String) jsonTag.get("Name");
-			String value=(String) jsonTag.get("Value");
-			System.out.println(name +" "+value);
+			if (tags.containsKey(Tag_Of_Interest.tagOfInterestStudy[i])) {
+				JSONObject jsonTag=(JSONObject) tags.get(Tag_Of_Interest.tagOfInterestStudy[i]);
+				String name=(String) jsonTag.get("Name");
+				String value=(String) jsonTag.get("Value");
+				System.out.println(name +" "+value);
+			}
+			
 		}
 		
 		for (int i=0 ; i<Tag_Of_Interest.tagOfInterestSeries.length; i++) {
-			JSONObject jsonTag=(JSONObject) tags.get(Tag_Of_Interest.tagOfInterestSeries[i]);
-			String name=(String) jsonTag.get("Name");
-			String value=(String) jsonTag.get("Value");
-			System.out.println(name +" "+value);
+			if (tags.containsKey(Tag_Of_Interest.tagOfInterestSeries[i])) {
+				JSONObject jsonTag=(JSONObject) tags.get(Tag_Of_Interest.tagOfInterestSeries[i]);
+				String name=(String) jsonTag.get("Name");
+				String value=(String) jsonTag.get("Value");
+				System.out.println(name +" "+value);
+			}
+			
 		}
 		
 		JSONObject radiopharmaceuticalSequence = (JSONObject) tags.get(Tag_Of_Interest.radiopharmaceuticalTag);
 		JSONArray radiopharmaceuticalSequenceTags= (JSONArray) radiopharmaceuticalSequence.get("Value");
 		JSONObject radiopharmaceuticalSequenceTagsValue = (JSONObject) radiopharmaceuticalSequenceTags.get(0);
 		for (int i=0 ; i<Tag_Of_Interest.radiopharmaceutical.length; i++) {
-			JSONObject jsonTag=(JSONObject) radiopharmaceuticalSequenceTagsValue.get(Tag_Of_Interest.radiopharmaceutical[i]);
-			String name=(String) jsonTag.get("Name");
-			String value=(String) jsonTag.get("Value");
-			System.out.println(name +" "+value);
+			if (tags.containsKey(Tag_Of_Interest.radiopharmaceutical[i])) {
+				JSONObject jsonTag=(JSONObject) radiopharmaceuticalSequenceTagsValue.get(Tag_Of_Interest.radiopharmaceutical[i]);
+				String name=(String) jsonTag.get("Name");
+				String value=(String) jsonTag.get("Value");
+				System.out.println(name +" "+value);
+			}
+			
 		}
 		
 		
