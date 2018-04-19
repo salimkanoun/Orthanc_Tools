@@ -29,6 +29,9 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.setup.*;
 
 /**
@@ -43,6 +46,8 @@ public class ParametreConnexionHttp {
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	private String fullAddress;
 	private String authentication;
+	private String orthancVersion;
+	private boolean versionHigher131;
 	
 	
 	public ParametreConnexionHttp()  {
@@ -274,14 +279,73 @@ public class ParametreConnexionHttp {
 		Boolean test=true;
 		try {
 		makeGetConnection("/system");
+		StringBuilder sb= makeGetConnectionAndStringBuilder("/system");
+		JSONParser parser=new JSONParser();
+		JSONObject systemJson=(JSONObject) parser.parse(sb.toString());
+		orthancVersion=(String) systemJson.get("Version");
+		versionHigher131=isVersionAfter131();
 		} catch (IOException e2) {
 			test=false;
 			JOptionPane.showMessageDialog(null,"Check Connexion Parameters "+e2.getMessage(),"Connexion",JOptionPane.ERROR_MESSAGE);
 			ConnectionSetup.main();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	
 		return test;
 	}
+	
+	/**
+	 * Test if version is higher than 1.3.1
+	 * @return
+	 */
+	private boolean isVersionAfter131() {
+		int test=versionCompare(orthancVersion, "1.3.1");
+		if (test>0) return true; else return false;
+		
+	}
+	/**
+	 * Get the boolean test version
+	 * @return
+	 */
+	public boolean getIfVersionAfter131() {
+		return versionHigher131;
+	}
+	
+	/**
+	 * Compares two version strings. 
+	 * 
+	 * Use this instead of String.compareTo() for a non-lexicographical 
+	 * comparison that works for version strings. e.g. "1.10".compareTo("1.6").
+	 * 
+	 * @note It does not work if "1.10" is supposed to be equal to "1.10.0".
+	 * 
+	 * @param str1 a string of ordinal numbers separated by decimal points. 
+	 * @param str2 a string of ordinal numbers separated by decimal points.
+	 * @return The result is a negative integer if str1 is _numerically_ less than str2. 
+	 *         The result is a positive integer if str1 is _numerically_ greater than str2. 
+	 *         The result is zero if the strings are _numerically_ equal.
+	 */
+	public static int versionCompare(String str1, String str2) {
+	    String[] vals1 = str1.split("\\.");
+	    String[] vals2 = str2.split("\\.");
+	    int i = 0;
+	    // set index to first non-equal ordinal or length of shortest version string
+	    while (i < vals1.length && i < vals2.length && vals1[i].equals(vals2[i])) {
+	      i++;
+	    }
+	    // compare first non-equal ordinal number
+	    if (i < vals1.length && i < vals2.length) {
+	        int diff = Integer.valueOf(vals1[i]).compareTo(Integer.valueOf(vals2[i]));
+	        return Integer.signum(diff);
+	    }
+	    // the strings are equal or one string is a substring of the other
+	    // e.g. "1.2.3" = "1.2.3" or "1.2.3" < "1.2.3.4"
+	    return Integer.signum(vals1.length - vals2.length);
+	}
+	
+	
 
 	
 }

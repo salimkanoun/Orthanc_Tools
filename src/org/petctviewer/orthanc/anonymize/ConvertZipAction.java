@@ -85,26 +85,25 @@ public ConvertZipAction(ParametreConnexionHttp connexion){
 			FileOutputStream fos = null;
 			HttpURLConnection conn = null;
 			try {
-				//On defini l'adresse de l'API
+				//URL API to define
 				String url = null;
-				
-				// SK DANS NOUVELLE VERSION D ORTHANC CHANGER A NOUVELLE API AVEC LES SERIES DESCRIPTION
-				// SK AJOUTER NOUVELLE API SI UNE SEULE ID POUR AVOIR LES TAGS SERIES
-				
+				// if hierachical structure
 				if (!dicomDir) {
 					url="/tools/create-archive" ;
 					conn=connexion.makePostConnection(url, ids.toString());
 				}
-				
-				//SK A MODIFIER SUR LA PROCHAINE VERSION ORTHANC POUR NOUVELLE API
-				//SUIVA CREATMEDIA QUELQUE SOIT LE NOMBRE
-				else if (dicomDir && (zipContent.size()==1)) {
-					url="/studies/"+zipContent.get(0)+"/media?extended";
-					conn=connexion.makeGetConnection(url);
-				}
-				
-				else if (dicomDir && (zipContent.size()>1)) {
-					url="/tools/create-media";
+				// if dicomDir
+				else  {
+					
+					if (connexion.getIfVersionAfter131()) {
+						//If new version of Orthanc extended api to get series name
+						url="/tools/create-media-extended";
+					}
+					else {
+						//old API without serie's name
+						url="/tools/create-media";
+					}
+					
 					conn=connexion.makePostConnection(url, ids.toString());
 					
 				}
