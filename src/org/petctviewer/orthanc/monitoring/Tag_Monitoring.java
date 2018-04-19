@@ -109,10 +109,10 @@ public class Tag_Monitoring {
 		String patientName=(String) mainPatientTag.get("PatientName");
 		String patientSex=(String) mainPatientTag.get("PatientSex");
 		
-		textAreaConsole.append("New patient"+ "\n");
-		textAreaConsole.append("Name= "+patientName+"\n");
-		textAreaConsole.append("ID= " + patientID+ "\n");
-		textAreaConsole.append("Sex= "+ patientSex+ "\n");
+		textAreaConsole.append("New patient"+ ",");
+		textAreaConsole.append("Name= "+patientName+",");
+		textAreaConsole.append("ID= " + patientID+ ",");
+		textAreaConsole.append("Sex= "+ patientSex+ ",");
 		textAreaConsole.append("DOB= " +birthDate+ "\n");
 		
 	}
@@ -134,13 +134,13 @@ public class Tag_Monitoring {
 		String studyInstanceUID=(String) jsonMainStudyTag.get("StudyInstanceUID");
 		String studyTime=(String) jsonMainStudyTag.get("StudyTime");
 		
-		textAreaConsole.append("accessionNumber= "+accessionNumber+ "\n");
-		textAreaConsole.append("institutionName= " + institutionName+ "\n");
-		textAreaConsole.append("referringPhysicianName= "+ referringPhysicianName+ "\n");
-		textAreaConsole.append("studyDate= " +studyDate+ "\n");
-		textAreaConsole.append("studyDescription= "+studyDescription+ "\n");
-		textAreaConsole.append("studyID= " + studyID+ "\n");
-		textAreaConsole.append("studyInstanceUID= "+ studyInstanceUID+ "\n");
+		textAreaConsole.append("accessionNumber= "+accessionNumber+ ",");
+		textAreaConsole.append("institutionName= " + institutionName+ ",");
+		textAreaConsole.append("referringPhysicianName= "+ referringPhysicianName+ ",");
+		textAreaConsole.append("studyDate= " +studyDate+ ",");
+		textAreaConsole.append("studyDescription= "+studyDescription+ ",");
+		textAreaConsole.append("studyID= " + studyID+ ",");
+		textAreaConsole.append("studyInstanceUID= "+ studyInstanceUID+ ",");
 		textAreaConsole.append("studyTime= " +studyTime+ "\n");
 		
 	}
@@ -170,7 +170,7 @@ public class Tag_Monitoring {
 				JSONObject jsonTag=(JSONObject) tags.get(Tag_Of_Interest.tagOfInterestPatient[i]);
 				String name=(String) jsonTag.get("Name");
 				String value=(String) jsonTag.get("Value");
-				textAreaConsole.append(name +" "+value +"\n");
+				textAreaConsole.append(name +" "+value +",");
 			}
 			
 		}
@@ -180,7 +180,7 @@ public class Tag_Monitoring {
 				JSONObject jsonTag=(JSONObject) tags.get(Tag_Of_Interest.tagOfInterestStudy[i]);
 				String name=(String) jsonTag.get("Name");
 				String value=(String) jsonTag.get("Value");
-				textAreaConsole.append(name +" "+value +"\n");
+				textAreaConsole.append(name +" "+value +",");
 			}
 			
 		}
@@ -190,7 +190,7 @@ public class Tag_Monitoring {
 				JSONObject jsonTag=(JSONObject) tags.get(Tag_Of_Interest.tagOfInterestSeries[i]);
 				String name=(String) jsonTag.get("Name");
 				String value=(String) jsonTag.get("Value");
-				textAreaConsole.append(name +" "+value+"\n");
+				textAreaConsole.append(name +" "+value+",");
 			}
 			
 		}
@@ -204,11 +204,13 @@ public class Tag_Monitoring {
 					JSONObject jsonTag=(JSONObject) radiopharmaceuticalSequenceTagsValue.get(Tag_Of_Interest.radiopharmaceutical[i]);
 					String name=(String) jsonTag.get("Name");
 					String value=(String) jsonTag.get("Value");
-					textAreaConsole.append(name +" "+value+"\n");
+					textAreaConsole.append(name +" "+value+",");
 				}
 				
 			}
 		}
+		
+		textAreaConsole.append("\n");
 
 		
 		
