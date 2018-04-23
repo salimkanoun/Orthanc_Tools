@@ -72,7 +72,6 @@ public class Monitoring_GUI extends JFrame {
 	private boolean cdMonitoringStarted, autoFetchStarted, tagMonitoringStarted;
 	
 	private JTable table_Patient_TagMonitoring;
-	private JTextField textField_If_Autorouting;
 	private JTable table_Study_TagMonitoring;
 	
 	//Tag Monitoring
@@ -85,11 +84,7 @@ public class Monitoring_GUI extends JFrame {
 	ButtonGroup levelAutoFecth= new ButtonGroup();
 	JTextField textField_AutoFecth_Modality_Study, textField_AutoFecth_Date, textField_AutoFetch_StudyDescription;
 	Auto_Fetch autoFetch;
-
-	//AutoRouting
-	JComboBox<String> comboBox_remoteAET_AutoRouting;
 	ButtonGroup levelAutoRouting= new ButtonGroup();
-	JComboBox<String> comboBox_If_AutoRouting;
 	
 	// parametre http
 	ParametreConnexionHttp parametre;
@@ -97,6 +92,7 @@ public class Monitoring_GUI extends JFrame {
 	 * @wbp.nonvisual location=-24,419
 	 */
 	private final JList list = new JList();
+	private JTable table;
 	/**
 	 * Launch the application.
 	 */
@@ -389,56 +385,69 @@ public class Monitoring_GUI extends JFrame {
 						JPanel panel_AutoRouting_sendTo = new JPanel();
 						panel_AutoRouting_main.add(panel_AutoRouting_sendTo, BorderLayout.SOUTH);
 						
-						JLabel lblSendTo = new JLabel("Send To");
-						panel_AutoRouting_sendTo.add(lblSendTo);
-						
-						comboBox_remoteAET_AutoRouting = new JComboBox<String>();
-						panel_AutoRouting_sendTo.add(comboBox_remoteAET_AutoRouting);
+						JButton btnStartAutorouting = new JButton("Start Auto-Routing");
+						panel_AutoRouting_sendTo.add(btnStartAutorouting);
 						
 						JPanel panel_AutoRouting_selection = new JPanel();
 						panel_AutoRouting_main.add(panel_AutoRouting_selection, BorderLayout.WEST);
-						panel_AutoRouting_selection.setLayout(new GridLayout(0, 1, 0, 0));
+						panel_AutoRouting_selection.setLayout(new BorderLayout(0, 0));
 						
-						JPanel panel_Each = new JPanel();
-						panel_AutoRouting_selection.add(panel_Each);
+						JPanel panel_AutoRouting_North = new JPanel();
+						panel_AutoRouting_selection.add(panel_AutoRouting_North, BorderLayout.NORTH);
 						
 						JLabel lblEach_1 = new JLabel("Each ");
-						panel_Each.add(lblEach_1);
+						panel_AutoRouting_North.add(lblEach_1);
 						
 						JCheckBox chckbxStablePatient = new JCheckBox("Stable Patient");
 						chckbxStablePatient.setActionCommand("Stable Patient");
 						levelAutoRouting.add(chckbxStablePatient);
-						panel_Each.add(chckbxStablePatient);
+						panel_AutoRouting_North.add(chckbxStablePatient);
 						
 						JCheckBox chckbxStableStudy = new JCheckBox("Stable Study");
 						chckbxStableStudy.setSelected(true);
 						chckbxStableStudy.setActionCommand("Stable Study");
 						levelAutoRouting.add(chckbxStableStudy);
-						panel_Each.add(chckbxStableStudy);
+						panel_AutoRouting_North.add(chckbxStableStudy);
 						
 						JCheckBox chckbxStableSerie = new JCheckBox("Stable Serie");
 						chckbxStableSerie.setActionCommand("Stable Serie");
 						levelAutoRouting.add(chckbxStableSerie);
-						panel_Each.add(chckbxStableSerie);
+						panel_AutoRouting_North.add(chckbxStableSerie);
 						
-						JPanel panel_If = new JPanel();
-						panel_AutoRouting_selection.add(panel_If);
+						JPanel panel_2 = new JPanel();
+						panel_AutoRouting_selection.add(panel_2, BorderLayout.CENTER);
 						
-						JLabel lblIf = new JLabel("If");
-						panel_If.add(lblIf);
+						JScrollPane scrollPane_AutoRouting = new JScrollPane();
+						panel_2.add(scrollPane_AutoRouting);
 						
-						comboBox_If_AutoRouting = new JComboBox<String>();
-						//SK A FAIRE PRECISER
-						comboBox_If_AutoRouting.addItem("Modalities");
-						comboBox_If_AutoRouting.addItem("Description");
-						panel_If.add(comboBox_If_AutoRouting);
+						table = new JTable();
+						table.setPreferredScrollableViewportSize(new Dimension(400, 100));
+						table.setModel(new DefaultTableModel(
+							new Object[][] {
+							},
+							new String[] {
+								"Conditions", "Destination AET"
+							}
+						) {
+							Class[] columnTypes = new Class[] {
+								String.class, String.class
+							};
+							public Class getColumnClass(int columnIndex) {
+								return columnTypes[columnIndex];
+							}
+						});
 						
-						JLabel label = new JLabel("=");
-						panel_If.add(label);
+						scrollPane_AutoRouting.setViewportView(table);
 						
-						textField_If_Autorouting = new JTextField();
-						panel_If.add(textField_If_Autorouting);
-						textField_If_Autorouting.setColumns(10);
+						
+						JButton btnAddRule = new JButton("Add Rule");
+						btnAddRule.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent arg0) {
+								Rule_AutoRouting_Gui rule=new Rule_AutoRouting_Gui();
+								rule.setVisible(true);
+							}
+						});
+						panel_2.add(btnAddRule);
 						
 						JPanel panel_AutoFetch = new JPanel();
 						tabbedPane.addTab("Auto-Fetch", null, panel_AutoFetch, null);
@@ -574,7 +583,6 @@ public class Monitoring_GUI extends JFrame {
 			Object[] aets=restApi.getAET();
 			for (int i=0; i<aets.length ; i++) {
 				comboBoxAET_AutoFetch.addItem((String) aets[i]);
-				comboBox_remoteAET_AutoRouting.addItem((String) aets[i]);
 				
 			}
 			
