@@ -1,21 +1,15 @@
 package org.petctviewer.orthanc.monitoring;
 
-import java.awt.BorderLayout;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.text.DefaultCaret;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
-import org.petctviewer.orthanc.query.AutoQueryResultTableDialog;
 
 public class Tag_Monitoring {
 	
@@ -82,8 +76,9 @@ public class Tag_Monitoring {
 						//Methode parsing Series
 						getTagFromInstance(monitoring.newStableSeriesID.get(i));
 					
-						//SK A FAIRE POUR SHARED TAGS
-						//StringBuilder sbSharedTags=parametre.makeGetConnectionAndStringBuilder("/series/"+monitoring.newStableSeriesID.get(i)+"/shared-tags");
+						//SK A FAIRE Ajouter Shared Tags en dur dans une colonne de la BDD
+						StringBuilder sbSharedTags=parametre.makeGetConnectionAndStringBuilder("/series/"+monitoring.newStableSeriesID.get(i)+"/shared-tags");
+						textAreaConsole.append("Shared-Tags"+sbSharedTags+",");
 					}
 					
 					
@@ -208,6 +203,14 @@ public class Tag_Monitoring {
 				}
 				
 			}
+		}
+		
+		
+		if (tags.containsKey(Tag_Of_Interest.radiationDoseModule)) {
+			JSONObject radiationDoseModule = (JSONObject) tags.get(Tag_Of_Interest.radiationDoseModule);
+			JSONArray radiationSequenceTags= (JSONArray) radiationDoseModule.get("Value");
+			textAreaConsole.append(radiationSequenceTags+",");
+			
 		}
 		
 		textAreaConsole.append("\n");

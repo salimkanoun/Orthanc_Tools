@@ -26,7 +26,7 @@ import javax.swing.table.AbstractTableModel;
 public class TableDataDetails extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Series name", "Modality", "Serie nÂ°"};
+	private String[] entetes = {"Series name", "Modality", "Serie n°"};
 	private String idURL;
 	private ArrayList<Details> details = new ArrayList<Details>();
 	private ArrayList<String> listIndexes = null;
