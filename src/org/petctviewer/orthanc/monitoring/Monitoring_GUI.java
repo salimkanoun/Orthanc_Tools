@@ -239,8 +239,11 @@ public class Monitoring_GUI extends JFrame {
 						JPanel Title = new JPanel();
 						CD_Burner_Tab.add(Title, BorderLayout.NORTH);
 						
-						JLabel lblCdburnerBySassa = new JLabel("CD Burner Activity");
+						JLabel lblCdburnerBySassa = new JLabel("CD Burner");
 						Title.add(lblCdburnerBySassa);
+						
+						JLabel lblforEpsonPp = new JLabel("(For Epson PP100 Disc Producer)");
+						Title.add(lblforEpsonPp);
 						
 						JPanel panel_tag_monitoring = new JPanel();
 						tabbedPane.addTab("Tag-Monitoring", null, panel_tag_monitoring, null);
