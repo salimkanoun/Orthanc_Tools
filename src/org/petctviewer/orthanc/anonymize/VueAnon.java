@@ -202,10 +202,10 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JTextField dbUsername;
 	private JPasswordField dbPassword;
 	private JButton setupButton;
-	
-
-	
-	
+	//CTP
+	JTextField addressField;
+	JTextField usernameField;
+	JTextField passwordField;
 
 	// Settings preferences
 	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
@@ -1112,7 +1112,7 @@ public class VueAnon extends JFrame implements PlugIn{
 			}
 		});
 		
-		setNamesIdBtn = new JButton("Query DB");
+		setNamesIdBtn = new JButton("CTP");
 		setNamesIdBtn.setPreferredSize(new Dimension(120,27));
 		setNamesIdBtn.addActionListener(new ActionListener() {
 			
@@ -1956,6 +1956,10 @@ public class VueAnon extends JFrame implements PlugIn{
 		JPanel westNorth1Setup = new JPanel(new FlowLayout());
 		JPanel westNorth2Setup = new JPanel(new FlowLayout());
 		JPanel eastExport = new JPanel(new GridBagLayout());
+		
+		JPanel clinicalTrialProcessorGrid = new JPanel(new GridLayout(3,2));
+		JPanel clinicalTrialProcessor =new JPanel();
+		clinicalTrialProcessor.add(clinicalTrialProcessorGrid);
 		JPanel eastDB = new JPanel(new GridBagLayout());
 
 		GridBagConstraints gbSetup = new GridBagConstraints();
@@ -2113,6 +2117,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		JTabbedPane eastSetupPane = new JTabbedPane();
 		eastSetupPane.add("Export setup", eastExport);
 		eastSetupPane.addTab("Database setup", eastDB);
+		eastSetupPane.addTab("Other", clinicalTrialProcessor);
 
 		gbSetup.insets = new Insets(20, 10, 0, 10);
 		gbSetup.gridx = 0;
@@ -2242,6 +2247,21 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.dbPassword.setText(jprefer.get("dbPassword", ""));
 		this.dbPassword.setPreferredSize(new Dimension(300,20));
 		eastDB.add(this.dbPassword, gbSetup);
+		
+		//add CTP Panel
+		JLabel address=new JLabel("Address");
+		addressField=new JTextField("https://");
+		JLabel username=new JLabel("Username");
+		usernameField=new JTextField();
+		JLabel password=new JLabel("Password");
+		passwordField=new JTextField();
+		clinicalTrialProcessorGrid.add(address);
+		clinicalTrialProcessorGrid.add(addressField);
+		clinicalTrialProcessorGrid.add(username);
+		clinicalTrialProcessorGrid.add(usernameField);
+		clinicalTrialProcessorGrid.add(password);
+		clinicalTrialProcessorGrid.add(passwordField);
+		
 		
 		JPanel aboutPanel = new JPanel(new FlowLayout());
 		JButton viewerDistribution = new JButton("Download Viewer Distribution");
@@ -2445,8 +2465,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					jprefer.put("dbPassword", new String(dbPassword.getPassword()));
 				}
 				
-				if(dbAdress.getText().length() == 0 || dbPort.getText().length() == 0 || dbName.getText().length() == 0
-						|| dbUsername.getText().length() == 0 || new String(dbPassword.getPassword()).length() == 0){
+				if(addressField.getText().isEmpty() || usernameField.getText().isEmpty() || passwordField.getText().isEmpty() ){
 					reportType.removeAllItems();
 					reportType.addItem("CSV");
 				}else{
@@ -2455,8 +2474,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					reportType.addItem("CTP");
 				}
 
-				if(dbAdress.getText().length() == 0 || dbPort.getText().length() == 0 || dbName.getText().length() == 0
-						|| dbUsername.getText().length() == 0 || new String(dbPassword.getPassword()).length() == 0){
+				if(	addressField.getText().isEmpty() || usernameField.getText().isEmpty() || passwordField.getText().isEmpty()){
 					setNamesIdBtn.setVisible(false);
 				}else{
 					setNamesIdBtn.setVisible(true);
