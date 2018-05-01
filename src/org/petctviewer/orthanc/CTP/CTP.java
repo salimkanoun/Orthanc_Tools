@@ -59,6 +59,34 @@ public class CTP {
 		
 	}
 	
+	public String[] getAvailableVisits(String studyName) {
+		JSONObject jsonPost=new JSONObject();
+		jsonPost.put("username", username);
+		jsonPost.put("password", password);
+		jsonPost.put("studyName", studyName);
+		JSONArray visits = null;
+		try {
+			String answser=makePostConnection("/get-visits",jsonPost.toString());
+			visits=(JSONArray) parser.parse(answser);
+		} catch (IOException | ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		List<String> visitsList=new ArrayList<String>();
+		if (visits !=null) {
+			for(int i=0; i<visits.size(); i++) {
+				visitsList.add((String) visits.get(i));
+			}
+			String[] visitsTable=new String[visitsList.size()];
+			visitsList.toArray(visitsTable);
+			return visitsTable;
+		}
+		else {
+			return null;
+		}
+		
+	}
+	
 	
 	private String makePostConnection(String apiUrl, String post) throws IOException {
 		URL url = null;
