@@ -44,6 +44,7 @@ public class CTP {
 		JSONArray studies = null;
 		try {
 			String answser=makePostConnection("/get-studies",jsonPost.toString());
+			
 			studies=(JSONArray) parser.parse(answser);
 		} catch (IOException | ParseException e) {
 			// TODO Auto-generated catch block
