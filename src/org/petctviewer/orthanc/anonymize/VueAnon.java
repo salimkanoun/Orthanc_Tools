@@ -1118,34 +1118,30 @@ public class VueAnon extends JFrame implements PlugIn{
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-					if(!modeleAnonPatients.getPatientList().isEmpty()){
-						SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
-						JDBCConnector jdbc;
-						jdbc = new JDBCConnector();
-						jdbc.newValuesQuery(new java.sql.Date(((Date)anonPatientTable.getValueAt(
-								anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 6)).getTime()), jprefer.get("centerCode", ""));
+				if(!modeleAnonPatients.getPatientList().isEmpty()){
+					// SK ICI IMPLEMENTATION DU CTP
+					
+					/*SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
+					JDBCConnector jdbc;
+					jdbc = new JDBCConnector();
+					jdbc.newValuesQuery(new java.sql.Date(((Date)anonPatientTable.getValueAt(
+							anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 6)).getTime()), jprefer.get("centerCode", ""));
 
-						ArrayList<String> newName = jdbc.getNewName();
-						ArrayList<String> newId = jdbc.getNewId();
-						ArrayList<String> oldFirstName = jdbc.getOldFirstName();
-						ArrayList<String> oldLastName = jdbc.getOldLastName();
-						if(newName.size() == 1){
-							anonPatientTable.setValueAt(newName.get(0), anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 3);
-							anonPatientTable.setValueAt(newId.get(0), anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 4);
-						}else if(newName.size() > 1){
-							PopUpFrame choicesFrame = new PopUpFrame(anonPatientTable);
-							choicesFrame.setData("84000", df.parse("08-03-2015"), oldFirstName, oldLastName, newName, newId, anonPatientTable);
-							choicesFrame.setVisible(true);
-						}else{
-							state.setText("No name found corresponding to this patient");
-						}
-						jdbc.disconnect();
+					ArrayList<String> newName = jdbc.getNewName();
+					ArrayList<String> newId = jdbc.getNewId();
+					ArrayList<String> oldFirstName = jdbc.getOldFirstName();
+					ArrayList<String> oldLastName = jdbc.getOldLastName();
+					if(newName.size() == 1){
+						anonPatientTable.setValueAt(newName.get(0), anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 3);
+						anonPatientTable.setValueAt(newId.get(0), anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 4);
+					}else if(newName.size() > 1){
+						PopUpFrame choicesFrame = new PopUpFrame(anonPatientTable);
+						choicesFrame.setData("84000", df.parse("08-03-2015"), oldFirstName, oldLastName, newName, newId, anonPatientTable);
+						choicesFrame.setVisible(true);
+					}else{
+						state.setText("No name found corresponding to this patient");
 					}
-				} catch (ClassNotFoundException | SQLException e1) {
-					e1.printStackTrace();
-				} catch (ParseException e1) {
-					e1.printStackTrace();
+					jdbc.disconnect();*/
 				}
 			}
 		});
