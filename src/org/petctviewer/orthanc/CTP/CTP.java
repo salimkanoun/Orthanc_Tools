@@ -39,7 +39,7 @@ public class CTP {
 		jsonPost.put("password", password);
 		JSONArray studies = null;
 		try {
-			String answser=makePostConnection("/get-studies",jsonPost.toString());
+			String answser=makePostConnection("Rest_Api/get-studies.php",jsonPost.toString());
 			
 			studies=(JSONArray) parser.parse(answser);
 		} catch (IOException | ParseException e) {
@@ -63,7 +63,7 @@ public class CTP {
 		jsonPost.put("studyName", studyName);
 		JSONArray visits = null;
 		try {
-			String answser=makePostConnection("/get-visits",jsonPost.toString());
+			String answser=makePostConnection("Rest_Api/get-visits.php",jsonPost.toString());
 			visits=(JSONArray) parser.parse(answser);
 		} catch (IOException | ParseException e) {
 			// TODO Auto-generated catch block
