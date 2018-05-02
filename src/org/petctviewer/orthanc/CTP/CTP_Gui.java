@@ -16,6 +16,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionListener;
+import java.util.prefs.Preferences;
 import java.awt.event.ActionEvent;
 import java.awt.GridLayout;
 import java.awt.Dimension;
@@ -31,13 +32,13 @@ public class CTP_Gui extends JDialog {
 	private JComboBox<String> comboBox_Studies, comboBox_Visits;
 	private CTP ctp;
 
+
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
 		try {
 			CTP_Gui dialog = new CTP_Gui();
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.pack();
 			dialog.setVisible(true);
 			

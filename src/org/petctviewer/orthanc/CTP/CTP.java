@@ -8,8 +8,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -20,14 +20,10 @@ import org.petctviewer.orthanc.HttpsTrustModifier;
 public class CTP {
 	private String username;
 	private String password;
-	private String serverAdress="http://localhost/Rest_Api";
+	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
+	private String serverAdress=jprefer.get("CTP address", null);
 	private String authentication=null;
 	private JSONParser parser=new JSONParser();
-	
-	public static void main (String[] args) {
-		CTP ctp=new CTP("Imagerie", "Salim1985");
-		
-	}
 	
 	public CTP(String username, String password) {
 		this.username=username;

@@ -93,6 +93,7 @@ import ij.WindowManager;
 import ij.plugin.PlugIn;
 
 import org.petctviewer.orthanc.*;
+import org.petctviewer.orthanc.CTP.CTP_Gui;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.*;
@@ -203,9 +204,7 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JPasswordField dbPassword;
 	private JButton setupButton;
 	//CTP
-	JTextField addressField;
-	JTextField usernameField;
-	JTextField passwordField;
+	JTextField addressFieldCTP;
 
 	// Settings preferences
 	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
@@ -1119,6 +1118,11 @@ public class VueAnon extends JFrame implements PlugIn{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(!modeleAnonPatients.getPatientList().isEmpty()){
+					CTP_Gui dialog = new CTP_Gui();
+					dialog.pack();
+					dialog.setModal(true);
+					dialog.setLocationRelativeTo(gui);
+					dialog.setVisible(true);
 					// SK ICI IMPLEMENTATION DU CTP
 					
 					/*SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
@@ -2246,17 +2250,11 @@ public class VueAnon extends JFrame implements PlugIn{
 		
 		//add CTP Panel
 		JLabel address=new JLabel("Address");
-		addressField=new JTextField("https://");
-		JLabel username=new JLabel("Username");
-		usernameField=new JTextField();
-		JLabel password=new JLabel("Password");
-		passwordField=new JTextField();
+		addressFieldCTP=new JTextField();
+		addressFieldCTP.setToolTipText("Include http:// or https://");
+		addressFieldCTP.setPreferredSize(new Dimension(300,20));
 		clinicalTrialProcessorGrid.add(address);
-		clinicalTrialProcessorGrid.add(addressField);
-		clinicalTrialProcessorGrid.add(username);
-		clinicalTrialProcessorGrid.add(usernameField);
-		clinicalTrialProcessorGrid.add(password);
-		clinicalTrialProcessorGrid.add(passwordField);
+		clinicalTrialProcessorGrid.add(addressFieldCTP);
 		
 		
 		JPanel aboutPanel = new JPanel(new FlowLayout());
@@ -2421,6 +2419,7 @@ public class VueAnon extends JFrame implements PlugIn{
 				}
 				jprefer.put("profileAnon", anonProfiles.getSelectedItem().toString());
 				jprefer.put("centerCode", centerCode.getText());
+				jprefer.put("CTP address", addressFieldCTP.getText());
 				
 				// Putting the export preferences in the anon plugin registry
 				if(remoteServer.getText() != null){
@@ -2461,7 +2460,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					jprefer.put("dbPassword", new String(dbPassword.getPassword()));
 				}
 				
-				if(addressField.getText().isEmpty() || usernameField.getText().isEmpty() || passwordField.getText().isEmpty() ){
+				if(addressFieldCTP.getText().isEmpty()  ){
 					reportType.removeAllItems();
 					reportType.addItem("CSV");
 				}else{
@@ -2470,7 +2469,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					reportType.addItem("CTP");
 				}
 
-				if(	addressField.getText().isEmpty() || usernameField.getText().isEmpty() || passwordField.getText().isEmpty()){
+				if(	addressFieldCTP.getText().isEmpty() ){
 					setNamesIdBtn.setVisible(false);
 				}else{
 					setNamesIdBtn.setVisible(true);
