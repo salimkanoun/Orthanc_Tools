@@ -111,18 +111,15 @@ public class Orthanc_Monitoring {
 			 
 			else if (changeEvent.get("ChangeType").equals("NewStudy")) {
 				newStudyID.add(ID);
-				
-				//parseStudy(ID);
+
 			}
 			
 			else if (changeEvent.get("ChangeType").equals("NewSeries")) {
 				newSerieID.add(ID);
-				//parseSerie(ID);
 			}
 			
 			else if (changeEvent.get("ChangeType").equals("StablePatient")) {
 				newStablePatientID.add((String) changeEvent.get("ID"));
-				System.out.println("StablePatient");
 			}
 			
 			else if (changeEvent.get("ChangeType").equals("StableStudy")) {

@@ -34,7 +34,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.JRadioButton;
 import javax.swing.SwingConstants;
 import javax.swing.ButtonGroup;
-import javax.swing.JTextField;
 import javax.swing.JCheckBox;
 
 @SuppressWarnings("serial")
@@ -160,21 +159,21 @@ public class Burner_Settings extends JDialog {
 				rdbtnYyyymmdd.setActionCommand("yyyyMMdd");
 				buttonGroup.add(rdbtnYyyymmdd);
 				panel.add(rdbtnYyyymmdd);
-				if (rdbtnYyyymmdd.getActionCommand().equals(jPrefer.get("DateFormat", null))==true || jPrefer.get("DateFormat", null)==null) rdbtnYyyymmdd.setSelected(true);
+				if (rdbtnYyyymmdd.getActionCommand().equals(dateFormatChoix) || dateFormatChoix==null) rdbtnYyyymmdd.setSelected(true);
 			}
 			{
 				JRadioButton rdbtnDdmmyyyy = new JRadioButton("dd/MM/yyyy");
 				rdbtnDdmmyyyy.setActionCommand("dd/MM/yyyy");
 				buttonGroup.add(rdbtnDdmmyyyy);
 				panel.add(rdbtnDdmmyyyy);
-				if (rdbtnDdmmyyyy.getActionCommand().equals(jPrefer.get("DateFormat", null))==true) rdbtnDdmmyyyy.setSelected(true);
+				if (rdbtnDdmmyyyy.getActionCommand().equals(dateFormatChoix)) rdbtnDdmmyyyy.setSelected(true);
 			}
 			{
 				JRadioButton rdbtnMmddyyyy = new JRadioButton("MM/dd/yyyy");
 				rdbtnMmddyyyy.setActionCommand("MM/dd/yyyy");
 				buttonGroup.add(rdbtnMmddyyyy);
 				panel.add(rdbtnMmddyyyy);
-				if (rdbtnMmddyyyy.getActionCommand().equals(jPrefer.get("DateFormat", null))==true) rdbtnMmddyyyy.setSelected(true);
+				if (rdbtnMmddyyyy.getActionCommand().equals(dateFormatChoix)) rdbtnMmddyyyy.setSelected(true);
 			}
 		}
 		{

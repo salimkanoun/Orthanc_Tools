@@ -17,42 +17,36 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.monitoring;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.prefs.Preferences;
 
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.DefaultCaret;
 
 import org.petctviewer.orthanc.ParametreConnexionHttp;
 import org.petctviewer.orthanc.query.Rest;
-
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JButton;
-import java.awt.GridLayout;
-import javax.swing.border.LineBorder;
-import java.awt.Color;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
-import java.awt.Dimension;
-import javax.swing.JComboBox;
-import javax.swing.JCheckBox;
-import javax.swing.JTextField;
-import java.awt.Component;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-
-import java.awt.FlowLayout;
-import javax.swing.JList;
-import javax.swing.DefaultComboBoxModel;
 
 @SuppressWarnings("serial")
 public class Monitoring_GUI extends JFrame {
@@ -61,7 +55,6 @@ public class Monitoring_GUI extends JFrame {
 	
 	//CD Burner Service
 	private JButton btnStopMonitoring, btnStartMonitoring;
-	private Preferences jPrefer;
 	private JTextArea textAreaCD;
 	CD_Burner cdBurner;
 	
@@ -91,7 +84,6 @@ public class Monitoring_GUI extends JFrame {
 	/**
 	 * @wbp.nonvisual location=-24,419
 	 */
-	private final JList list = new JList();
 	private JTable table;
 	/**
 	 * Launch the application.
@@ -341,9 +333,8 @@ public class Monitoring_GUI extends JFrame {
 						panel_TagMonitoring_Series.add(panel_SeriesTagChooser, BorderLayout.CENTER);
 						panel_SeriesTagChooser.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 						
-						JComboBox comboBox = new JComboBox();
-						comboBox.setModel(new DefaultComboBoxModel(new String[] {"Shared-Tags", "Defined List"}));
-						panel_SeriesTagChooser.add(comboBox);
+						JLabel lblWillIncludePredifined = new JLabel("Will include predefined list and shared tags");
+						panel_SeriesTagChooser.add(lblWillIncludePredifined);
 						
 						JScrollPane scrollPane_3 = new JScrollPane();
 						panel_TagMonitoring_Main.add(scrollPane_3);

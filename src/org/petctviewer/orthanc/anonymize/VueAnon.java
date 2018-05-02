@@ -93,6 +93,7 @@ import ij.WindowManager;
 import ij.plugin.PlugIn;
 
 import org.petctviewer.orthanc.*;
+import org.petctviewer.orthanc.CTP.CTP_Gui;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.*;
@@ -202,10 +203,8 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JTextField dbUsername;
 	private JPasswordField dbPassword;
 	private JButton setupButton;
-	
-
-	
-	
+	//CTP
+	JTextField addressFieldCTP;
 
 	// Settings preferences
 	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
@@ -1112,40 +1111,41 @@ public class VueAnon extends JFrame implements PlugIn{
 			}
 		});
 		
-		setNamesIdBtn = new JButton("Query DB");
+		setNamesIdBtn = new JButton("CTP");
 		setNamesIdBtn.setPreferredSize(new Dimension(120,27));
 		setNamesIdBtn.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-					if(!modeleAnonPatients.getPatientList().isEmpty()){
-						SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
-						JDBCConnector jdbc;
-						jdbc = new JDBCConnector();
-						jdbc.newValuesQuery(new java.sql.Date(((Date)anonPatientTable.getValueAt(
-								anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 6)).getTime()), jprefer.get("centerCode", ""));
+				if(!modeleAnonPatients.getPatientList().isEmpty()){
+					CTP_Gui dialog = new CTP_Gui();
+					dialog.pack();
+					dialog.setModal(true);
+					dialog.setLocationRelativeTo(gui);
+					dialog.setVisible(true);
+					// SK ICI IMPLEMENTATION DU CTP
+					
+					/*SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
+					JDBCConnector jdbc;
+					jdbc = new JDBCConnector();
+					jdbc.newValuesQuery(new java.sql.Date(((Date)anonPatientTable.getValueAt(
+							anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 6)).getTime()), jprefer.get("centerCode", ""));
 
-						ArrayList<String> newName = jdbc.getNewName();
-						ArrayList<String> newId = jdbc.getNewId();
-						ArrayList<String> oldFirstName = jdbc.getOldFirstName();
-						ArrayList<String> oldLastName = jdbc.getOldLastName();
-						if(newName.size() == 1){
-							anonPatientTable.setValueAt(newName.get(0), anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 3);
-							anonPatientTable.setValueAt(newId.get(0), anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 4);
-						}else if(newName.size() > 1){
-							PopUpFrame choicesFrame = new PopUpFrame(anonPatientTable);
-							choicesFrame.setData("84000", df.parse("08-03-2015"), oldFirstName, oldLastName, newName, newId, anonPatientTable);
-							choicesFrame.setVisible(true);
-						}else{
-							state.setText("No name found corresponding to this patient");
-						}
-						jdbc.disconnect();
+					ArrayList<String> newName = jdbc.getNewName();
+					ArrayList<String> newId = jdbc.getNewId();
+					ArrayList<String> oldFirstName = jdbc.getOldFirstName();
+					ArrayList<String> oldLastName = jdbc.getOldLastName();
+					if(newName.size() == 1){
+						anonPatientTable.setValueAt(newName.get(0), anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 3);
+						anonPatientTable.setValueAt(newId.get(0), anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 4);
+					}else if(newName.size() > 1){
+						PopUpFrame choicesFrame = new PopUpFrame(anonPatientTable);
+						choicesFrame.setData("84000", df.parse("08-03-2015"), oldFirstName, oldLastName, newName, newId, anonPatientTable);
+						choicesFrame.setVisible(true);
+					}else{
+						state.setText("No name found corresponding to this patient");
 					}
-				} catch (ClassNotFoundException | SQLException e1) {
-					e1.printStackTrace();
-				} catch (ParseException e1) {
-					e1.printStackTrace();
+					jdbc.disconnect();*/
 				}
 			}
 		});
@@ -1956,6 +1956,10 @@ public class VueAnon extends JFrame implements PlugIn{
 		JPanel westNorth1Setup = new JPanel(new FlowLayout());
 		JPanel westNorth2Setup = new JPanel(new FlowLayout());
 		JPanel eastExport = new JPanel(new GridBagLayout());
+		
+		JPanel clinicalTrialProcessorGrid = new JPanel(new GridLayout(3,2));
+		JPanel clinicalTrialProcessor =new JPanel();
+		clinicalTrialProcessor.add(clinicalTrialProcessorGrid);
 		JPanel eastDB = new JPanel(new GridBagLayout());
 
 		GridBagConstraints gbSetup = new GridBagConstraints();
@@ -2113,6 +2117,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		JTabbedPane eastSetupPane = new JTabbedPane();
 		eastSetupPane.add("Export setup", eastExport);
 		eastSetupPane.addTab("Database setup", eastDB);
+		eastSetupPane.addTab("Other", clinicalTrialProcessor);
 
 		gbSetup.insets = new Insets(20, 10, 0, 10);
 		gbSetup.gridx = 0;
@@ -2242,6 +2247,15 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.dbPassword.setText(jprefer.get("dbPassword", ""));
 		this.dbPassword.setPreferredSize(new Dimension(300,20));
 		eastDB.add(this.dbPassword, gbSetup);
+		
+		//add CTP Panel
+		JLabel address=new JLabel("Address");
+		addressFieldCTP=new JTextField();
+		addressFieldCTP.setToolTipText("Include http:// or https://");
+		addressFieldCTP.setPreferredSize(new Dimension(300,20));
+		clinicalTrialProcessorGrid.add(address);
+		clinicalTrialProcessorGrid.add(addressFieldCTP);
+		
 		
 		JPanel aboutPanel = new JPanel(new FlowLayout());
 		JButton viewerDistribution = new JButton("Download Viewer Distribution");
@@ -2405,6 +2419,7 @@ public class VueAnon extends JFrame implements PlugIn{
 				}
 				jprefer.put("profileAnon", anonProfiles.getSelectedItem().toString());
 				jprefer.put("centerCode", centerCode.getText());
+				jprefer.put("CTP address", addressFieldCTP.getText());
 				
 				// Putting the export preferences in the anon plugin registry
 				if(remoteServer.getText() != null){
@@ -2445,8 +2460,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					jprefer.put("dbPassword", new String(dbPassword.getPassword()));
 				}
 				
-				if(dbAdress.getText().length() == 0 || dbPort.getText().length() == 0 || dbName.getText().length() == 0
-						|| dbUsername.getText().length() == 0 || new String(dbPassword.getPassword()).length() == 0){
+				if(addressFieldCTP.getText().isEmpty()  ){
 					reportType.removeAllItems();
 					reportType.addItem("CSV");
 				}else{
@@ -2455,8 +2469,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					reportType.addItem("CTP");
 				}
 
-				if(dbAdress.getText().length() == 0 || dbPort.getText().length() == 0 || dbName.getText().length() == 0
-						|| dbUsername.getText().length() == 0 || new String(dbPassword.getPassword()).length() == 0){
+				if(	addressFieldCTP.getText().isEmpty() ){
 					setNamesIdBtn.setVisible(false);
 				}else{
 					setNamesIdBtn.setVisible(true);
