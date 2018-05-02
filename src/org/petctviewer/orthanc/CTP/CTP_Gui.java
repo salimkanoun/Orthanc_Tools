@@ -11,18 +11,17 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
-import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionListener;
-import java.util.prefs.Preferences;
 import java.awt.event.ActionEvent;
 import java.awt.GridLayout;
 import java.awt.Dimension;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
 
+@SuppressWarnings("serial")
 public class CTP_Gui extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
@@ -176,7 +175,7 @@ public class CTP_Gui extends JDialog {
 						new Object[][] {
 						},
 						new String[] {
-							"New column", "New column"
+							"Patient Number", "Known Acquisition Date"
 						}
 					) {
 						Class[] columnTypes = new Class[] {
