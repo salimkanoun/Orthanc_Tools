@@ -10,15 +10,25 @@ import javax.swing.JPasswordField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.JComboBox;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
+import com.google.gson.JsonObject;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.GridLayout;
 import java.awt.Dimension;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 import java.awt.Color;
 
 @SuppressWarnings("serial")
@@ -27,9 +37,11 @@ public class CTP_Gui extends JDialog {
 	private final JPanel contentPanel = new JPanel();
 	private JTextField CTP_Username;
 	private JPasswordField CTP_Password;
-	private JTable table;
+	private JTable tablePatient;
+	DefaultTableModel modelTablePatient;
 	private JComboBox<String> comboBox_Studies, comboBox_Visits;
 	private CTP ctp;
+	private JTable tableDetailsPatient;
 
 
 	/**
@@ -112,7 +124,22 @@ public class CTP_Gui extends JDialog {
 							comboBox_Visits = new JComboBox<String>();
 							comboBox_Visits.addActionListener(new ActionListener() {
 								public void actionPerformed(ActionEvent arg0) {
-									//SK A FAIRE ICI
+									JSONArray patients=ctp.getAvailableImports((String) comboBox_Studies.getSelectedItem(), (String) comboBox_Visits.getSelectedItem());
+									for (int i=0 ; i<patients.size() ; i++) {
+										JSONObject patient=(JSONObject) patients.get(i);
+										System.out.println(patient);
+										String numeroPatient=(String) patient.get("numeroPatient");
+										
+										String firstName=(String) patient.get("firstName");
+										String lastName=(String) patient.get("lastName");
+										String patientSex=(String) patient.get("patientSex");
+										String patientDOB=(String) patient.get("patientDOB");
+										String investigatorName=(String) patient.get("investigatorName");
+										String country=(String) patient.get("country");
+										String centerNumber=(String) patient.get("centerNumber");
+										modelTablePatient.addRow(new Object[]{numeroPatient, lastName, firstName, patientSex , patientDOB, "01/01/1900"});
+										//SK MANQUE ACQUISITION DATE DANS L API
+									}
 								}
 							});
 							panel_1_1.add(comboBox_Visits);
@@ -169,24 +196,88 @@ public class CTP_Gui extends JDialog {
 				JScrollPane scrollPane = new JScrollPane();
 				panel.add(scrollPane);
 				{
-					table = new JTable();
-					table.setPreferredScrollableViewportSize(new Dimension(300, 50));
-					table.setModel(new DefaultTableModel(
+					tablePatient = new JTable();
+					
+					tablePatient.setPreferredScrollableViewportSize(new Dimension(300, 50));
+					tablePatient.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+					tablePatient.setModel(new DefaultTableModel(
 						new Object[][] {
 						},
 						new String[] {
-							"Patient Number", "Known Acquisition Date"
+								"Patient Number", "Last Name", "First Name", "Sex", "DOB", "Acquisition Date" 
 						}
 					) {
 						Class[] columnTypes = new Class[] {
-							String.class, String.class
+								String.class, String.class, String.class, String.class, String.class, String.class
 						};
 						public Class getColumnClass(int columnIndex) {
 							return columnTypes[columnIndex];
 						}
 					});
-					scrollPane.setViewportView(table);
+					modelTablePatient=(DefaultTableModel) tablePatient.getModel();
+					tablePatient.getColumnModel().getColumn(1).setMinWidth(0);
+					tablePatient.getColumnModel().getColumn(1).setMaxWidth(0);
+					tablePatient.getColumnModel().getColumn(1).setWidth(0);
+					tablePatient.getColumnModel().getColumn(2).setMinWidth(0);
+					tablePatient.getColumnModel().getColumn(2).setMaxWidth(0);
+					tablePatient.getColumnModel().getColumn(2).setWidth(0);
+					tablePatient.getColumnModel().getColumn(3).setMinWidth(0);
+					tablePatient.getColumnModel().getColumn(3).setMaxWidth(0);
+					tablePatient.getColumnModel().getColumn(3).setWidth(0);
+					tablePatient.getColumnModel().getColumn(4).setMinWidth(0);
+					tablePatient.getColumnModel().getColumn(4).setMaxWidth(0);
+					tablePatient.getColumnModel().getColumn(4).setWidth(0);
+					tablePatient.getColumnModel().getColumn(5).setMaxWidth(0);
+					tablePatient.getColumnModel().getColumn(5).setWidth(0);
+					tablePatient.getColumnModel().getColumn(5).setWidth(0);
+					
+					tablePatient.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+						
+						@Override
+						public void valueChanged(ListSelectionEvent arg0) {
+							System.out.println((String) tablePatient.getValueAt(tablePatient.getSelectedRow(),1));
+							System.out.println(tablePatient.getSelectedRow());
+							if (tablePatient.getSelectedRow() > -1) {
+								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),1) , 0, 1);
+								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),2), 1, 1);
+								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),3), 2, 1);
+								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),4), 3, 1);
+								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),5), 4, 1);
+								
+							}
+						
+							
+						}
+					});
+					scrollPane.setViewportView(tablePatient);
 				}
+			}
+			{
+				JPanel panel_1 = new JPanel();
+				panel.add(panel_1, BorderLayout.EAST);
+				{
+					tableDetailsPatient = new JTable();
+					tableDetailsPatient.setModel(new DefaultTableModel(
+						new Object[][] {
+							{"Last Name", null, null},
+							{"First Name", null, null},
+							{"Sex", null, null},
+							{"Date Of Birth", null, null},
+							{"Acquisition Date", null, null},
+						},
+						new String[] {
+							"", "Local", "CTP"
+						}
+					));
+					tableDetailsPatient.getColumnModel().getColumn(0).setPreferredWidth(100);
+					{
+						JScrollPane scrollPane = new JScrollPane();
+						scrollPane.setViewportView(tableDetailsPatient);
+						tableDetailsPatient.setPreferredScrollableViewportSize(new Dimension (250,100));
+						panel_1.add(scrollPane);
+					}
+				}
+				
 			}
 		}
 		{

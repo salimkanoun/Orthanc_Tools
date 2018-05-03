@@ -84,6 +84,29 @@ public class CTP {
 		
 	}
 	
+	public JSONArray getAvailableImports(String studyName, String visitName) {
+		JSONObject jsonPost=new JSONObject();
+		jsonPost.put("username", username);
+		jsonPost.put("password", password);
+		jsonPost.put("studyName", studyName);
+		jsonPost.put("visit", visitName);
+		JSONArray visits = null;
+		try {
+			String answser=makePostConnection("Rest_Api/get-possible-import.php", jsonPost.toString());
+			visits=(JSONArray) parser.parse(answser);
+		} catch (IOException | ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (visits !=null) {	
+			return visits;
+		}
+		else {
+			return null;
+		}
+		
+	}
+	
 	
 	private String makePostConnection(String apiUrl, String post) throws IOException {
 		URL url = null;
