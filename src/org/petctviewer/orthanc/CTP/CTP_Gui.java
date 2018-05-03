@@ -30,6 +30,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import java.awt.Color;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
 
 @SuppressWarnings("serial")
 public class CTP_Gui extends JDialog {
@@ -111,6 +113,7 @@ public class CTP_Gui extends JDialog {
 							panel_1_1.add(lblAvailableStudy);
 						}
 						comboBox_Studies = new JComboBox<String>();
+						
 						panel_1_1.add(comboBox_Studies);
 						{
 							JLabel label = new JLabel("");
@@ -122,33 +125,43 @@ public class CTP_Gui extends JDialog {
 						}
 						{
 							comboBox_Visits = new JComboBox<String>();
-							comboBox_Visits.addActionListener(new ActionListener() {
-								public void actionPerformed(ActionEvent arg0) {
-									JSONArray patients=ctp.getAvailableImports((String) comboBox_Studies.getSelectedItem(), (String) comboBox_Visits.getSelectedItem());
-									for (int i=0 ; i<patients.size() ; i++) {
-										JSONObject patient=(JSONObject) patients.get(i);
-										System.out.println(patient);
-										String numeroPatient=(String) patient.get("numeroPatient");
+							comboBox_Visits.addItemListener(new ItemListener() {
+								public void itemStateChanged(ItemEvent arg0) {
+									System.out.println(arg0.getSource());
+									if(arg0.getStateChange() == ItemEvent.SELECTED && !comboBox_Visits.getSelectedItem().equals("None") ) {
 										
-										String firstName=(String) patient.get("firstName");
-										String lastName=(String) patient.get("lastName");
-										String patientSex=(String) patient.get("patientSex");
-										String patientDOB=(String) patient.get("patientDOB");
-										String investigatorName=(String) patient.get("investigatorName");
-										String country=(String) patient.get("country");
-										String centerNumber=(String) patient.get("centerNumber");
-										modelTablePatient.addRow(new Object[]{numeroPatient, lastName, firstName, patientSex , patientDOB, "01/01/1900"});
-										//SK MANQUE ACQUISITION DATE DANS L API
+										System.out.println("ici");
+										JSONArray patients=ctp.getAvailableImports((String) comboBox_Studies.getSelectedItem(), (String) comboBox_Visits.getSelectedItem());
+										if (tablePatient.getModel().getRowCount()>0) tablePatient.removeRowSelectionInterval(0, tablePatient.getModel().getRowCount()-1);
+										for (int i=0 ; i<patients.size() ; i++) {
+											JSONObject patient=(JSONObject) patients.get(i);
+											System.out.println(patient);
+											String numeroPatient=(String) patient.get("numeroPatient");
+											
+											String firstName=(String) patient.get("firstName");
+											String lastName=(String) patient.get("lastName");
+											String patientSex=(String) patient.get("patientSex");
+											String patientDOB=(String) patient.get("patientDOB");
+											String investigatorName=(String) patient.get("investigatorName");
+											String country=(String) patient.get("country");
+											String centerNumber=(String) patient.get("centerNumber");
+											modelTablePatient.addRow(new Object[]{numeroPatient, lastName, firstName, patientSex , patientDOB, "01/01/1900"});
+											//SK MANQUE ACQUISITION DATE DANS L API
+										}
 									}
+									
 								}
 							});
 							panel_1_1.add(comboBox_Visits);
 						}
-						comboBox_Studies.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent arg0) {
-								
-								if (! (comboBox_Studies.getSelectedIndex()==0) ) {
+						comboBox_Studies.addItemListener(new ItemListener() {
+							
+							public void itemStateChanged(ItemEvent arg0) {
+								if(arg0.getStateChange() == ItemEvent.SELECTED && comboBox_Studies.getSelectedIndex() !=0 ) {
+									System.out.println(comboBox_Studies.getSelectedIndex());
+									
 									comboBox_Visits.removeAllItems();
+									if (tablePatient.getModel().getRowCount()>0) tablePatient.removeRowSelectionInterval(0, tablePatient.getModel().getRowCount()-1);
 									String[] visits=ctp.getAvailableVisits((String) comboBox_Studies.getSelectedItem());
 									if (visits !=null) {
 										for (int i=0; i<visits.length; i++) {
@@ -156,10 +169,13 @@ public class CTP_Gui extends JDialog {
 										}
 									}
 									else {
-										comboBox_Visits.addItem("none");
+										comboBox_Visits.addItem("None");
 									}
+										
 									
 								}
+									
+							
 								
 							}
 						});
@@ -235,8 +251,6 @@ public class CTP_Gui extends JDialog {
 						
 						@Override
 						public void valueChanged(ListSelectionEvent arg0) {
-							System.out.println((String) tablePatient.getValueAt(tablePatient.getSelectedRow(),1));
-							System.out.println(tablePatient.getSelectedRow());
 							if (tablePatient.getSelectedRow() > -1) {
 								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),1) , 0, 1);
 								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),2), 1, 1);
