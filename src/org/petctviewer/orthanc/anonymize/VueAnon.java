@@ -557,13 +557,11 @@ public class VueAnon extends JFrame implements PlugIn{
 
             @Override
             public void popupMenuCanceled(PopupMenuEvent e) {
-                // TODO Auto-generated method stub
 
             }
 
 			@Override
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
-				// TODO Auto-generated method stub
 				
 			}
         });
@@ -2815,7 +2813,6 @@ public class VueAnon extends JFrame implements PlugIn{
 	}
 	
 	// LAUNCHERS
-	// SK AJOUTER VISIBILITE DU SETTING SERVEUR DANS LE SETUP POUR LE LANCMENT HORS IMAGEJ
 	public static void main(String... args){
 		System.setProperty("org.apache.commons.logging.Log",
 				"org.apache.commons.logging.impl.NoOpLog");

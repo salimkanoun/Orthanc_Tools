@@ -238,18 +238,23 @@ public class CTP_Gui extends JDialog {
 					tablePatient.getColumnModel().getColumn(1).setMinWidth(0);
 					tablePatient.getColumnModel().getColumn(1).setMaxWidth(0);
 					tablePatient.getColumnModel().getColumn(1).setWidth(0);
+					tablePatient.getColumnModel().getColumn(1).setResizable(false);
 					tablePatient.getColumnModel().getColumn(2).setMinWidth(0);
 					tablePatient.getColumnModel().getColumn(2).setMaxWidth(0);
 					tablePatient.getColumnModel().getColumn(2).setWidth(0);
+					tablePatient.getColumnModel().getColumn(2).setResizable(false);
 					tablePatient.getColumnModel().getColumn(3).setMinWidth(0);
 					tablePatient.getColumnModel().getColumn(3).setMaxWidth(0);
 					tablePatient.getColumnModel().getColumn(3).setWidth(0);
+					tablePatient.getColumnModel().getColumn(3).setResizable(false);
 					tablePatient.getColumnModel().getColumn(4).setMinWidth(0);
 					tablePatient.getColumnModel().getColumn(4).setMaxWidth(0);
 					tablePatient.getColumnModel().getColumn(4).setWidth(0);
+					tablePatient.getColumnModel().getColumn(4).setResizable(false);
 					tablePatient.getColumnModel().getColumn(5).setMaxWidth(0);
 					tablePatient.getColumnModel().getColumn(5).setWidth(0);
 					tablePatient.getColumnModel().getColumn(5).setWidth(0);
+					tablePatient.getColumnModel().getColumn(5).setResizable(false);
 					
 					tablePatient.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 						
