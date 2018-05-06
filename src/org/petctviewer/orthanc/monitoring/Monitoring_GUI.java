@@ -367,6 +367,9 @@ public class Monitoring_GUI extends JFrame {
 								
 							}
 						});
+						
+						JButton btnDbSettings = new JButton("DB Settings");
+						panel_TagMonitoring_Buttons.add(btnDbSettings);
 						panel_TagMonitoring_Buttons.add(btnStart_tagMonitoring);
 						
 						JPanel panel_AutoRouting = new JPanel();

@@ -19,8 +19,6 @@ import javax.swing.table.DefaultTableModel;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import com.google.gson.JsonObject;
-
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.GridLayout;
@@ -31,6 +29,7 @@ import javax.swing.event.ListSelectionListener;
 
 import java.awt.Color;
 import java.awt.event.ItemListener;
+import java.util.prefs.Preferences;
 import java.awt.event.ItemEvent;
 
 @SuppressWarnings("serial")
@@ -44,6 +43,7 @@ public class CTP_Gui extends JDialog {
 	private JComboBox<String> comboBox_Studies, comboBox_Visits;
 	private CTP ctp;
 	private JTable tableDetailsPatient;
+	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
 
 
 	/**
@@ -87,6 +87,7 @@ public class CTP_Gui extends JDialog {
 				}
 				{
 					CTP_Username = new JTextField();
+					CTP_Username.setText(jprefer.get("CTPUsername", ""));
 					panel_1.add(CTP_Username);
 					CTP_Username.setColumns(10);
 				}
@@ -132,7 +133,7 @@ public class CTP_Gui extends JDialog {
 										
 										System.out.println("ici");
 										JSONArray patients=ctp.getAvailableImports((String) comboBox_Studies.getSelectedItem(), (String) comboBox_Visits.getSelectedItem());
-										if (tablePatient.getModel().getRowCount()>0) tablePatient.removeRowSelectionInterval(0, tablePatient.getModel().getRowCount()-1);
+										if (tablePatient.getModel().getRowCount()>0) modelTablePatient.setRowCount(0);
 										for (int i=0 ; i<patients.size() ; i++) {
 											JSONObject patient=(JSONObject) patients.get(i);
 											System.out.println(patient);
@@ -161,7 +162,7 @@ public class CTP_Gui extends JDialog {
 									System.out.println(comboBox_Studies.getSelectedIndex());
 									
 									comboBox_Visits.removeAllItems();
-									if (tablePatient.getModel().getRowCount()>0) tablePatient.removeRowSelectionInterval(0, tablePatient.getModel().getRowCount()-1);
+									if (tablePatient.getModel().getRowCount()>0) modelTablePatient.setRowCount(0);
 									String[] visits=ctp.getAvailableVisits((String) comboBox_Studies.getSelectedItem());
 									if (visits !=null) {
 										for (int i=0; i<visits.length; i++) {
@@ -182,7 +183,10 @@ public class CTP_Gui extends JDialog {
 					}
 					btnConnect.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent arg0) {
+							jprefer.put("CTPUsername", CTP_Username.getText());
 							comboBox_Studies.removeAllItems();
+							comboBox_Visits.removeAllItems();
+							if (tablePatient.getModel().getRowCount()>0) modelTablePatient.setRowCount(0);							
 							ctp=new CTP(CTP_Username.getText(), CTP_Password.getText());
 							String[] studies=ctp.getAvailableStudies();
 							comboBox_Studies.addItem("Choose");
@@ -252,11 +256,11 @@ public class CTP_Gui extends JDialog {
 						@Override
 						public void valueChanged(ListSelectionEvent arg0) {
 							if (tablePatient.getSelectedRow() > -1) {
-								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),1) , 0, 1);
-								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),2), 1, 1);
-								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),3), 2, 1);
-								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),4), 3, 1);
-								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),5), 4, 1);
+								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),1) , 0, 2);
+								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),2), 1, 2);
+								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),3), 2, 2);
+								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),4), 3, 2);
+								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),5), 4, 2);
 								
 							}
 						

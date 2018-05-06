@@ -197,11 +197,6 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JPasswordField servPassword;
 	private JTextField remoteFilePath;
 	private JComboBox<String> exportType;
-	private JTextField dbAdress;
-	private JTextField dbPort;
-	private JTextField dbName;
-	private JTextField dbUsername;
-	private JPasswordField dbPassword;
 	private JButton setupButton;
 	//CTP
 	JTextField addressFieldCTP;
@@ -691,13 +686,11 @@ public class VueAnon extends JFrame implements PlugIn{
 
             @Override
             public void popupMenuCanceled(PopupMenuEvent e) {
-                // TODO Auto-generated method stub
 
             }
 
 			@Override
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
-				// TODO Auto-generated method stub
 				
 			}
         });
@@ -1960,7 +1953,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		JPanel clinicalTrialProcessorGrid = new JPanel(new GridLayout(3,2));
 		JPanel clinicalTrialProcessor =new JPanel();
 		clinicalTrialProcessor.add(clinicalTrialProcessorGrid);
-		JPanel eastDB = new JPanel(new GridBagLayout());
+		
 
 		GridBagConstraints gbSetup = new GridBagConstraints();
 		gbSetup.gridx = 0;
@@ -2116,7 +2109,6 @@ public class VueAnon extends JFrame implements PlugIn{
 
 		JTabbedPane eastSetupPane = new JTabbedPane();
 		eastSetupPane.add("Export setup", eastExport);
-		eastSetupPane.addTab("Database setup", eastDB);
 		eastSetupPane.addTab("Other", clinicalTrialProcessor);
 
 		gbSetup.insets = new Insets(20, 10, 0, 10);
@@ -2193,66 +2185,14 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.exportType.setPreferredSize(new Dimension(140,20));
 		eastExport.add(this.exportType, gbSetup);
 
-		gbSetup.gridx = 0;
-		gbSetup.gridy = 0;
-		eastDB.add(new JLabel("Adress"), gbSetup);
-		
-		gbSetup.gridx = 1;
-		gbSetup.gridy = 0;
-		this.dbAdress = new JTextField();
-		this.dbAdress.setText(jprefer.get("dbAdress", ""));
-		this.dbAdress.setPreferredSize(new Dimension(300,20));
-		eastDB.add(this.dbAdress, gbSetup);
-		
-		gbSetup.gridx = 0;
-		gbSetup.gridy = 1;
-		eastDB.add(new JLabel("Port"), gbSetup);
-		
-		gbSetup.gridx = 1;
-		gbSetup.gridy = 1;
-		this.dbPort = new JTextField();
-		this.dbPort.setText(jprefer.get("dbPort", ""));
-		this.dbPort.setPreferredSize(new Dimension(300,20));
-		eastDB.add(this.dbPort, gbSetup);
-		
-		gbSetup.gridx = 0;
-		gbSetup.gridy = 2;
-		eastDB.add(new JLabel("Database name"), gbSetup);
-		
-		gbSetup.gridx = 1;
-		gbSetup.gridy = 2;
-		this.dbName = new JTextField();
-		this.dbName.setText(jprefer.get("dbName", ""));
-		this.dbName.setPreferredSize(new Dimension(300,20));
-		eastDB.add(this.dbName, gbSetup);
-		
-		gbSetup.gridx = 0;
-		gbSetup.gridy = 3;
-		eastDB.add(new JLabel("Username"), gbSetup);
-		
-		gbSetup.gridx = 1;
-		gbSetup.gridy = 3;
-		this.dbUsername = new JTextField();
-		this.dbUsername.setText(jprefer.get("dbUsername", ""));
-		this.dbUsername.setPreferredSize(new Dimension(300,20));
-		eastDB.add(this.dbUsername, gbSetup);
-		
-		gbSetup.gridx = 0;
-		gbSetup.gridy = 4;
-		eastDB.add(new JLabel("Password"), gbSetup);
-		
-		gbSetup.gridx = 1;
-		gbSetup.gridy = 4;
-		this.dbPassword = new JPasswordField();
-		this.dbPassword.setText(jprefer.get("dbPassword", ""));
-		this.dbPassword.setPreferredSize(new Dimension(300,20));
-		eastDB.add(this.dbPassword, gbSetup);
+
 		
 		//add CTP Panel
 		JLabel address=new JLabel("Address");
 		addressFieldCTP=new JTextField();
 		addressFieldCTP.setToolTipText("Include http:// or https://");
 		addressFieldCTP.setPreferredSize(new Dimension(300,20));
+		addressFieldCTP.setText(jprefer.get("CTPAddress", "http://"));
 		clinicalTrialProcessorGrid.add(address);
 		clinicalTrialProcessorGrid.add(addressFieldCTP);
 		
@@ -2335,14 +2275,12 @@ public class VueAnon extends JFrame implements PlugIn{
 		aboutPanel.add(setupButton);
 		aboutPanel.add(aboutBtn);
 		
-		if(dbAdress.getText().length() > 0 && dbPort.getText().length() > 0 && dbName.getText().length() > 0
-				&& dbUsername.getText().length() > 0 && new String(dbPassword.getPassword()).length() > 0){
+		if( ! addressFieldCTP.getText().equals("http://")){
 			reportType.addItem("CTP");
 			reportType.setSelectedItem(jprefer.get("reportType", "CSV"));
 		}
 		
-		if(dbAdress.getText().length() == 0 || dbPort.getText().length() == 0 || dbName.getText().length() == 0
-				|| dbUsername.getText().length() == 0 || new String(dbPassword.getPassword()).length() == 0){
+		if( addressFieldCTP.getText().equals("http://")){
 			setNamesIdBtn.setVisible(false);
 		}
 		
@@ -2419,7 +2357,7 @@ public class VueAnon extends JFrame implements PlugIn{
 				}
 				jprefer.put("profileAnon", anonProfiles.getSelectedItem().toString());
 				jprefer.put("centerCode", centerCode.getText());
-				jprefer.put("CTP address", addressFieldCTP.getText());
+				jprefer.put("CTPAddress", addressFieldCTP.getText());
 				
 				// Putting the export preferences in the anon plugin registry
 				if(remoteServer.getText() != null){
@@ -2438,27 +2376,6 @@ public class VueAnon extends JFrame implements PlugIn{
 					jprefer.put("remoteFilePath", remoteFilePath.getText());
 				}
 				jprefer.put("exportType", exportType.getSelectedItem().toString());
-
-				// Putting the database preferences in the anon plugin registry				
-				if(dbAdress.getText() != null){
-					jprefer.put("dbAdress", dbAdress.getText());
-				}
-				
-				if(dbPort.getText() != null){
-					jprefer.put("dbPort", dbPort.getText());
-				}
-				
-				if(dbName.getText() != null){
-					jprefer.put("dbName", dbName.getText());
-				}
-				
-				if(dbUsername.getText() != null){
-					jprefer.put("dbUsername", dbUsername.getText());
-				}
-				
-				if(new String(dbPassword.getPassword()) != null){
-					jprefer.put("dbPassword", new String(dbPassword.getPassword()));
-				}
 				
 				if(addressFieldCTP.getText().isEmpty()  ){
 					reportType.removeAllItems();
@@ -2469,7 +2386,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					reportType.addItem("CTP");
 				}
 
-				if(	addressFieldCTP.getText().isEmpty() ){
+				if(	addressFieldCTP.getText().equals("http://") ){
 					setNamesIdBtn.setVisible(false);
 				}else{
 					setNamesIdBtn.setVisible(true);
