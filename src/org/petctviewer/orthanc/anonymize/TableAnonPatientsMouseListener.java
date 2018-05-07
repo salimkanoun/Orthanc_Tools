@@ -50,6 +50,7 @@ public class TableAnonPatientsMouseListener extends MouseAdapter {
 				ArrayList<String> selectedUIDs = this.modele.getPatient(this.tableau.getSelectedRow()).getSelectedStudyUID();
 				
 				this.modeleAnonStudies.addStudies(patientName, patientID, selectedUIDs);
+				
 			}
 		} catch (IOException e1) {
 			e1.printStackTrace();

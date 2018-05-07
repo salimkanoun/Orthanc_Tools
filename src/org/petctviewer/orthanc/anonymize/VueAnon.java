@@ -1109,10 +1109,30 @@ public class VueAnon extends JFrame implements PlugIn{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(!modeleAnonPatients.getPatientList().isEmpty()){
+					if (anonStudiesTable.getSelectedRow()==-1)anonStudiesTable.setRowSelectionInterval(0, 0);
 					CTP_Gui dialog = new CTP_Gui();
+					String patientName=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 0);
+					String patientID=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 1);
+					String patientDOB=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 6);
+					String studyDescription=(String) anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 0);
+					Date studyDate=(Date) anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 1);
+					//SK SEXE A AJOUTER A LA TABLE
+					dialog.setStudyLocalValue(patientName, df.format(studyDate), "m", df.format(patientDOB));
 					dialog.pack();
 					dialog.setModal(true);
 					dialog.setLocationRelativeTo(gui);
+				    
+					
+					//After anon
+					String patientNewName=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 3);
+					String patientNewID=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 4);
+					String patientNewUID=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 5);
+					
+					
+					
+				
+					System.out.println(patientName+patientID+patientDOB+studyDate+studyDescription);
+					
 					dialog.setVisible(true);
 					// SK ICI IMPLEMENTATION DU CTP
 					

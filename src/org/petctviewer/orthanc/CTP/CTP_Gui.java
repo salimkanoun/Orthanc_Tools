@@ -320,5 +320,21 @@ public class CTP_Gui extends JDialog {
 			}
 		}
 	}
+	
+	public void setStudyLocalValue(String patientName, String acquisitionDate, String sex, String DOB) {
+		String[] name=null;
+		if(patientName.contains("^")) {
+			name=patientName.split("^");
+		}
+		else {
+			name=new String[]{ patientName, ""};
+		}
+		tableDetailsPatient.setValueAt( name[0] , 0, 1);
+		tableDetailsPatient.setValueAt( name[1], 1, 1);
+		tableDetailsPatient.setValueAt( sex, 2, 1);
+		tableDetailsPatient.setValueAt( acquisitionDate, 3, 1);
+		tableDetailsPatient.setValueAt( DOB, 4, 1);
+	
+	}
 
 }
