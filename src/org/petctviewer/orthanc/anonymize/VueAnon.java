@@ -439,6 +439,9 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.tableauPatients.getColumnModel().getColumn(3).setMinWidth(0);
 		this.tableauPatients.getColumnModel().getColumn(3).setMaxWidth(0);
 		this.tableauPatients.getColumnModel().getColumn(3).setResizable(false);
+		this.tableauPatients.getColumnModel().getColumn(4).setMinWidth(0);
+		this.tableauPatients.getColumnModel().getColumn(4).setMaxWidth(0);
+		this.tableauPatients.getColumnModel().getColumn(4).setResizable(false);
 		this.tableauPatients.setPreferredScrollableViewportSize(new Dimension(290,267));
 
 		this.tableauPatients.setDefaultRenderer(Date.class, new DateRendererAnon());
@@ -958,6 +961,10 @@ public class VueAnon extends JFrame implements PlugIn{
 		anonPatientTable.getColumnModel().getColumn(4).setMinWidth(120);
 		anonPatientTable.getColumnModel().getColumn(5).setMinWidth(0);
 		anonPatientTable.getColumnModel().getColumn(5).setMaxWidth(0);
+		anonPatientTable.getColumnModel().getColumn(6).setMinWidth(0);
+		anonPatientTable.getColumnModel().getColumn(6).setMaxWidth(0);
+		anonPatientTable.getColumnModel().getColumn(7).setMinWidth(0);
+		anonPatientTable.getColumnModel().getColumn(7).setMaxWidth(0);
 		anonPatientTable.setPreferredScrollableViewportSize(new Dimension(440,130));
 		anonPatientTable.addMouseListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies));
 		anonPatientTable.putClientProperty("terminateEditOnFocusLost", true);
@@ -1033,10 +1040,11 @@ public class VueAnon extends JFrame implements PlugIn{
 						String patientID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 1).toString();
 						String patientUID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 2).toString();
 						Date patientBirthDate = (Date)tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 3);
+						String patientSex = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 4).toString();
 						ArrayList<String> listeDummy = new ArrayList<String>();
 						if((tableauSeries.getSelectedRow() != -1 || tableauStudies.getSelectedRow() != -1) && tableauPatients.getSelectedRows().length == 1){
 							listeDummy.add(modeleStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 3).toString());
-							modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientBirthDate, listeDummy);
+							modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientBirthDate, patientSex, listeDummy);
 							modeleAnonStudies.clear();
 							modeleAnonStudies.addStudies(patientName, patientID, listeDummy);
 							for(int i = 0; i < modeleAnonPatients.getPatientList().size(); i++){
@@ -1052,10 +1060,11 @@ public class VueAnon extends JFrame implements PlugIn{
 								patientID = tableauPatients.getValueAt(i, 1).toString();
 								patientUID = tableauPatients.getValueAt(i, 2).toString();
 								patientBirthDate = (Date)tableauPatients.getValueAt(i, 3);
+								patientSex=tableauPatients.getValueAt(i, 4).toString();
 								ArrayList<String> listeUIDs = new ArrayList<String>();
 								modeleStudies.addStudy(patientName, patientID, patientUID);
 								listeUIDs.addAll(modeleStudies.getIds());
-								modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientBirthDate, listeUIDs);
+								modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientBirthDate, patientSex, listeUIDs);
 								modeleAnonStudies.clear();
 								modeleAnonStudies.addStudies(patientName, patientID, listeUIDs);
 							}
@@ -1108,55 +1117,43 @@ public class VueAnon extends JFrame implements PlugIn{
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				//Si il y a des patients dans la liste
 				if(!modeleAnonPatients.getPatientList().isEmpty()){
-					if (anonStudiesTable.getSelectedRow()==-1)anonStudiesTable.setRowSelectionInterval(0, 0);
+					// SK A VOIR SI IL Y A PLUSIEURS STUDY DANS LE PATIENT
+					if (anonStudiesTable.getSelectedRow()==-1) anonStudiesTable.setRowSelectionInterval(0, 0);
+					//On genere l'objet qui gere le CTP
 					CTP_Gui dialog = new CTP_Gui();
+					//On prepare les donnees locales dans l'objet
 					String patientName=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 0);
 					String patientID=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 1);
-					String patientDOB=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 6);
+					Date patientDOB=(Date) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 6);
+					String patientSex=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 7);
 					String studyDescription=(String) anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 0);
 					Date studyDate=(Date) anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 1);
-					//SK SEXE A AJOUTER A LA TABLE
-					dialog.setStudyLocalValue(patientName, df.format(studyDate), "m", df.format(patientDOB));
+					//SK Si pas de date on injecte la date du jour ? ou on passe la string ici et on gere ds le CTP?
+					if (studyDate==null) studyDate=new Date();
+					if (patientDOB==null) patientDOB=new Date();
+					//envoi des donnes dans objet GUI pour CTP
+					dialog.setStudyLocalValue(patientName, df.format(studyDate), patientSex, df.format(patientDOB));
 					dialog.pack();
 					dialog.setModal(true);
 					dialog.setLocationRelativeTo(gui);
-				    
-					
-					//After anon
-					String patientNewName=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 3);
-					String patientNewID=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 4);
-					String patientNewUID=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 5);
-					
-					
-					
-				
-					System.out.println(patientName+patientID+patientDOB+studyDate+studyDescription);
-					
 					dialog.setVisible(true);
-					// SK ICI IMPLEMENTATION DU CTP
-					
-					/*SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
-					JDBCConnector jdbc;
-					jdbc = new JDBCConnector();
-					jdbc.newValuesQuery(new java.sql.Date(((Date)anonPatientTable.getValueAt(
-							anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 6)).getTime()), jprefer.get("centerCode", ""));
-
-					ArrayList<String> newName = jdbc.getNewName();
-					ArrayList<String> newId = jdbc.getNewId();
-					ArrayList<String> oldFirstName = jdbc.getOldFirstName();
-					ArrayList<String> oldLastName = jdbc.getOldLastName();
-					if(newName.size() == 1){
-						anonPatientTable.setValueAt(newName.get(0), anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 3);
-						anonPatientTable.setValueAt(newId.get(0), anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 4);
-					}else if(newName.size() > 1){
-						PopUpFrame choicesFrame = new PopUpFrame(anonPatientTable);
-						choicesFrame.setData("84000", df.parse("08-03-2015"), oldFirstName, oldLastName, newName, newId, anonPatientTable);
-						choicesFrame.setVisible(true);
-					}else{
-						state.setText("No name found corresponding to this patient");
+					//On recupere les donnees et on met dans l'anonymisation
+					if(dialog.getOk()) {
+						String patientNewName=dialog.getAnonName();
+						String patientNewID=dialog.getAnonID();
+						String visitName=dialog.getVisitName();
+						anonPatientTable.setValueAt(patientNewName, anonPatientTable.getSelectedRow(), 3);
+						anonPatientTable.setValueAt(patientNewID, anonPatientTable.getSelectedRow(), 4);
+						anonStudiesTable.setValueAt(visitName, anonStudiesTable.getSelectedRow(), 0);
+						//Si un seul patient
+						if (anonPatientTable.getSelectedRowCount()==1) anonBtn.doClick();
 					}
-					jdbc.disconnect();*/
+
+					
+					//SK SI UN SEUL PATIENT ET UN SEUL STUDY FAIRE LE CLICK SUR ANONYMISATION
+					
 				}
 			}
 		});

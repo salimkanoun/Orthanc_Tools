@@ -29,7 +29,7 @@ import javax.swing.table.AbstractTableModel;
 public class TableDataAnonPatients extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Old name", "Old ID", "Old UID", "New name*", "New ID*", "New UID", "birthdate"};
+	private String[] entetes = {"Old name", "Old ID", "Old UID", "New name*", "New ID*", "New UID", "birthdate", "Sex"};
 	private ArrayList<PatientAnon> patients = new ArrayList<PatientAnon>();
 
 	public TableDataAnonPatients(){
@@ -68,6 +68,8 @@ public class TableDataAnonPatients extends AbstractTableModel{
 			return patients.get(rowIndex).getNewUID();
 		case 6:
 			return patients.get(rowIndex).getBirthdate();
+		case 7:
+			return patients.get(rowIndex).getSex();
 		default:
 			return null; //Ne devrait jamais arriver
 		}
@@ -118,8 +120,8 @@ public class TableDataAnonPatients extends AbstractTableModel{
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
-	public void addPatient(ParametreConnexionHttp connexion, String patientName, String patientID, Date birthdate, ArrayList<String> selectedStudies) throws IOException, ParseException{
-		PatientAnon p = new PatientAnon(patientName, patientID, "", birthdate, selectedStudies);
+	public void addPatient(ParametreConnexionHttp connexion, String patientName, String patientID, Date birthdate, String sex, ArrayList<String> selectedStudies) throws IOException, ParseException{
+		PatientAnon p = new PatientAnon(patientName, patientID, "", birthdate, sex, selectedStudies);
 		if(!this.patients.contains(p)){
 			this.patients.add(p);
 			fireTableRowsInserted(patients.size() - 1, patients.size() - 1);

@@ -39,12 +39,16 @@ public class CTP_Gui extends JDialog {
 	private JTextField CTP_Username;
 	private JPasswordField CTP_Password;
 	private JTable tablePatient;
-	DefaultTableModel modelTablePatient;
+	private DefaultTableModel modelTablePatient;
 	private JComboBox<String> comboBox_Studies, comboBox_Visits;
 	private CTP ctp;
 	private JTable tableDetailsPatient;
 	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
-
+	
+	//Selected patient
+	private String patientAnonName;
+	private String patientAnonID;
+	private boolean ok=false;
 
 	/**
 	 * Launch the application.
@@ -187,7 +191,7 @@ public class CTP_Gui extends JDialog {
 							comboBox_Studies.removeAllItems();
 							comboBox_Visits.removeAllItems();
 							if (tablePatient.getModel().getRowCount()>0) modelTablePatient.setRowCount(0);							
-							ctp=new CTP(CTP_Username.getText(), CTP_Password.getText());
+							ctp=new CTP(CTP_Username.getText(), new String(CTP_Password.getPassword()));
 							String[] studies=ctp.getAvailableStudies();
 							comboBox_Studies.addItem("Choose");
 							for (int i=0; i<studies.length; i++) {
@@ -309,12 +313,27 @@ public class CTP_Gui extends JDialog {
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
 				JButton okButton = new JButton("OK");
+				okButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						if(tablePatient.getSelectedRowCount()==1) {
+							patientAnonID=tablePatient.getValueAt(tablePatient.getSelectedRow(), 0).toString();
+							patientAnonName=tablePatient.getValueAt(tablePatient.getSelectedRow(), 0).toString();
+							ok=true;
+							dispose();
+						}
+					}
+				});
 				okButton.setActionCommand("OK");
 				buttonPane.add(okButton);
 				getRootPane().setDefaultButton(okButton);
 			}
 			{
 				JButton cancelButton = new JButton("Cancel");
+				cancelButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						dispose();
+					}
+				});
 				cancelButton.setActionCommand("Cancel");
 				buttonPane.add(cancelButton);
 			}
@@ -332,9 +351,26 @@ public class CTP_Gui extends JDialog {
 		tableDetailsPatient.setValueAt( name[0] , 0, 1);
 		tableDetailsPatient.setValueAt( name[1], 1, 1);
 		tableDetailsPatient.setValueAt( sex, 2, 1);
-		tableDetailsPatient.setValueAt( acquisitionDate, 3, 1);
-		tableDetailsPatient.setValueAt( DOB, 4, 1);
+		tableDetailsPatient.setValueAt( DOB, 3, 1);
+		tableDetailsPatient.setValueAt( acquisitionDate, 4, 1);
+
 	
+	}
+	
+	public String getAnonName() {
+		return this.patientAnonName;
+	}
+	
+	public String getAnonID() {
+		return this.patientAnonID;
+	}
+	
+	public boolean getOk() {
+		return this.ok;
+	}
+	
+	public String getVisitName() {
+		return comboBox_Visits.getSelectedItem().toString();
 	}
 
 }
