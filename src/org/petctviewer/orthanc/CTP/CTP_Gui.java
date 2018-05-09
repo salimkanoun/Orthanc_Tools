@@ -270,6 +270,7 @@ public class CTP_Gui extends JDialog {
 							if (tablePatient.getSelectedRow() > -1) {
 								//On affiche les donnees venant de la plateforme
 								
+								
 								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),1) , 0, 2);
 								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),2), 1, 2);
 								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),3), 2, 2);
@@ -431,6 +432,7 @@ public class CTP_Gui extends JDialog {
 		return comboBox_Visits.getSelectedItem().toString();
 	}
 	
+	//https://www.javaworld.com/article/2077430/core-java/set-the-jtable.html
 	public class CustomTableCellRenderer extends DefaultTableCellRenderer 
 	{
 	    public Component getTableCellRendererComponent

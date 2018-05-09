@@ -1119,16 +1119,16 @@ public class VueAnon extends JFrame implements PlugIn{
 			public void actionPerformed(ActionEvent e) {
 				//Si il y a des patients dans la liste
 				if(!modeleAnonPatients.getPatientList().isEmpty()){
-					// SK A VOIR SI IL Y A PLUSIEURS STUDY DANS LE PATIENT
+					// Si pas de study selectionnees on selectionne de force le 1er
 					if (anonStudiesTable.getSelectedRow()==-1) anonStudiesTable.setRowSelectionInterval(0, 0);
 					//On genere l'objet qui gere le CTP
 					CTP_Gui dialog = new CTP_Gui();
 					//On prepare les donnees locales dans l'objet
 					String patientName=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 0);
-					String patientID=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 1);
+					//String patientID=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 1);
 					Date patientDOB=(Date) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 6);
 					String patientSex=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 7);
-					String studyDescription=(String) anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 0);
+					//String studyDescription=(String) anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 0);
 					Date studyDate=(Date) anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 1);
 					//SK Si pas de date on injecte la date du jour ? ou on passe la string ici et on gere ds le CTP?
 					if (studyDate==null) studyDate=new Date();
@@ -1151,9 +1151,6 @@ public class VueAnon extends JFrame implements PlugIn{
 						if (anonPatientTable.getSelectedRowCount()==1) anonBtn.doClick();
 					}
 
-					
-					//SK SI UN SEUL PATIENT ET UN SEUL STUDY FAIRE LE CLICK SUR ANONYMISATION
-					
 				}
 			}
 		});
