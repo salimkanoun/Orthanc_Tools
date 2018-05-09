@@ -40,6 +40,7 @@ public class CTP {
 		JSONArray studies = null;
 		try {
 			String answser=makePostConnection("/Rest_Api/get-studies.php",jsonPost.toString());
+			System.out.println(answser);
 			studies=(JSONArray) parser.parse(answser);
 		} catch (IOException | ParseException e) {
 			// TODO Auto-generated catch block

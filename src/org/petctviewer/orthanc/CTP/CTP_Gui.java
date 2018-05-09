@@ -14,7 +14,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.JComboBox;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -28,6 +30,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ItemListener;
 import java.util.prefs.Preferences;
 import java.awt.event.ItemEvent;
@@ -265,11 +268,62 @@ public class CTP_Gui extends JDialog {
 						@Override
 						public void valueChanged(ListSelectionEvent arg0) {
 							if (tablePatient.getSelectedRow() > -1) {
+								//On affiche les donnees venant de la plateforme
+								
 								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),1) , 0, 2);
 								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),2), 1, 2);
 								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),3), 2, 2);
 								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),4), 3, 2);
 								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),5), 4, 2);
+								
+								//SK GERE DANS UNE SOUS CLASSE A TESTER
+								/*if(tableDetailsPatient.getValueAt(0, 1).toString().startsWith(tableDetailsPatient.getValueAt(0, 1).toString()) ) {
+									TableCellRenderer renderer=(TableCellRenderer) tableDetailsPatient.getCellRenderer(0, 2);
+									System.out.println("true");
+									renderer.getTableCellRendererComponent(tableDetailsPatient, null, false, false, 0, 2).setForeground(Color.green);
+								}
+								else {
+									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(0, 2);
+									System.out.println("false");
+									renderer.setBackground(Color.WHITE);
+								}
+								
+								if(tableDetailsPatient.getValueAt(1, 1).toString().startsWith(tableDetailsPatient.getValueAt(1,2).toString()) ) {
+									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(1, 2);
+									//renderer.setBackground(Color.GREEN);
+								}
+								else {
+									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(1, 2);
+									renderer.setBackground(Color.WHITE);
+								}
+								
+								if(tableDetailsPatient.getValueAt(2, 2).toString().startsWith(tableDetailsPatient.getValueAt(2, 1).toString()) ) {
+									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(2, 2);
+									//renderer.setBackground(Color.GREEN);
+								}
+								else {
+									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(2, 2);
+									renderer.setBackground(Color.WHITE);
+								}
+								
+								//Date de naissance a gerer avec les ND...
+								if(tableDetailsPatient.getValueAt(3, 1).toString().equals(tableDetailsPatient.getValueAt(3, 2).toString()) ) {
+									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(3, 2);
+									//renderer.setBackground(Color.GREEN);
+								}
+								else {
+									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(3, 2);
+									renderer.setBackground(Color.WHITE);
+								}
+								
+								if(tableDetailsPatient.getValueAt(4, 1).toString().equals(tableDetailsPatient.getValueAt(4, 2).toString()) ) {
+									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(4, 2);
+									//renderer.setBackground(Color.GREEN);
+								}
+								else {
+									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(4, 2);
+									renderer.setBackground(Color.WHITE);
+								}*/
 								
 							}
 						
@@ -284,6 +338,7 @@ public class CTP_Gui extends JDialog {
 				panel.add(panel_1, BorderLayout.EAST);
 				{
 					tableDetailsPatient = new JTable();
+					tableDetailsPatient.setDefaultRenderer( String.class, new CustomTableCellRenderer());
 					tableDetailsPatient.setModel(new DefaultTableModel(
 						new Object[][] {
 							{"Last Name", null, null},
@@ -296,7 +351,9 @@ public class CTP_Gui extends JDialog {
 							"", "Local", "CTP"
 						}
 					));
+					//tableDetailsPatient.setEnabled(false);
 					tableDetailsPatient.getColumnModel().getColumn(0).setPreferredWidth(100);
+					
 					{
 						JScrollPane scrollPane = new JScrollPane();
 						scrollPane.setViewportView(tableDetailsPatient);
@@ -342,8 +399,9 @@ public class CTP_Gui extends JDialog {
 	
 	public void setStudyLocalValue(String patientName, String acquisitionDate, String sex, String DOB) {
 		String[] name=null;
+		//Split lastname / first name
 		if(patientName.contains("^")) {
-			name=patientName.split("^");
+			name=patientName.split("\\^");
 		}
 		else {
 			name=new String[]{ patientName, ""};
@@ -371,6 +429,33 @@ public class CTP_Gui extends JDialog {
 	
 	public String getVisitName() {
 		return comboBox_Visits.getSelectedItem().toString();
+	}
+	
+	public class CustomTableCellRenderer extends DefaultTableCellRenderer 
+	{
+	    public Component getTableCellRendererComponent
+	       (JTable table, Object value, boolean isSelected,
+	       boolean hasFocus, int row, int column) 
+	    {
+	        Component cell = super.getTableCellRendererComponent
+	           (table, value, isSelected, hasFocus, row, column);
+	        if( value instanceof Integer )
+	        {
+	            Integer amount = (Integer) value;
+	            if( amount.intValue() < 0 )
+	            {
+	                cell.setBackground( Color.red );
+	                // You can also customize the Font and Foreground this way
+	                // cell.setForeground();
+	                // cell.setFont();
+	            }
+	            else
+	            {
+	                cell.setBackground( Color.white );
+	            }
+	        }
+	        return cell;
+	    }
 	}
 
 }
