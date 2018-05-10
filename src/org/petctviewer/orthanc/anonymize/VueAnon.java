@@ -1884,23 +1884,26 @@ public class VueAnon extends JFrame implements PlugIn{
 						protected Void doInBackground() {
 							peerExport.setEnabled(false);
 							peerExport.setText("Sending...");
+							boolean sendok=true;
 							try {
 								query.sendPeer(listePeers.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
 							} catch (IOException e1) {
-								stateExports.setText("<html><font color= 'red'>The request was not received (" + e1.getMessage() + ") </font></html>");
+								sendok=false;
+								stateExports.setText("<html><font color= 'red'>The upload was not received (" + e1.getMessage() + ") </font></html>");
 							}
+							if (sendok) stateExports.setText("<html><font color= 'green'>The upload was successfully received</font></html>");
+							
 							return null;
 						}
 
 						@Override
 						protected void done(){
-							stateExports.setText("<html><font color= 'green'>The request was successfully received</font></html>");
 							peerExport.setText("OrthancPeer");
 							peerExport.setEnabled(true);
 						}
 					};
 					if(!modeleExportStudies.getOrthancIds().isEmpty()){
-						stateExports.setText("Sending to a peer");
+						stateExports.setText("Sending to "+listePeers.getSelectedItem().toString());
 						worker.execute();
 					}
 				}
