@@ -1128,6 +1128,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					//String patientID=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 1);
 					Date patientDOB=(Date) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 6);
 					String patientSex=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 7);
+					if (patientSex.equals("")) patientSex="N/A";
 					//String studyDescription=(String) anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 0);
 					Date studyDate=(Date) anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 1);
 					//SK Si pas de date on injecte la date du jour ? ou on passe la string ici et on gere ds le CTP?

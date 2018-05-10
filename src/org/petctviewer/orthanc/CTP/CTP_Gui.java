@@ -140,6 +140,7 @@ public class CTP_Gui extends JDialog {
 										
 										System.out.println("ici");
 										JSONArray patients=ctp.getAvailableImports((String) comboBox_Studies.getSelectedItem(), (String) comboBox_Visits.getSelectedItem());
+										System.out.println(patients);
 										if (tablePatient.getModel().getRowCount()>0) modelTablePatient.setRowCount(0);
 										for (int i=0 ; i<patients.size() ; i++) {
 											JSONObject patient=(JSONObject) patients.get(i);
@@ -153,7 +154,8 @@ public class CTP_Gui extends JDialog {
 											String investigatorName=(String) patient.get("investigatorName");
 											String country=(String) patient.get("country");
 											String centerNumber=(String) patient.get("centerNumber");
-											modelTablePatient.addRow(new Object[]{numeroPatient, lastName, firstName, patientSex , patientDOB, "01/01/1900"});
+											String acquisitionDate=(String) patient.get("acquisitionDate");
+											modelTablePatient.addRow(new Object[]{numeroPatient, lastName, firstName, patientSex , patientDOB, acquisitionDate});
 											//SK MANQUE ACQUISITION DATE DANS L API
 										}
 									}
@@ -277,59 +279,54 @@ public class CTP_Gui extends JDialog {
 								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),4), 3, 2);
 								tableDetailsPatient.setValueAt( (String) tablePatient.getValueAt(tablePatient.getSelectedRow(),5), 4, 2);
 								
-								//SK GERE DANS UNE SOUS CLASSE A TESTER
-								/*if(tableDetailsPatient.getValueAt(0, 1).toString().startsWith(tableDetailsPatient.getValueAt(0, 1).toString()) ) {
-									TableCellRenderer renderer=(TableCellRenderer) tableDetailsPatient.getCellRenderer(0, 2);
-									System.out.println("true");
-									renderer.getTableCellRendererComponent(tableDetailsPatient, null, false, false, 0, 2).setForeground(Color.green);
-								}
+								//calcul la valeur du Match pour chaque parametre
+								if(tableDetailsPatient.getValueAt(0, 1).toString().startsWith(tableDetailsPatient.getValueAt(0, 2).toString()) ) {
+									tableDetailsPatient.setValueAt("Yes", 0, 3);
+									}
 								else {
-									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(0, 2);
-									System.out.println("false");
-									renderer.setBackground(Color.WHITE);
+									tableDetailsPatient.setValueAt("No", 0, 3);
+									
 								}
 								
 								if(tableDetailsPatient.getValueAt(1, 1).toString().startsWith(tableDetailsPatient.getValueAt(1,2).toString()) ) {
-									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(1, 2);
-									//renderer.setBackground(Color.GREEN);
+									tableDetailsPatient.setValueAt("Yes", 1, 3);
+									
 								}
 								else {
-									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(1, 2);
-									renderer.setBackground(Color.WHITE);
+									tableDetailsPatient.setValueAt("No", 1, 3);}
 								}
-								
 								if(tableDetailsPatient.getValueAt(2, 2).toString().startsWith(tableDetailsPatient.getValueAt(2, 1).toString()) ) {
-									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(2, 2);
-									//renderer.setBackground(Color.GREEN);
+									tableDetailsPatient.setValueAt("Yes", 2, 3);
 								}
 								else {
-									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(2, 2);
-									renderer.setBackground(Color.WHITE);
+									tableDetailsPatient.setValueAt("No", 2, 3);
 								}
 								
 								//Date de naissance a gerer avec les ND...
-								if(tableDetailsPatient.getValueAt(3, 1).toString().equals(tableDetailsPatient.getValueAt(3, 2).toString()) ) {
-									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(3, 2);
-									//renderer.setBackground(Color.GREEN);
+								String[] dateLocale =tableDetailsPatient.getValueAt(3, 1).toString().split("/");
+								String[] dateCTP =tableDetailsPatient.getValueAt(3, 2).toString().split("/");
+								boolean matchDate=true;
+								for (int i=0 ; i<3 ; i++) {
+									if ( !dateCTP[i].equals("ND"))  matchDate= (dateLocale[i].equals(dateCTP[i]));
+								}
+								if(matchDate) {
+									tableDetailsPatient.setValueAt("Yes", 3, 3);
 								}
 								else {
-									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(3, 2);
-									renderer.setBackground(Color.WHITE);
+									tableDetailsPatient.setValueAt("No", 3, 3);
 								}
 								
 								if(tableDetailsPatient.getValueAt(4, 1).toString().equals(tableDetailsPatient.getValueAt(4, 2).toString()) ) {
-									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(4, 2);
-									//renderer.setBackground(Color.GREEN);
+									tableDetailsPatient.setValueAt("Yes", 4, 3);
 								}
 								else {
-									DefaultTableCellRenderer renderer=(DefaultTableCellRenderer) tableDetailsPatient.getCellRenderer(4, 2);
-									renderer.setBackground(Color.WHITE);
-								}*/
+									tableDetailsPatient.setValueAt("No", 4, 3);
+								}
 								
 							}
 						
 							
-						}
+						
 					});
 					scrollPane.setViewportView(tablePatient);
 				}
@@ -339,19 +336,24 @@ public class CTP_Gui extends JDialog {
 				panel.add(panel_1, BorderLayout.EAST);
 				{
 					tableDetailsPatient = new JTable();
-					tableDetailsPatient.setDefaultRenderer( String.class, new CustomTableCellRenderer());
+					
 					tableDetailsPatient.setModel(new DefaultTableModel(
-						new Object[][] {
-							{"Last Name", null, null},
-							{"First Name", null, null},
-							{"Sex", null, null},
-							{"Date Of Birth", null, null},
-							{"Acquisition Date", null, null},
+						new String[][] {
+							{"Last Name", "", "",""},
+							{"First Name", "", "",""},
+							{"Sex", "", "",""},
+							{"Date Of Birth", "", "",""},
+							{"Acquisition Date", "", "",""},
 						},
 						new String[] {
-							"", "Local", "CTP"
+							"", "Local", "CTP", "Match"
 						}
 					));
+					tableDetailsPatient.setDefaultRenderer(Object.class, new CustomTableCellRenderer());
+					
+					
+					
+					
 					//tableDetailsPatient.setEnabled(false);
 					tableDetailsPatient.getColumnModel().getColumn(0).setPreferredWidth(100);
 					
@@ -433,31 +435,27 @@ public class CTP_Gui extends JDialog {
 	}
 	
 	//https://www.javaworld.com/article/2077430/core-java/set-the-jtable.html
-	public class CustomTableCellRenderer extends DefaultTableCellRenderer 
-	{
+	private class CustomTableCellRenderer extends DefaultTableCellRenderer {
 	    public Component getTableCellRendererComponent
 	       (JTable table, Object value, boolean isSelected,
-	       boolean hasFocus, int row, int column) 
-	    {
-	        Component cell = super.getTableCellRendererComponent
-	           (table, value, isSelected, hasFocus, row, column);
-	        if( value instanceof Integer )
-	        {
-	            Integer amount = (Integer) value;
-	            if( amount.intValue() < 0 )
-	            {
-	                cell.setBackground( Color.red );
-	                // You can also customize the Font and Foreground this way
-	                // cell.setForeground();
-	                // cell.setFont();
-	            }
-	            else
-	            {
-	                cell.setBackground( Color.white );
-	            }
-	        }
-	        return cell;
+	       boolean hasFocus, int row, int column) {
+	    	Component c = super.getTableCellRendererComponent
+	        (table, value, isSelected, hasFocus, row, column);
+	    	if(value instanceof String) {
+	    		String valeur=(String) table.getValueAt(row, column);
+	    		if(valeur.equals("Yes")) {
+	    			c.setForeground(Color.GREEN);
+				}
+				else {
+					c.setForeground(null);
+				}
+	
+	    	}
+	         
+	        return c;
 	    }
 	}
 
 }
+
+
