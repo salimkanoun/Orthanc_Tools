@@ -1749,9 +1749,8 @@ public class VueAnon extends JFrame implements PlugIn{
 				}else {
 					CTP ctp=new CTP(CTPUsername, CTPPassword);
 					for(Study study : modeleExportStudies.getStudiesList()){
-						System.out.println(study.getStudyDescription()+study.getNewStudyInstanceUID()+study.getPatientName());
-						String answer=ctp.validateUpload(study.getStudyDescription(), study.getNewStudyInstanceUID(), study.getPatientName());
-						System.out.println(answer);
+						boolean answer=ctp.validateUpload(study.getStudyDescription(), study.getNewStudyInstanceUID(), study.getPatientName());
+						if(answer) state.setText("Correctly Sent to CTP DB");
 					}
 					
 					/*

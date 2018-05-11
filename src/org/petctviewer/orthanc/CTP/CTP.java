@@ -112,7 +112,7 @@ public class CTP {
 		
 	}
 	
-	public String validateUpload(String visitName, String studyInstanceUID, String patientNumber) {
+	public boolean validateUpload(String visitName, String studyInstanceUID, String patientNumber) {
 		JSONObject jsonPost=new JSONObject();
 		jsonPost.put("username", username);
 		jsonPost.put("password", password);
@@ -130,7 +130,7 @@ public class CTP {
 		}
 			//visits=(JSONObject) parser.parse(answser);
 		
-		return (String) visits.get("recivedConfirmation");
+		return (boolean) visits.get("recivedConfirmation");
 		
 		
 	}
