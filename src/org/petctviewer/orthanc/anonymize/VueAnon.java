@@ -93,6 +93,7 @@ import ij.WindowManager;
 import ij.plugin.PlugIn;
 
 import org.petctviewer.orthanc.*;
+import org.petctviewer.orthanc.CTP.CTP;
 import org.petctviewer.orthanc.CTP.CTP_Gui;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
@@ -200,6 +201,8 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JButton setupButton;
 	//CTP
 	JTextField addressFieldCTP;
+	private String CTPUsername;
+	private String CTPPassword;
 
 	// Settings preferences
 	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
@@ -1142,6 +1145,8 @@ public class VueAnon extends JFrame implements PlugIn{
 					dialog.setVisible(true);
 					//On recupere les donnees et on met dans l'anonymisation
 					if(dialog.getOk()) {
+						CTPUsername=dialog.getLogin();
+						CTPPassword=dialog.getPassword();
 						String patientNewName=dialog.getAnonName();
 						String patientNewID=dialog.getAnonID();
 						String visitName=dialog.getVisitName();
@@ -1741,7 +1746,15 @@ public class VueAnon extends JFrame implements PlugIn{
 						}
 						
 					}
-				}else{
+				}else {
+					CTP ctp=new CTP(CTPUsername, CTPPassword);
+					for(Study study : modeleExportStudies.getStudiesList()){
+						System.out.println(study.getStudyDescription()+study.getNewStudyInstanceUID()+study.getPatientName());
+						String answer=ctp.validateUpload(study.getStudyDescription(), study.getNewStudyInstanceUID(), study.getPatientName());
+						System.out.println(answer);
+					}
+					
+					/*
 					jprefer.put("reportType", "CTP");
 					boolean dataSent = true;
 					if(!modeleExportStudies.getOrthancIds().isEmpty()){
@@ -1778,7 +1791,7 @@ public class VueAnon extends JFrame implements PlugIn{
 						} catch (ClassNotFoundException | SQLException |org.json.simple.parser.ParseException e1) {
 							e1.printStackTrace();
 						} 
-					}
+					}*/
 				}
 			}
 		});

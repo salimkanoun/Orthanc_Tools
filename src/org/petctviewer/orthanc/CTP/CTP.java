@@ -25,6 +25,11 @@ public class CTP {
 	private String authentication=null;
 	private JSONParser parser=new JSONParser();
 	
+	public static void main(String[] args) {
+		CTP ctp=new CTP("Imagerie", "Imagerie");
+		ctp.validateUpload("TEP0", "1.2.276.0.7230010.3.1.2.8323329.22919.1526044062.863352", "11017101022001");
+	}
+	
 	public CTP(String username, String password) {
 		this.username=username;
 		this.password=password;
@@ -104,6 +109,29 @@ public class CTP {
 		else {
 			return null;
 		}
+		
+	}
+	
+	public String validateUpload(String visitName, String studyInstanceUID, String patientNumber) {
+		JSONObject jsonPost=new JSONObject();
+		jsonPost.put("username", username);
+		jsonPost.put("password", password);
+		jsonPost.put("visitName", visitName);
+		jsonPost.put("StudyInstanceUID", studyInstanceUID);
+		jsonPost.put("patientNumber", patientNumber);
+		JSONObject visits = null;
+		try {
+			String answser=makePostConnection("/Rest_Api/validate-upload.php", jsonPost.toString());
+			System.out.println(answser);
+			visits=(JSONObject) parser.parse(answser);
+		} catch (IOException | ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+			//visits=(JSONObject) parser.parse(answser);
+		
+		return (String) visits.get("recivedConfirmation");
+		
 		
 	}
 	

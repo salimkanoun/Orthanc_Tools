@@ -434,6 +434,13 @@ public class CTP_Gui extends JDialog {
 		return comboBox_Visits.getSelectedItem().toString();
 	}
 	
+	public String getLogin() {
+		return CTP_Username.getText();
+	}
+	public String getPassword() {
+		return new String(CTP_Password.getPassword());
+	}
+	
 	//https://www.javaworld.com/article/2077430/core-java/set-the-jtable.html
 	private class CustomTableCellRenderer extends DefaultTableCellRenderer {
 	    public Component getTableCellRendererComponent
