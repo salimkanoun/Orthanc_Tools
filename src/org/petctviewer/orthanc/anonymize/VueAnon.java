@@ -162,7 +162,7 @@ public class VueAnon extends JFrame implements PlugIn{
 	private ArrayList<String> manageContent = new ArrayList<String>();
 	private JPanel anonTablesPanel;
 	private int anonCount;
-	private ArrayList<String> newIDs = new ArrayList<String>();
+	
 
 	// Tab Export (p2)
 	private JLabel stateExports = new JLabel("");
@@ -1750,7 +1750,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					CTP ctp=new CTP(CTPUsername, CTPPassword);
 					for(Study study : modeleExportStudies.getStudiesList()){
 						boolean answer=ctp.validateUpload(study.getStudyDescription(), study.getNewStudyInstanceUID(), study.getPatientName());
-						if(answer) state.setText("Correctly Sent to CTP DB");
+						if(answer) stateExports.setText("study correctly Sent to CTP");
 					}
 					
 					/*
@@ -2734,16 +2734,17 @@ public class VueAnon extends JFrame implements PlugIn{
 						}
 						
 						// Checking if several anonymized patients have the same ID or not
-						boolean[] similarIDs = {false};
+						boolean similarIDs = false;
+						ArrayList<String> newIDs = new ArrayList<String>();
 						for(int n = 0; n < anonPatientTable.getRowCount(); n++){
 							String newID = modeleAnonPatients.getPatient(anonPatientTable.convertRowIndexToModel(n)).getNewID();
 							if(newID != "" && !newIDs.contains(newID)){
 								newIDs.add(newID);
 							}else if(newIDs.contains(newID)){
-								similarIDs[0] = true;
+								similarIDs = true;
 							}
 						}
-						if(similarIDs[0]){
+						if(similarIDs){
 							dialogResult = JOptionPane.showConfirmDialog (gui, 
 									"You have defined 2 or more identical IDs for anonymized patients, which is not recommended."
 											+ " Are you sure you want to anonymize ?",
@@ -2788,9 +2789,14 @@ public class VueAnon extends JFrame implements PlugIn{
 									i++;
 									newUID = quAnon.getNewPatientUID();
 								}
+								//SK A VOIR CETTE METHODE CF REMARQUE DANS TABLEDATAEXPORTSTUDIES
 								modeleExportStudies.addStudy(newName, newID, newUID);
 								j++;
 							}
+							//SK AJOUTE A TESTER RISQUE BUG
+							modeleAnonStudies.empty();
+							modeleAnonPatients.clear();
+							
 						}
 					} catch (IOException e1) {
 						e1.printStackTrace();

@@ -25,11 +25,15 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
 
 public class QueryAnon {
 
 	//private static final int NBTAGS = 40	;
+	private JSONParser parser=new JSONParser();
 	private ArrayList<Tags> tags = new ArrayList<Tags>();
 	private Choice privateTags;
 	private String query;
@@ -171,21 +175,19 @@ public class QueryAnon {
 			sb.append(output);
 		}
 		conn.disconnect();
-		String pattern1 = "\"ID\" : \"";
-		String pattern2 = "\",";
-		Pattern p = Pattern.compile(Pattern.quote(pattern1) + "(.*?)" + Pattern.quote(pattern2));
-		Matcher m = p.matcher(sb.toString());
-		while(m.find()){
-			this.newUID = m.group(1);
-		}
-		pattern1 = "\"PatientID\" : \"";
-		pattern2 = "\",";
-		p = Pattern.compile(Pattern.quote(pattern1) + "(.*?)" + Pattern.quote(pattern2));
-		m = p.matcher(sb.toString());
-		while(m.find()){
-			this.newPatientUID = m.group(1);
-		}
 		
+		JSONObject response = null;
+		try {
+			response = (JSONObject) parser.parse(sb.toString());
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String newStudyID=(String) response.get("ID");
+		String newPatientID=(String) response.get("PatientID");
+
+		this.newUID=newStudyID;
+		this.newPatientUID=newPatientID;
 		
 	}
 	

@@ -100,6 +100,11 @@ public class TableDataExportStudies extends AbstractTableModel{
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
 	public void addStudy(String patientName, String patientID, String patientUID) throws IOException, ParseException{
+		
+		
+		//SK A REVOIR PROBABLE PB DE CONCEPTION
+		//DOIT RECUPERER LES INFO D UNE STUDY ET PAS DE TOUT LE PATIENT ANON !
+		
 		DateFormat parser = new SimpleDateFormat("yyyyMMdd");
 		
 		QueryFillStore queryStudies = new QueryFillStore(connexionHttp, "studies", null, patientUID, null, null);
