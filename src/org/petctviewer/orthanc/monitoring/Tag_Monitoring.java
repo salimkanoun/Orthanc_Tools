@@ -1,5 +1,6 @@
 package org.petctviewer.orthanc.monitoring;
 
+import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -62,23 +63,20 @@ public class Tag_Monitoring {
 				}
 				else if (level.equals("serie")) {
 					for (int i=0 ; i<monitoring.newStableSeriesID.size(); i++) {
-						
-						/* methode using Orthanc Level
-						StringBuilder sb=parametre.makeGetConnectionAndStringBuilder("/series/"+monitoring.newStableSeriesID.get(i));
-						JSONObject seriesTag = null;
-						seriesTag = (JSONObject) parser.parse(sb.toString());	
-						String parentStudyID=(String) seriesTag.get("ParentStudy");
-						StringBuilder sbParentStudy=parametre.makeGetConnectionAndStringBuilder("/studies/"+parentStudyID);
-						JSONObject parentStudy=(JSONObject) parser.parse(sbParentStudy.toString());
-						getMainStudyTag(parentStudy);
-						*/
-						
+
 						//Methode parsing Series
-						getTagFromInstance(monitoring.newStableSeriesID.get(i));
+						HashMap<String, String> foundTags=getTagFromInstance(monitoring.newStableSeriesID.get(i));
 					
-						//SK A FAIRE Ajouter Shared Tags en dur dans une colonne de la BDD
+						
 						StringBuilder sbSharedTags=parametre.makeGetConnectionAndStringBuilder("/series/"+monitoring.newStableSeriesID.get(i)+"/shared-tags");
 						textAreaConsole.append("Shared-Tags"+sbSharedTags+",");
+						foundTags.put("Shared_Tags", sbSharedTags.toString());
+						
+						//Envoyer la Hashmap dans une methode qui va faire l'insert dans la BDD
+						//SK A FAIRE POUR PATIENT ET STUDY
+						System.out.println(foundTags.toString());
+						
+						
 					}
 					
 					
@@ -140,8 +138,11 @@ public class Tag_Monitoring {
 		
 	}
 	
-	//SK A CONTINUER
-	private void getTagFromInstance(String seriesID) {
+	
+	private HashMap<String, String> getTagFromInstance(String seriesID) {
+		//HashMap ou on va mettre tout les tag trouves pour les retourner a la BDD
+		HashMap<String, String> hashmapTag=new HashMap<String, String>();
+		
 		StringBuilder sbSeries=parametre.makeGetConnectionAndStringBuilder("/series/"+seriesID);
 		JSONObject seriesJson = null;
 		try {
@@ -166,6 +167,7 @@ public class Tag_Monitoring {
 				String name=(String) jsonTag.get("Name");
 				String value=(String) jsonTag.get("Value");
 				textAreaConsole.append(name +" "+value +",");
+				hashmapTag.put(name, value);
 			}
 			
 		}
@@ -176,6 +178,7 @@ public class Tag_Monitoring {
 				String name=(String) jsonTag.get("Name");
 				String value=(String) jsonTag.get("Value");
 				textAreaConsole.append(name +" "+value +",");
+				hashmapTag.put(name, value);
 			}
 			
 		}
@@ -186,6 +189,7 @@ public class Tag_Monitoring {
 				String name=(String) jsonTag.get("Name");
 				String value=(String) jsonTag.get("Value");
 				textAreaConsole.append(name +" "+value+",");
+				hashmapTag.put(name, value);
 			}
 			
 		}
@@ -200,6 +204,7 @@ public class Tag_Monitoring {
 					String name=(String) jsonTag.get("Name");
 					String value=(String) jsonTag.get("Value");
 					textAreaConsole.append(name +" "+value+",");
+					hashmapTag.put(name, value);
 				}
 				
 			}
@@ -210,12 +215,13 @@ public class Tag_Monitoring {
 			JSONObject radiationDoseModule = (JSONObject) tags.get(Tag_Of_Interest.radiationDoseModule);
 			JSONArray radiationSequenceTags= (JSONArray) radiationDoseModule.get("Value");
 			textAreaConsole.append(radiationSequenceTags+",");
+			hashmapTag.put(Tag_Of_Interest.radiationDoseModule, radiationSequenceTags.toString());
 			
 		}
 		
 		textAreaConsole.append("\n");
 
-		
+		return hashmapTag;
 		
 	}
 	

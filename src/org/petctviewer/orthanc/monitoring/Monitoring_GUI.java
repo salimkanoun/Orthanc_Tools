@@ -52,11 +52,12 @@ import org.petctviewer.orthanc.query.Rest;
 public class Monitoring_GUI extends JFrame {
 
 	private JPanel contentPane;
+	private Monitoring_GUI gui;
 	
 	//CD Burner Service
 	private JButton btnStopMonitoring, btnStartMonitoring;
 	private JTextArea textAreaCD;
-	CD_Burner cdBurner;
+	private CD_Burner cdBurner;
 	
 	//Service Status in Main tab
 	private JLabel lbl_CD_Status, lbl_DoseMonitoring_Status, lbl_AutoFecth_Status;
@@ -68,19 +69,20 @@ public class Monitoring_GUI extends JFrame {
 	private JTable table_Study_TagMonitoring;
 	
 	//Tag Monitoring
-	ButtonGroup levelTagMonitoring=new ButtonGroup();
-	Tag_Monitoring tagMonitoring;
+	private ButtonGroup levelTagMonitoring=new ButtonGroup();
+	private Tag_Monitoring tagMonitoring;
 	
 	//AutoFetch
-	JComboBox<String> comboBoxAET_AutoFetch;
-	JCheckBox chckbxNewPatientAutoFetch, chckbxNewStudyAutoFetch;
-	ButtonGroup levelAutoFecth= new ButtonGroup();
-	JTextField textField_AutoFecth_Modality_Study, textField_AutoFecth_Date, textField_AutoFetch_StudyDescription;
-	Auto_Fetch autoFetch;
-	ButtonGroup levelAutoRouting= new ButtonGroup();
+	private JComboBox<String> comboBoxAET_AutoFetch;
+	private JCheckBox chckbxNewPatientAutoFetch, chckbxNewStudyAutoFetch;
+	private ButtonGroup levelAutoFecth= new ButtonGroup();
+	private JTextField textField_AutoFecth_Modality_Study, textField_AutoFecth_Date, textField_AutoFetch_StudyDescription;
+	private Auto_Fetch autoFetch;
+	private ButtonGroup levelAutoRouting= new ButtonGroup();
 	
 	// parametre http
-	ParametreConnexionHttp parametre;
+	private ParametreConnexionHttp parametre;
+	
 	/**
 	 * @wbp.nonvisual location=-24,419
 	 */
@@ -107,6 +109,7 @@ public class Monitoring_GUI extends JFrame {
 	 */
 	public Monitoring_GUI(ParametreConnexionHttp parametre) {
 		this.parametre=parametre;
+		this.gui=this;
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
@@ -257,6 +260,7 @@ public class Monitoring_GUI extends JFrame {
 						panel_TagMonitoring_Patients.add(scrollPane_1, BorderLayout.CENTER);
 						
 						table_Patient_TagMonitoring = new JTable();
+						table_Patient_TagMonitoring.setEnabled(false);
 						table_Patient_TagMonitoring.setPreferredScrollableViewportSize(new Dimension(300, 100));
 						table_Patient_TagMonitoring.setModel(new DefaultTableModel(
 							new Object[][] {
@@ -291,6 +295,7 @@ public class Monitoring_GUI extends JFrame {
 						panel_TagMonitoring_Studies.add(scrollPane_2, BorderLayout.CENTER);
 						
 						table_Study_TagMonitoring = new JTable();
+						table_Study_TagMonitoring.setEnabled(false);
 						table_Study_TagMonitoring.setPreferredScrollableViewportSize(new Dimension(300, 100));
 						table_Study_TagMonitoring.setModel(new DefaultTableModel(
 							new Object[][] {
@@ -333,7 +338,7 @@ public class Monitoring_GUI extends JFrame {
 						panel_TagMonitoring_Series.add(panel_SeriesTagChooser, BorderLayout.CENTER);
 						panel_SeriesTagChooser.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 						
-						JLabel lblWillIncludePredifined = new JLabel("Will include predefined list and shared tags");
+						JLabel lblWillIncludePredifined = new JLabel("Will include a predefined list and shared tags");
 						panel_SeriesTagChooser.add(lblWillIncludePredifined);
 						
 						JScrollPane scrollPane_3 = new JScrollPane();
@@ -369,6 +374,15 @@ public class Monitoring_GUI extends JFrame {
 						});
 						
 						JButton btnDbSettings = new JButton("DB Settings");
+						btnDbSettings.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent arg0) {
+								//On ouvre le panel setting pour lien BDD Mysql
+								Monitoring_Settings settings=new Monitoring_Settings();
+								settings.setLocationRelativeTo(gui);
+								settings.setVisible(true);
+								
+							}
+						});
 						panel_TagMonitoring_Buttons.add(btnDbSettings);
 						panel_TagMonitoring_Buttons.add(btnStart_tagMonitoring);
 						
