@@ -102,11 +102,16 @@ import org.petctviewer.orthanc.setup.ConnectionSetup;
 
 public class VueAnon extends JFrame implements PlugIn{
 	private static final long serialVersionUID = 1L;
+	
 	private JTabbedPane tabbedPane;
 	private JLabel state = new JLabel();
 	private DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
 	private DateFormat dfZip = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
 	private JFrame gui=this;
+	private JSONParser parser=new JSONParser();
+	
+	//QueryFillStore
+	QueryFillStore query ;
 	
 	//Objet de connexion aux restFul API, prend les settings des registery et etabli les connexion a la demande
 	private ParametreConnexionHttp connexionHttp;
@@ -165,6 +170,7 @@ public class VueAnon extends JFrame implements PlugIn{
 
 	// Tab Export (p2)
 	private JLabel stateExports = new JLabel("");
+	private JButton peerExport;
 	private JTable tableauExportStudies;
 	private JTable tableauExportSeries;
 	private TableDataExportStudies modeleExportStudies;
@@ -172,6 +178,7 @@ public class VueAnon extends JFrame implements PlugIn{
 	private TableRowSorter<TableDataExportStudies> sorterExportStudies;
 	private TableRowSorter<TableDataExportSeries> sorterExportSeries;
 	private StringBuilder remoteFileName;
+	private JComboBox<Object> listePeers ;
 
 	//Monitoring (p3)
 	Monitoring_GUI monitoring;
@@ -741,7 +748,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		JPanel storeTool = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JButton storeBtn = new JButton("Store list");
 		try {
-			QueryFillStore query = new QueryFillStore(connexionHttp);
+			query = new QueryFillStore(connexionHttp);
 			listeAET = new JComboBox<Object>(query.getAET());
 
 			listeAET.setPreferredSize(new Dimension(297, 27));
@@ -783,8 +790,6 @@ public class VueAnon extends JFrame implements PlugIn{
 				}
 			});
 			storeTool.add(storeBtn);
-		} catch (IOException e1) {
-			e1.printStackTrace();
 		} catch (NullPointerException e){
 			JOptionPane.showMessageDialog(gui, "You should set an AET before using this app (some functions may not work).",
 					"No AET found", JOptionPane.INFORMATION_MESSAGE);
@@ -1617,184 +1622,212 @@ public class VueAnon extends JFrame implements PlugIn{
 
 		exportBtn.setToolTipText("Fill the remote server parameters in the setup tab before attempting an export.");
 
-		JComboBox<String> reportType = new JComboBox<String>();
-		reportType.addItem("CSV");
+		JButton csvReport = new JButton("CSV Report");
+		csvReport.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				jprefer.put("reportType", "CSV");
+				CSV csv = new CSV();
+				if(!modeleExportStudies.getOrthancIds().isEmpty()){
+					for(String uid : modeleExportStudies.getOrthancIds()){
+						try {
+							StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + uid);
+							JSONObject cdfResponse = (JSONObject) parser.parse(sb.toString());
+							StringBuilder sb2 =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + uid +"/statistics");
+							JSONObject cdfResponseStats = (JSONObject) parser.parse(sb2.toString());
+							
+							//Recupere Elements d'origine
+							JSONObject cdfResponseMainPatientTags=(JSONObject) cdfResponse.get("PatientMainDicomTags");
+							JSONObject cdfResponseMainDicomTags=(JSONObject) cdfResponse.get("MainDicomTags");
+							
+							String AnonymizedFrom=cdfResponse.get("AnonymizedFrom").toString();
+							
+							String newPatientName ;
+							String newPatientId ;
+							String newStudyDesc;
+							String studyInstanceUid;
+							String nbSeries;
+							String nbInstances ;
+							String size;
+							
+							// On recupere les data apres anonymization
+							
+							if (cdfResponseMainPatientTags.containsKey("PatientName") ) {
+								newPatientName =cdfResponseMainPatientTags.get("PatientName").toString();
+							} else {
+								newPatientName ="";
+							}
+							
+							if (cdfResponseMainPatientTags.containsKey(("PatientID"))) {
+								newPatientId= cdfResponseMainPatientTags.get("PatientID").toString();
+							}else {
+								newPatientId="";
+							}
+							
+							if (cdfResponseMainDicomTags.containsKey("StudyDescription")) {
+								newStudyDesc =cdfResponseMainDicomTags.get("StudyDescription").toString();
+							}else {
+								newStudyDesc="";
+							}
+							
+							if (cdfResponseMainDicomTags.containsKey("StudyInstanceUID")) {
+								studyInstanceUid=cdfResponseMainDicomTags.get("StudyInstanceUID").toString();
+							}else {
+								studyInstanceUid="";
+							}
+							
+							if (cdfResponseStats.containsKey("CountSeries")) {
+								nbSeries = cdfResponseStats.get("CountSeries").toString();
+							}else {
+								nbSeries="";
+							}
+							
+							if(cdfResponseStats.containsKey("CountInstances")) {
+								nbInstances = cdfResponseStats.get("CountInstances").toString();
+							} else {
+								nbInstances ="";
+							}
+							
+							if(cdfResponseStats.containsKey("DiskSizeMB")) {
+								size = cdfResponseStats.get("DiskSizeMB").toString();
+							} else {
+								size ="";
+							}
+							
+							
+							//Recupere data avant anonymization
+							StringBuilder sb3 =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + AnonymizedFrom);
+							JSONObject cdfOriginalStudyDataResponse = (JSONObject) parser.parse(sb3.toString());
+							
+							JSONObject cdfOriginalStudyDataResponseMainPatientTags=(JSONObject) cdfOriginalStudyDataResponse.get("PatientMainDicomTags");
+							JSONObject cdfOriginalStudyDataResponseMainDicomTags=(JSONObject) cdfOriginalStudyDataResponse.get("MainDicomTags");
+							
+							String oldPatientName;
+							String oldPatientId;
+							String oldStudyDate;
+							String oldStudyDesc;
+							
+							if (cdfOriginalStudyDataResponseMainPatientTags.containsKey("PatientName")){
+								oldPatientName=cdfOriginalStudyDataResponseMainPatientTags.get("PatientName").toString();
+							} else {
+								oldPatientName="";
+							}
+							
+							if (cdfOriginalStudyDataResponseMainPatientTags.containsKey("PatientID")){
+								oldPatientId=cdfOriginalStudyDataResponseMainPatientTags.get("PatientID").toString();
+							} else {
+								oldPatientId="";
+							}
+							
+							if (cdfOriginalStudyDataResponseMainDicomTags.containsKey("StudyDate")){
+								oldStudyDate=cdfOriginalStudyDataResponseMainDicomTags.get("StudyDate").toString();
+							} else {
+								oldStudyDate="";
+							}
+							
+							if (cdfOriginalStudyDataResponseMainDicomTags.containsKey("StudyDescription")){
+								oldStudyDesc=cdfOriginalStudyDataResponseMainDicomTags.get("StudyDescription").toString();
+							} else {
+								oldStudyDesc="";
+							}
+							
+							csv.addStudy(oldPatientName, oldPatientId, newPatientName, newPatientId, oldStudyDate, oldStudyDesc, newStudyDesc, nbSeries, nbInstances, size, studyInstanceUid);
+							
+						} catch (org.json.simple.parser.ParseException e1) {
+							e1.printStackTrace();
+						}
+					}
+					try {
+						csv.genCSV();
+					} catch (FileNotFoundException e1) {
+						e1.printStackTrace();
+					}
+					
+				}
+				
+			}
+			
+		});
 		
-		JButton reportBtn = new JButton("Report");
-		reportBtn.addActionListener(new ActionListener() {
+		//SK ACTION QUAND CTP : ENVOIE PEER + Confirmation + Delete
+		JButton exportCTP = new JButton("CTP");
+		exportCTP.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JSONParser parser=new JSONParser();
-				if(reportType.getSelectedItem().equals("CSV")){
-					jprefer.put("reportType", "CSV");
-					CSV csv = new CSV();
-					if(!modeleExportStudies.getOrthancIds().isEmpty()){
-						for(String uid : modeleExportStudies.getOrthancIds()){
-							try {
-								StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + uid);
-								JSONObject cdfResponse = (JSONObject) parser.parse(sb.toString());
-								StringBuilder sb2 =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + uid +"/statistics");
-								JSONObject cdfResponseStats = (JSONObject) parser.parse(sb2.toString());
-								
-								//Recupere Elements d'origine
-								JSONObject cdfResponseMainPatientTags=(JSONObject) cdfResponse.get("PatientMainDicomTags");
-								JSONObject cdfResponseMainDicomTags=(JSONObject) cdfResponse.get("MainDicomTags");
-								
-								String AnonymizedFrom=cdfResponse.get("AnonymizedFrom").toString();
-								
-								String newPatientName ;
-								String newPatientId ;
-								String newStudyDesc;
-								String studyInstanceUid;
-								String nbSeries;
-								String nbInstances ;
-								String size;
-								
-								// On recupere les data apres anonymization
-								
-								if (cdfResponseMainPatientTags.containsKey("PatientName") ) {
-									newPatientName =cdfResponseMainPatientTags.get("PatientName").toString();
-								} else {
-									newPatientName ="";
-								}
-								
-								if (cdfResponseMainPatientTags.containsKey(("PatientID"))) {
-									newPatientId= cdfResponseMainPatientTags.get("PatientID").toString();
-								}else {
-									newPatientId="";
-								}
-								
-								if (cdfResponseMainDicomTags.containsKey("StudyDescription")) {
-									newStudyDesc =cdfResponseMainDicomTags.get("StudyDescription").toString();
-								}else {
-									newStudyDesc="";
-								}
-								
-								if (cdfResponseMainDicomTags.containsKey("StudyInstanceUID")) {
-									studyInstanceUid=cdfResponseMainDicomTags.get("StudyInstanceUID").toString();
-								}else {
-									studyInstanceUid="";
-								}
-								
-								if (cdfResponseStats.containsKey("CountSeries")) {
-									nbSeries = cdfResponseStats.get("CountSeries").toString();
-								}else {
-									nbSeries="";
-								}
-								
-								if(cdfResponseStats.containsKey("CountInstances")) {
-									nbInstances = cdfResponseStats.get("CountInstances").toString();
-								} else {
-									nbInstances ="";
-								}
-								
-								if(cdfResponseStats.containsKey("DiskSizeMB")) {
-									size = cdfResponseStats.get("DiskSizeMB").toString();
-								} else {
-									size ="";
-								}
-								
-								
-								//Recupere data avant anonymization
-								StringBuilder sb3 =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + AnonymizedFrom);
-								JSONObject cdfOriginalStudyDataResponse = (JSONObject) parser.parse(sb3.toString());
-								
-								JSONObject cdfOriginalStudyDataResponseMainPatientTags=(JSONObject) cdfOriginalStudyDataResponse.get("PatientMainDicomTags");
-								JSONObject cdfOriginalStudyDataResponseMainDicomTags=(JSONObject) cdfOriginalStudyDataResponse.get("MainDicomTags");
-								
-								String oldPatientName;
-								String oldPatientId;
-								String oldStudyDate;
-								String oldStudyDesc;
-								
-								if (cdfOriginalStudyDataResponseMainPatientTags.containsKey("PatientName")){
-									oldPatientName=cdfOriginalStudyDataResponseMainPatientTags.get("PatientName").toString();
-								} else {
-									oldPatientName="";
-								}
-								
-								if (cdfOriginalStudyDataResponseMainPatientTags.containsKey("PatientID")){
-									oldPatientId=cdfOriginalStudyDataResponseMainPatientTags.get("PatientID").toString();
-								} else {
-									oldPatientId="";
-								}
-								
-								if (cdfOriginalStudyDataResponseMainDicomTags.containsKey("StudyDate")){
-									oldStudyDate=cdfOriginalStudyDataResponseMainDicomTags.get("StudyDate").toString();
-								} else {
-									oldStudyDate="";
-								}
-								
-								if (cdfOriginalStudyDataResponseMainDicomTags.containsKey("StudyDescription")){
-									oldStudyDesc=cdfOriginalStudyDataResponseMainDicomTags.get("StudyDescription").toString();
-								} else {
-									oldStudyDesc="";
-								}
-								
-								csv.addStudy(oldPatientName, oldPatientId, newPatientName, newPatientId, oldStudyDate, oldStudyDesc, newStudyDesc, nbSeries, nbInstances, size, studyInstanceUid);
-								
-							} catch (org.json.simple.parser.ParseException e1) {
-								e1.printStackTrace();
-							}
-						}
-						try {
-							csv.genCSV();
-						} catch (FileNotFoundException e1) {
-							e1.printStackTrace();
-						}
+				
+					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+						boolean sendOk=false;
+						boolean validateOk=false;
 						
-					}
-				}else {
-					CTP ctp=new CTP(CTPUsername, CTPPassword);
-					for(Study study : modeleExportStudies.getStudiesList()){
-						boolean answer=ctp.validateUpload(study.getStudyDescription(), study.getNewStudyInstanceUID(), study.getPatientName());
-						if(answer) stateExports.setText("study correctly Sent to CTP");
-					}
-					
-					/*
-					jprefer.put("reportType", "CTP");
-					boolean dataSent = true;
-					if(!modeleExportStudies.getOrthancIds().isEmpty()){
-						try {
-							JDBCConnector jdbc = new JDBCConnector();
-							for(Study study : modeleExportStudies.getStudiesList()){
-								StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + study.getId() +"/statistics");
-								JSONObject cdfResponseStats = (JSONObject) parser.parse(sb.toString());
-								
-								String size;
-								
-								if (cdfResponseStats.containsKey("DiskSizeMB")) {
-									size=cdfResponseStats.get("DiskSizeMB").toString();
-								}else {
-									size="";
+						@Override
+						protected Void doInBackground() {
+							System.out.println("ici");
+							//Etape 1 : On envoie les DICOM Vers le Peer ad hoc
+							//SK A FAIRE : Definition du PEER
+							try {
+								query.sendPeer(listePeers.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
+								sendOk=true;
+							} catch (IOException e1) {
+								stateExports.setText("<html><font color= 'red'>The upload was not received (" + e1.getMessage() + ") </font></html>");
+							}
+							if (sendOk) {
+								stateExports.setText("<html><font color= 'green'>Step 2/3 : Validating upload</font></html>");
+								CTP ctp=new CTP(CTPUsername, CTPPassword);
+								for(Study study : modeleExportStudies.getStudiesList()){
+									validateOk=ctp.validateUpload(study.getStudyDescription(), study.getNewStudyInstanceUID(), study.getPatientName());
+									
 								}
-								
-								if(!jdbc.sendSizeAndNewUID(study.getPatientName(), size, study.getNewStudyInstanceUID())){
-									dataSent = false;
-								}
-								if(remoteFileName != null){
-									if(!jdbc.sendFileName(study.getPatientName(), remoteFileName.toString())){
-										dataSent = false;										
+								if(validateOk) {
+									stateExports.setText("<html><font color= 'green'>Step 3/3 : Deleting local study </font></html>");
+									for(Study study : modeleExportStudies.getStudiesList()){
+										try {
+											connexionHttp.makeDeleteConnection(study.getNewStudyInstanceUID());
+											//A VOIR SK SI ON EFFACE L ETUDE ORIGINALE
+											//connexionHttp.makeDeleteConnection(study.getOldStudyInstanceUID());
+										} catch (IOException e) {
+											e.printStackTrace();
+										}
 									}
+									
+								}
+								else {
+								return null;
 								}
 							}
-							remoteFileName = null;
-							jdbc.disconnect();
-							if(!dataSent){
-								stateExports.setText("<html><font color = 'red'>The report was not sent to the database</font></html>");
-							}else{
-								stateExports.setText("<html><font color = 'green'>The report was sent to the database</font></html>");
+							else {
+								return null;
 							}
-						} catch (ClassNotFoundException | SQLException |org.json.simple.parser.ParseException e1) {
-							e1.printStackTrace();
-						} 
-					}*/
-				}
-			}
-		});
+							
+							return null;
+						}
+				
+						@Override
+						protected void done(){
+							if (sendOk && validateOk)stateExports.setText("<html><font color= 'green'>CTP Export Done </font></html>");
+							else if ( !sendOk) stateExports.setText("<html><font color= 'red'> Upload Failed </font></html>");
+							else if (!validateOk) stateExports.setText("<html><font color= 'red'> Validation Failed </font></html>");
+						}
+					};
+					
+					
+					if(!modeleExportStudies.getOrthancIds().isEmpty()){
+						stateExports.setText("Sending to CTP Peer :"+listePeers.getSelectedItem().toString());
+						worker.execute();
+					}
+				
+	
+	
+	
+	
+	
+				
 
-		try {
+				}
+			});
+
+		
 			QueryFillStore query = new QueryFillStore(connexionHttp);
 
 			JButton exportToZip = new JButton("Zip");
@@ -1884,8 +1917,8 @@ public class VueAnon extends JFrame implements PlugIn{
 				}
 			});
 
-			JComboBox<Object> listePeers = new JComboBox<Object>(query.getPeers());
-			JButton peerExport = new JButton("OrthancPeer");
+			listePeers = new JComboBox<Object>(query.getPeers());
+			peerExport = new JButton("OrthancPeer");
 			peerExport.addActionListener(new ActionListener() {
 
 				@Override
@@ -1919,9 +1952,13 @@ public class VueAnon extends JFrame implements PlugIn{
 					}
 				}
 			});
-
-			exportPanel.add(reportType);
-			exportPanel.add(reportBtn);
+			
+			
+			exportPanel.add(exportCTP);
+			JLabel dummyLabel4 = new JLabel("");
+			dummyLabel4.setBorder(new EmptyBorder(0,0,0,50));
+			exportPanel.add(dummyLabel4);
+			exportPanel.add(csvReport);
 			JLabel dummyLabel0 = new JLabel("");
 			dummyLabel0.setBorder(new EmptyBorder(0,0,0,50));
 			exportPanel.add(dummyLabel0);
@@ -1940,9 +1977,7 @@ public class VueAnon extends JFrame implements PlugIn{
 			exportPanel.add(dummyLabel3);
 			exportPanel.add(listePeers);
 			exportPanel.add(peerExport);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+
 		JPanel southExport = new JPanel();
 		southExport.setLayout(new BoxLayout(southExport, BoxLayout.PAGE_AXIS));
 		southExport.add(labelPanelExport);
@@ -2302,12 +2337,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		aboutPanel.add(setupButton);
 		aboutPanel.add(aboutBtn);
 		
-		if( ! addressFieldCTP.getText().equals("http://")){
-			reportType.addItem("CTP");
-			reportType.setSelectedItem(jprefer.get("reportType", "CSV"));
-		}
-		
-		if( addressFieldCTP.getText().equals("http://")){
+		if(!addressFieldCTP.getText().equals("http://")  && !addressFieldCTP.getText().equals("https://") ){
 			setNamesIdBtn.setVisible(false);
 		}
 		
@@ -2404,19 +2434,12 @@ public class VueAnon extends JFrame implements PlugIn{
 				}
 				jprefer.put("exportType", exportType.getSelectedItem().toString());
 				
-				if(addressFieldCTP.getText().isEmpty()  ){
-					reportType.removeAllItems();
-					reportType.addItem("CSV");
-				}else{
-					reportType.removeAllItems();
-					reportType.addItem("CSV");
-					reportType.addItem("CTP");
-				}
-
-				if(	addressFieldCTP.getText().equals("http://") ){
-					setNamesIdBtn.setVisible(false);
-				}else{
+				if(addressFieldCTP.getText().startsWith("http://") || addressFieldCTP.getText().startsWith("https://")  ){
+					exportCTP.setVisible(true);
 					setNamesIdBtn.setVisible(true);
+				}else {
+					exportCTP.setVisible(false);
+					setNamesIdBtn.setVisible(false);
 				}
 				
 				if(remoteServer.getText().length() == 0){
@@ -2424,18 +2447,7 @@ public class VueAnon extends JFrame implements PlugIn{
 				}else{
 					exportBtn.setEnabled(true);
 				}
-				/*if(tabbedPane.getSelectedIndex() == 0){
-					if(!modeleAnonStudies.getOldOrthancUIDs().isEmpty()){
-						anonTablesPanel.setVisible(true);
-						displayAnonTool.setText("Close anonymization tool");
-						displayExportTool.setVisible(false);
-						addToAnon.setVisible(true);
-					}
-				}else{
-					displayAnonTool.setText("Anonymize");
-					openCloseAnonTool(false);
-					pack();
-				}*/
+				
 				pack();
 			}
 		});
