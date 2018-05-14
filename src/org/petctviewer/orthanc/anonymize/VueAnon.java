@@ -206,9 +206,11 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JComboBox<String> exportType;
 	private JButton setupButton;
 	//CTP
-	JTextField addressFieldCTP;
+	private JTextField addressFieldCTP;
+	private JButton exportCTP;
 	private String CTPUsername;
 	private String CTPPassword;
+	private boolean autoSendCTP=false;
 
 	// Settings preferences
 	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
@@ -943,8 +945,6 @@ public class VueAnon extends JFrame implements PlugIn{
 		deletePanel.add(deletePanelGrid);
 		oToolRightManage.add(deletePanel);
 		
-		
-		
 		oToolRightManage.setVisible(false);
 		toolbox.add(oToolRightManage, BorderLayout.SOUTH);
 		
@@ -1158,7 +1158,10 @@ public class VueAnon extends JFrame implements PlugIn{
 						anonPatientTable.setValueAt(patientNewID, anonPatientTable.getSelectedRow(), 4);
 						anonStudiesTable.setValueAt(visitName, anonStudiesTable.getSelectedRow(), 0);
 						//Si un seul patient
-						if (anonPatientTable.getSelectedRowCount()==1) anonBtn.doClick();
+						if (anonPatientTable.getSelectedRowCount()==1) {
+							anonBtn.doClick();
+							autoSendCTP=true;
+						}
 					}
 
 				}
@@ -1751,7 +1754,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		});
 		
 		//SK ACTION QUAND CTP : ENVOIE PEER + Confirmation + Delete
-		JButton exportCTP = new JButton("CTP");
+		exportCTP = new JButton("CTP");
 		exportCTP.addActionListener(new ActionListener() {
 
 			@Override
@@ -2808,6 +2811,7 @@ public class VueAnon extends JFrame implements PlugIn{
 							modeleAnonStudies.empty();
 							modeleAnonPatients.clear();
 							
+							
 						}
 					} catch (IOException e1) {
 						e1.printStackTrace();
@@ -2848,6 +2852,11 @@ public class VueAnon extends JFrame implements PlugIn{
 						}
 					} catch (Exception e1) {
 						// IGNORE
+					}
+					//Si foncion a été fait avec le CTP on fait l'envoi auto A l'issue de l'anon
+					if(autoSendCTP) {
+						exportCTP.doClick();
+						autoSendCTP=false;
 					}
 				}
 			};
