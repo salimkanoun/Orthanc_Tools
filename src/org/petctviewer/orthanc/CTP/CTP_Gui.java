@@ -58,7 +58,7 @@ public class CTP_Gui extends JDialog {
 	 */
 	public static void main(String[] args) {
 		try {
-			CTP_Gui dialog = new CTP_Gui();
+			CTP_Gui dialog = new CTP_Gui(null);
 			dialog.pack();
 			dialog.setVisible(true);
 			
@@ -70,7 +70,7 @@ public class CTP_Gui extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public CTP_Gui() {
+	public CTP_Gui(String CTPAddress) {
 		setBounds(100, 100, 450, 300);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -196,7 +196,7 @@ public class CTP_Gui extends JDialog {
 							comboBox_Studies.removeAllItems();
 							comboBox_Visits.removeAllItems();
 							if (tablePatient.getModel().getRowCount()>0) modelTablePatient.setRowCount(0);							
-							ctp=new CTP(CTP_Username.getText(), new String(CTP_Password.getPassword()));
+							ctp=new CTP(CTP_Username.getText(), new String(CTP_Password.getPassword()), CTPAddress );
 							String[] studies=ctp.getAvailableStudies();
 							comboBox_Studies.addItem("Choose");
 							for (int i=0; i<studies.length; i++) {

@@ -1129,7 +1129,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					// Si pas de study selectionnees on selectionne de force le 1er
 					if (anonStudiesTable.getSelectedRow()==-1) anonStudiesTable.setRowSelectionInterval(0, 0);
 					//On genere l'objet qui gere le CTP
-					CTP_Gui dialog = new CTP_Gui();
+					CTP_Gui dialog = new CTP_Gui(addressFieldCTP.getText());
 					//On prepare les donnees locales dans l'objet
 					String patientName=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 0);
 					//String patientID=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 1);
@@ -1770,6 +1770,7 @@ public class VueAnon extends JFrame implements PlugIn{
 							//Etape 1 : On envoie les DICOM Vers le Peer ad hoc
 							//SK A FAIRE : Definition du PEER
 							try {
+								stateExports.setText("<html><font color= 'green'> Step 1/3 Sending to CTP Peer :"+listePeers.getSelectedItem().toString()+ "</font></html>");
 								query.sendPeer(listePeers.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
 								sendOk=true;
 							} catch (IOException e1) {
@@ -1777,7 +1778,7 @@ public class VueAnon extends JFrame implements PlugIn{
 							}
 							if (sendOk) {
 								stateExports.setText("<html><font color= 'green'>Step 2/3 : Validating upload</font></html>");
-								CTP ctp=new CTP(CTPUsername, CTPPassword);
+								CTP ctp=new CTP(CTPUsername, CTPPassword, addressFieldCTP.getText());
 								for(Study study : modeleExportStudies.getStudiesList()){
 									validateOk=ctp.validateUpload(study.getStudyDescription(), study.getNewStudyInstanceUID(), study.getPatientName());
 									
@@ -1786,7 +1787,7 @@ public class VueAnon extends JFrame implements PlugIn{
 									stateExports.setText("<html><font color= 'green'>Step 3/3 : Deleting local study </font></html>");
 									for(Study study : modeleExportStudies.getStudiesList()){
 										try {
-											connexionHttp.makeDeleteConnection(study.getNewStudyInstanceUID());
+											connexionHttp.makeDeleteConnection("/studies/"+study.getNewStudyInstanceUID());
 											//A VOIR SK SI ON EFFACE L ETUDE ORIGINALE
 											//connexionHttp.makeDeleteConnection(study.getOldStudyInstanceUID());
 										} catch (IOException e) {
@@ -1816,7 +1817,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					
 					
 					if(!modeleExportStudies.getOrthancIds().isEmpty()){
-						stateExports.setText("Sending to CTP Peer :"+listePeers.getSelectedItem().toString());
+						
 						worker.execute();
 					}
 				
@@ -2437,12 +2438,12 @@ public class VueAnon extends JFrame implements PlugIn{
 				}
 				jprefer.put("exportType", exportType.getSelectedItem().toString());
 				
-				if(addressFieldCTP.getText().startsWith("http://") || addressFieldCTP.getText().startsWith("https://")  ){
-					exportCTP.setVisible(true);
-					setNamesIdBtn.setVisible(true);
-				}else {
+				if(addressFieldCTP.getText().equals("http://") || addressFieldCTP.getText().equals("https://") || addressFieldCTP.getText().isEmpty()){
 					exportCTP.setVisible(false);
 					setNamesIdBtn.setVisible(false);
+				}else {
+					exportCTP.setVisible(true);
+					setNamesIdBtn.setVisible(true);
 				}
 				
 				if(remoteServer.getText().length() == 0){
@@ -2853,7 +2854,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					} catch (Exception e1) {
 						// IGNORE
 					}
-					//Si foncion a été fait avec le CTP on fait l'envoi auto A l'issue de l'anon
+					//Si foncion a ï¿½tï¿½ fait avec le CTP on fait l'envoi auto A l'issue de l'anon
 					if(autoSendCTP) {
 						exportCTP.doClick();
 						autoSendCTP=false;

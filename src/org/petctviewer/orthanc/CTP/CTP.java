@@ -21,18 +21,19 @@ public class CTP {
 	private String username;
 	private String password;
 	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
-	private String serverAdress=jprefer.get("CTP address", null);
+	private String serverAdress;
 	private String authentication=null;
 	private JSONParser parser=new JSONParser();
 	
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		CTP ctp=new CTP("Imagerie", "Imagerie");
 		ctp.validateUpload("TEP0", "1.2.276.0.7230010.3.1.2.8323329.22919.1526044062.863352", "11017101022001");
-	}
+	}*/
 	
-	public CTP(String username, String password) {
+	public CTP(String username, String password, String serverAdress) {
 		this.username=username;
 		this.password=password;
+		this.serverAdress=serverAdress;
 		getAvailableStudies();
 		//String authentication = Base64.getEncoder().encodeToString(("httpLogin" + ":" + "httpPassword").getBytes());
 		
