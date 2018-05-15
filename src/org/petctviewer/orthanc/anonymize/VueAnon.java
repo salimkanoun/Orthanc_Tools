@@ -1786,13 +1786,14 @@ public class VueAnon extends JFrame implements PlugIn{
 								if(validateOk) {
 									stateExports.setText("<html><font color= 'green'>Step 3/3 : Deleting local study </font></html>");
 									for(Study study : modeleExportStudies.getStudiesList()){
-										try {
-											connexionHttp.makeDeleteConnection("/studies/"+study.getNewStudyInstanceUID());
+										//try {
+											//RECUPERER LE ORTHANC ID DE LA STUDY ANONYMISEE POUR LE DELETE
+											//connexionHttp.makeDeleteConnection("/studies/"+ORTHANC ID);
 											//A VOIR SK SI ON EFFACE L ETUDE ORIGINALE
 											//connexionHttp.makeDeleteConnection(study.getOldStudyInstanceUID());
-										} catch (IOException e) {
-											e.printStackTrace();
-										}
+										//} catch (IOException e) {
+										//	e.printStackTrace();
+										//}
 									}
 									
 								}
