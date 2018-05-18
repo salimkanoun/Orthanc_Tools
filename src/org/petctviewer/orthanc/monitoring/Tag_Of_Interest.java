@@ -30,7 +30,7 @@ public class Tag_Of_Interest {
 	0008,0033 = Content Time
 	0018,1030 = Protocol Name
 	0020,000e = Series Instance UID
-	0040,0310 = Comment On Radiation Dose
+	0040,0310 = Comment Radiation Dose
 	0054,0016 = Radiopharmaceutical sequence
 	0018,0031 = Radiopharmaceutical
 	0018,1072 = RadiopharmaceuticalStartTime
