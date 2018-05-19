@@ -15,6 +15,7 @@ import org.petctviewer.orthanc.ParametreConnexionHttp;
 
 public class Tag_Monitoring {
 	
+	private static final String parentStudy = null;
 	private ParametreConnexionHttp parametre;
 	private String level;
 	private JSONParser parser=new JSONParser();
@@ -62,7 +63,8 @@ public class Tag_Monitoring {
 						
 						//On ecrit dans la BDD
 						//SK BOOLEAN A GERER SI IL Y A UNE BDD D ACTIVE
-						db.InsertPatient(hashmapTagPatient.get("lastName"), hashmapTagPatient.get("firstName") ,  hashmapTagPatient.get("patientID"), monitoring.newPatientID.get(i),hashmapTagPatient.get("birthdate"), hashmapTagPatient.get("sex") );
+		
+						db.InsertPatient(hashmapTagPatient.get("LastName"), hashmapTagPatient.get("FirstName") ,  hashmapTagPatient.get("PatientID"), monitoring.newPatientID.get(i),hashmapTagPatient.get("PatientBirthDate"), hashmapTagPatient.get("PatientSex") );
 					}
 					
 				}
@@ -77,8 +79,9 @@ public class Tag_Monitoring {
 						}
 						//On ecrit dans la BDD
 						//SK BOOLEAN A GERER SI IL Y A UNE BDD D ACTIVE
-						db.InsertPatient(studyTag.get("lastName"), studyTag.get("firstName") ,  studyTag.get("patientID"), monitoring.newPatientID.get(i), studyTag.get("birthdate"), studyTag.get("sex") );
-						db.InsertStudy(studyTag.get("studyID"), studyTag.get("studyInstanceUID"), studyTag.get(monitoring.newStudyID.get(i)), studyTag.get("accessionNumber"), studyTag.get("institutionName"), studyTag.get("referringPhysicianName"), studyTag.get("studyDate"), studyTag.get("studyDescription"), studyTag.get("studyTime"));
+						
+						db.InsertPatient(studyTag.get("LastName"), studyTag.get("FirstName") ,  studyTag.get("PatientID"), monitoring.newPatientID.get(i), studyTag.get("PatientBirthDate"), studyTag.get("PatientSex") );
+						db.InsertStudy(studyTag.get("StudyID"), studyTag.get("StudyInstanceUID"), studyTag.get(monitoring.newStudyID.get(i)), studyTag.get("AccessionNumber"), studyTag.get("InstitutionName"), studyTag.get("ReferringPhysicianName"), studyTag.get("StudyDate"), studyTag.get("StudyDescription"), studyTag.get("StudyTime"));
 						
 					}
 				}
@@ -93,10 +96,11 @@ public class Tag_Monitoring {
 						textAreaConsole.append("Shared-Tags"+sbSharedTags+",");
 						foundTags.put("Shared_Tags", sbSharedTags.toString());
 						
-						//SK RESTE A FAIRE POUR LE NIVEAU SERIES (CREATION TABLE ET INSCRIPTION)
-						//SK A FAIRE POUR PATIENT ET STUDY
 						System.out.println(foundTags.toString());
-						
+						db.InsertPatient(foundTags.get("LastName"), foundTags.get("FirstName") ,  foundTags.get("PatientID"), foundTags.get("ParentPatient") , foundTags.get("PatientBirthDate"), foundTags.get("PatientSex") );
+						db.InsertStudy(foundTags.get("StudyID"), foundTags.get("StudyInstanceUID"), foundTags.get("ParentStudy") , foundTags.get("AccessionNumber"), foundTags.get("InstitutionName"), foundTags.get("ReferringPhysicianName"), foundTags.get("StudyDate"), foundTags.get("StudyDescription"), foundTags.get("StudyTime"));
+						//A FAIRE RECUPERER LES CLE DE LA HASHMAP
+						//db.InsertSeries(size, age, weight, Manifacturer, Manifacturer_Model, Performing_Physician_Name, Series_Description, Station_Name, Content_Date, Content_Time, Protocol_Name, Series_Instance_UID, Comment_Radiation_Dose, Radiopharmaceutical_sequence, Radiopharmaceutical, RadiopharmaceuticalStartTime, RadionuclideTotalDose, RadionuclideHalfLife, RadionuclidePositronFraction, Radiation_Dose_Module, Shared_Tags, Orthanc_Serie_ID);
 						
 					}
 					
@@ -125,17 +129,17 @@ public class Tag_Monitoring {
 		
 		textAreaConsole.append("New patient"+ ",");
 		textAreaConsole.append("Name= "+patientName+",");
-		textAreaConsole.append("ID= " + patientID+ ",");
-		textAreaConsole.append("Sex= "+ patientSex+ ",");
-		textAreaConsole.append("DOB= " +birthDate+ "\n");
+		textAreaConsole.append("PatientID= " + patientID+ ",");
+		textAreaConsole.append("PatientSex"+ patientSex+ ",");
+		textAreaConsole.append("PatientBirthDate= " +birthDate+ "\n");
 		
 		String[] name =patientName.split("^");
 		HashMap<String, String> hashmapTagPatient=new HashMap<String, String>();
-		hashmapTagPatient.put("birthdate", birthDate);
-		hashmapTagPatient.put("patientID", patientID);
-		hashmapTagPatient.put("lastName", name[0]);
-		hashmapTagPatient.put("firstName", name[1]);
-		hashmapTagPatient.put("sex", patientSex);
+		hashmapTagPatient.put("PatientBirthDate", birthDate);
+		hashmapTagPatient.put("PatientID", patientID);
+		hashmapTagPatient.put("LastName", name[0]);
+		hashmapTagPatient.put("FirstName", name[1]);
+		hashmapTagPatient.put("PatientSex", patientSex);
 		
 		return hashmapTagPatient;
 	}
@@ -157,23 +161,23 @@ public class Tag_Monitoring {
 		String studyInstanceUID=(String) jsonMainStudyTag.get("StudyInstanceUID");
 		String studyTime=(String) jsonMainStudyTag.get("StudyTime");
 		
-		textAreaConsole.append("accessionNumber= "+accessionNumber+ ",");
-		textAreaConsole.append("institutionName= " + institutionName+ ",");
-		textAreaConsole.append("referringPhysicianName= "+ referringPhysicianName+ ",");
-		textAreaConsole.append("studyDate= " +studyDate+ ",");
-		textAreaConsole.append("studyDescription= "+studyDescription+ ",");
-		textAreaConsole.append("studyID= " + studyID+ ",");
-		textAreaConsole.append("studyInstanceUID= "+ studyInstanceUID+ ",");
-		textAreaConsole.append("studyTime= " +studyTime+ "\n");
+		textAreaConsole.append("AccessionNumber= "+accessionNumber+ ",");
+		textAreaConsole.append("InstitutionName= " + institutionName+ ",");
+		textAreaConsole.append("ReferringPhysicianName= "+ referringPhysicianName+ ",");
+		textAreaConsole.append("StudyDate= " +studyDate+ ",");
+		textAreaConsole.append("StudyDescription= "+studyDescription+ ",");
+		textAreaConsole.append("StudyID= " + studyID+ ",");
+		textAreaConsole.append("StudyInstanceUID= "+ studyInstanceUID+ ",");
+		textAreaConsole.append("StudyTime= " +studyTime+ "\n");
 		
-		hashmapTagPatient.put("accessionNumber", accessionNumber);
-		hashmapTagPatient.put("institutionName", institutionName);
-		hashmapTagPatient.put("referringPhysicianName", referringPhysicianName);
-		hashmapTagPatient.put("studyDate", studyDate);
-		hashmapTagPatient.put("studyDescription", studyDescription);
-		hashmapTagPatient.put("studyID", studyID);
-		hashmapTagPatient.put("studyInstanceUID", studyInstanceUID);
-		hashmapTagPatient.put("studyTime", studyTime);
+		hashmapTagPatient.put("AccessionNumber", accessionNumber);
+		hashmapTagPatient.put("InstitutionName", institutionName);
+		hashmapTagPatient.put("ReferringPhysicianName", referringPhysicianName);
+		hashmapTagPatient.put("StudyDate", studyDate);
+		hashmapTagPatient.put("StudyDescription", studyDescription);
+		hashmapTagPatient.put("StudyID", studyID);
+		hashmapTagPatient.put("StudyInstanceUID", studyInstanceUID);
+		hashmapTagPatient.put("StudyTime", studyTime);
 		
 		return hashmapTagPatient;
 		
@@ -188,10 +192,18 @@ public class Tag_Monitoring {
 		JSONObject seriesJson = null;
 		try {
 			seriesJson = (JSONObject) parser.parse(sbSeries.toString());
+			String parentStudy=(String) seriesJson.get("ParentStudy");
+			hashmapTag.put("ParentStudy", parentStudy);
+			StringBuilder patient=parametre.makeGetConnectionAndStringBuilder("/studies/"+parentStudy);
+			JSONObject patientJson = (JSONObject) parser.parse(patient.toString());
+			String parentPatient=(String) patientJson.get("ParentPatient");
+			hashmapTag.put("ParentPatient", parentPatient);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		
 		JSONArray instanceArray=(JSONArray) seriesJson.get("Instances");
 		StringBuilder instanceJson=parametre.makeGetConnectionAndStringBuilder("/instances/"+instanceArray.get(0)+"/tags");
 		JSONObject tags = null;
@@ -201,6 +213,7 @@ public class Tag_Monitoring {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 				
 		for (int i=0 ; i<Tag_Of_Interest.tagOfInterestPatient.length; i++) {
 			if (tags.containsKey(Tag_Of_Interest.tagOfInterestPatient[i])) {
@@ -208,10 +221,15 @@ public class Tag_Monitoring {
 				String name=(String) jsonTag.get("Name");
 				String value=(String) jsonTag.get("Value");
 				textAreaConsole.append(name +" "+value +",");
+				
 				hashmapTag.put(name, value);
 			}
 			
 		}
+		
+		String[] namePatient =hashmapTag.get("PatientName").split("^");
+		hashmapTag.put("LastName", namePatient[0]);
+		hashmapTag.put("FirstName", namePatient[1]);
 		
 		for (int i=0 ; i<Tag_Of_Interest.tagOfInterestStudy.length; i++) {
 			if (tags.containsKey(Tag_Of_Interest.tagOfInterestStudy[i])) {
