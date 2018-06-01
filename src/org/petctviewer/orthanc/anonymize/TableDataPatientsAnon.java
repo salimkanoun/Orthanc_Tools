@@ -34,9 +34,9 @@ import org.petctviewer.orthanc.*;
 public class TableDataPatientsAnon extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Patient Name", "Patient ID", "ID", "Birthdate"};
+	private String[] entetes = {"Patient Name", "Patient ID", "ID", "Birthdate", "Sex"};
 	private ArrayList<PatientAnon> patients = new ArrayList<PatientAnon>();
-	private final Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, String.class, Date.class};
+	private final Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, String.class, Date.class, String.class};
 	private ParametreConnexionHttp connexionHttp;
 
 	public TableDataPatientsAnon(ParametreConnexionHttp connexionHttp){
@@ -76,6 +76,8 @@ public class TableDataPatientsAnon extends AbstractTableModel{
 			return patients.get(rowIndex).getId();
 		case 3:
 			return patients.get(rowIndex).getBirthdate();
+		case 4:
+			return patients.get(rowIndex).getSex();
 		default:
 			return null; //Ne devrait jamais arriver
 		}
@@ -101,6 +103,7 @@ public class TableDataPatientsAnon extends AbstractTableModel{
 		//On prepare les variables de stockage
 		String[] name = new String[jsonResponsesPatient.size()];
 		String[] patientID = new String[jsonResponsesPatient.size()];
+		String[] patientSex = new String[jsonResponsesPatient.size()];
 		String[] id = new String[jsonResponsesPatient.size()];
 		//String[] birthdateBrut = new String[jsonResponsesPatient.size()];
 		Date[] birthdate = new Date[jsonResponsesPatient.size()];
@@ -129,12 +132,19 @@ public class TableDataPatientsAnon extends AbstractTableModel{
 				birthdate[i]=null;
 			}
 			
+			if (mainDicomTag.containsKey("PatientSex")) {
+				patientSex[i]=(String) mainDicomTag.get("PatientSex");
+			}else {
+				patientSex[i]="";
+			}
+			
+			
 		}
 		
 		for(int i = 0; i < id.length; i++){
-			PatientAnon p = new PatientAnon(name[i], patientID[i], id[i], null, null);
+			PatientAnon p = new PatientAnon(name[i], patientID[i], id[i], null,patientSex[i], null);
 			if(birthdate[i] != null){
-				p = new PatientAnon(name[i], patientID[i], id[i], birthdate[i], null);
+				p = new PatientAnon(name[i], patientID[i], id[i], birthdate[i],patientSex[i], null);
 			}
 			if(!this.patients.contains(p) && id[i].length() > 0){
 				this.patients.add(p);

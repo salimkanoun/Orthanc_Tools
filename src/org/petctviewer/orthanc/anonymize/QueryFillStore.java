@@ -226,7 +226,7 @@ public class QueryFillStore {
 		return studyDescriptionAndUID;
 	}
 
-	public Object[] getAET() throws IOException{
+	public Object[] getAET() {
 		this.url="/modalities";
 		
 		// We split the server response in a tab
@@ -237,7 +237,7 @@ public class QueryFillStore {
 			for (int i=0 ; i<aet.size(); i++){
 				indexes.add(aet.get(i).toString());
 			}
-		} catch (ParseException e) {e.printStackTrace();}
+		} catch (ParseException | IOException e) {e.printStackTrace();}
 		
 		// We convert the ArrayList to an Object[]
 		return indexes.toArray();
@@ -255,7 +255,7 @@ public class QueryFillStore {
 		this.sendQuery("store");
 	}
 	
-	public Object[] getPeers() throws IOException{
+	public Object[] getPeers() {
 		this.url="/peers";
 		
 		// We split the server response in a tab
@@ -266,7 +266,7 @@ public class QueryFillStore {
 			for (int i=0 ; i<peers.size(); i++){
 				indexes.add(peers.get(i).toString());
 			}
-		} catch (ParseException e) {e.printStackTrace();}
+		} catch (ParseException | IOException e) {e.printStackTrace();}
 		
 		// We convert the ArrayList to an Object[]
 		return indexes.toArray();

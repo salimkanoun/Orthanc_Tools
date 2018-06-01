@@ -21,13 +21,19 @@ public class CTP {
 	private String username;
 	private String password;
 	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
-	private String serverAdress=jprefer.get("CTP address", null);
+	private String serverAdress;
 	private String authentication=null;
 	private JSONParser parser=new JSONParser();
 	
-	public CTP(String username, String password) {
+	/*public static void main(String[] args) {
+		CTP ctp=new CTP("Imagerie", "Imagerie");
+		ctp.validateUpload("TEP0", "1.2.276.0.7230010.3.1.2.8323329.22919.1526044062.863352", "11017101022001");
+	}*/
+	
+	public CTP(String username, String password, String serverAdress) {
 		this.username=username;
 		this.password=password;
+		this.serverAdress=serverAdress;
 		getAvailableStudies();
 		//String authentication = Base64.getEncoder().encodeToString(("httpLogin" + ":" + "httpPassword").getBytes());
 		
@@ -39,8 +45,8 @@ public class CTP {
 		jsonPost.put("password", password);
 		JSONArray studies = null;
 		try {
-			String answser=makePostConnection("/get-studies",jsonPost.toString());
-			
+			String answser=makePostConnection("/Rest_Api/get-studies.php",jsonPost.toString());
+			System.out.println(answser);
 			studies=(JSONArray) parser.parse(answser);
 		} catch (IOException | ParseException e) {
 			// TODO Auto-generated catch block
@@ -63,7 +69,7 @@ public class CTP {
 		jsonPost.put("studyName", studyName);
 		JSONArray visits = null;
 		try {
-			String answser=makePostConnection("/get-visits",jsonPost.toString());
+			String answser=makePostConnection("/Rest_Api/get-visits.php",jsonPost.toString());
 			visits=(JSONArray) parser.parse(answser);
 		} catch (IOException | ParseException e) {
 			// TODO Auto-generated catch block
@@ -81,6 +87,52 @@ public class CTP {
 		else {
 			return null;
 		}
+		
+	}
+	
+	public JSONArray getAvailableImports(String studyName, String visitName) {
+		JSONObject jsonPost=new JSONObject();
+		jsonPost.put("username", username);
+		jsonPost.put("password", password);
+		jsonPost.put("studyName", studyName);
+		jsonPost.put("visit", visitName);
+		JSONArray visits = null;
+		try {
+			String answser=makePostConnection("/Rest_Api/get-possible-import.php", jsonPost.toString());
+			visits=(JSONArray) parser.parse(answser);
+		} catch (IOException | ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (visits !=null) {	
+			return visits;
+		}
+		else {
+			return null;
+		}
+		
+	}
+	
+	public boolean validateUpload(String visitName, String studyInstanceUID, String patientNumber) {
+		JSONObject jsonPost=new JSONObject();
+		jsonPost.put("username", username);
+		jsonPost.put("password", password);
+		jsonPost.put("visitName", visitName);
+		jsonPost.put("StudyInstanceUID", studyInstanceUID);
+		jsonPost.put("patientNumber", patientNumber);
+		JSONObject visits = null;
+		try {
+			String answser=makePostConnection("/Rest_Api/validate-upload.php", jsonPost.toString());
+			System.out.println(answser);
+			visits=(JSONObject) parser.parse(answser);
+		} catch (IOException | ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+			//visits=(JSONObject) parser.parse(answser);
+		
+		return (boolean) visits.get("recivedConfirmation");
+		
 		
 	}
 	

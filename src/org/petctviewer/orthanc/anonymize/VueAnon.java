@@ -40,7 +40,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
-import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -93,6 +92,7 @@ import ij.WindowManager;
 import ij.plugin.PlugIn;
 
 import org.petctviewer.orthanc.*;
+import org.petctviewer.orthanc.CTP.CTP;
 import org.petctviewer.orthanc.CTP.CTP_Gui;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
@@ -102,11 +102,16 @@ import org.petctviewer.orthanc.setup.ConnectionSetup;
 
 public class VueAnon extends JFrame implements PlugIn{
 	private static final long serialVersionUID = 1L;
+	
 	private JTabbedPane tabbedPane;
 	private JLabel state = new JLabel();
 	private DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
 	private DateFormat dfZip = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
 	private JFrame gui=this;
+	private JSONParser parser=new JSONParser();
+	
+	//QueryFillStore
+	QueryFillStore query ;
 	
 	//Objet de connexion aux restFul API, prend les settings des registery et etabli les connexion a la demande
 	private ParametreConnexionHttp connexionHttp;
@@ -161,10 +166,11 @@ public class VueAnon extends JFrame implements PlugIn{
 	private ArrayList<String> manageContent = new ArrayList<String>();
 	private JPanel anonTablesPanel;
 	private int anonCount;
-	private ArrayList<String> newIDs = new ArrayList<String>();
+	
 
 	// Tab Export (p2)
 	private JLabel stateExports = new JLabel("");
+	private JButton peerExport;
 	private JTable tableauExportStudies;
 	private JTable tableauExportSeries;
 	private TableDataExportStudies modeleExportStudies;
@@ -172,6 +178,7 @@ public class VueAnon extends JFrame implements PlugIn{
 	private TableRowSorter<TableDataExportStudies> sorterExportStudies;
 	private TableRowSorter<TableDataExportSeries> sorterExportSeries;
 	private StringBuilder remoteFileName;
+	private JComboBox<Object> listePeers ;
 
 	//Monitoring (p3)
 	Monitoring_GUI monitoring;
@@ -197,14 +204,13 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JPasswordField servPassword;
 	private JTextField remoteFilePath;
 	private JComboBox<String> exportType;
-	private JTextField dbAdress;
-	private JTextField dbPort;
-	private JTextField dbName;
-	private JTextField dbUsername;
-	private JPasswordField dbPassword;
 	private JButton setupButton;
 	//CTP
-	JTextField addressFieldCTP;
+	private JTextField addressFieldCTP;
+	private JButton exportCTP;
+	private String CTPUsername;
+	private String CTPPassword;
+	private boolean autoSendCTP=false;
 
 	// Settings preferences
 	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
@@ -444,6 +450,9 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.tableauPatients.getColumnModel().getColumn(3).setMinWidth(0);
 		this.tableauPatients.getColumnModel().getColumn(3).setMaxWidth(0);
 		this.tableauPatients.getColumnModel().getColumn(3).setResizable(false);
+		this.tableauPatients.getColumnModel().getColumn(4).setMinWidth(0);
+		this.tableauPatients.getColumnModel().getColumn(4).setMaxWidth(0);
+		this.tableauPatients.getColumnModel().getColumn(4).setResizable(false);
 		this.tableauPatients.setPreferredScrollableViewportSize(new Dimension(290,267));
 
 		this.tableauPatients.setDefaultRenderer(Date.class, new DateRendererAnon());
@@ -562,13 +571,11 @@ public class VueAnon extends JFrame implements PlugIn{
 
             @Override
             public void popupMenuCanceled(PopupMenuEvent e) {
-                // TODO Auto-generated method stub
 
             }
 
 			@Override
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
-				// TODO Auto-generated method stub
 				
 			}
         });
@@ -691,13 +698,11 @@ public class VueAnon extends JFrame implements PlugIn{
 
             @Override
             public void popupMenuCanceled(PopupMenuEvent e) {
-                // TODO Auto-generated method stub
 
             }
 
 			@Override
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
-				// TODO Auto-generated method stub
 				
 			}
         });
@@ -745,7 +750,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		JPanel storeTool = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JButton storeBtn = new JButton("Store list");
 		try {
-			QueryFillStore query = new QueryFillStore(connexionHttp);
+			query = new QueryFillStore(connexionHttp);
 			listeAET = new JComboBox<Object>(query.getAET());
 
 			listeAET.setPreferredSize(new Dimension(297, 27));
@@ -787,8 +792,6 @@ public class VueAnon extends JFrame implements PlugIn{
 				}
 			});
 			storeTool.add(storeBtn);
-		} catch (IOException e1) {
-			e1.printStackTrace();
 		} catch (NullPointerException e){
 			JOptionPane.showMessageDialog(gui, "You should set an AET before using this app (some functions may not work).",
 					"No AET found", JOptionPane.INFORMATION_MESSAGE);
@@ -942,8 +945,6 @@ public class VueAnon extends JFrame implements PlugIn{
 		deletePanel.add(deletePanelGrid);
 		oToolRightManage.add(deletePanel);
 		
-		
-		
 		oToolRightManage.setVisible(false);
 		toolbox.add(oToolRightManage, BorderLayout.SOUTH);
 		
@@ -967,6 +968,10 @@ public class VueAnon extends JFrame implements PlugIn{
 		anonPatientTable.getColumnModel().getColumn(4).setMinWidth(120);
 		anonPatientTable.getColumnModel().getColumn(5).setMinWidth(0);
 		anonPatientTable.getColumnModel().getColumn(5).setMaxWidth(0);
+		anonPatientTable.getColumnModel().getColumn(6).setMinWidth(0);
+		anonPatientTable.getColumnModel().getColumn(6).setMaxWidth(0);
+		anonPatientTable.getColumnModel().getColumn(7).setMinWidth(0);
+		anonPatientTable.getColumnModel().getColumn(7).setMaxWidth(0);
 		anonPatientTable.setPreferredScrollableViewportSize(new Dimension(440,130));
 		anonPatientTable.addMouseListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies));
 		anonPatientTable.putClientProperty("terminateEditOnFocusLost", true);
@@ -1042,10 +1047,11 @@ public class VueAnon extends JFrame implements PlugIn{
 						String patientID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 1).toString();
 						String patientUID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 2).toString();
 						Date patientBirthDate = (Date)tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 3);
+						String patientSex = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 4).toString();
 						ArrayList<String> listeDummy = new ArrayList<String>();
 						if((tableauSeries.getSelectedRow() != -1 || tableauStudies.getSelectedRow() != -1) && tableauPatients.getSelectedRows().length == 1){
 							listeDummy.add(modeleStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 3).toString());
-							modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientBirthDate, listeDummy);
+							modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientBirthDate, patientSex, listeDummy);
 							modeleAnonStudies.clear();
 							modeleAnonStudies.addStudies(patientName, patientID, listeDummy);
 							for(int i = 0; i < modeleAnonPatients.getPatientList().size(); i++){
@@ -1061,10 +1067,11 @@ public class VueAnon extends JFrame implements PlugIn{
 								patientID = tableauPatients.getValueAt(i, 1).toString();
 								patientUID = tableauPatients.getValueAt(i, 2).toString();
 								patientBirthDate = (Date)tableauPatients.getValueAt(i, 3);
+								patientSex=tableauPatients.getValueAt(i, 4).toString();
 								ArrayList<String> listeUIDs = new ArrayList<String>();
 								modeleStudies.addStudy(patientName, patientID, patientUID);
 								listeUIDs.addAll(modeleStudies.getIds());
-								modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientBirthDate, listeUIDs);
+								modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientBirthDate, patientSex, listeUIDs);
 								modeleAnonStudies.clear();
 								modeleAnonStudies.addStudies(patientName, patientID, listeUIDs);
 							}
@@ -1117,35 +1124,46 @@ public class VueAnon extends JFrame implements PlugIn{
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				//Si il y a des patients dans la liste
 				if(!modeleAnonPatients.getPatientList().isEmpty()){
-					CTP_Gui dialog = new CTP_Gui();
+					// Si pas de study selectionnees on selectionne de force le 1er
+					if (anonStudiesTable.getSelectedRow()==-1) anonStudiesTable.setRowSelectionInterval(0, 0);
+					//On genere l'objet qui gere le CTP
+					CTP_Gui dialog = new CTP_Gui(addressFieldCTP.getText());
+					//On prepare les donnees locales dans l'objet
+					String patientName=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 0);
+					//String patientID=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 1);
+					Date patientDOB=(Date) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 6);
+					String patientSex=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 7);
+					if (patientSex.equals("")) patientSex="N/A";
+					//String studyDescription=(String) anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 0);
+					Date studyDate=(Date) anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 1);
+					//SK Si pas de date on injecte la date du jour ? ou on passe la string ici et on gere ds le CTP?
+					if (studyDate==null) studyDate=new Date();
+					if (patientDOB==null) patientDOB=new Date();
+					//envoi des donnes dans objet GUI pour CTP
+					dialog.setStudyLocalValue(patientName, df.format(studyDate), patientSex, df.format(patientDOB));
 					dialog.pack();
 					dialog.setModal(true);
 					dialog.setLocationRelativeTo(gui);
 					dialog.setVisible(true);
-					// SK ICI IMPLEMENTATION DU CTP
-					
-					/*SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
-					JDBCConnector jdbc;
-					jdbc = new JDBCConnector();
-					jdbc.newValuesQuery(new java.sql.Date(((Date)anonPatientTable.getValueAt(
-							anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 6)).getTime()), jprefer.get("centerCode", ""));
-
-					ArrayList<String> newName = jdbc.getNewName();
-					ArrayList<String> newId = jdbc.getNewId();
-					ArrayList<String> oldFirstName = jdbc.getOldFirstName();
-					ArrayList<String> oldLastName = jdbc.getOldLastName();
-					if(newName.size() == 1){
-						anonPatientTable.setValueAt(newName.get(0), anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 3);
-						anonPatientTable.setValueAt(newId.get(0), anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 4);
-					}else if(newName.size() > 1){
-						PopUpFrame choicesFrame = new PopUpFrame(anonPatientTable);
-						choicesFrame.setData("84000", df.parse("08-03-2015"), oldFirstName, oldLastName, newName, newId, anonPatientTable);
-						choicesFrame.setVisible(true);
-					}else{
-						state.setText("No name found corresponding to this patient");
+					//On recupere les donnees et on met dans l'anonymisation
+					if(dialog.getOk()) {
+						CTPUsername=dialog.getLogin();
+						CTPPassword=dialog.getPassword();
+						String patientNewName=dialog.getAnonName();
+						String patientNewID=dialog.getAnonID();
+						String visitName=dialog.getVisitName();
+						anonPatientTable.setValueAt(patientNewName, anonPatientTable.getSelectedRow(), 3);
+						anonPatientTable.setValueAt(patientNewID, anonPatientTable.getSelectedRow(), 4);
+						anonStudiesTable.setValueAt(visitName, anonStudiesTable.getSelectedRow(), 0);
+						//Si un seul patient
+						if (anonPatientTable.getSelectedRowCount()==1) {
+							anonBtn.doClick();
+							autoSendCTP=true;
+						}
 					}
-					jdbc.disconnect();*/
+
 				}
 			}
 		});
@@ -1607,177 +1625,214 @@ public class VueAnon extends JFrame implements PlugIn{
 
 		exportBtn.setToolTipText("Fill the remote server parameters in the setup tab before attempting an export.");
 
-		JComboBox<String> reportType = new JComboBox<String>();
-		reportType.addItem("CSV");
+		JButton csvReport = new JButton("CSV Report");
+		csvReport.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				jprefer.put("reportType", "CSV");
+				CSV csv = new CSV();
+				if(!modeleExportStudies.getOrthancIds().isEmpty()){
+					for(String uid : modeleExportStudies.getOrthancIds()){
+						try {
+							StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + uid);
+							JSONObject cdfResponse = (JSONObject) parser.parse(sb.toString());
+							StringBuilder sb2 =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + uid +"/statistics");
+							JSONObject cdfResponseStats = (JSONObject) parser.parse(sb2.toString());
+							
+							//Recupere Elements d'origine
+							JSONObject cdfResponseMainPatientTags=(JSONObject) cdfResponse.get("PatientMainDicomTags");
+							JSONObject cdfResponseMainDicomTags=(JSONObject) cdfResponse.get("MainDicomTags");
+							
+							String AnonymizedFrom=cdfResponse.get("AnonymizedFrom").toString();
+							
+							String newPatientName ;
+							String newPatientId ;
+							String newStudyDesc;
+							String studyInstanceUid;
+							String nbSeries;
+							String nbInstances ;
+							String size;
+							
+							// On recupere les data apres anonymization
+							
+							if (cdfResponseMainPatientTags.containsKey("PatientName") ) {
+								newPatientName =cdfResponseMainPatientTags.get("PatientName").toString();
+							} else {
+								newPatientName ="";
+							}
+							
+							if (cdfResponseMainPatientTags.containsKey(("PatientID"))) {
+								newPatientId= cdfResponseMainPatientTags.get("PatientID").toString();
+							}else {
+								newPatientId="";
+							}
+							
+							if (cdfResponseMainDicomTags.containsKey("StudyDescription")) {
+								newStudyDesc =cdfResponseMainDicomTags.get("StudyDescription").toString();
+							}else {
+								newStudyDesc="";
+							}
+							
+							if (cdfResponseMainDicomTags.containsKey("StudyInstanceUID")) {
+								studyInstanceUid=cdfResponseMainDicomTags.get("StudyInstanceUID").toString();
+							}else {
+								studyInstanceUid="";
+							}
+							
+							if (cdfResponseStats.containsKey("CountSeries")) {
+								nbSeries = cdfResponseStats.get("CountSeries").toString();
+							}else {
+								nbSeries="";
+							}
+							
+							if(cdfResponseStats.containsKey("CountInstances")) {
+								nbInstances = cdfResponseStats.get("CountInstances").toString();
+							} else {
+								nbInstances ="";
+							}
+							
+							if(cdfResponseStats.containsKey("DiskSizeMB")) {
+								size = cdfResponseStats.get("DiskSizeMB").toString();
+							} else {
+								size ="";
+							}
+							
+							
+							//Recupere data avant anonymization
+							StringBuilder sb3 =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + AnonymizedFrom);
+							JSONObject cdfOriginalStudyDataResponse = (JSONObject) parser.parse(sb3.toString());
+							
+							JSONObject cdfOriginalStudyDataResponseMainPatientTags=(JSONObject) cdfOriginalStudyDataResponse.get("PatientMainDicomTags");
+							JSONObject cdfOriginalStudyDataResponseMainDicomTags=(JSONObject) cdfOriginalStudyDataResponse.get("MainDicomTags");
+							
+							String oldPatientName;
+							String oldPatientId;
+							String oldStudyDate;
+							String oldStudyDesc;
+							
+							if (cdfOriginalStudyDataResponseMainPatientTags.containsKey("PatientName")){
+								oldPatientName=cdfOriginalStudyDataResponseMainPatientTags.get("PatientName").toString();
+							} else {
+								oldPatientName="";
+							}
+							
+							if (cdfOriginalStudyDataResponseMainPatientTags.containsKey("PatientID")){
+								oldPatientId=cdfOriginalStudyDataResponseMainPatientTags.get("PatientID").toString();
+							} else {
+								oldPatientId="";
+							}
+							
+							if (cdfOriginalStudyDataResponseMainDicomTags.containsKey("StudyDate")){
+								oldStudyDate=cdfOriginalStudyDataResponseMainDicomTags.get("StudyDate").toString();
+							} else {
+								oldStudyDate="";
+							}
+							
+							if (cdfOriginalStudyDataResponseMainDicomTags.containsKey("StudyDescription")){
+								oldStudyDesc=cdfOriginalStudyDataResponseMainDicomTags.get("StudyDescription").toString();
+							} else {
+								oldStudyDesc="";
+							}
+							
+							csv.addStudy(oldPatientName, oldPatientId, newPatientName, newPatientId, oldStudyDate, oldStudyDesc, newStudyDesc, nbSeries, nbInstances, size, studyInstanceUid);
+							
+						} catch (org.json.simple.parser.ParseException e1) {
+							e1.printStackTrace();
+						}
+					}
+					try {
+						csv.genCSV();
+					} catch (FileNotFoundException e1) {
+						e1.printStackTrace();
+					}
+					
+				}
+				
+			}
+			
+		});
 		
-		JButton reportBtn = new JButton("Report");
-		reportBtn.addActionListener(new ActionListener() {
+		//SK ACTION QUAND CTP : ENVOIE PEER + Confirmation + Delete
+		exportCTP = new JButton("CTP");
+		exportCTP.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JSONParser parser=new JSONParser();
-				if(reportType.getSelectedItem().equals("CSV")){
-					jprefer.put("reportType", "CSV");
-					CSV csv = new CSV();
-					if(!modeleExportStudies.getOrthancIds().isEmpty()){
-						for(String uid : modeleExportStudies.getOrthancIds()){
-							try {
-								StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + uid);
-								JSONObject cdfResponse = (JSONObject) parser.parse(sb.toString());
-								StringBuilder sb2 =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + uid +"/statistics");
-								JSONObject cdfResponseStats = (JSONObject) parser.parse(sb2.toString());
-								
-								//Recupere Elements d'origine
-								JSONObject cdfResponseMainPatientTags=(JSONObject) cdfResponse.get("PatientMainDicomTags");
-								JSONObject cdfResponseMainDicomTags=(JSONObject) cdfResponse.get("MainDicomTags");
-								
-								String AnonymizedFrom=cdfResponse.get("AnonymizedFrom").toString();
-								
-								String newPatientName ;
-								String newPatientId ;
-								String newStudyDesc;
-								String studyInstanceUid;
-								String nbSeries;
-								String nbInstances ;
-								String size;
-								
-								// On recupere les data apres anonymization
-								
-								if (cdfResponseMainPatientTags.containsKey("PatientName") ) {
-									newPatientName =cdfResponseMainPatientTags.get("PatientName").toString();
-								} else {
-									newPatientName ="";
-								}
-								
-								if (cdfResponseMainPatientTags.containsKey(("PatientID"))) {
-									newPatientId= cdfResponseMainPatientTags.get("PatientID").toString();
-								}else {
-									newPatientId="";
-								}
-								
-								if (cdfResponseMainDicomTags.containsKey("StudyDescription")) {
-									newStudyDesc =cdfResponseMainDicomTags.get("StudyDescription").toString();
-								}else {
-									newStudyDesc="";
-								}
-								
-								if (cdfResponseMainDicomTags.containsKey("StudyInstanceUID")) {
-									studyInstanceUid=cdfResponseMainDicomTags.get("StudyInstanceUID").toString();
-								}else {
-									studyInstanceUid="";
-								}
-								
-								if (cdfResponseStats.containsKey("CountSeries")) {
-									nbSeries = cdfResponseStats.get("CountSeries").toString();
-								}else {
-									nbSeries="";
-								}
-								
-								if(cdfResponseStats.containsKey("CountInstances")) {
-									nbInstances = cdfResponseStats.get("CountInstances").toString();
-								} else {
-									nbInstances ="";
-								}
-								
-								if(cdfResponseStats.containsKey("DiskSizeMB")) {
-									size = cdfResponseStats.get("DiskSizeMB").toString();
-								} else {
-									size ="";
-								}
-								
-								
-								//Recupere data avant anonymization
-								StringBuilder sb3 =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + AnonymizedFrom);
-								JSONObject cdfOriginalStudyDataResponse = (JSONObject) parser.parse(sb3.toString());
-								
-								JSONObject cdfOriginalStudyDataResponseMainPatientTags=(JSONObject) cdfOriginalStudyDataResponse.get("PatientMainDicomTags");
-								JSONObject cdfOriginalStudyDataResponseMainDicomTags=(JSONObject) cdfOriginalStudyDataResponse.get("MainDicomTags");
-								
-								String oldPatientName;
-								String oldPatientId;
-								String oldStudyDate;
-								String oldStudyDesc;
-								
-								if (cdfOriginalStudyDataResponseMainPatientTags.containsKey("PatientName")){
-									oldPatientName=cdfOriginalStudyDataResponseMainPatientTags.get("PatientName").toString();
-								} else {
-									oldPatientName="";
-								}
-								
-								if (cdfOriginalStudyDataResponseMainPatientTags.containsKey("PatientID")){
-									oldPatientId=cdfOriginalStudyDataResponseMainPatientTags.get("PatientID").toString();
-								} else {
-									oldPatientId="";
-								}
-								
-								if (cdfOriginalStudyDataResponseMainDicomTags.containsKey("StudyDate")){
-									oldStudyDate=cdfOriginalStudyDataResponseMainDicomTags.get("StudyDate").toString();
-								} else {
-									oldStudyDate="";
-								}
-								
-								if (cdfOriginalStudyDataResponseMainDicomTags.containsKey("StudyDescription")){
-									oldStudyDesc=cdfOriginalStudyDataResponseMainDicomTags.get("StudyDescription").toString();
-								} else {
-									oldStudyDesc="";
-								}
-								
-								csv.addStudy(oldPatientName, oldPatientId, newPatientName, newPatientId, oldStudyDate, oldStudyDesc, newStudyDesc, nbSeries, nbInstances, size, studyInstanceUid);
-								
-							} catch (org.json.simple.parser.ParseException e1) {
-								e1.printStackTrace();
-							}
-						}
-						try {
-							csv.genCSV();
-						} catch (FileNotFoundException e1) {
-							e1.printStackTrace();
-						}
+				
+					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+						boolean sendOk=false;
+						boolean validateOk=false;
 						
-					}
-				}else{
-					jprefer.put("reportType", "CTP");
-					boolean dataSent = true;
-					if(!modeleExportStudies.getOrthancIds().isEmpty()){
-						try {
-							JDBCConnector jdbc = new JDBCConnector();
-							for(Study study : modeleExportStudies.getStudiesList()){
-								StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + study.getId() +"/statistics");
-								JSONObject cdfResponseStats = (JSONObject) parser.parse(sb.toString());
-								
-								String size;
-								
-								if (cdfResponseStats.containsKey("DiskSizeMB")) {
-									size=cdfResponseStats.get("DiskSizeMB").toString();
-								}else {
-									size="";
+						@Override
+						protected Void doInBackground() {
+							System.out.println("ici");
+							//Etape 1 : On envoie les DICOM Vers le Peer ad hoc
+							//SK A FAIRE : Definition du PEER
+							try {
+								stateExports.setText("<html><font color= 'green'> Step 1/3 Sending to CTP Peer :"+listePeers.getSelectedItem().toString()+ "</font></html>");
+								query.sendPeer(listePeers.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
+								sendOk=true;
+							} catch (IOException e1) {
+								stateExports.setText("<html><font color= 'red'>The upload was not received (" + e1.getMessage() + ") </font></html>");
+							}
+							if (sendOk) {
+								stateExports.setText("<html><font color= 'green'>Step 2/3 : Validating upload</font></html>");
+								CTP ctp=new CTP(CTPUsername, CTPPassword, addressFieldCTP.getText());
+								for(Study study : modeleExportStudies.getStudiesList()){
+									validateOk=ctp.validateUpload(study.getStudyDescription(), study.getNewStudyInstanceUID(), study.getPatientName());
+									
 								}
-								
-								if(!jdbc.sendSizeAndNewUID(study.getPatientName(), size, study.getNewStudyInstanceUID())){
-									dataSent = false;
-								}
-								if(remoteFileName != null){
-									if(!jdbc.sendFileName(study.getPatientName(), remoteFileName.toString())){
-										dataSent = false;										
+								if(validateOk) {
+									stateExports.setText("<html><font color= 'green'>Step 3/3 : Deleting local study </font></html>");
+									for(Study study : modeleExportStudies.getStudiesList()){
+										//try {
+											//RECUPERER LE ORTHANC ID DE LA STUDY ANONYMISEE POUR LE DELETE
+											//connexionHttp.makeDeleteConnection("/studies/"+ORTHANC ID);
+											//A VOIR SK SI ON EFFACE L ETUDE ORIGINALE
+											//connexionHttp.makeDeleteConnection(study.getOldStudyInstanceUID());
+										//} catch (IOException e) {
+										//	e.printStackTrace();
+										//}
 									}
+									
+								}
+								else {
+								return null;
 								}
 							}
-							remoteFileName = null;
-							jdbc.disconnect();
-							if(!dataSent){
-								stateExports.setText("<html><font color = 'red'>The report was not sent to the database</font></html>");
-							}else{
-								stateExports.setText("<html><font color = 'green'>The report was sent to the database</font></html>");
+							else {
+								return null;
 							}
-						} catch (ClassNotFoundException | SQLException |org.json.simple.parser.ParseException e1) {
-							e1.printStackTrace();
-						} 
+							
+							return null;
+						}
+				
+						@Override
+						protected void done(){
+							if (sendOk && validateOk)stateExports.setText("<html><font color= 'green'>CTP Export Done </font></html>");
+							else if ( !sendOk) stateExports.setText("<html><font color= 'red'> Upload Failed </font></html>");
+							else if (!validateOk) stateExports.setText("<html><font color= 'red'> Validation Failed </font></html>");
+						}
+					};
+					
+					
+					if(!modeleExportStudies.getOrthancIds().isEmpty()){
+						
+						worker.execute();
 					}
-				}
-			}
-		});
+				
+	
+	
+	
+	
+	
+				
 
-		try {
+				}
+			});
+
+		
 			QueryFillStore query = new QueryFillStore(connexionHttp);
 
 			JButton exportToZip = new JButton("Zip");
@@ -1867,8 +1922,8 @@ public class VueAnon extends JFrame implements PlugIn{
 				}
 			});
 
-			JComboBox<Object> listePeers = new JComboBox<Object>(query.getPeers());
-			JButton peerExport = new JButton("OrthancPeer");
+			listePeers = new JComboBox<Object>(query.getPeers());
+			peerExport = new JButton("OrthancPeer");
 			peerExport.addActionListener(new ActionListener() {
 
 				@Override
@@ -1878,30 +1933,37 @@ public class VueAnon extends JFrame implements PlugIn{
 						protected Void doInBackground() {
 							peerExport.setEnabled(false);
 							peerExport.setText("Sending...");
+							boolean sendok=true;
 							try {
 								query.sendPeer(listePeers.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
 							} catch (IOException e1) {
-								stateExports.setText("<html><font color= 'red'>The request was not received (" + e1.getMessage() + ") </font></html>");
+								sendok=false;
+								stateExports.setText("<html><font color= 'red'>The upload was not received (" + e1.getMessage() + ") </font></html>");
 							}
+							if (sendok) stateExports.setText("<html><font color= 'green'>The upload was successfully received</font></html>");
+							
 							return null;
 						}
 
 						@Override
 						protected void done(){
-							stateExports.setText("<html><font color= 'green'>The request was successfully received</font></html>");
 							peerExport.setText("OrthancPeer");
 							peerExport.setEnabled(true);
 						}
 					};
 					if(!modeleExportStudies.getOrthancIds().isEmpty()){
-						stateExports.setText("Sending to a peer");
+						stateExports.setText("Sending to "+listePeers.getSelectedItem().toString());
 						worker.execute();
 					}
 				}
 			});
-
-			exportPanel.add(reportType);
-			exportPanel.add(reportBtn);
+			
+			
+			exportPanel.add(exportCTP);
+			JLabel dummyLabel4 = new JLabel("");
+			dummyLabel4.setBorder(new EmptyBorder(0,0,0,50));
+			exportPanel.add(dummyLabel4);
+			exportPanel.add(csvReport);
 			JLabel dummyLabel0 = new JLabel("");
 			dummyLabel0.setBorder(new EmptyBorder(0,0,0,50));
 			exportPanel.add(dummyLabel0);
@@ -1920,9 +1982,7 @@ public class VueAnon extends JFrame implements PlugIn{
 			exportPanel.add(dummyLabel3);
 			exportPanel.add(listePeers);
 			exportPanel.add(peerExport);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+
 		JPanel southExport = new JPanel();
 		southExport.setLayout(new BoxLayout(southExport, BoxLayout.PAGE_AXIS));
 		southExport.add(labelPanelExport);
@@ -1960,7 +2020,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		JPanel clinicalTrialProcessorGrid = new JPanel(new GridLayout(3,2));
 		JPanel clinicalTrialProcessor =new JPanel();
 		clinicalTrialProcessor.add(clinicalTrialProcessorGrid);
-		JPanel eastDB = new JPanel(new GridBagLayout());
+		
 
 		GridBagConstraints gbSetup = new GridBagConstraints();
 		gbSetup.gridx = 0;
@@ -2116,7 +2176,6 @@ public class VueAnon extends JFrame implements PlugIn{
 
 		JTabbedPane eastSetupPane = new JTabbedPane();
 		eastSetupPane.add("Export setup", eastExport);
-		eastSetupPane.addTab("Database setup", eastDB);
 		eastSetupPane.addTab("Other", clinicalTrialProcessor);
 
 		gbSetup.insets = new Insets(20, 10, 0, 10);
@@ -2193,66 +2252,14 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.exportType.setPreferredSize(new Dimension(140,20));
 		eastExport.add(this.exportType, gbSetup);
 
-		gbSetup.gridx = 0;
-		gbSetup.gridy = 0;
-		eastDB.add(new JLabel("Adress"), gbSetup);
-		
-		gbSetup.gridx = 1;
-		gbSetup.gridy = 0;
-		this.dbAdress = new JTextField();
-		this.dbAdress.setText(jprefer.get("dbAdress", ""));
-		this.dbAdress.setPreferredSize(new Dimension(300,20));
-		eastDB.add(this.dbAdress, gbSetup);
-		
-		gbSetup.gridx = 0;
-		gbSetup.gridy = 1;
-		eastDB.add(new JLabel("Port"), gbSetup);
-		
-		gbSetup.gridx = 1;
-		gbSetup.gridy = 1;
-		this.dbPort = new JTextField();
-		this.dbPort.setText(jprefer.get("dbPort", ""));
-		this.dbPort.setPreferredSize(new Dimension(300,20));
-		eastDB.add(this.dbPort, gbSetup);
-		
-		gbSetup.gridx = 0;
-		gbSetup.gridy = 2;
-		eastDB.add(new JLabel("Database name"), gbSetup);
-		
-		gbSetup.gridx = 1;
-		gbSetup.gridy = 2;
-		this.dbName = new JTextField();
-		this.dbName.setText(jprefer.get("dbName", ""));
-		this.dbName.setPreferredSize(new Dimension(300,20));
-		eastDB.add(this.dbName, gbSetup);
-		
-		gbSetup.gridx = 0;
-		gbSetup.gridy = 3;
-		eastDB.add(new JLabel("Username"), gbSetup);
-		
-		gbSetup.gridx = 1;
-		gbSetup.gridy = 3;
-		this.dbUsername = new JTextField();
-		this.dbUsername.setText(jprefer.get("dbUsername", ""));
-		this.dbUsername.setPreferredSize(new Dimension(300,20));
-		eastDB.add(this.dbUsername, gbSetup);
-		
-		gbSetup.gridx = 0;
-		gbSetup.gridy = 4;
-		eastDB.add(new JLabel("Password"), gbSetup);
-		
-		gbSetup.gridx = 1;
-		gbSetup.gridy = 4;
-		this.dbPassword = new JPasswordField();
-		this.dbPassword.setText(jprefer.get("dbPassword", ""));
-		this.dbPassword.setPreferredSize(new Dimension(300,20));
-		eastDB.add(this.dbPassword, gbSetup);
+
 		
 		//add CTP Panel
 		JLabel address=new JLabel("Address");
 		addressFieldCTP=new JTextField();
 		addressFieldCTP.setToolTipText("Include http:// or https://");
 		addressFieldCTP.setPreferredSize(new Dimension(300,20));
+		addressFieldCTP.setText(jprefer.get("CTPAddress", "http://"));
 		clinicalTrialProcessorGrid.add(address);
 		clinicalTrialProcessorGrid.add(addressFieldCTP);
 		
@@ -2335,14 +2342,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		aboutPanel.add(setupButton);
 		aboutPanel.add(aboutBtn);
 		
-		if(dbAdress.getText().length() > 0 && dbPort.getText().length() > 0 && dbName.getText().length() > 0
-				&& dbUsername.getText().length() > 0 && new String(dbPassword.getPassword()).length() > 0){
-			reportType.addItem("CTP");
-			reportType.setSelectedItem(jprefer.get("reportType", "CSV"));
-		}
-		
-		if(dbAdress.getText().length() == 0 || dbPort.getText().length() == 0 || dbName.getText().length() == 0
-				|| dbUsername.getText().length() == 0 || new String(dbPassword.getPassword()).length() == 0){
+		if(!addressFieldCTP.getText().equals("http://")  && !addressFieldCTP.getText().equals("https://") ){
 			setNamesIdBtn.setVisible(false);
 		}
 		
@@ -2419,7 +2419,7 @@ public class VueAnon extends JFrame implements PlugIn{
 				}
 				jprefer.put("profileAnon", anonProfiles.getSelectedItem().toString());
 				jprefer.put("centerCode", centerCode.getText());
-				jprefer.put("CTP address", addressFieldCTP.getText());
+				jprefer.put("CTPAddress", addressFieldCTP.getText());
 				
 				// Putting the export preferences in the anon plugin registry
 				if(remoteServer.getText() != null){
@@ -2438,40 +2438,12 @@ public class VueAnon extends JFrame implements PlugIn{
 					jprefer.put("remoteFilePath", remoteFilePath.getText());
 				}
 				jprefer.put("exportType", exportType.getSelectedItem().toString());
-
-				// Putting the database preferences in the anon plugin registry				
-				if(dbAdress.getText() != null){
-					jprefer.put("dbAdress", dbAdress.getText());
-				}
 				
-				if(dbPort.getText() != null){
-					jprefer.put("dbPort", dbPort.getText());
-				}
-				
-				if(dbName.getText() != null){
-					jprefer.put("dbName", dbName.getText());
-				}
-				
-				if(dbUsername.getText() != null){
-					jprefer.put("dbUsername", dbUsername.getText());
-				}
-				
-				if(new String(dbPassword.getPassword()) != null){
-					jprefer.put("dbPassword", new String(dbPassword.getPassword()));
-				}
-				
-				if(addressFieldCTP.getText().isEmpty()  ){
-					reportType.removeAllItems();
-					reportType.addItem("CSV");
-				}else{
-					reportType.removeAllItems();
-					reportType.addItem("CSV");
-					reportType.addItem("CTP");
-				}
-
-				if(	addressFieldCTP.getText().isEmpty() ){
+				if(addressFieldCTP.getText().equals("http://") || addressFieldCTP.getText().equals("https://") || addressFieldCTP.getText().isEmpty()){
+					exportCTP.setVisible(false);
 					setNamesIdBtn.setVisible(false);
-				}else{
+				}else {
+					exportCTP.setVisible(true);
 					setNamesIdBtn.setVisible(true);
 				}
 				
@@ -2480,18 +2452,7 @@ public class VueAnon extends JFrame implements PlugIn{
 				}else{
 					exportBtn.setEnabled(true);
 				}
-				/*if(tabbedPane.getSelectedIndex() == 0){
-					if(!modeleAnonStudies.getOldOrthancUIDs().isEmpty()){
-						anonTablesPanel.setVisible(true);
-						displayAnonTool.setText("Close anonymization tool");
-						displayExportTool.setVisible(false);
-						addToAnon.setVisible(true);
-					}
-				}else{
-					displayAnonTool.setText("Anonymize");
-					openCloseAnonTool(false);
-					pack();
-				}*/
+				
 				pack();
 			}
 		});
@@ -2789,16 +2750,17 @@ public class VueAnon extends JFrame implements PlugIn{
 						}
 						
 						// Checking if several anonymized patients have the same ID or not
-						boolean[] similarIDs = {false};
+						boolean similarIDs = false;
+						ArrayList<String> newIDs = new ArrayList<String>();
 						for(int n = 0; n < anonPatientTable.getRowCount(); n++){
 							String newID = modeleAnonPatients.getPatient(anonPatientTable.convertRowIndexToModel(n)).getNewID();
 							if(newID != "" && !newIDs.contains(newID)){
 								newIDs.add(newID);
 							}else if(newIDs.contains(newID)){
-								similarIDs[0] = true;
+								similarIDs = true;
 							}
 						}
-						if(similarIDs[0]){
+						if(similarIDs){
 							dialogResult = JOptionPane.showConfirmDialog (gui, 
 									"You have defined 2 or more identical IDs for anonymized patients, which is not recommended."
 											+ " Are you sure you want to anonymize ?",
@@ -2843,9 +2805,15 @@ public class VueAnon extends JFrame implements PlugIn{
 									i++;
 									newUID = quAnon.getNewPatientUID();
 								}
+								//SK A VOIR CETTE METHODE CF REMARQUE DANS TABLEDATAEXPORTSTUDIES
 								modeleExportStudies.addStudy(newName, newID, newUID);
 								j++;
 							}
+							//SK AJOUTE A TESTER RISQUE BUG
+							modeleAnonStudies.empty();
+							modeleAnonPatients.clear();
+							
+							
 						}
 					} catch (IOException e1) {
 						e1.printStackTrace();
@@ -2887,6 +2855,11 @@ public class VueAnon extends JFrame implements PlugIn{
 					} catch (Exception e1) {
 						// IGNORE
 					}
+					//Si foncion a �t� fait avec le CTP on fait l'envoi auto A l'issue de l'anon
+					if(autoSendCTP) {
+						exportCTP.doClick();
+						autoSendCTP=false;
+					}
 				}
 			};
 			if(!modeleAnonStudies.getOldOrthancUIDs().isEmpty()){
@@ -2898,7 +2871,6 @@ public class VueAnon extends JFrame implements PlugIn{
 	}
 	
 	// LAUNCHERS
-	// SK AJOUTER VISIBILITE DU SETTING SERVEUR DANS LE SETUP POUR LE LANCMENT HORS IMAGEJ
 	public static void main(String... args){
 		System.setProperty("org.apache.commons.logging.Log",
 				"org.apache.commons.logging.impl.NoOpLog");

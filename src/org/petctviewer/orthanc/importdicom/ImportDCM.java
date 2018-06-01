@@ -89,10 +89,12 @@ public class ImportDCM extends JFrame implements PlugIn{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(path.getText().length() > 0){
+					state.setForeground(Color.black);
 					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 
 						@Override
 						protected Void doInBackground() throws Exception { 
+							
 							importFiles(Paths.get(jpreferPerso.get("filesLocation", System.getProperty("user.dir"))));
 							return null;
 						}

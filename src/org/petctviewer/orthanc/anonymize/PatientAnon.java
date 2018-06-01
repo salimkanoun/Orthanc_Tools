@@ -25,16 +25,18 @@ public class PatientAnon {
 	private String patientId;;
 	private String id;
 	private Date birthdate;
+	private String sex;
 	private String newName;
 	private String newID;
 	private String newUID;
 	private ArrayList<String> selectedStudyUID = new ArrayList<String>();
 	
-	public PatientAnon(String patientName, String patientId, String id, Date birthdate, ArrayList<String> selectedStudyUID){
+	public PatientAnon(String patientName, String patientId, String id, Date birthdate, String sex, ArrayList<String> selectedStudyUID){
 		this.patientName = patientName;
 		this.patientId = patientId;
 		this.id = id;
 		this.birthdate = birthdate;
+		this.sex=sex;
 		this.newName = "";
 		this.newID = "";
 		this.newUID = "";
@@ -71,6 +73,14 @@ public class PatientAnon {
 
 	public void setBirthdate(Date birthdate) {
 		this.birthdate = birthdate;
+	}
+	
+	public void setSex(String sex) {
+		this.sex=sex;
+	}
+	
+	public String getSex() {
+		return sex;
 	}
 
 	public String getNewName() {
