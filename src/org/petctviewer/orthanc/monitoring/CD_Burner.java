@@ -297,7 +297,7 @@ public class CD_Burner {
 		return dat;
 	}
 	
-	private static void recursiveDeleteOnExit(Path path) throws IOException {
+	public static void recursiveDeleteOnExit(Path path) throws IOException {
 		  Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 		    @Override
 		    public FileVisitResult visitFile(Path file,
