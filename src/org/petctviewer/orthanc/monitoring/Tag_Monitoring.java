@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.prefs.Preferences;
 
 import javax.swing.JTextArea;
 
@@ -16,6 +17,7 @@ import org.petctviewer.orthanc.ParametreConnexionHttp;
 public class Tag_Monitoring {
 	
 	private static final String parentStudy = null;
+	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
 	private ParametreConnexionHttp parametre;
 	private String level;
 	private JSONParser parser=new JSONParser();
@@ -41,10 +43,7 @@ public class Tag_Monitoring {
 				JDBC_Monitoring db=null;
 				try {
 					db=new JDBC_Monitoring();
-				} catch (ClassNotFoundException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (SQLException e1) {
+				} catch (ClassNotFoundException | SQLException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
@@ -63,8 +62,9 @@ public class Tag_Monitoring {
 						
 						//On ecrit dans la BDD
 						//SK BOOLEAN A GERER SI IL Y A UNE BDD D ACTIVE
-		
-						db.InsertPatient(hashmapTagPatient.get("LastName"), hashmapTagPatient.get("FirstName") ,  hashmapTagPatient.get("PatientID"), monitoring.newPatientID.get(i),hashmapTagPatient.get("PatientBirthDate"), hashmapTagPatient.get("PatientSex") );
+						if(jprefer.getBoolean("useDBMonitoring", false)) {
+							db.InsertPatient(hashmapTagPatient.get("LastName"), hashmapTagPatient.get("FirstName") ,  hashmapTagPatient.get("PatientID"), monitoring.newPatientID.get(i),hashmapTagPatient.get("PatientBirthDate"), hashmapTagPatient.get("PatientSex") );
+						}
 					}
 					
 				}
@@ -77,11 +77,12 @@ public class Tag_Monitoring {
 						} catch (ParseException e) {
 							e.printStackTrace();
 						}
-						//On ecrit dans la BDD
-						//SK BOOLEAN A GERER SI IL Y A UNE BDD D ACTIVE
+						if(jprefer.getBoolean("useDBMonitoring", false)) {
+							db.InsertPatient(studyTag.get("LastName"), studyTag.get("FirstName") ,  studyTag.get("PatientID"), monitoring.newPatientID.get(i), studyTag.get("PatientBirthDate"), studyTag.get("PatientSex") );
+							db.InsertStudy(studyTag.get("StudyID"), studyTag.get("StudyInstanceUID"), studyTag.get(monitoring.newStudyID.get(i)), studyTag.get("AccessionNumber"), studyTag.get("InstitutionName"), studyTag.get("ReferringPhysicianName"), studyTag.get("StudyDate"), studyTag.get("StudyDescription"), studyTag.get("StudyTime"));
+							
+						}
 						
-						db.InsertPatient(studyTag.get("LastName"), studyTag.get("FirstName") ,  studyTag.get("PatientID"), monitoring.newPatientID.get(i), studyTag.get("PatientBirthDate"), studyTag.get("PatientSex") );
-						db.InsertStudy(studyTag.get("StudyID"), studyTag.get("StudyInstanceUID"), studyTag.get(monitoring.newStudyID.get(i)), studyTag.get("AccessionNumber"), studyTag.get("InstitutionName"), studyTag.get("ReferringPhysicianName"), studyTag.get("StudyDate"), studyTag.get("StudyDescription"), studyTag.get("StudyTime"));
 						
 					}
 				}
@@ -97,11 +98,13 @@ public class Tag_Monitoring {
 						foundTags.put("Shared_Tags", sbSharedTags.toString());
 						
 						System.out.println(foundTags.toString());
-						db.InsertPatient(foundTags.get("LastName"), foundTags.get("FirstName") ,  foundTags.get("PatientID"), foundTags.get("ParentPatient") , foundTags.get("PatientBirthDate"), foundTags.get("PatientSex") );
-						db.InsertStudy(foundTags.get("StudyID"), foundTags.get("StudyInstanceUID"), foundTags.get("ParentStudy") , foundTags.get("AccessionNumber"), foundTags.get("InstitutionName"), foundTags.get("ReferringPhysicianName"), foundTags.get("StudyDate"), foundTags.get("StudyDescription"), foundTags.get("StudyTime"));
-						//A FAIRE RECUPERER LES CLE DE LA HASHMAP
-						//db.InsertSeries(size, age, weight, Manifacturer, Manifacturer_Model, Performing_Physician_Name, Series_Description, Station_Name, Content_Date, Content_Time, Protocol_Name, Series_Instance_UID, Comment_Radiation_Dose, Radiopharmaceutical_sequence, Radiopharmaceutical, RadiopharmaceuticalStartTime, RadionuclideTotalDose, RadionuclideHalfLife, RadionuclidePositronFraction, Radiation_Dose_Module, Shared_Tags, Orthanc_Serie_ID);
-						
+						if(jprefer.getBoolean("useDBMonitoring", false)) {
+							db.InsertPatient(foundTags.get("LastName"), foundTags.get("FirstName") ,  foundTags.get("PatientID"), foundTags.get("ParentPatient") , foundTags.get("PatientBirthDate"), foundTags.get("PatientSex") );
+							db.InsertStudy(foundTags.get("StudyID"), foundTags.get("StudyInstanceUID"), foundTags.get("ParentStudy") , foundTags.get("AccessionNumber"), foundTags.get("InstitutionName"), foundTags.get("ReferringPhysicianName"), foundTags.get("StudyDate"), foundTags.get("StudyDescription"), foundTags.get("StudyTime"));
+							db.InsertSeries(foundTags.get("PatientSize"), foundTags.get("PatientAge"), foundTags.get("PatientWeight"),foundTags.get("Manufacturer"), foundTags.get("ManufacturerModelName"), foundTags.get("PerformingPhysicianName"), foundTags.get("SeriesDescription"), foundTags.get("StationName"), foundTags.get("ContentDate"), foundTags.get("ContentTime"), foundTags.get("ProtocolName"), foundTags.get("SeriesInstanceUID"), foundTags.get("CommentsOnRadiationDose"), foundTags.get("RadiopharmaceuticalInformationSequence"), foundTags.get("Radiopharmaceutical"), foundTags.get("RadiopharmaceuticalStartTime"), foundTags.get("RadionuclideTotalDose"), foundTags.get("RadionuclideHalfLife"), foundTags.get("RadionuclidePositronFraction"), foundTags.get(Tag_Of_Interest.radiationDoseModule), foundTags.get("Shared_Tags"), foundTags.get(monitoring.newStableSeriesID.get(i)));
+							
+						}
+
 					}
 					
 					
@@ -199,7 +202,6 @@ public class Tag_Monitoring {
 			String parentPatient=(String) patientJson.get("ParentPatient");
 			hashmapTag.put("ParentPatient", parentPatient);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -210,7 +212,6 @@ public class Tag_Monitoring {
 		try {
 			tags = (JSONObject) parser.parse(instanceJson.toString());
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
