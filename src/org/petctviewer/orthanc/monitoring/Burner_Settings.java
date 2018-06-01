@@ -35,6 +35,8 @@ import javax.swing.JRadioButton;
 import javax.swing.SwingConstants;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
 
 @SuppressWarnings("serial")
 public class Burner_Settings extends JDialog {
@@ -55,6 +57,7 @@ public class Burner_Settings extends JDialog {
 	private  String epsonDirectory;
 	private  String fijiDirectory;
 	private  Boolean deleteStudies;
+	private JComboBox<String> comboBoxSupportType;
 	
 	/**
 	 * Launch the application.
@@ -85,7 +88,7 @@ public class Burner_Settings extends JDialog {
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(new GridLayout(0, 2, 0, 0));
 		{
-			JButton imageJ = new JButton("Set ImageJ viewer");
+			JButton imageJ = new JButton("Set Viewer Directory");
 			imageJ.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					JFileChooser fc=new JFileChooser();
@@ -173,6 +176,21 @@ public class Burner_Settings extends JDialog {
 				rdbtnMmddyyyy.setActionCommand("MM/dd/yyyy");
 				buttonGroup.add(rdbtnMmddyyyy);
 				panel.add(rdbtnMmddyyyy);
+				{
+					JLabel CdType = new JLabel("CD/DVD Type");
+					CdType.setHorizontalAlignment(SwingConstants.CENTER);
+					contentPanel.add(CdType);
+				}
+				{
+					JPanel panel_1 = new JPanel();
+					contentPanel.add(panel_1);
+					{
+						comboBoxSupportType = new JComboBox<String>();
+						comboBoxSupportType.setModel(new DefaultComboBoxModel<String>(new String[] {"Auto", "CD", "DVD"}));
+						comboBoxSupportType.setSelectedItem(jPrefer.get("suportType", "Auto"));
+						panel_1.add(comboBoxSupportType);
+					}
+				}
 				if (rdbtnMmddyyyy.getActionCommand().equals(dateFormatChoix)) rdbtnMmddyyyy.setSelected(true);
 			}
 		}
@@ -189,6 +207,7 @@ public class Burner_Settings extends JDialog {
 						if (fijiDirectory!=null) jPrefer.put("fijiDirectory", fijiDirectory);
 						if (labelFile!=null) jPrefer.put("labelFile", labelFile);
 						if (deleteStudies!=null) jPrefer.putBoolean("deleteStudies", deleteStudies);
+						jPrefer.put("suportType", comboBoxSupportType.getSelectedItem().toString());
 						//On ajoute la string du format date
 						jPrefer.put("DateFormat", buttonGroup.getSelection().getActionCommand());
 						//on dispose 
@@ -219,6 +238,7 @@ public class Burner_Settings extends JDialog {
 				getRootPane().setDefaultButton(okButton);
 			}
 		}
+		
 	}
 	
 	public void setCDPreference() {
@@ -228,6 +248,8 @@ public class Burner_Settings extends JDialog {
 		labelFile=jPrefer.get("labelFile", null);
 		dateFormatChoix=jPrefer.get("DateFormat", null);
 		deleteStudies=jPrefer.getBoolean("deleteStudies", false);
+		
+
 
 		
 	}

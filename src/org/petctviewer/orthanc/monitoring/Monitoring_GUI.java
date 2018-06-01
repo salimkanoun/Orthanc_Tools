@@ -388,6 +388,7 @@ public class Monitoring_GUI extends JFrame {
 						
 						JPanel panel_AutoRouting = new JPanel();
 						tabbedPane.addTab("Auto-Routing", null, panel_AutoRouting, null);
+						tabbedPane.setEnabledAt(3, false);
 						
 						JPanel panel_AutoRouting_main = new JPanel();
 						panel_AutoRouting.add(panel_AutoRouting_main);

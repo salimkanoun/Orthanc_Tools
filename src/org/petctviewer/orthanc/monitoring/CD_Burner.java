@@ -37,6 +37,7 @@ import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
@@ -52,6 +53,7 @@ public class CD_Burner {
 	private  String epsonDirectory;
 	private  String fijiDirectory;
 	private  Boolean deleteStudies;
+	private String suportType;
 	private JTextArea textArea;
 	private Path folder;
 	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -127,7 +129,7 @@ public class CD_Burner {
 				file = Files.createTempFile("CD_"+dateFormat.format(datenow) , ".zip");
 				file.toFile().deleteOnExit();
 				zipDownloader.setConvertZipAction(file.toString(), newStableStudyID.get(i), true);
-				//SK METHODE A MODIFIER POUR AVOIR LES SERIES NAME
+				//generate ZIP of DICOMs
 				zipDownloader.generateZip(true);
 				File zip=zipDownloader.getGeneratedZipFile();
 				// Recuperation des donn�es patients
@@ -145,8 +147,27 @@ public class CD_Burner {
 				File dat = printDat(nom, id, date, studyDescription);
 				//On efface tout a la sortie JVM
 				recursiveDeleteOnExit(folder);
+				//Get size of viewer and images to determine if CD or DVD to Burn
+				Long imageSize=FileUtils.sizeOfDirectory(folder.toFile());
+				Long ViewerSize=FileUtils.sizeOfDirectory(new File(fijiDirectory));
+				String discType;
+				if (suportType.equals("Auto")) {
+					//If size over 630 Mo
+					if(Long.sum(imageSize,ViewerSize) > 630000000) {
+						discType="DVD";
+					}
+					//else CD
+					else {
+						discType="CD";
+					}
+				}
+				//If fixed by user get value from registery
+				else {
+					discType=suportType;
+				}
+				
 				// Creation du Cd
-				createCdBurner(nom, id, date, studyDescription, dat);
+				createCdBurner(nom, id, date, studyDescription, dat, discType);
 				//On efface la study de Orthanc
 				if (deleteStudies) connexion.makeDeleteConnection("/studies/"+newStableStudyID.get(i));
 			} catch (IOException | org.json.simple.parser.ParseException | ParseException e) {
@@ -210,7 +231,7 @@ public class CD_Burner {
 	 * @param studyDescription
 	 * @param dat
 	 */
-	private void createCdBurner(String nom, String id, String date, String studyDescription, File dat){
+	private void createCdBurner(String nom, String id, String date, String studyDescription, File dat, String discType){
 		
 		//REalisation du texte pour le Robot
 		String txtRobot= "# Making data CD\n"
@@ -218,7 +239,7 @@ public class CD_Burner {
 				+ "#nombre de copies\n"
 				+ "COPIES=1\n"
 				+ "#CD ou DVD\n"
-				+ "DISC_TYPE=DVD\n"
+				+ "DISC_TYPE="+discType+"\n"
 				+ "FORMAT=UDF102\n"
 				+ "DATA="+fijiDirectory+"\n"
 				+ "DATA="+folder+ File.separator+ "DICOM" +File.separator+"\n"
@@ -302,6 +323,7 @@ public class CD_Burner {
 				labelFile=jPrefer.get("labelFile", null);
 				dateFormatChoix=jPrefer.get("DateFormat", null);
 				deleteStudies=jPrefer.getBoolean("deleteStudies", false);
+				suportType=jPrefer.get("suportType", "Auto");
 		
 				
 	}
