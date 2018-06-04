@@ -36,7 +36,7 @@ public class Run_Orthanc {
 			e.printStackTrace();
 		}
 		try {
-			Thread.sleep(10000);
+			Thread.sleep(50000);
 			this.stopOrthanc();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
@@ -54,7 +54,7 @@ public class Run_Orthanc {
 		file = Files.createTempDirectory("Orthanc_"+dateFormat.format(new Date()));
 		File FileExe=new File(file.toString()+File.separator+"Orthanc-1.3.2-Release.exe");
 		File FileJSON=new File(file.toString()+File.separator+"Orthanc.json");
-		//file.toFile().deleteOnExit();
+		
        
 		InputStream in = ClassLoader.getSystemResourceAsStream(resourceName);
 		InputStream inJson = ClassLoader.getSystemResourceAsStream(resourceNameJSON);
@@ -64,6 +64,7 @@ public class Run_Orthanc {
 		OutputStream outJson = new FileOutputStream(FileJSON);
 		IOUtils.copy(inJson, outJson);
 		out.close();
+		outJson.close();
 		
 	    startOrthanc(FileExe.getAbsolutePath().toString(), FileJSON.getAbsolutePath().toString());
 
@@ -73,18 +74,11 @@ public class Run_Orthanc {
     }
 	
 	public void startOrthanc(String exe, String json) {
-		
-		
-		
-		
-        
-		
-		
 		 
         orthancThread=new Thread(new Runnable() {
 
 			public void run() {
-					ProcessBuilder pb = new ProcessBuilder(exe,"./Orthanc.json");
+					ProcessBuilder pb = new ProcessBuilder(exe, json);
 	
 					pb.redirectErrorStream(true); 
 				
@@ -136,10 +130,13 @@ public class Run_Orthanc {
 	public void stopOrthanc() {
 		System.out.println("ici");
 		process.destroy();
-		orthancThread.stop();
+		orthancThread.interrupt();;
 		try {
+			//On Attend sortie d'Orthanc pour liberer le JSON
+			Thread.sleep(2000);
 			CD_Burner.recursiveDeleteOnExit(file);
-		} catch (IOException e) {
+			file.toFile().deleteOnExit();
+		} catch (IOException | InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
