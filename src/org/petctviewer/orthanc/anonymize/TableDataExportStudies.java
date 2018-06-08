@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import javax.swing.table.AbstractTableModel;
 
 import org.json.simple.JSONObject;
-
+import org.json.simple.parser.JSONParser;
 import org.petctviewer.orthanc.*;
 
 public class TableDataExportStudies extends AbstractTableModel{
@@ -99,57 +99,33 @@ public class TableDataExportStudies extends AbstractTableModel{
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
-	public void addStudy(String patientName, String patientID, String patientUID) throws IOException, ParseException{
-		
-		
-		//SK A REVOIR PROBABLE PB DE CONCEPTION
-		//DOIT RECUPERER LES INFO D UNE STUDY ET PAS DE TOUT LE PATIENT ANON !
+	public void addStudy(String patientName, String patientID, String studyID) throws IOException, ParseException{
 		
 		DateFormat parser = new SimpleDateFormat("yyyyMMdd");
 		
-		QueryFillStore queryStudies = new QueryFillStore(connexionHttp, "studies", null, patientUID, null, null);
+		StringBuilder studydetails= connexionHttp.makeGetConnectionAndStringBuilder("/studies/"+studyID);
 		
-		List<JSONObject> jsonResponsesPatient=queryStudies.getJsonResponse();
-		
-		//On prepare les variables de stockage
-		String[] id = new String[jsonResponsesPatient.size()];
-		String[] description = new String[jsonResponsesPatient.size()];
-		String[] accession = new String[jsonResponsesPatient.size()];
-		Date[] date = new Date[jsonResponsesPatient.size()];
-		String[] studyInstanceUID = new String[jsonResponsesPatient.size()];
-		
-		//On boucle pour extraire les valeurs des JSONs
-		for(int i=0; i<jsonResponsesPatient.size();i++){
-			JSONObject mainDicomTag=(JSONObject) jsonResponsesPatient.get(i).get("MainDicomTags");
-			id[i]=(String) jsonResponsesPatient.get(i).get("ID");
-			
-			if (mainDicomTag.containsKey("StudyDescription")) {
-				description[i]=((String) mainDicomTag.get("StudyDescription"));
-			} else {
-				description[i]="";
-			}
-			
-			if (mainDicomTag.containsKey("AccessionNumber")) {
-				accession[i]=((String) mainDicomTag.get("AccessionNumber"));
-			} else {
-				accession[i]="";
-			}
-			
-			if (mainDicomTag.containsKey("StudyDate")) {
-				String dateString=mainDicomTag.get("StudyDate").toString();
-				date[i]=parser.parse(dateString);
-				if (!dateString.equals("")) date[i]=parser.parse(dateString); else date[i]=null;
-			} else {
-				date[i]=null;
-			}
-			
-			if (mainDicomTag.containsKey("StudyInstanceUID")) {
-				studyInstanceUID[i]=(String) mainDicomTag.get("StudyInstanceUID");
-			} else {
-				studyInstanceUID[i]="";
-			}
-
+		JSONParser parserJson=new JSONParser();
+		JSONObject response = null;
+		try {
+			response=(JSONObject) parserJson.parse(studydetails.toString());
+		} catch (org.json.simple.parser.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		
+		JSONObject mainTags=(JSONObject) response.get("MainDicomTags");
+		
+		//Get and parse date
+		String dateString=mainTags.get("StudyDate").toString();
+		Date dateValue;
+		if (!dateString.equals("")) dateValue=parser.parse(dateString); else dateValue=null;
+		
+		String[] id = {studyID};
+		String[] description = {(String) mainTags.get("StudyDescription")};
+		String[] accession = {(String) mainTags.get("AccessionNumber")};
+		Date[] date = {dateValue};
+		String[] studyInstanceUID = {(String) mainTags.get("StudyInstanceUID")};
 		
 		
 

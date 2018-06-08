@@ -17,6 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.setup;
 
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -26,25 +27,35 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.prefs.Preferences;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.SwingWorker;
+
+import org.apache.commons.io.FileUtils;
+import org.petctviewer.orthanc.anonymize.VueAnon;
 
 import ij.plugin.PlugIn;
+import test.Run_Orthanc;
 
 public class ConnectionSetup extends JFrame implements PlugIn{
 	
 	private static final long serialVersionUID = 1L;
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	private JFrame gui=this;
+	private Run_Orthanc orthanc;
 	
 	public ConnectionSetup(){
 		
@@ -142,6 +153,51 @@ public class ConnectionSetup extends JFrame implements PlugIn{
 			}
 		});
 		
+		
+		
+		//SK A VOIR COMMENT INSERER LE DEMARAGE DE ORTHANC LOCAL ET GERER LE STOP
+		// ET LE REFRESH DE LA CONNEXION // PEUT ETRE REMPLACER L OBJET CONNEXION DANS VUE ANON
+		JButton runOrthancLocal = new JButton("Run Local Orthanc");
+		
+		runOrthancLocal.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+					if(runOrthancLocal.getText()=="Run Local Orthanc") {
+					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+						@Override
+						protected Void doInBackground() {
+							runOrthancLocal.setText("Stop Orthanc Local");
+								orthanc= new Run_Orthanc();
+								try {
+									orthanc.start();
+									VueAnon anon=new VueAnon();
+									anon.setVisible(true);
+								} catch (Exception e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+							return null;
+						}
+
+						@Override
+						protected void done(){
+							//;
+						}
+					};
+					worker.execute();
+					}else {
+						orthanc.stopOrthanc();
+					}
+				
+				
+
+				}
+				
+			
+		});
+		
 		gbc.gridy = 4;
 		setupPanel.add(submit, gbc);
 		
@@ -149,6 +205,7 @@ public class ConnectionSetup extends JFrame implements PlugIn{
 		this.setIconImage(image);
 		mainPanel.add(disclaimerPanel);
 		mainPanel.add(setupPanel);
+		mainPanel.add(runOrthancLocal);
 		this.getContentPane().add(mainPanel);
 	}
 	

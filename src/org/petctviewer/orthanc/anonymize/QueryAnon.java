@@ -42,6 +42,7 @@ public class QueryAnon {
 	private String newPatientUID;
 	private String newPatientName;
 	private String newPatientID;
+	
 	private ParametreConnexionHttp connexionHttp;
 
 	public QueryAnon(ParametreConnexionHttp connexionHttp, Choice bodyChar, Choice dates, Choice birthdate, 
@@ -179,6 +180,7 @@ public class QueryAnon {
 		JSONObject response = null;
 		try {
 			response = (JSONObject) parser.parse(sb.toString());
+			System.out.print(response);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

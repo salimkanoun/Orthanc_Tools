@@ -2779,7 +2779,7 @@ public class VueAnon extends JFrame implements PlugIn{
 							for(String patientID : modeleAnonStudies.getPatientIDs()){
 								String newName = modeleAnonPatients.getPatient(anonPatientTable.convertRowIndexToModel(j)).getNewName();
 								String newID = modeleAnonPatients.getPatient(anonPatientTable.convertRowIndexToModel(j)).getNewID();
-								String newUID = "";
+								String newStudyID = "";
 								if((newName == null || newName.equals("")) || (newID == null || newID.equals(""))){
 									anonCount++;
 								}
@@ -2803,10 +2803,10 @@ public class VueAnon extends JFrame implements PlugIn{
 									quAnon.sendQuery("studies", uid);
 									modeleAnonStudies.addNewUid(quAnon.getNewUID());
 									i++;
-									newUID = quAnon.getNewPatientUID();
+									newStudyID = quAnon.getNewUID();
 								}
-								//SK A VOIR CETTE METHODE CF REMARQUE DANS TABLEDATAEXPORTSTUDIES
-								modeleExportStudies.addStudy(newName, newID, newUID);
+								//Add anonymized study in export list
+								modeleExportStudies.addStudy(newName, newID, newStudyID);
 								j++;
 							}
 							//SK AJOUTE A TESTER RISQUE BUG

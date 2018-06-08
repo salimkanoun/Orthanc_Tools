@@ -29,23 +29,12 @@ public class Run_Orthanc {
 	}
 	
 	public Run_Orthanc() {
-		try {
-			ExportResource();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		try {
-			Thread.sleep(50000);
-			this.stopOrthanc();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
+		
 		
 	}
 	
-	public String ExportResource() throws Exception {
+	public String start() throws Exception {
 		String resourceName="Orthanc_Standalone/Orthanc-1.3.2-Release.exe";
 		String resourceNameJSON="Orthanc_Standalone/Orthanc.json";
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
