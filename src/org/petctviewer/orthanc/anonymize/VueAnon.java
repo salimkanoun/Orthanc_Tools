@@ -1780,8 +1780,18 @@ public class VueAnon extends JFrame implements PlugIn{
 								stateExports.setText("<html><font color= 'green'>Step 2/3 : Validating upload</font></html>");
 								CTP ctp=new CTP(CTPUsername, CTPPassword, addressFieldCTP.getText());
 								for(Study study : modeleExportStudies.getStudiesList()){
-									validateOk=ctp.validateUpload(study.getStudyDescription(), study.getNewStudyInstanceUID(), study.getPatientName());
-									
+									StringBuilder statistics=connexionHttp.makeGetConnectionAndStringBuilder("/studies/"+study.getId()+"/statistics/");
+									JSONObject stats = null;
+									try {
+										stats = (JSONObject) parser.parse(statistics.toString());
+									} catch (org.json.simple.parser.ParseException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									validateOk=ctp.validateUpload(study.getStudyDescription(), study.getNewStudyInstanceUID(), study.getPatientName(), Integer.valueOf(stats.get("CountInstances").toString()));
+									//Au premier false on casse la boucle for pour rester en statut fail
+									//SK PAS PROPRE VALIDATION A GERER DU COTE PHP AVEC LA BOUCLE EN PHP POUR EVITER UNE VALIDATION PARTIELLE
+									if(!validateOk) break;
 								}
 								if(validateOk) {
 									stateExports.setText("<html><font color= 'green'>Step 3/3 : Deleting local study </font></html>");
