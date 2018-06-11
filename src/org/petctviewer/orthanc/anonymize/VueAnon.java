@@ -1784,6 +1784,7 @@ public class VueAnon extends JFrame implements PlugIn{
 						boolean sendOk=false;
 						boolean validateOk=false;
 						
+						@SuppressWarnings("unchecked")
 						@Override
 						protected Void doInBackground() {
 							//Send DICOM to CTP selected Peer

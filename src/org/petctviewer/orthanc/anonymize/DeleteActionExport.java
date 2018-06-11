@@ -17,12 +17,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
-import java.io.IOException;
-
 import javax.swing.JTable;
 import javax.swing.SwingWorker;
 
-import org.petctviewer.orthanc.*;
+import org.petctviewer.orthanc.ParametreConnexionHttp;
 
 public class DeleteActionExport{
 

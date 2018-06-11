@@ -11,6 +11,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
+@SuppressWarnings("serial")
 public class Rule_AutoRouting_Gui extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();

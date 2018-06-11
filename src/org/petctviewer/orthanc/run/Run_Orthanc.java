@@ -23,11 +23,6 @@ public class Run_Orthanc {
 	 private Path file;
 	 private Thread orthancThread;
 	 private boolean isStarted;
-
-	public static void main(String[] args) {
-		Run_Orthanc runOrthanc=new Run_Orthanc();
-
-	}
 	
 	public Run_Orthanc() {
 	}
@@ -37,12 +32,10 @@ public class Run_Orthanc {
 		String resourceNameJSON="Orthanc_Standalone/Orthanc.json";
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		
-		
 		file = Files.createTempDirectory("Orthanc_"+dateFormat.format(new Date()));
 		File FileExe=new File(file.toString()+File.separator+"Orthanc-1.3.2-Release.exe");
 		File FileJSON=new File(file.toString()+File.separator+"Orthanc.json");
 		
-       
 		InputStream in = ClassLoader.getSystemResourceAsStream(resourceName);
 		InputStream inJson = ClassLoader.getSystemResourceAsStream(resourceNameJSON);
 		System.out.println(inJson);
@@ -61,39 +54,31 @@ public class Run_Orthanc {
     }
 	
 	public void startOrthanc(String exe, String json) {
-		 
         orthancThread=new Thread(new Runnable() {
 
 			public void run() {
-					ProcessBuilder pb = new ProcessBuilder(exe, json);
-	
-					pb.redirectErrorStream(true); 
+				  ProcessBuilder pb = new ProcessBuilder(exe, json);
+				  pb.redirectErrorStream(true); 
 				
 				  try {
-					process = pb.start();
-				
+				  process = pb.start();
 				  InputStream stdout = process.getInputStream(); 
 			      InputStream stderr = process.getErrorStream();
-			      OutputStream stdin = process.getOutputStream(); 
-			      
+			      //OutputStream stdin = process.getOutputStream(); 
 				  BufferedReader reader = new BufferedReader (new InputStreamReader(stdout));
 				  BufferedReader error = new BufferedReader (new InputStreamReader(stderr));
 				  //BufferedReader stinn = new BufferedReader (new OutputStreamReader(stdin));
-				 String line = null;
+				  String line = null;
 		
-					while ( (line = reader.readLine()) != null) {
+				  while ( (line = reader.readLine()) != null) {
 						 	//If JSON Object parse it
-						 System.out.println(line);
-						 
-						 	
+						 System.out.println(line);	 	
 					 }
 					
-					while ( (line = error.readLine()) != null) {
+				  while ( (line = error.readLine()) != null) {
 					 	//If JSON Object parse it
-					 System.out.println(line);
-					 
-					 	
-				 }
+					 System.out.println(line);				 	
+				    }
 					
 
 				} catch (IOException e) {
@@ -116,7 +101,7 @@ public class Run_Orthanc {
 	}
 	
 	public void stopOrthanc() {
-		System.out.println("ici");
+		System.out.println("Stoping Orthanc");
 		process.destroy();
 		orthancThread.interrupt();;
 		try {

@@ -9,7 +9,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -20,15 +19,9 @@ import org.petctviewer.orthanc.HttpsTrustModifier;
 public class CTP {
 	private String username;
 	private String password;
-	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
 	private String serverAdress;
 	private String authentication=null;
 	private JSONParser parser=new JSONParser();
-	
-	/*public static void main(String[] args) {
-		CTP ctp=new CTP("Imagerie", "Imagerie");
-		ctp.validateUpload("TEP0", "1.2.276.0.7230010.3.1.2.8323329.22919.1526044062.863352", "11017101022001");
-	}*/
 	
 	public CTP(String username, String password, String serverAdress) {
 		this.username=username;
@@ -39,6 +32,7 @@ public class CTP {
 		
 	}
 	
+	@SuppressWarnings("unchecked")
 	public String[] getAvailableStudies(){
 		JSONObject jsonPost=new JSONObject();
 		jsonPost.put("username", username);
@@ -62,6 +56,7 @@ public class CTP {
 		
 	}
 	
+	@SuppressWarnings("unchecked")
 	public String[] getAvailableVisits(String studyName) {
 		JSONObject jsonPost=new JSONObject();
 		jsonPost.put("username", username);
@@ -90,6 +85,7 @@ public class CTP {
 		
 	}
 	
+	@SuppressWarnings("unchecked")
 	public JSONArray getAvailableImports(String studyName, String visitName) {
 		JSONObject jsonPost=new JSONObject();
 		jsonPost.put("username", username);
@@ -113,6 +109,7 @@ public class CTP {
 		
 	}
 	
+	@SuppressWarnings("unchecked")
 	public boolean validateUpload(JSONArray studiesArray) {
 		
 		JSONObject jsonPost=new JSONObject();
@@ -128,11 +125,9 @@ public class CTP {
 			System.out.println(answser);
 			visits=(JSONObject) parser.parse(answser);
 		} catch (IOException | ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-			//visits=(JSONObject) parser.parse(answser);
-		
+			
 		return (boolean) visits.get("recivedConfirmation");
 		
 		

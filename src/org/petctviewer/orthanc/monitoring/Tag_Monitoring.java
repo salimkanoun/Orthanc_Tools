@@ -1,6 +1,5 @@
 package org.petctviewer.orthanc.monitoring;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -16,7 +15,6 @@ import org.petctviewer.orthanc.ParametreConnexionHttp;
 
 public class Tag_Monitoring {
 	
-	private static final String parentStudy = null;
 	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
 	private ParametreConnexionHttp parametre;
 	private String level;
@@ -37,16 +35,9 @@ public class Tag_Monitoring {
 		TimerTask timerTask = new TimerTask() {
 
 			@Override
-			public void run() {
-				
+			public void run() {	
 				monitoring.makeMonitor();
-				JDBC_Monitoring db=null;
-				try {
-					db=new JDBC_Monitoring();
-				} catch (ClassNotFoundException | SQLException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				JDBC_Monitoring db=new JDBC_Monitoring();
 				
 				if (level.equals("patient")) {
 					for (int i=0 ; i<monitoring.newPatientID.size(); i++) {
