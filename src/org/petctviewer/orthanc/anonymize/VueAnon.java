@@ -206,7 +206,7 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JPasswordField servPassword;
 	private JTextField remoteFilePath;
 	private JComboBox<String> exportType;
-	private JButton setupButton;
+	
 	//CTP
 	private JTextField addressFieldCTP;
 	private JComboBox<Object> listePeersCTP ;
@@ -2348,8 +2348,8 @@ public class VueAnon extends JFrame implements PlugIn{
 		});
 		
 		//Setup button only for starting outside Fiji
-		setupButton = new JButton("Orthanc HTTP Setup");
-		setupButton.setVisible(false);
+		JButton setupButton = new JButton("Orthanc HTTP Setup");
+		
 		
 		setupButton.addActionListener(new ActionListener() {
 
@@ -2845,7 +2845,7 @@ public class VueAnon extends JFrame implements PlugIn{
 								modeleExportStudies.addStudy(newName, newID, newStudyID);
 								j++;
 							}
-							//SK AJOUTE A TESTER RISQUE BUG
+							//Empty list
 							modeleAnonStudies.empty();
 							modeleAnonPatients.clear();
 							
@@ -2916,7 +2916,6 @@ public class VueAnon extends JFrame implements PlugIn{
 			@Override
 			public void run() {
 				vue.pack();
-				vue.setupButton.setVisible(true);
 				vue.setLocationRelativeTo(null);
 				vue.setVisible(true);
 				
