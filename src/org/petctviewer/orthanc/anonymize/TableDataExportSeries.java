@@ -110,16 +110,12 @@ public class TableDataExportSeries extends AbstractTableModel{
 
 			@Override
 			protected Void doInBackground() {
-				try {
-					url="/series/" + uid + "/modify";
-					stateExport.setText("<html>Modifying a serie description <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
-					HttpURLConnection conn =connexionHttp.makePostConnection(url, ("{\"Replace\":{\"SeriesDescription\":\"" + value.toString() + "\"}}"));
-					connexionHttp.makeDeleteConnection("/series/" + uid );
-					frame.pack();
-					conn.disconnect();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				url="/series/" + uid + "/modify";
+				stateExport.setText("<html>Modifying a serie description <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
+				HttpURLConnection conn =connexionHttp.makePostConnection(url, ("{\"Replace\":{\"SeriesDescription\":\"" + value.toString() + "\"}}"));
+				connexionHttp.makeDeleteConnection("/series/" + uid );
+				frame.pack();
+				conn.disconnect();
 				return null;
 			}
 			@Override

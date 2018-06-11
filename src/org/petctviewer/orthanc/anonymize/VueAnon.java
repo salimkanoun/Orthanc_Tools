@@ -97,6 +97,7 @@ import org.petctviewer.orthanc.CTP.CTP_Gui;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.*;
+import org.petctviewer.orthanc.run.Run_Orthanc;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
 
 
@@ -216,14 +217,30 @@ public class VueAnon extends JFrame implements PlugIn{
 	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	
+	//Run Orthanc
+	Run_Orthanc runOrthanc=new Run_Orthanc();
+	
 	// Last Table focus
 	private JTable lastTableFocus;
-
+	
 	public VueAnon(){
-		
 		super("Orthanc Tools");
-		
 		connexionHttp= new ParametreConnexionHttp();
+		//Check if Orthanc Reachable
+		if(!connexionHttp.testConnexion()) {
+			ConnectionSetup setup = new ConnectionSetup(runOrthanc);
+			setup.setVisible(true);
+			if(runOrthanc.getIsStarted()) {
+				makeGUI();
+			}
+			
+		}else {
+			makeGUI();
+		}
+		
+	}
+
+	public void makeGUI(){
 		//On set les objets necessaires
 		modelePatients = new TableDataPatientsAnon(connexionHttp);
 		modeleExportSeries = new TableDataExportSeries(connexionHttp, this, stateExports);
@@ -1796,12 +1813,8 @@ public class VueAnon extends JFrame implements PlugIn{
 								if(validateOk) {
 									stateExports.setText("<html><font color= 'green'>Step 3/3 : Deleting local study </font></html>");
 									for(Study study : modeleExportStudies.getStudiesList()){
-										try {
-											//On efface la study anonymisée envoyée
-											connexionHttp.makeDeleteConnection("/studies/"+study.getId());
-											} catch (IOException e) {
-											e.printStackTrace();
-										}
+										//deleted anonymized and sent study
+										connexionHttp.makeDeleteConnection("/studies/"+study.getId());
 									}
 									// empty the export table
 									modeleExportStudies.clear();
@@ -2331,7 +2344,8 @@ public class VueAnon extends JFrame implements PlugIn{
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				ConnectionSetup.main();
+				ConnectionSetup setup = new ConnectionSetup(runOrthanc);
+				setup.setVisible(true);
 				
 			}
 			
@@ -2366,14 +2380,14 @@ public class VueAnon extends JFrame implements PlugIn{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////// END TAB 3 : SETUP //////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
-		monitoring = new Monitoring_GUI(connexionHttp);
-		JPanel panelMonitoring = (JPanel) monitoring.getContentPane();
-		
+	
 		
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////// TAB 4 : Monitor //////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
-				
+		monitoring = new Monitoring_GUI(connexionHttp);
+		JPanel panelMonitoring = (JPanel) monitoring.getContentPane();
+		
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////// END TAB 4 : Monitor //////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2487,7 +2501,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.getContentPane().add(tabbedPane);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.getRootPane().setDefaultButton(search);
-		this.addWindowListener(new CloseWindowAdapter(this, this.zipContent, this.modeleAnonStudies.getOldOrthancUIDs(), this.modeleExportStudies.getStudiesList(), monitoring));
+		this.addWindowListener(new CloseWindowAdapter(this, this.zipContent, this.modeleAnonStudies.getOldOrthancUIDs(), this.modeleExportStudies.getStudiesList(), monitoring, runOrthanc));
 	}
 	
 	private void openCloseAnonTool(boolean open) {

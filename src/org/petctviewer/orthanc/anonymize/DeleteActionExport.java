@@ -59,9 +59,7 @@ public class DeleteActionExport{
 		SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 			@Override
 			protected Void doInBackground() {
-				try {
-					connexion.makeDeleteConnection(url);
-				} catch (IOException e) {e.printStackTrace();}
+				connexion.makeDeleteConnection(url);
 				return null;
 			}
 		};

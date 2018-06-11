@@ -1,4 +1,4 @@
-package test;
+package org.petctviewer.orthanc.run;
 
 
 import java.io.BufferedReader;
@@ -19,9 +19,10 @@ import org.petctviewer.orthanc.monitoring.CD_Burner;
 
 public class Run_Orthanc {
 	
-	 Process process;
-	 Path file;
-	 Thread orthancThread;
+	 private Process process;
+	 private Path file;
+	 private Thread orthancThread;
+	 private boolean isStarted;
 
 	public static void main(String[] args) {
 		Run_Orthanc runOrthanc=new Run_Orthanc();
@@ -29,9 +30,6 @@ public class Run_Orthanc {
 	}
 	
 	public Run_Orthanc() {
-		
-		
-		
 	}
 	
 	public String start() throws Exception {
@@ -109,6 +107,7 @@ public class Run_Orthanc {
         });
 		
         orthancThread.start();
+        isStarted=true;
 
 		
 		
@@ -125,11 +124,16 @@ public class Run_Orthanc {
 			Thread.sleep(2000);
 			CD_Burner.recursiveDeleteOnExit(file);
 			file.toFile().deleteOnExit();
+			 isStarted=false;
 		} catch (IOException | InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
+	}
+	
+	public boolean getIsStarted() {
+		return this.isStarted;
 	}
 
 }

@@ -25,6 +25,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
+import org.petctviewer.orthanc.run.Run_Orthanc;
 
 public class CloseWindowAdapter extends WindowAdapter{
 
@@ -33,14 +34,16 @@ public class CloseWindowAdapter extends WindowAdapter{
 	private ArrayList<String> oldOrthancUIDs;
 	private ArrayList<Study> listeExport;
 	Monitoring_GUI monitoring;
+	Run_Orthanc runOrthanc;
 
 	public CloseWindowAdapter(JFrame frame, ArrayList<String> zipContent, 
-			ArrayList<String> oldOrthancUIDs, ArrayList<Study> listeExport, Monitoring_GUI monitoring){
+			ArrayList<String> oldOrthancUIDs, ArrayList<Study> listeExport, Monitoring_GUI monitoring, Run_Orthanc runOrthanc){
 		this.listeExport = listeExport;
 		this.frame = frame;
 		this.zipContent = zipContent;
 		this.oldOrthancUIDs = oldOrthancUIDs;
 		this.monitoring=monitoring;
+		this.runOrthanc=runOrthanc;
 	}
 
 	@Override
@@ -51,14 +54,16 @@ public class CloseWindowAdapter extends WindowAdapter{
 			int PromptResult = JOptionPane.showOptionDialog(null,"Are you sure you want to exit?","Orthanc anonymization",JOptionPane.DEFAULT_OPTION,JOptionPane.WARNING_MESSAGE,null,ObjButtons,ObjButtons[1]);
 			if(PromptResult==JOptionPane.YES_OPTION)
 			{
-				if (monitoring.isRunningMonitoringService()) monitoring.closeAllMonitoringServices();
-				frame.dispose();
+				closeAll();
 			}
 		}else{
-			if (monitoring.isRunningMonitoringService())  monitoring.closeAllMonitoringServices();
-			frame.dispose();
-			
-			
+			closeAll();
 		}
+	}
+	
+	private void closeAll() {
+		if (monitoring.isRunningMonitoringService())  monitoring.closeAllMonitoringServices();
+		if(runOrthanc.getIsStarted()) runOrthanc.stopOrthanc();
+		frame.dispose();
 	}
 }

@@ -17,7 +17,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.setup;
 
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -27,39 +26,33 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 import java.util.prefs.Preferences;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import javax.swing.SwingWorker;
 
-import org.apache.commons.io.FileUtils;
-import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.run.Run_Orthanc;
 
 import ij.plugin.PlugIn;
-import test.Run_Orthanc;
 
-public class ConnectionSetup extends JFrame implements PlugIn{
+public class ConnectionSetup extends JDialog implements PlugIn{
 	
 	private static final long serialVersionUID = 1L;
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
-	private JFrame gui=this;
-	private Run_Orthanc orthanc;
+	private JDialog gui=this;
+
 	
-	public ConnectionSetup(){
-		
+	public ConnectionSetup(Run_Orthanc orthanc){
 		this.setTitle("Setup");
+		this.setModal(true);
 		this.setResizable(true);
 		this.setLocationRelativeTo(null);
 		this.setAlwaysOnTop(true);
@@ -154,42 +147,41 @@ public class ConnectionSetup extends JFrame implements PlugIn{
 		});
 		
 		
+		//Display start or stop button depending on local run of orthanc
+			JButton runOrthancLocal;
+			if(orthanc.getIsStarted()) {
+				runOrthancLocal = new JButton("Stop Orthanc Local");
+			}
+			else {
+				runOrthancLocal = new JButton("Run Local Orthanc");
+			}
+				
+
 		
-		//SK A VOIR COMMENT INSERER LE DEMARAGE DE ORTHANC LOCAL ET GERER LE STOP
-		// ET LE REFRESH DE LA CONNEXION // PEUT ETRE REMPLACER L OBJET CONNEXION DANS VUE ANON
-		JButton runOrthancLocal = new JButton("Run Local Orthanc");
 		
 		runOrthancLocal.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+				String os=System.getProperty("os.name");
+				if(os.startsWith("Windows")) {
 					if(runOrthancLocal.getText()=="Run Local Orthanc") {
-					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-						@Override
-						protected Void doInBackground() {
-							runOrthancLocal.setText("Stop Orthanc Local");
-								orthanc= new Run_Orthanc();
-								try {
-									orthanc.start();
-									VueAnon anon=new VueAnon();
-									anon.setVisible(true);
-								} catch (Exception e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
-							return null;
+						try {
+							orthanc.start();
+							dispose();
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
 						}
-
-						@Override
-						protected void done(){
-							//;
-						}
-					};
-					worker.execute();
 					}else {
 						orthanc.stopOrthanc();
+						dispose();
 					}
+				}
+				else {
+					JOptionPane.showMessageDialog(gui, "Only available for Windows", "Error", JOptionPane.ERROR_MESSAGE);
+				}
+					
 				
 				
 
@@ -207,6 +199,8 @@ public class ConnectionSetup extends JFrame implements PlugIn{
 		mainPanel.add(setupPanel);
 		mainPanel.add(runOrthancLocal);
 		this.getContentPane().add(mainPanel);
+		setSize(1200, 400);
+		pack();
 	}
 	
 	public void openWebPage(String url){
@@ -217,16 +211,10 @@ public class ConnectionSetup extends JFrame implements PlugIn{
 		}
 	}
 	
-	public static void main(String... arg0){
-		ConnectionSetup vue = new ConnectionSetup();
-		vue.setSize(1200, 400);
-		vue.pack();
-		vue.setVisible(true);
-	}
-	
+	//IJ run method
 	@Override
 	public void run(String arg0) {
-		ConnectionSetup vue = new ConnectionSetup();
+		ConnectionSetup vue = new ConnectionSetup(new Run_Orthanc());
 		vue.setSize(1200, 400);
 		vue.pack();
 		vue.setVisible(true);
