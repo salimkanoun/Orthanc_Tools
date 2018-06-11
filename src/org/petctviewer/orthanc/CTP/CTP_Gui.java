@@ -154,7 +154,7 @@ public class CTP_Gui extends JDialog {
 											String investigatorName=(String) patient.get("investigatorName");
 											String country=(String) patient.get("country");
 											String centerNumber=(String) patient.get("centerNumber");
-											String acquisitionDate=(String) patient.get("acquisitionDate");
+											String acquisitionDate=(String) patient.get("acquisitionDate").toString().replaceAll("-", "/");
 											modelTablePatient.addRow(new Object[]{numeroPatient, lastName, firstName, patientSex , patientDOB, acquisitionDate});
 											//SK MANQUE ACQUISITION DATE DANS L API
 										}
