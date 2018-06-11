@@ -82,6 +82,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
 import org.apache.commons.io.FileUtils;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -208,6 +209,7 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JButton setupButton;
 	//CTP
 	private JTextField addressFieldCTP;
+	private JComboBox<Object> listePeersCTP ;
 	private JButton exportCTP;
 	private String CTPUsername;
 	private String CTPPassword;
@@ -1166,6 +1168,8 @@ public class VueAnon extends JFrame implements PlugIn{
 					dialog.setVisible(true);
 					//On recupere les donnees et on met dans l'anonymisation
 					if(dialog.getOk()) {
+						//Change autoSend boolean to get the automatic send at the anonymize button click
+						autoSendCTP=true;
 						CTPUsername=dialog.getLogin();
 						CTPPassword=dialog.getPassword();
 						String patientNewName=dialog.getAnonName();
@@ -1174,10 +1178,9 @@ public class VueAnon extends JFrame implements PlugIn{
 						anonPatientTable.setValueAt(patientNewName, anonPatientTable.getSelectedRow(), 3);
 						anonPatientTable.setValueAt(patientNewID, anonPatientTable.getSelectedRow(), 4);
 						anonStudiesTable.setValueAt(visitName, anonStudiesTable.getSelectedRow(), 0);
-						//Si un seul patient
+						//If only One patient in the list, click the anonymize button to start the process
 						if (anonPatientTable.getSelectedRowCount()==1) {
 							anonBtn.doClick();
-							autoSendCTP=true;
 						}
 					}
 
@@ -1770,7 +1773,7 @@ public class VueAnon extends JFrame implements PlugIn{
 			
 		});
 		
-		//SK ACTION QUAND CTP : ENVOIE PEER + Confirmation + Delete
+		//CTP Export, start peer send, upload validation and deletion of local anonymized studies.
 		exportCTP = new JButton("CTP");
 		exportCTP.addActionListener(new ActionListener() {
 
@@ -1783,19 +1786,22 @@ public class VueAnon extends JFrame implements PlugIn{
 						
 						@Override
 						protected Void doInBackground() {
-							System.out.println("ici");
-							//Etape 1 : On envoie les DICOM Vers le Peer ad hoc
-							//SK A FAIRE : Definition du PEER
+							//Send DICOM to CTP selected Peer
 							try {
 								stateExports.setText("<html><font color= 'green'> Step 1/3 Sending to CTP Peer :"+listePeers.getSelectedItem().toString()+ "</font></html>");
-								query.sendPeer(listePeers.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
+								query.sendPeer(listePeersCTP.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
 								sendOk=true;
 							} catch (IOException e1) {
 								stateExports.setText("<html><font color= 'red'>The upload was not received (" + e1.getMessage() + ") </font></html>");
 							}
+							//If send sucessfully, validation of Upload
 							if (sendOk) {
 								stateExports.setText("<html><font color= 'green'>Step 2/3 : Validating upload</font></html>");
+								//Create CTP object to manage CTP communication
 								CTP ctp=new CTP(CTPUsername, CTPPassword, addressFieldCTP.getText());
+								//Create the JSON to send
+								JSONArray sentStudiesArray=new JSONArray();
+								//For each study populate the array with studies details of send process
 								for(Study study : modeleExportStudies.getStudiesList()){
 									StringBuilder statistics=connexionHttp.makeGetConnectionAndStringBuilder("/studies/"+study.getId()+"/statistics/");
 									JSONObject stats = null;
@@ -1805,11 +1811,17 @@ public class VueAnon extends JFrame implements PlugIn{
 										// TODO Auto-generated catch block
 										e.printStackTrace();
 									}
-									validateOk=ctp.validateUpload(study.getStudyDescription(), study.getNewStudyInstanceUID(), study.getPatientName(), Integer.valueOf(stats.get("CountInstances").toString()));
-									//Au premier false on casse la boucle for pour rester en statut fail
-									//SK PAS PROPRE VALIDATION A GERER DU COTE PHP AVEC LA BOUCLE EN PHP POUR EVITER UNE VALIDATION PARTIELLE
-									if(!validateOk) break;
+									JSONObject studyObject=new JSONObject();
+									studyObject.put("visitName", study.getStudyDescription());
+									studyObject.put("StudyInstanceUID", study.getNewStudyInstanceUID());
+									studyObject.put("patientNumber", study.getPatientName());
+									studyObject.put("instanceNumber", Integer.valueOf(stats.get("CountInstances").toString()));
+									sentStudiesArray.add(studyObject);
+									
+									
 								}
+								validateOk=ctp.validateUpload(sentStudiesArray);
+								//If everything OK, says validated and remove anonymized studies from local
 								if(validateOk) {
 									stateExports.setText("<html><font color= 'green'>Step 3/3 : Deleting local study </font></html>");
 									for(Study study : modeleExportStudies.getStudiesList()){
@@ -1845,12 +1857,6 @@ public class VueAnon extends JFrame implements PlugIn{
 						
 						worker.execute();
 					}
-				
-	
-	
-	
-	
-	
 				
 
 				}
@@ -2200,7 +2206,7 @@ public class VueAnon extends JFrame implements PlugIn{
 
 		JTabbedPane eastSetupPane = new JTabbedPane();
 		eastSetupPane.add("Export setup", eastExport);
-		eastSetupPane.addTab("Other", clinicalTrialProcessor);
+		eastSetupPane.addTab("CTP", null, clinicalTrialProcessor, "Clinical Trial Processor");
 
 		gbSetup.insets = new Insets(20, 10, 0, 10);
 		gbSetup.gridx = 0;
@@ -2279,13 +2285,17 @@ public class VueAnon extends JFrame implements PlugIn{
 
 		
 		//add CTP Panel
-		JLabel address=new JLabel("Address");
+		JLabel address=new JLabel("CTP Address");
 		addressFieldCTP=new JTextField();
 		addressFieldCTP.setToolTipText("Include http:// or https://");
 		addressFieldCTP.setPreferredSize(new Dimension(300,20));
 		addressFieldCTP.setText(jprefer.get("CTPAddress", "http://"));
+		JLabel peerLabel=new JLabel("CTP Peer");
+		listePeersCTP = new JComboBox<Object>(query.getPeers());
 		clinicalTrialProcessorGrid.add(address);
 		clinicalTrialProcessorGrid.add(addressFieldCTP);
+		clinicalTrialProcessorGrid.add(peerLabel);
+		clinicalTrialProcessorGrid.add(listePeersCTP);
 		
 		
 		JPanel aboutPanel = new JPanel(new FlowLayout());

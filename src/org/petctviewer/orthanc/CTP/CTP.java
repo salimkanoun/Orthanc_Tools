@@ -113,15 +113,15 @@ public class CTP {
 		
 	}
 	
-	public boolean validateUpload(String visitName, String studyInstanceUID, String patientNumber, int numberInstances) {
+	public boolean validateUpload(JSONArray studiesArray) {
 		
 		JSONObject jsonPost=new JSONObject();
 		jsonPost.put("username", username);
 		jsonPost.put("password", password);
-		jsonPost.put("visitName", visitName);
-		jsonPost.put("StudyInstanceUID", studyInstanceUID);
-		jsonPost.put("patientNumber", patientNumber);
-		jsonPost.put("instanceNumber", numberInstances);
+		jsonPost.put("studies", studiesArray);
+		//SK A MODFIER COTE PLATEFORME POUR SUPPORTER L ENVOI MULTIPLE
+		System.out.println(jsonPost.toString());
+		
 		JSONObject visits = null;
 		try {
 			String answser=makePostConnection("/Rest_Api/validate-upload.php", jsonPost.toString());
