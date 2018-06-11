@@ -1179,7 +1179,7 @@ public class VueAnon extends JFrame implements PlugIn{
 						anonPatientTable.setValueAt(patientNewID, anonPatientTable.getSelectedRow(), 4);
 						anonStudiesTable.setValueAt(visitName, anonStudiesTable.getSelectedRow(), 0);
 						//If only One patient in the list, click the anonymize button to start the process
-						if (anonPatientTable.getSelectedRowCount()==1) {
+						if (anonPatientTable.getRowCount()==1) {
 							anonBtn.doClick();
 						}
 					}
