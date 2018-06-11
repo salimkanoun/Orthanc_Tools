@@ -82,6 +82,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
 import org.apache.commons.io.FileUtils;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -97,6 +98,7 @@ import org.petctviewer.orthanc.CTP.CTP_Gui;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.*;
+import org.petctviewer.orthanc.run.Run_Orthanc;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
 
 
@@ -204,9 +206,10 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JPasswordField servPassword;
 	private JTextField remoteFilePath;
 	private JComboBox<String> exportType;
-	private JButton setupButton;
+	
 	//CTP
 	private JTextField addressFieldCTP;
+	private JComboBox<Object> listePeersCTP ;
 	private JButton exportCTP;
 	private String CTPUsername;
 	private String CTPPassword;
@@ -216,14 +219,30 @@ public class VueAnon extends JFrame implements PlugIn{
 	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	
+	//Run Orthanc
+	Run_Orthanc runOrthanc=new Run_Orthanc();
+	
 	// Last Table focus
 	private JTable lastTableFocus;
-
+	
 	public VueAnon(){
-		
 		super("Orthanc Tools");
-		
 		connexionHttp= new ParametreConnexionHttp();
+		//Check if Orthanc Reachable
+		if(!connexionHttp.testConnexion()) {
+			ConnectionSetup setup = new ConnectionSetup(runOrthanc);
+			setup.setVisible(true);
+			if(runOrthanc.getIsStarted()) {
+				makeGUI();
+			}
+			
+		}else {
+			makeGUI();
+		}
+		
+	}
+
+	public void makeGUI(){
 		//On set les objets necessaires
 		modelePatients = new TableDataPatientsAnon(connexionHttp);
 		modeleExportSeries = new TableDataExportSeries(connexionHttp, this, stateExports);
@@ -1149,6 +1168,8 @@ public class VueAnon extends JFrame implements PlugIn{
 					dialog.setVisible(true);
 					//On recupere les donnees et on met dans l'anonymisation
 					if(dialog.getOk()) {
+						//Change autoSend boolean to get the automatic send at the anonymize button click
+						autoSendCTP=true;
 						CTPUsername=dialog.getLogin();
 						CTPPassword=dialog.getPassword();
 						String patientNewName=dialog.getAnonName();
@@ -1157,10 +1178,9 @@ public class VueAnon extends JFrame implements PlugIn{
 						anonPatientTable.setValueAt(patientNewName, anonPatientTable.getSelectedRow(), 3);
 						anonPatientTable.setValueAt(patientNewID, anonPatientTable.getSelectedRow(), 4);
 						anonStudiesTable.setValueAt(visitName, anonStudiesTable.getSelectedRow(), 0);
-						//Si un seul patient
+						//If only One patient in the list, click the anonymize button to start the process
 						if (anonPatientTable.getSelectedRowCount()==1) {
 							anonBtn.doClick();
-							autoSendCTP=true;
 						}
 					}
 
@@ -1753,7 +1773,7 @@ public class VueAnon extends JFrame implements PlugIn{
 			
 		});
 		
-		//SK ACTION QUAND CTP : ENVOIE PEER + Confirmation + Delete
+		//CTP Export, start peer send, upload validation and deletion of local anonymized studies.
 		exportCTP = new JButton("CTP");
 		exportCTP.addActionListener(new ActionListener() {
 
@@ -1764,37 +1784,54 @@ public class VueAnon extends JFrame implements PlugIn{
 						boolean sendOk=false;
 						boolean validateOk=false;
 						
+						@SuppressWarnings("unchecked")
 						@Override
 						protected Void doInBackground() {
-							System.out.println("ici");
-							//Etape 1 : On envoie les DICOM Vers le Peer ad hoc
-							//SK A FAIRE : Definition du PEER
+							//Send DICOM to CTP selected Peer
 							try {
 								stateExports.setText("<html><font color= 'green'> Step 1/3 Sending to CTP Peer :"+listePeers.getSelectedItem().toString()+ "</font></html>");
-								query.sendPeer(listePeers.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
+								query.sendPeer(listePeersCTP.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
 								sendOk=true;
 							} catch (IOException e1) {
 								stateExports.setText("<html><font color= 'red'>The upload was not received (" + e1.getMessage() + ") </font></html>");
 							}
+							//If send sucessfully, validation of Upload
 							if (sendOk) {
 								stateExports.setText("<html><font color= 'green'>Step 2/3 : Validating upload</font></html>");
+								//Create CTP object to manage CTP communication
 								CTP ctp=new CTP(CTPUsername, CTPPassword, addressFieldCTP.getText());
+								//Create the JSON to send
+								JSONArray sentStudiesArray=new JSONArray();
+								//For each study populate the array with studies details of send process
 								for(Study study : modeleExportStudies.getStudiesList()){
-									validateOk=ctp.validateUpload(study.getStudyDescription(), study.getNewStudyInstanceUID(), study.getPatientName());
+									StringBuilder statistics=connexionHttp.makeGetConnectionAndStringBuilder("/studies/"+study.getId()+"/statistics/");
+									JSONObject stats = null;
+									try {
+										stats = (JSONObject) parser.parse(statistics.toString());
+									} catch (org.json.simple.parser.ParseException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									JSONObject studyObject=new JSONObject();
+									studyObject.put("visitName", study.getStudyDescription());
+									studyObject.put("StudyInstanceUID", study.getNewStudyInstanceUID());
+									studyObject.put("patientNumber", study.getPatientName());
+									studyObject.put("instanceNumber", Integer.valueOf(stats.get("CountInstances").toString()));
+									sentStudiesArray.add(studyObject);
+									
 									
 								}
+								validateOk=ctp.validateUpload(sentStudiesArray);
+								//If everything OK, says validated and remove anonymized studies from local
 								if(validateOk) {
 									stateExports.setText("<html><font color= 'green'>Step 3/3 : Deleting local study </font></html>");
 									for(Study study : modeleExportStudies.getStudiesList()){
-										//try {
-											//RECUPERER LE ORTHANC ID DE LA STUDY ANONYMISEE POUR LE DELETE
-											//connexionHttp.makeDeleteConnection("/studies/"+ORTHANC ID);
-											//A VOIR SK SI ON EFFACE L ETUDE ORIGINALE
-											//connexionHttp.makeDeleteConnection(study.getOldStudyInstanceUID());
-										//} catch (IOException e) {
-										//	e.printStackTrace();
-										//}
+										//deleted anonymized and sent study
+										connexionHttp.makeDeleteConnection("/studies/"+study.getId());
 									}
+									// empty the export table
+									modeleExportStudies.clear();
+									modeleExportSeries.clear();
 									
 								}
 								else {
@@ -1821,12 +1858,6 @@ public class VueAnon extends JFrame implements PlugIn{
 						
 						worker.execute();
 					}
-				
-	
-	
-	
-	
-	
 				
 
 				}
@@ -2176,7 +2207,7 @@ public class VueAnon extends JFrame implements PlugIn{
 
 		JTabbedPane eastSetupPane = new JTabbedPane();
 		eastSetupPane.add("Export setup", eastExport);
-		eastSetupPane.addTab("Other", clinicalTrialProcessor);
+		eastSetupPane.addTab("CTP", null, clinicalTrialProcessor, "Clinical Trial Processor");
 
 		gbSetup.insets = new Insets(20, 10, 0, 10);
 		gbSetup.gridx = 0;
@@ -2255,13 +2286,17 @@ public class VueAnon extends JFrame implements PlugIn{
 
 		
 		//add CTP Panel
-		JLabel address=new JLabel("Address");
+		JLabel address=new JLabel("CTP Address");
 		addressFieldCTP=new JTextField();
 		addressFieldCTP.setToolTipText("Include http:// or https://");
 		addressFieldCTP.setPreferredSize(new Dimension(300,20));
 		addressFieldCTP.setText(jprefer.get("CTPAddress", "http://"));
+		JLabel peerLabel=new JLabel("CTP Peer");
+		listePeersCTP = new JComboBox<Object>(query.getPeers());
 		clinicalTrialProcessorGrid.add(address);
 		clinicalTrialProcessorGrid.add(addressFieldCTP);
+		clinicalTrialProcessorGrid.add(peerLabel);
+		clinicalTrialProcessorGrid.add(listePeersCTP);
 		
 		
 		JPanel aboutPanel = new JPanel(new FlowLayout());
@@ -2313,14 +2348,15 @@ public class VueAnon extends JFrame implements PlugIn{
 		});
 		
 		//Setup button only for starting outside Fiji
-		setupButton = new JButton("Orthanc HTTP Setup");
-		setupButton.setVisible(false);
+		JButton setupButton = new JButton("Orthanc HTTP Setup");
+		
 		
 		setupButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				ConnectionSetup.main();
+				ConnectionSetup setup = new ConnectionSetup(runOrthanc);
+				setup.setVisible(true);
 				
 			}
 			
@@ -2355,14 +2391,14 @@ public class VueAnon extends JFrame implements PlugIn{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////// END TAB 3 : SETUP //////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
-		monitoring = new Monitoring_GUI(connexionHttp);
-		JPanel panelMonitoring = (JPanel) monitoring.getContentPane();
-		
+	
 		
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////// TAB 4 : Monitor //////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
-				
+		monitoring = new Monitoring_GUI(connexionHttp);
+		JPanel panelMonitoring = (JPanel) monitoring.getContentPane();
+		
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////// END TAB 4 : Monitor //////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2476,7 +2512,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.getContentPane().add(tabbedPane);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.getRootPane().setDefaultButton(search);
-		this.addWindowListener(new CloseWindowAdapter(this, this.zipContent, this.modeleAnonStudies.getOldOrthancUIDs(), this.modeleExportStudies.getStudiesList(), monitoring));
+		this.addWindowListener(new CloseWindowAdapter(this, this.zipContent, this.modeleAnonStudies.getOldOrthancUIDs(), this.modeleExportStudies.getStudiesList(), monitoring, runOrthanc));
 	}
 	
 	private void openCloseAnonTool(boolean open) {
@@ -2779,7 +2815,7 @@ public class VueAnon extends JFrame implements PlugIn{
 							for(String patientID : modeleAnonStudies.getPatientIDs()){
 								String newName = modeleAnonPatients.getPatient(anonPatientTable.convertRowIndexToModel(j)).getNewName();
 								String newID = modeleAnonPatients.getPatient(anonPatientTable.convertRowIndexToModel(j)).getNewID();
-								String newUID = "";
+								String newStudyID = "";
 								if((newName == null || newName.equals("")) || (newID == null || newID.equals(""))){
 									anonCount++;
 								}
@@ -2803,13 +2839,13 @@ public class VueAnon extends JFrame implements PlugIn{
 									quAnon.sendQuery("studies", uid);
 									modeleAnonStudies.addNewUid(quAnon.getNewUID());
 									i++;
-									newUID = quAnon.getNewPatientUID();
+									newStudyID = quAnon.getNewUID();
 								}
-								//SK A VOIR CETTE METHODE CF REMARQUE DANS TABLEDATAEXPORTSTUDIES
-								modeleExportStudies.addStudy(newName, newID, newUID);
+								//Add anonymized study in export list
+								modeleExportStudies.addStudy(newName, newID, newStudyID);
 								j++;
 							}
-							//SK AJOUTE A TESTER RISQUE BUG
+							//Empty list
 							modeleAnonStudies.empty();
 							modeleAnonPatients.clear();
 							
@@ -2880,7 +2916,6 @@ public class VueAnon extends JFrame implements PlugIn{
 			@Override
 			public void run() {
 				vue.pack();
-				vue.setupButton.setVisible(true);
 				vue.setLocationRelativeTo(null);
 				vue.setVisible(true);
 				

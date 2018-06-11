@@ -31,6 +31,7 @@ import java.util.prefs.Preferences;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -38,17 +39,20 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+import org.petctviewer.orthanc.run.Run_Orthanc;
+
 import ij.plugin.PlugIn;
 
-public class ConnectionSetup extends JFrame implements PlugIn{
+public class ConnectionSetup extends JDialog implements PlugIn{
 	
 	private static final long serialVersionUID = 1L;
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
-	private JFrame gui=this;
+	private JDialog gui=this;
+
 	
-	public ConnectionSetup(){
-		
+	public ConnectionSetup(Run_Orthanc orthanc){
 		this.setTitle("Setup");
+		this.setModal(true);
 		this.setResizable(true);
 		this.setLocationRelativeTo(null);
 		this.setAlwaysOnTop(true);
@@ -142,6 +146,50 @@ public class ConnectionSetup extends JFrame implements PlugIn{
 			}
 		});
 		
+		
+		//Display start or stop button depending on local run of orthanc
+			JButton runOrthancLocal;
+			if(orthanc.getIsStarted()) {
+				runOrthancLocal = new JButton("Stop Orthanc Local");
+			}
+			else {
+				runOrthancLocal = new JButton("Run Local Orthanc");
+			}
+				
+
+		
+		
+		runOrthancLocal.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String os=System.getProperty("os.name");
+				if(os.startsWith("Windows")) {
+					if(runOrthancLocal.getText()=="Run Local Orthanc") {
+						try {
+							orthanc.start();
+							dispose();
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}else {
+						orthanc.stopOrthanc();
+						dispose();
+					}
+				}
+				else {
+					JOptionPane.showMessageDialog(gui, "Only available for Windows", "Error", JOptionPane.ERROR_MESSAGE);
+				}
+					
+				
+				
+
+				}
+				
+			
+		});
+		
 		gbc.gridy = 4;
 		setupPanel.add(submit, gbc);
 		
@@ -149,7 +197,10 @@ public class ConnectionSetup extends JFrame implements PlugIn{
 		this.setIconImage(image);
 		mainPanel.add(disclaimerPanel);
 		mainPanel.add(setupPanel);
+		mainPanel.add(runOrthancLocal);
 		this.getContentPane().add(mainPanel);
+		setSize(1200, 400);
+		pack();
 	}
 	
 	public void openWebPage(String url){
@@ -160,16 +211,10 @@ public class ConnectionSetup extends JFrame implements PlugIn{
 		}
 	}
 	
-	public static void main(String... arg0){
-		ConnectionSetup vue = new ConnectionSetup();
-		vue.setSize(1200, 400);
-		vue.pack();
-		vue.setVisible(true);
-	}
-	
+	//IJ run method
 	@Override
 	public void run(String arg0) {
-		ConnectionSetup vue = new ConnectionSetup();
+		ConnectionSetup vue = new ConnectionSetup(new Run_Orthanc());
 		vue.setSize(1200, 400);
 		vue.pack();
 		vue.setVisible(true);

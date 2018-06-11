@@ -103,39 +103,34 @@ public class DeleteActionMainPanel extends AbstractAction{
 				if(level.equals("Serie")){
 					studyUID = tableauStudies.getValueAt(tableauStudies.getSelectedRow(), 3).toString();
 				}
-				try {
-					
-					if(!level.equals("Serie")){
-						String txtLabel = "";
-						// SETTING THE DIALOG FOR STUDY
-						if(level.equals("Study")){
-							selectedRow = tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow());
-							dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete this study (" 
-									+modeleStudies.getValueAt(selectedRow, 1) 
-									+") ?","Warning deleting study",JOptionPane.YES_NO_OPTION);
-							txtLabel = " study (" + modeleStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 1);
-						}// SETTING THE DIALOG FOR PATIENT
-						else{
-							selectedRow = tableauPatients.convertRowIndexToModel(tableauPatients.getSelectedRow());
-							dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete this patient ("
-									+ modelePatients.getValueAt(selectedRow, 0) 
-									+ ") ?","Warning deleting patient",JOptionPane.YES_NO_OPTION);
-							txtLabel =  " patient (" + modelePatients.getValueAt(tableauPatients.convertRowIndexToModel(tableauPatients.getSelectedRow()), 0);
-						}// YES OPTION
-						if(dialogResult == JOptionPane.YES_OPTION){
-							state.setText("<html>Deleting a" + txtLabel + ") <font color='red'> <br>"
-									+ "(Do not use the toolbox while the current operation is not done)</font></html>");
-							connexion.makeDeleteConnection(url);
-						}
-					}else{// DELETING SERIE WITHOUT DIALOG
-						selectedRow = tableauSeries.convertRowIndexToModel(tableauSeries.getSelectedRow());
-						state.setText("<html>Deleting a serie (" + modeleSeries.getValueAt(selectedRow, 1) + ") <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
+				if(!level.equals("Serie")){
+					String txtLabel = "";
+					// SETTING THE DIALOG FOR STUDY
+					if(level.equals("Study")){
+						selectedRow = tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow());
+						dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete this study (" 
+								+modeleStudies.getValueAt(selectedRow, 1) 
+								+") ?","Warning deleting study",JOptionPane.YES_NO_OPTION);
+						txtLabel = " study (" + modeleStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 1);
+					}// SETTING THE DIALOG FOR PATIENT
+					else{
+						selectedRow = tableauPatients.convertRowIndexToModel(tableauPatients.getSelectedRow());
+						dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete this patient ("
+								+ modelePatients.getValueAt(selectedRow, 0) 
+								+ ") ?","Warning deleting patient",JOptionPane.YES_NO_OPTION);
+						txtLabel =  " patient (" + modelePatients.getValueAt(tableauPatients.convertRowIndexToModel(tableauPatients.getSelectedRow()), 0);
+					}// YES OPTION
+					if(dialogResult == JOptionPane.YES_OPTION){
+						state.setText("<html>Deleting a" + txtLabel + ") <font color='red'> <br>"
+								+ "(Do not use the toolbox while the current operation is not done)</font></html>");
 						connexion.makeDeleteConnection(url);
 					}
-					frame.pack();
-				} catch (IOException e) {
-					e.printStackTrace();
+				}else{// DELETING SERIE WITHOUT DIALOG
+					selectedRow = tableauSeries.convertRowIndexToModel(tableauSeries.getSelectedRow());
+					state.setText("<html>Deleting a serie (" + modeleSeries.getValueAt(selectedRow, 1) + ") <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
+					connexion.makeDeleteConnection(url);
 				}
+				frame.pack();
 				return null;
 			}
 			@Override

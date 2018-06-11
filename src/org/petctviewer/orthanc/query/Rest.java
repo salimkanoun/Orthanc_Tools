@@ -50,7 +50,7 @@ public class Rest {
 		try {
 			answer = (JSONObject) parser.parse(connexion.makePostConnectionAndStringBuilder("/modalities/" + aet + "/query/", query).toString());
 			ID=(String) answer.get("ID");
-		} catch (ParseException | IOException e) {
+		} catch (ParseException e) {
 			e.printStackTrace();
 		}
 		return ID;
@@ -209,7 +209,7 @@ public class Rest {
 		try {
 			answer = (JSONObject) parser.parse(connexion.makePostConnectionAndStringBuilder("/modalities/" + aet + "/query/", query).toString());
 			idURL=(String) answer.get("ID");
-		} catch (ParseException | IOException e) {
+		} catch (ParseException e) {
 			e.printStackTrace();
 		}
 		
@@ -268,11 +268,7 @@ public class Rest {
 	 * This method retrieves an instance, depending on its query ID 
 	 */
 	public void retrieve(String queryID, int answer, String retrieveAET) {
-		try {
-			connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve/", retrieveAET);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve/", retrieveAET);
 	}
 
 	/*

@@ -185,9 +185,7 @@ public class Modify {
 	}
 	
 	public void sendQuery(JSONObject query) {
-		try {
-			connexion.makePostConnectionAndStringBuilder(this.levelUrl+this.id+"/modify", query.toString());
-		} catch (IOException e) {e.printStackTrace();}
+		connexion.makePostConnectionAndStringBuilder(this.levelUrl+this.id+"/modify", query.toString());
 		
 	}
 	

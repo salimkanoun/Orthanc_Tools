@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.prefs.Preferences;
 
@@ -32,7 +34,6 @@ import javax.swing.JOptionPane;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.petctviewer.orthanc.setup.*;
 
 /**
  * Permet de recuperer l'adresse du serveur Orthanc a partir des settings de BIdatabase ou des settings defini dans le settings panel des Orthanc Plugin
@@ -81,12 +82,7 @@ public class ParametreConnexionHttp {
 				if(jprefer.get("db user" + curDb, null) != null && jprefer.get("db pass" + curDb, null) != null){
 					authentication = Base64.getEncoder().encodeToString((jprefer.get("db user" + curDb, null) + ":" + jprefer.get("db pass" + curDb, null)).getBytes());
 				}
-				try {
-					testConnexion();
-				} catch (MalformedURLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				
 		}
 		else if (typeDb != 5){
 			ip = jpreferPerso.get("ip", "http://localhost");
@@ -95,52 +91,34 @@ public class ParametreConnexionHttp {
 			if(jpreferPerso.get("username", null) != null && jpreferPerso.get("username", null) != null){
 				authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
 			}
-			try {
-				testConnexion();
-			} catch (MalformedURLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			
 			
 		}
-			
-		//Si Echec de la connexion defini dans le registery on retente avec les parametres manuels
-		/*if (!testConnexion() && typeDb == 5) {
-			ip = jpreferPerso.get("ip", "http://localhost");
-			port = jpreferPerso.get("port", "8042");
-			this.fullAddress = ip + ":" + port;
-			if(jpreferPerso.get("username", null) != null && jpreferPerso.get("username", null) != null){
-				authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
-			}
-			testConnexion();
-		}*/
-		
 	
 		
 	}
 	
-	public HttpURLConnection makeGetConnection(String apiUrl) throws IOException {
+	public HttpURLConnection makeGetConnection(String apiUrl) {
 		
 		HttpURLConnection conn=null;
 		URL url = null;
-		
-			url = new URL(fullAddress+apiUrl);
-			conn = (HttpURLConnection) url.openConnection();
-			conn.setDoOutput(true);
-			conn.setRequestMethod("GET");
-			if((fullAddress != null && fullAddress.contains("https"))){
-			try{
-				HttpsTrustModifier.Trust(conn);
-			}catch (Exception e){
-				throw new IOException("Cannot allow self-signed certificates");
+			try {
+				url = new URL(fullAddress+apiUrl);
+				conn = (HttpURLConnection) url.openConnection();
+				conn.setDoOutput(true);
+				conn.setRequestMethod("GET");
+				if((fullAddress != null && fullAddress.contains("https"))){
+						HttpsTrustModifier.Trust(conn);
+				}
+				if(authentication != null){
+					conn.setRequestProperty("Authorization", "Basic " + authentication);
+				}
+				conn.getResponseMessage();
+				
+			} catch (IOException | KeyManagementException | NoSuchAlgorithmException | KeyStoreException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
 			}
-			}
-		
-			if(authentication != null){
-				conn.setRequestProperty("Authorization", "Basic " + authentication);
-			}
-			conn.getResponseMessage();
-			
 		
 
 		return conn;
@@ -173,96 +151,107 @@ public class ParametreConnexionHttp {
 	
 	
 	
-	public HttpURLConnection makePostConnection(String apiUrl, String post) throws IOException {
+	public HttpURLConnection makePostConnection(String apiUrl, String post) {
 		URL url = null;
+		HttpURLConnection conn = null ;
 		try {
-		url = new URL(fullAddress+apiUrl);
-		} catch ( MalformedURLException ex) { }
-		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-		conn.setDoOutput(true);
-		conn.setRequestMethod("POST");
-		if((fullAddress != null && fullAddress.contains("https")) ){
-			try{
-				HttpsTrustModifier.Trust(conn);
-			}catch (Exception e){
-				throw new IOException("Cannot allow self-signed certificates");
+			url = new URL(fullAddress+apiUrl);
+			conn = (HttpURLConnection) url.openConnection();
+			conn.setDoOutput(true);
+			conn.setRequestMethod("POST");
+			if((fullAddress != null && fullAddress.contains("https")) ){
+					HttpsTrustModifier.Trust(conn);
 			}
+			if(this.authentication != null){
+				conn.setRequestProperty("Authorization", "Basic " + this.authentication);
+			}
+			OutputStream os = conn.getOutputStream();
+			os.write(post.getBytes());
+			os.flush();
+			conn.getResponseMessage();
+		} catch ( KeyManagementException | NoSuchAlgorithmException | KeyStoreException | IOException ex) { 
+			
 		}
-		if(this.authentication != null){
-			conn.setRequestProperty("Authorization", "Basic " + this.authentication);
-		}
-		OutputStream os = conn.getOutputStream();
-		os.write(post.getBytes());
-		os.flush();
-		conn.getResponseMessage();
-		
-		
 		return conn;
 	}
 
-	public HttpURLConnection sendDicom(String apiUrl, byte[] post) throws IOException {
+	public HttpURLConnection sendDicom(String apiUrl, byte[] post) {
 		
-		URL url = new URL(fullAddress+apiUrl);
-		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-		conn.setDoOutput(true);
-		conn.setRequestMethod("POST");
+		URL url = null;
+		HttpURLConnection conn =null;
 		
-		if((fullAddress != null && fullAddress.contains("https")) ){
-			try{
+		try {
+			url=new URL(fullAddress+apiUrl);
+			conn = (HttpURLConnection) url.openConnection();
+			conn.setDoOutput(true);
+			conn.setRequestMethod("POST");
+			if((fullAddress != null && fullAddress.contains("https")) ){
 				HttpsTrustModifier.Trust(conn);
-			}catch (Exception e){
-				throw new IOException("Cannot allow self-signed certificates");
+				
 			}
+			if(this.authentication != null){
+				conn.setRequestProperty("Authorization", "Basic " + this.authentication);
+			}
+			conn.setRequestProperty("content-length", Integer.toString(post.length));
+			conn.setRequestProperty("content-type", "application/dicom");
+			OutputStream os = conn.getOutputStream();
+			os.write(post);
+			os.flush();
+			conn.getResponseMessage();
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException | IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
-		if(this.authentication != null){
-			conn.setRequestProperty("Authorization", "Basic " + this.authentication);
-		}
-		conn.setRequestProperty("content-length", Integer.toString(post.length));
-		conn.setRequestProperty("content-type", "application/dicom");
-		OutputStream os = conn.getOutputStream();
-		os.write(post);
-		os.flush();
-		conn.getResponseMessage();
+		
 		return conn;
 	}
 		
-	public StringBuilder makePostConnectionAndStringBuilder(String apiUrl, String post) throws IOException {
+	public StringBuilder makePostConnectionAndStringBuilder(String apiUrl, String post) {
 		
 		HttpURLConnection conn = makePostConnection(apiUrl, post);
-		BufferedReader br = new BufferedReader(new InputStreamReader(
-				(conn.getInputStream())));
-
-		// We get the study ID at the end
-		StringBuilder sb = new StringBuilder();
-		String output;
-		while ((output = br.readLine()) != null) {
-			sb.append(output);
+		BufferedReader br;
+		StringBuilder sb =new StringBuilder();
+		try {
+			br = new BufferedReader(new InputStreamReader(
+					(conn.getInputStream())));
+			// We get the study ID at the end
+			String output;
+			while ((output = br.readLine()) != null) {
+				sb.append(output);
+			}
+			conn.disconnect();
+			conn.getResponseMessage();
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		conn.disconnect();
-		conn.getResponseMessage();
-		
 		return sb; 
 	}
 
-	public void makeDeleteConnection(String apiUrl) throws IOException {
+	public void makeDeleteConnection(String apiUrl) {
 		
-		URL url = new URL(fullAddress+apiUrl);
-		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-		conn.setDoOutput(true);
-		conn.setRequestMethod("DELETE");
-		if((fullAddress != null && fullAddress.contains("https")) ){
-			try{
-				HttpsTrustModifier.Trust(conn);
-			}catch (Exception e){
-				throw new IOException("Cannot allow self-signed certificates");
+		URL url = null;
+		HttpURLConnection conn = null;
+		try {
+			url=new URL(fullAddress+apiUrl);
+			conn = (HttpURLConnection) url.openConnection();
+			conn.setDoOutput(true);
+			conn.setRequestMethod("DELETE");
+			if((fullAddress != null && fullAddress.contains("https")) ){		
+					HttpsTrustModifier.Trust(conn);
 			}
-		}
-		if(this.authentication != null){
-			conn.setRequestProperty("Authorization", "Basic " + this.authentication);
+			if(this.authentication != null){
+				conn.setRequestProperty("Authorization", "Basic " + this.authentication);
+			}
+			
+			conn.getResponseMessage();
+			conn.disconnect();
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException | IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 		
-		conn.getResponseMessage();
-		conn.disconnect();
 	
 	}
 	
@@ -275,7 +264,7 @@ public class ParametreConnexionHttp {
 	}
 	
 	// Display Error message if connexion failed
-	private Boolean testConnexion() throws MalformedURLException{	
+	public Boolean testConnexion() {	
 		Boolean test=true;
 		try {
 		makeGetConnection("/system");
@@ -284,12 +273,10 @@ public class ParametreConnexionHttp {
 		JSONObject systemJson=(JSONObject) parser.parse(sb.toString());
 		orthancVersion=(String) systemJson.get("Version");
 		versionHigher131=isVersionAfter131();
-		} catch (IOException e2) {
-			test=false;
-			JOptionPane.showMessageDialog(null,"Check Connexion Parameters "+e2.getMessage(),"Connexion",JOptionPane.ERROR_MESSAGE);
-			ConnectionSetup.main();
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null,
+				    "Can't connect to Orthanc");
+			test=false;
 			e.printStackTrace();
 		}
 	

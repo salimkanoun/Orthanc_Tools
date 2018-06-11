@@ -26,6 +26,7 @@ public class Monitoring_Settings extends JDialog {
 	private JPanel panel;
 	private JButton btnOk;
 	private JCheckBox chckbxUseMysql;
+	private JCheckBox chckbxAutodelete;
 
 	public static void main(String[] args) {
 		Monitoring_Settings settings=new Monitoring_Settings();
@@ -92,10 +93,15 @@ public class Monitoring_Settings extends JDialog {
 		});
 		
 		chckbxUseMysql = new JCheckBox("Use MySQL");
+		chckbxUseMysql.setSelected(jprefer.getBoolean("useDBMonitoring", false));
 		panel.add(chckbxUseMysql);
+		
+		chckbxAutodelete = new JCheckBox("Auto-Delete");
+		chckbxAutodelete.setToolTipText("Dicom Deletion after tag extraction");
+		chckbxAutodelete.setSelected(jprefer.getBoolean("AutoDeleteMonitoring", false));
+		panel.add(chckbxAutodelete);
 		panel.add(btnOk);
 		pack();
-		LoadRegistery();
 	}
 	
 	private void saveInRegistery() {
@@ -105,19 +111,11 @@ public class Monitoring_Settings extends JDialog {
 			jprefer.put("dbPassword", new String(dbPassword.getPassword()));
 			jprefer.put("dbAdress", dbadress.getText());
 			jprefer.putBoolean("useDBMonitoring", chckbxUseMysql.isSelected());
+			jprefer.putBoolean("AutoDeleteMonitoring", chckbxAutodelete.isSelected());
+			
 		
 		
 	}
 	
-	private void LoadRegistery() {
-		dbPort.setText(jprefer.get("dbPort", ""));
-		dbName.setText(jprefer.get("dbName",""));
-		dbUsername.setText(jprefer.get("dbUsername", ""));
-		dbPassword.setText(jprefer.get("dbPassword", ""));
-		dbadress.setText(jprefer.get("dbAdress", ""));
-		chckbxUseMysql.setSelected(jprefer.getBoolean("useDBMonitoring", false));
-	
-	
-}
 
 }

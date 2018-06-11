@@ -18,12 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 package org.petctviewer.orthanc.monitoring;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.prefs.Preferences;
 
 public class JDBC_Monitoring<accessionNumber> {
@@ -33,26 +30,26 @@ public class JDBC_Monitoring<accessionNumber> {
 	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
 	
 	public static void main(String arg[]) {
-		
-		try {
 			JDBC_Monitoring monitoring=new JDBC_Monitoring();
 			monitoring.InsertPatient("a", "b", "c", "dd","e","f");
 			monitoring.InsertStudy("gd", "dfg", "dfg", "dg","dg", "dfg", "dfg", "dg", "gd");
 			monitoring.InsertSeries("100", "100", "90", "Manifacturer", "Manifacturer_Model", "Performing_Physician_Name", "Series_Description", "Station_Name", "22012015", "15124500", "Protocol_Name", "Series_Instance_UID", "Comment_Radiation_Dose", "Radiopharmaceutical_sequence", "Radiopharmaceutical", "RadiopharmaceuticalStartTime", "RadionuclideTotalDose", "RadionuclideHalfLife", "RadionuclidePositronFraction", "Radiation_Dose_Module", "Shared_Tags", "Orthanc_Serie_ID");
-		} catch (SQLException | ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
 		
 	}
 		
 
-	public JDBC_Monitoring() throws ClassNotFoundException, SQLException{
+	public JDBC_Monitoring() {
 		//Class.forName("com.mysql.jdbc.Driver");
 		if(jprefer.get("dbAdress", null) != null && jprefer.get("dbPort", null) != null && jprefer.get("dbName", null) != null &&
 				jprefer.get("dbUsername", null) != null && jprefer.get("dbPassword", null) != null){
-			connection = DriverManager.getConnection("jdbc:mysql://" + jprefer.get("dbAdress", null) + ":" 
-				+ jprefer.get("dbPort", null)  + "/" + jprefer.get("dbName", null), jprefer.get("dbUsername", null), jprefer.get("dbPassword", null));
+			try {
+				connection = DriverManager.getConnection("jdbc:mysql://" + jprefer.get("dbAdress", null) + ":" 
+					+ jprefer.get("dbPort", null)  + "/" + jprefer.get("dbName", null), jprefer.get("dbUsername", null), jprefer.get("dbPassword", null));
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
