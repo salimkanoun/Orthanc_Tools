@@ -332,6 +332,14 @@ public class ParametreConnexionHttp {
 	    return Integer.signum(vals1.length - vals2.length);
 	}
 	
+	public void restartOrthanc() {
+		StringBuilder sb=makePostConnectionAndStringBuilder("/tools/reset", "");
+		if (sb !=null) {
+			JOptionPane.showMessageDialog(null,"Server Sucessfully restarted");
+		}
+
+	}
+	
 	
 
 	

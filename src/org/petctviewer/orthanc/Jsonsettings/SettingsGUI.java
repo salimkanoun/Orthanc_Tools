@@ -35,6 +35,7 @@ import java.awt.Dimension;
 import javax.swing.border.LineBorder;
 
 import org.json.simple.parser.ParseException;
+import org.petctviewer.orthanc.ParametreConnexionHttp;
 
 import java.awt.Color;
 import javax.swing.JComboBox;
@@ -72,9 +73,8 @@ public class SettingsGUI extends JFrame {
 	private JLabel Dictionnary_Counter;
 	private JLabel Content_Type_Counter;
 	private JLabel Metadata_Counter;
-	private String address="http://localhost:8042";
-	private String login;
-	private String password;
+	
+	private ParametreConnexionHttp connexion=new ParametreConnexionHttp();
 
 	private Json_Settings settings=new Json_Settings();
 	
@@ -1130,38 +1130,11 @@ public class SettingsGUI extends JFrame {
 	JButton btnRestartOrthancServer = new JButton("Restart Orthanc Server");
 	btnRestartOrthancServer.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent arg0) {
-			Rest_Restart2 restart=new Rest_Restart2();
-				try {
-					restart.restartOrthanc(address+"/tools/reset", login, password);
-				} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException | IOException
-						| ParseException e) {
-					e.printStackTrace();
-				}
-			
+			connexion.restartOrthanc();
 		}
 	});
 	Orthanc_Connection.setLayout(new GridLayout(0, 2, 0, 0));
 	
-	JButton btnTestOrthancConnection = new JButton("Test Orthanc Connection");
-	btnTestOrthancConnection.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent arg0) {
-			Rest_Restart2 restart=new Rest_Restart2();
-			try {
-				boolean connect=restart.getSystem(address+"/system", login, password);
-				if (connect==false){
-					Connection_Dialog connectionDialog=new Connection_Dialog();
-					connectionDialog.setVisible(true);
-					address=connectionDialog.getAddress();
-					login=connectionDialog.getLogin();
-					password=connectionDialog.getPassword();
-				}
-				else {JOptionPane.showMessageDialog(null,"Connection OK");}
-			} catch (IOException | KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-				e.printStackTrace();
-			}
-		}
-	});
-	Orthanc_Connection.add(btnTestOrthancConnection);
 	Orthanc_Connection.add(btnRestartOrthancServer);
 	}
 
