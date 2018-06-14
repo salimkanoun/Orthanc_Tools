@@ -26,6 +26,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.prefs.Preferences;
 
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
@@ -54,6 +55,9 @@ public class Monitoring_GUI extends JFrame {
 	private JPanel contentPane;
 	private Monitoring_GUI gui;
 	
+	//JButton
+	private JButton btnStartAutoFetch, btnStart_tagMonitoring;
+	
 	//CD Burner Service
 	private JButton btnStopMonitoring, btnStartMonitoring;
 	private JTextArea textAreaCD;
@@ -79,6 +83,8 @@ public class Monitoring_GUI extends JFrame {
 	private JTextField textField_AutoFecth_Modality_Study, textField_AutoFecth_Date, textField_AutoFetch_StudyDescription;
 	private Auto_Fetch autoFetch;
 	private ButtonGroup levelAutoRouting= new ButtonGroup();
+	
+	Preferences jPrefer;
 	
 	// parametre http
 	private ParametreConnexionHttp parametre;
@@ -108,6 +114,8 @@ public class Monitoring_GUI extends JFrame {
 	 * Create the frame.
 	 */
 	public Monitoring_GUI(ParametreConnexionHttp parametre) {
+		jPrefer = Preferences.userNodeForPackage(Burner_Settings.class);
+		jPrefer = jPrefer.node("CDburner");
 		this.parametre=parametre;
 		this.gui=this;
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -195,6 +203,7 @@ public class Monitoring_GUI extends JFrame {
 								//On ouvre le watcher dans un nouveau thread pour ne pas bloquer l'interface				
 								cdBurner.startCDMonitoring();
 								cdMonitoringStarted=true;
+								jPrefer.putBoolean("CDMonitoringStarted", true);
 								//On grise le boutton pour empecher la creation d'un nouveau watcher
 								btnStartMonitoring.setEnabled(false);
 								btnStopMonitoring.setEnabled(true);
@@ -226,6 +235,7 @@ public class Monitoring_GUI extends JFrame {
 							public void actionPerformed(ActionEvent arg0) {
 								cdBurner.stopCDMonitoring();
 								cdMonitoringStarted=false;
+								jPrefer.putBoolean("CDMonitoringStarted", false);
 								updateStatusLabel();
 								textAreaCD.append("Monitoring Terminated \n");
 								btnStartMonitoring.setEnabled(true);
@@ -357,7 +367,7 @@ public class Monitoring_GUI extends JFrame {
 						JPanel panel_TagMonitoring_Buttons = new JPanel();
 						panel_tag_monitoring.add(panel_TagMonitoring_Buttons, BorderLayout.SOUTH);
 						
-						JButton btnStart_tagMonitoring = new JButton("Start Collecting");
+						btnStart_tagMonitoring = new JButton("Start Collecting");
 						btnStart_tagMonitoring.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent arg0) {
 								if (!tagMonitoringStarted) {
@@ -365,6 +375,7 @@ public class Monitoring_GUI extends JFrame {
 									tagMonitoring.startTagMonitoring();
 									btnStart_tagMonitoring.setText("Stop Collecting");
 									tagMonitoringStarted=true;
+									jPrefer.putBoolean("tagMonitoringStarted", true);
 									updateStatusLabel();
 									
 								}
@@ -372,6 +383,7 @@ public class Monitoring_GUI extends JFrame {
 									tagMonitoring.stopTagMonitoring();
 									tagMonitoringStarted=false;
 									btnStart_tagMonitoring.setText("Start Collecting");
+									jPrefer.putBoolean("tagMonitoringStarted", false);
 									updateStatusLabel();
 								}
 								
@@ -541,7 +553,7 @@ public class Monitoring_GUI extends JFrame {
 						
 						JLabel lblStatus_AutoFetch = new JLabel("Status : Idle");
 						
-						JButton btnStartAutoFetch = new JButton("Start Auto-Fetch");
+						btnStartAutoFetch = new JButton("Start Auto-Fetch");
 						btnStartAutoFetch.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent arg0) {
 								if (!autoFetchStarted) {
@@ -549,11 +561,13 @@ public class Monitoring_GUI extends JFrame {
 									autoFetch.startAutoFetch();
 									btnStartAutoFetch.setText("Stop Auto-Fetch");
 									autoFetchStarted=true;
+									jPrefer.putBoolean("autoFetchStarted", true);
 									updateStatusLabel();
 								}
 								else if(autoFetchStarted) {
 									autoFetch.stopAutoFecth();
 									autoFetchStarted=false;
+									jPrefer.putBoolean("autoFetchStarted", false);
 									btnStartAutoFetch.setText("Start Auto-Fetch");
 									updateStatusLabel();
 								}
@@ -568,16 +582,23 @@ public class Monitoring_GUI extends JFrame {
 						panel_AutoFetch_Start.add(lblStatus_AutoFetch);
 						
 						setAET();
+						autoStart();
 	}
 	
 	
 	
 	
-	/*private void autoStart(){
-		if ( CD_Burner.epsonDirectory!=null && CD_Burner.fijiDirectory!=null && CD_Burner.labelFile!=null && CD_Burner.dateFormatChoix!=null ){
+	private void autoStart(){
+		if (jPrefer.getBoolean("CDMonitoringStarted", false)){
 			btnStartMonitoring.doClick();
 		}
-	}*/
+		if (jPrefer.getBoolean("autoFetchStarted", false)){
+			btnStartAutoFetch.doClick();//btnStartMonitoring.doClick();
+		}
+		if (jPrefer.getBoolean("tagMonitoringStarted", false)){
+			btnStart_tagMonitoring.doClick();
+		}
+   	}
 	
 	
 	private void updateStatusLabel(){

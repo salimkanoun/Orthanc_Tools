@@ -2491,7 +2491,6 @@ public class VueAnon extends JFrame implements PlugIn{
 					exportBtn.setEnabled(true);
 				}
 				//Save Peer position
-				System.out.println(listePeersCTP.getSelectedIndex());
 				jprefer.putInt("CTPPeer", listePeersCTP.getSelectedIndex());
 				pack();
 			}
