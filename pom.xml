@@ -25,6 +25,18 @@
         <enabled>false</enabled>
       </snapshots>
     </repository>
+    <repository>
+      <id>Boundless</id>
+      <name>Boundless Repository</name>
+      <url>http://repo.boundlessgeo.com/main/</url>
+      <layout>default</layout>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    
+    
+    
     
   </repositories>
   <groupId>Orthanc_Tools</groupId>
@@ -112,6 +124,18 @@
     <artifactId>mysql-connector-java</artifactId>
     <version>5.1.14</version>
 	</dependency>
+	<dependency>
+	    <groupId>com.google.code.gson</groupId>
+	    <artifactId>gson</artifactId>
+	    <version>2.8.5</version>
+	</dependency>
+	
+	<dependency>
+	    <groupId>net.sf.packtag</groupId>
+	    <artifactId>packtag-core</artifactId>
+	    <version>3.8</version>
+	</dependency>
+	
 	
   </dependencies>
   
