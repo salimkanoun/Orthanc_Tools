@@ -1234,7 +1234,9 @@ public class VueRest extends JFrame implements PlugIn{
 						if(rowsModelsIndexes.size() == 0){
 							// If whole studies/study were/was selected
 							DateFormat df = new SimpleDateFormat("yyyyMMdd");
+							int numPatient=0;
 							for(Integer row : tableau.getSelectedRows()){
+								numPatient++;
 								modeleDetails.clear();
 								Date date = (Date)tableau.getValueAt(row, 2);
 								String patientName = (String)tableau.getValueAt(row, 0);
@@ -1246,7 +1248,7 @@ public class VueRest extends JFrame implements PlugIn{
 
 								modeleDetails.addDetails(patientName, patientID, studyDate, studyDescription, accessionNumber, studyInstanceUID, queryAET.getSelectedItem().toString());
 								for(int i = 0; i < tableauDetails.getRowCount(); i++){
-									state.setText("<html>Patient " + (row+1) + "/" + tableau.getSelectedRows().length + " - Retrieve state  " + (i+1) + "/" + tableauDetails.getRowCount() + 
+									state.setText("<html>Patient " + (numPatient) + "/" + tableau.getSelectedColumnCount() + " - Retrieve state  " + (i+1) + "/" + tableauDetails.getRowCount() + 
 											" <font color='red'> (Do not touch any buttons or any tables while the retrieve is not done)</font></html>");
 									modeleDetails.retrieve(modeleDetails.getQueryID(i), i, 
 											retrieveAET.getSelectedItem().toString());

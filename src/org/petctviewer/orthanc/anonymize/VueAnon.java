@@ -98,8 +98,8 @@ import org.petctviewer.orthanc.CTP.CTP_Gui;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.*;
-import org.petctviewer.orthanc.run.Run_Orthanc;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
+import org.petctviewer.orthanc.setup.Run_Orthanc;
 
 
 public class VueAnon extends JFrame implements PlugIn{
@@ -1179,7 +1179,7 @@ public class VueAnon extends JFrame implements PlugIn{
 						anonPatientTable.setValueAt(patientNewID, anonPatientTable.getSelectedRow(), 4);
 						anonStudiesTable.setValueAt(visitName, anonStudiesTable.getSelectedRow(), 0);
 						//If only One patient in the list, click the anonymize button to start the process
-						if (anonPatientTable.getSelectedRowCount()==1) {
+						if (anonPatientTable.getRowCount()==1) {
 							anonBtn.doClick();
 						}
 					}
@@ -1809,7 +1809,6 @@ public class VueAnon extends JFrame implements PlugIn{
 									try {
 										stats = (JSONObject) parser.parse(statistics.toString());
 									} catch (org.json.simple.parser.ParseException e) {
-										// TODO Auto-generated catch block
 										e.printStackTrace();
 									}
 									JSONObject studyObject=new JSONObject();
@@ -2293,6 +2292,9 @@ public class VueAnon extends JFrame implements PlugIn{
 		addressFieldCTP.setText(jprefer.get("CTPAddress", "http://"));
 		JLabel peerLabel=new JLabel("CTP Peer");
 		listePeersCTP = new JComboBox<Object>(query.getPeers());
+		listePeersCTP.insertItemAt("Choose", 0);
+		if(jprefer.getInt("CTPPeer", 0) <= listePeersCTP.getItemCount()-1) listePeersCTP.setSelectedIndex(jprefer.getInt("CTPPeer", 0));
+		else listePeersCTP.setSelectedIndex(0);
 		clinicalTrialProcessorGrid.add(address);
 		clinicalTrialProcessorGrid.add(addressFieldCTP);
 		clinicalTrialProcessorGrid.add(peerLabel);
@@ -2488,7 +2490,8 @@ public class VueAnon extends JFrame implements PlugIn{
 				}else{
 					exportBtn.setEnabled(true);
 				}
-				
+				//Save Peer position
+				jprefer.putInt("CTPPeer", listePeersCTP.getSelectedIndex());
 				pack();
 			}
 		});

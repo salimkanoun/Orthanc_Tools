@@ -39,8 +39,6 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-import org.petctviewer.orthanc.run.Run_Orthanc;
-
 import ij.plugin.PlugIn;
 
 public class ConnectionSetup extends JDialog implements PlugIn{
