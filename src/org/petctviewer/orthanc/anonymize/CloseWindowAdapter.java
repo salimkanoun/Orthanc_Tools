@@ -25,7 +25,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
-import org.petctviewer.orthanc.run.Run_Orthanc;
+import org.petctviewer.orthanc.setup.Run_Orthanc;
 
 public class CloseWindowAdapter extends WindowAdapter{
 

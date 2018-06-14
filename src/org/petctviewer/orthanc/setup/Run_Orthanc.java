@@ -1,4 +1,4 @@
-package org.petctviewer.orthanc.run;
+package org.petctviewer.orthanc.setup;
 
 
 import java.io.BufferedReader;

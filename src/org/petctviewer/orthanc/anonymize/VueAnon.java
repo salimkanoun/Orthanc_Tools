@@ -98,8 +98,8 @@ import org.petctviewer.orthanc.CTP.CTP_Gui;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.*;
-import org.petctviewer.orthanc.run.Run_Orthanc;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
+import org.petctviewer.orthanc.setup.Run_Orthanc;
 
 
 public class VueAnon extends JFrame implements PlugIn{
