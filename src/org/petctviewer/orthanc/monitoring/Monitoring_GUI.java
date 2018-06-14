@@ -208,6 +208,11 @@ public class Monitoring_GUI extends JFrame {
 								Burner_Settings settings=new Burner_Settings();
 								settings.setVisible(true);
 								settings.setModal(true);
+								//Refresh settings if already started
+								if(cdMonitoringStarted) {
+									cdBurner.setCDPreference();
+								}
+								
 							}
 						});
 						panel.add(btnSettings);
