@@ -134,12 +134,20 @@ public class Tag_Monitoring {
 		textAreaConsole.append("PatientSex"+ patientSex+ ",");
 		textAreaConsole.append("PatientBirthDate= " +birthDate+ "\n");
 		
-		String[] name =patientName.split("^");
 		HashMap<String, String> hashmapTagPatient=new HashMap<String, String>();
+		
+		if(patientName.indexOf("^") != -1) {
+			String[] namePatient =patientName.split("^");
+			hashmapTagPatient.put("LastName", namePatient[0]);
+			hashmapTagPatient.put("FirstName", namePatient[1]);
+		}
+		else {
+			hashmapTagPatient.put("LastName", patientName);
+			hashmapTagPatient.put("FirstName", "N/A");
+		}
+		
 		hashmapTagPatient.put("PatientBirthDate", birthDate);
 		hashmapTagPatient.put("PatientID", patientID);
-		hashmapTagPatient.put("LastName", name[0]);
-		hashmapTagPatient.put("FirstName", name[1]);
 		hashmapTagPatient.put("PatientSex", patientSex);
 		
 		return hashmapTagPatient;
@@ -226,9 +234,17 @@ public class Tag_Monitoring {
 			
 		}
 		
-		String[] namePatient =hashmapTag.get("PatientName").split("^");
-		hashmapTag.put("LastName", namePatient[0]);
-		hashmapTag.put("FirstName", namePatient[1]);
+		
+		if(hashmapTag.get("PatientName").indexOf("^") != -1) {
+			String[] namePatient =hashmapTag.get("PatientName").split("^");
+			hashmapTag.put("LastName", namePatient[0]);
+			hashmapTag.put("FirstName", namePatient[1]);
+		}
+		else {
+			hashmapTag.put("LastName", hashmapTag.get("PatientName"));
+			hashmapTag.put("FirstName", "N/A");
+		}
+		
 		
 		for (int i=0 ; i<Tag_Of_Interest.tagOfInterestStudy.length; i++) {
 			if (tags.containsKey(Tag_Of_Interest.tagOfInterestStudy[i])) {
