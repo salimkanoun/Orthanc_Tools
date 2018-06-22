@@ -109,7 +109,7 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JLabel state = new JLabel();
 	private DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
 	private DateFormat dfZip = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
-	private JFrame gui=this;
+	private JFrame gui;
 	private JSONParser parser=new JSONParser();
 	
 	//QueryFillStore
@@ -235,6 +235,11 @@ public class VueAnon extends JFrame implements PlugIn{
 			if(runOrthanc.getIsStarted()) {
 				makeGUI();
 			}
+			else {
+				//SK PROBLEME LE PROGRAMME NE QUITTE PAS
+				System.out.println("ici");
+				//this.dispose();
+			}
 			
 		}else {
 			makeGUI();
@@ -243,6 +248,7 @@ public class VueAnon extends JFrame implements PlugIn{
 	}
 
 	public void makeGUI(){
+		gui=this;
 		//On set les objets necessaires
 		modelePatients = new TableDataPatientsAnon(connexionHttp);
 		modeleExportSeries = new TableDataExportSeries(connexionHttp, this, stateExports);
@@ -2516,6 +2522,9 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.getRootPane().setDefaultButton(search);
 		this.addWindowListener(new CloseWindowAdapter(this, this.zipContent, this.modeleAnonStudies.getOldOrthancUIDs(), this.modeleExportStudies.getStudiesList(), monitoring, runOrthanc));
+		pack();
+		setLocationRelativeTo(null);
+		setVisible(true);
 	}
 	
 	private void openCloseAnonTool(boolean open) {
@@ -2913,17 +2922,8 @@ public class VueAnon extends JFrame implements PlugIn{
 	public static void main(String... args){
 		System.setProperty("org.apache.commons.logging.Log",
 				"org.apache.commons.logging.impl.NoOpLog");
-		VueAnon vue = new VueAnon();
-		SwingUtilities.invokeLater(new Runnable(){
-
-			@Override
-			public void run() {
-				vue.pack();
-				vue.setLocationRelativeTo(null);
-				vue.setVisible(true);
-				
-			}
-		});
+		new VueAnon();
+		
 	}
 
 	@Override
@@ -2932,12 +2932,8 @@ public class VueAnon extends JFrame implements PlugIn{
 
 			@Override
 			public void run() {
-				VueAnon vue = new VueAnon();
-				vue.pack();
-				vue.setLocationRelativeTo(null);
-				WindowManager.addWindow(gui);
-				IJ.register(VueAnon.class);
-				vue.setVisible(true);
+				new VueAnon();
+				
 			}
 		
 		});
