@@ -96,7 +96,7 @@ public class Tag_Monitoring {
 						if(jprefer.getBoolean("useDBMonitoring", false)) {
 							db.InsertPatient(foundTags.get("LastName"), foundTags.get("FirstName") ,  foundTags.get("PatientID"), foundTags.get("ParentPatient") , foundTags.get("PatientBirthDate"), foundTags.get("PatientSex") );
 							db.InsertStudy(foundTags.get("StudyID"), foundTags.get("StudyInstanceUID"), foundTags.get("ParentStudy") , foundTags.get("AccessionNumber"), foundTags.get("InstitutionName"), foundTags.get("ReferringPhysicianName"), foundTags.get("StudyDate"), foundTags.get("StudyDescription"), foundTags.get("StudyTime"), foundTags.get("ParentPatient"));
-							db.InsertSeries(foundTags.get("PatientSize"), foundTags.get("PatientAge"), foundTags.get("PatientWeight"),foundTags.get("Manufacturer"), foundTags.get("ManufacturerModelName"), foundTags.get("PerformingPhysicianName"), foundTags.get("SeriesDescription"), foundTags.get("StationName"), foundTags.get("ContentDate"), foundTags.get("ContentTime"), foundTags.get("ProtocolName"), foundTags.get("SeriesInstanceUID"), foundTags.get("CommentsOnRadiationDose"), foundTags.get("RadiopharmaceuticalInformationSequence"), foundTags.get("Radiopharmaceutical"), foundTags.get("RadiopharmaceuticalStartTime"), foundTags.get("RadionuclideTotalDose"), foundTags.get("RadionuclideHalfLife"), foundTags.get("RadionuclidePositronFraction"), foundTags.get(Tag_Of_Interest.radiationDoseModule), foundTags.get("Shared_Tags"), foundTags.get(monitoring.newStableSeriesID.get(i)), foundTags.get("ParentStudy"));
+							db.InsertSeries(foundTags.get("PatientSize"), foundTags.get("PatientAge"), foundTags.get("PatientWeight"),foundTags.get("Manufacturer"), foundTags.get("ManufacturerModelName"), foundTags.get("PerformingPhysicianName"), foundTags.get("SeriesDescription"), foundTags.get("StationName"), foundTags.get("ContentDate"), foundTags.get("ContentTime"), foundTags.get("ProtocolName"), foundTags.get("SeriesInstanceUID"), foundTags.get("CommentsOnRadiationDose"), foundTags.get("RadiopharmaceuticalInformationSequence"), foundTags.get("Radiopharmaceutical"), foundTags.get("RadiopharmaceuticalStartTime"), foundTags.get("RadionuclideTotalDose"), foundTags.get("RadionuclideHalfLife"), foundTags.get("RadionuclidePositronFraction"), foundTags.get(Tag_Of_Interest.radiationDoseModule), foundTags.get("Shared_Tags"), monitoring.newStableSeriesID.get(i), foundTags.get("ParentStudy"));
 							
 						}
 						if(jprefer.getBoolean("AutoDeleteMonitoring", false)) {
@@ -136,7 +136,7 @@ public class Tag_Monitoring {
 		HashMap<String, String> hashmapTagPatient=new HashMap<String, String>();
 		
 		if(patientName.indexOf("^") != -1) {
-			String[] namePatient =patientName.split("^");
+			String[] namePatient =patientName.split("\\^");
 			hashmapTagPatient.put("LastName", namePatient[0]);
 			hashmapTagPatient.put("FirstName", namePatient[1]);
 		}
@@ -237,7 +237,7 @@ public class Tag_Monitoring {
 		
 		
 		if(hashmapTag.get("PatientName").indexOf("^") != -1) {
-			String[] namePatient =hashmapTag.get("PatientName").split("^");
+			String[] namePatient =hashmapTag.get("PatientName").split("\\^");
 			hashmapTag.put("LastName", namePatient[0]);
 			hashmapTag.put("FirstName", namePatient[1]);
 		}
@@ -271,10 +271,11 @@ public class Tag_Monitoring {
 		
 		if (tags.containsKey(Tag_Of_Interest.radiopharmaceuticalTag)) {
 			JSONObject radiopharmaceuticalSequence = (JSONObject) tags.get(Tag_Of_Interest.radiopharmaceuticalTag);
+			hashmapTag.put("RadiopharmaceuticalInformationSequence", radiopharmaceuticalSequence.toString());
 			JSONArray radiopharmaceuticalSequenceTags= (JSONArray) radiopharmaceuticalSequence.get("Value");
 			JSONObject radiopharmaceuticalSequenceTagsValue = (JSONObject) radiopharmaceuticalSequenceTags.get(0);
 			for (int i=0 ; i<Tag_Of_Interest.radiopharmaceutical.length; i++) {
-				if (tags.containsKey(Tag_Of_Interest.radiopharmaceutical[i])) {
+				if (radiopharmaceuticalSequenceTagsValue.containsKey(Tag_Of_Interest.radiopharmaceutical[i])) {
 					JSONObject jsonTag=(JSONObject) radiopharmaceuticalSequenceTagsValue.get(Tag_Of_Interest.radiopharmaceutical[i]);
 					String name=(String) jsonTag.get("Name");
 					String value=(String) jsonTag.get("Value");
