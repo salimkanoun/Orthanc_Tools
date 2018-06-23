@@ -64,12 +64,7 @@ public class ConnectionSetup extends JDialog implements PlugIn{
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		
 		JPanel mainPanel = new JPanel();
-		
-		
-		
-		
 
-		
 		Image image = new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage();
 		this.setIconImage(image);
 		
@@ -86,67 +81,67 @@ public class ConnectionSetup extends JDialog implements PlugIn{
 		lblExistingOrthancServer.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		JPanel panel_http_settings = new JPanel();
-				panel_http_settings.setLayout(new GridLayout(0, 2, 0, 0));
+		panel_http_settings.setLayout(new GridLayout(0, 2, 0, 0));
+
+		JLabel label = new JLabel("Address");
+		panel_http_settings.add(label);
 		
-				JLabel label = new JLabel("Address");
-				panel_http_settings.add(label);
-				
-				JTextField ipTxt = new JTextField();
-				panel_http_settings.add(ipTxt);
-				ipTxt.setPreferredSize(new Dimension(100,18));
-				ipTxt.setText(jpreferPerso.get("ip", "http://"));
-				
-				
-				JLabel label_1 = new JLabel("Port");
-				JTextField portTxt = new JTextField();
-				portTxt.setPreferredSize(new Dimension(100,18));
-				portTxt.setText(jpreferPerso.get("port", ""));
-				
-				
-				JLabel label_2 = new JLabel("Username");
-				JTextField usernameTxt = new JTextField();
-				usernameTxt.setPreferredSize(new Dimension(100,18));
-				usernameTxt.setText(jpreferPerso.get("username", ""));
-				
-				JLabel label_3 = new JLabel("Password");
-				JPasswordField passwordTxt = new JPasswordField();
-				passwordTxt.setPreferredSize(new Dimension(100,18));
-				passwordTxt.setText(jpreferPerso.get("password", ""));
-				
-				
-				panel_http_settings.add(label_1);
-				panel_http_settings.add(portTxt);
-				panel_http_settings.add(label_2);
-				panel_http_settings.add(usernameTxt);
-				panel_http_settings.add(label_3);
-				panel_http_settings.add(passwordTxt);
-				
-				setupPanel.add(panel_http_settings);
-				
-				JButton submit = new JButton("Submit");
-				setupPanel.add(submit, BorderLayout.SOUTH);
-				submit.addActionListener(new ActionListener() {
+		JTextField ipTxt = new JTextField();
+		panel_http_settings.add(ipTxt);
+		ipTxt.setPreferredSize(new Dimension(100,18));
+		ipTxt.setText(jpreferPerso.get("ip", "http://"));
+		
+		
+		JLabel label_1 = new JLabel("Port");
+		JTextField portTxt = new JTextField();
+		portTxt.setPreferredSize(new Dimension(100,18));
+		portTxt.setText(jpreferPerso.get("port", ""));
+		
+		
+		JLabel label_2 = new JLabel("Username");
+		JTextField usernameTxt = new JTextField();
+		usernameTxt.setPreferredSize(new Dimension(100,18));
+		usernameTxt.setText(jpreferPerso.get("username", ""));
+		
+		JLabel label_3 = new JLabel("Password");
+		JPasswordField passwordTxt = new JPasswordField();
+		passwordTxt.setPreferredSize(new Dimension(100,18));
+		passwordTxt.setText(jpreferPerso.get("password", ""));
+		
+		
+		panel_http_settings.add(label_1);
+		panel_http_settings.add(portTxt);
+		panel_http_settings.add(label_2);
+		panel_http_settings.add(usernameTxt);
+		panel_http_settings.add(label_3);
+		panel_http_settings.add(passwordTxt);
+		
+		setupPanel.add(panel_http_settings);
+		
+		JButton submit = new JButton("Submit");
+		setupPanel.add(submit, BorderLayout.SOUTH);
+		submit.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (ipTxt.getText().toLowerCase().startsWith("http://") || ipTxt.getText().toLowerCase().startsWith("https://")) {
+					jpreferPerso.put("ip", ipTxt.getText());
+					jpreferPerso.put("port", portTxt.getText());
+					jpreferPerso.put("password", new String(passwordTxt.getPassword()));
+					jpreferPerso.put("username", usernameTxt.getText());
+					JOptionPane.showMessageDialog(gui,
+					    "please restart app");
+					dispose();
+				}
+				else {
+					JOptionPane.showMessageDialog(gui,
+						    "IP should start with http:// or https://");
 					
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						if (ipTxt.getText().toLowerCase().startsWith("http://") || ipTxt.getText().toLowerCase().startsWith("https://")) {
-							jpreferPerso.put("ip", ipTxt.getText());
-							jpreferPerso.put("port", portTxt.getText());
-							jpreferPerso.put("password", new String(passwordTxt.getPassword()));
-							jpreferPerso.put("username", usernameTxt.getText());
-							JOptionPane.showMessageDialog(gui,
-							    "please restart app");
-							dispose();
-						}
-						else {
-							JOptionPane.showMessageDialog(gui,
-								    "IP should start with http:// or https://");
-							
-						}
-						
-						
-					}
-				});
+				}
+				
+				
+			}
+		});
 		
 		JPanel panel_non_install = new JPanel();
 		mainPanel.add(panel_non_install);
