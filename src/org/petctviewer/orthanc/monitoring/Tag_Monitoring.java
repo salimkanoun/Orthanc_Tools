@@ -90,7 +90,7 @@ public class Tag_Monitoring {
 					
 						
 						StringBuilder sbSharedTags=parametre.makeGetConnectionAndStringBuilder("/series/"+monitoring.newStableSeriesID.get(i)+"/shared-tags");
-						textAreaConsole.append("Shared-Tags"+sbSharedTags+",");
+						//textAreaConsole.append("Shared-Tags"+sbSharedTags+",");
 						foundTags.put("Shared_Tags", sbSharedTags.toString());
 						
 						if(jprefer.getBoolean("useDBMonitoring", false)) {
