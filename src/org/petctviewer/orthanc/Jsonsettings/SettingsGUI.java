@@ -14,44 +14,36 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import javax.swing.JFrame;
-import java.awt.GridLayout;
-
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JButton;
-import javax.swing.JSpinner;
 import java.awt.BorderLayout;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.awt.event.ActionEvent;
-import java.awt.Dimension;
-import javax.swing.border.LineBorder;
-
-import org.json.simple.parser.ParseException;
-import org.petctviewer.orthanc.ParametreConnexionHttp;
-
 import java.awt.Color;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JCheckBox;
-import javax.swing.SpinnerNumberModel;
-
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.FlowLayout;
-import javax.swing.SwingConstants;
-import javax.swing.JTabbedPane;
-import java.awt.Component;
+import java.io.File;
+
 import javax.swing.Box;
-import java.awt.Font;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
+import javax.swing.border.LineBorder;
+
+import org.petctviewer.orthanc.ParametreConnexionHttp;
 
 
 public class SettingsGUI extends JFrame {

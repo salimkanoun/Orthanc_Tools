@@ -88,8 +88,6 @@ import org.json.simple.parser.JSONParser;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
 
-import ij.IJ;
-import ij.WindowManager;
 import ij.plugin.PlugIn;
 
 import org.petctviewer.orthanc.*;
