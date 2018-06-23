@@ -48,6 +48,10 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.FlowLayout;
 import javax.swing.SwingConstants;
+import javax.swing.JTabbedPane;
+import java.awt.Component;
+import javax.swing.Box;
+import java.awt.Font;
 
 
 public class SettingsGUI extends JFrame {
@@ -80,14 +84,15 @@ public class SettingsGUI extends JFrame {
 	
 
 	public SettingsGUI() {
-		
-	getContentPane().setLayout(new GridLayout(3, 3, 0, 0));
 	setTitle("Orthanc JSON editor");
-	setPreferredSize(new Dimension(1400, 700));
 	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	getContentPane().setLayout(new BorderLayout(0, 0));
+	
+	JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+	getContentPane().add(tabbedPane, BorderLayout.CENTER);
 	JPanel General = new JPanel();
+	tabbedPane.addTab("General", null, General, null);
 	General.setBorder(new LineBorder(new Color(0, 0, 0)));
-	getContentPane().add(General);
 	General.setLayout(new BorderLayout(0, 0));
 	
 	JPanel Titre = new JPanel();
@@ -131,23 +136,6 @@ public class SettingsGUI extends JFrame {
 	spinner_Max_Storage_Size.setValue(settings.MaximumStorageSize);
 	boutton_general.add(spinner_Max_Storage_Size);
 	
-	JButton btnNewButton_1 = new JButton("Index Directory");
-	btnNewButton_1.setToolTipText("Path to the directory that holds the SQLite index (if unset, the\n value of StorageDirectory is used). This index could be stored on\na RAM-drive or a SSD device for performance reasons.");
-	btnNewButton_1.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent arg0) {
-			//On ouvre le JFileChooser pour selectionner un repertoire et on l'ajoute dans la variable adhoc
-			JFileChooser fc =new JFileChooser();
-			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			int ouvrir=fc.showOpenDialog(null);
-			//Si valide
-			if (ouvrir==JFileChooser.APPROVE_OPTION) {
-				settings.indexDirectory=fc.getSelectedFile().getAbsolutePath().toString();
-				index_value.setText(settings.indexDirectory);
-			}
-			
-		}});
-	boutton_general.add(btnNewButton_1);
-	
 	JLabel lblMaxiumPatientCount = new JLabel("Maxium Patient Count");
 	lblMaxiumPatientCount.setToolTipText("Maximum number of patients that can be stored at a given time in the storage (a value of \"0\" indicates no limit on the number of patients)");
 	boutton_general.add(lblMaxiumPatientCount);
@@ -165,8 +153,51 @@ public class SettingsGUI extends JFrame {
 	spinner_Max_Patient_Count.setValue(settings.MaximumPatientCount);
 	boutton_general.add(spinner_Max_Patient_Count);
 	
+	JCheckBox rdbtnNewRadioButton = new JCheckBox("Storage Compression");
+	rdbtnNewRadioButton.setToolTipText("Enable the transparent compression of the DICOM instances");
+	rdbtnNewRadioButton.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.StorageCompression=rdbtnNewRadioButton.isSelected();
+		}
+	});
+	rdbtnNewRadioButton.setSelected(settings.StorageCompression);
+	boutton_general.add(rdbtnNewRadioButton);
+	
+	JPanel panel_btns = new JPanel();
+	boutton_general.add(panel_btns);
+	panel_btns.setLayout(new GridLayout(0, 2, 0, 0));
+	
+	JButton btnNewButton_1 = new JButton("Index Directory");
+	panel_btns.add(btnNewButton_1);
+	btnNewButton_1.setToolTipText("Path to the directory that holds the SQLite index (if unset, the\n value of StorageDirectory is used). This index could be stored on\na RAM-drive or a SSD device for performance reasons.");
+	
 	JButton btnNewButton = new JButton("Storage Directory");
+	panel_btns.add(btnNewButton);
 	btnNewButton.setToolTipText("Path to the directory that holds the heavyweight files");
+	
+	JButton btnLuaScripts = new JButton("Lua Scripts");
+	panel_btns.add(btnLuaScripts);
+	btnLuaScripts.setToolTipText("List of paths to the custom Lua scripts that are to be loaded into this instance of Orthanc");
+	
+	JButton btnPlugins = new JButton("plugins");
+	panel_btns.add(btnPlugins);
+	btnPlugins.setToolTipText("List of paths to the plugins that are to be loaded into this instance of Orthanc");
+	btnPlugins.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			FolderDialog folderDialog=new FolderDialog(false, settings);
+			folderDialog.setVisible(true);
+			plugin_value.setText(String.valueOf(settings.pluginsFolder.size()));
+		}
+	});
+	btnLuaScripts.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent arg0) {
+				FolderDialog dialoglua=new FolderDialog(true, settings);
+				dialoglua.setVisible(true);
+				lua_value.setText(String.valueOf(settings.luaFolder.size()));
+				
+			}
+	});
 	btnNewButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent arg0) {
 				//On ouvre le JFileChooser pour selectionner un repertoire et on l'ajoute dans la variable adhoc
@@ -180,41 +211,19 @@ public class SettingsGUI extends JFrame {
 				}
 			}
 	});
-	boutton_general.add(btnNewButton);
-	
-	JCheckBox rdbtnNewRadioButton = new JCheckBox("Storage Compression");
-	rdbtnNewRadioButton.setToolTipText("Enable the transparent compression of the DICOM instances");
-	rdbtnNewRadioButton.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.StorageCompression=rdbtnNewRadioButton.isSelected();
-		}
-	});
-	rdbtnNewRadioButton.setSelected(settings.StorageCompression);
-	boutton_general.add(rdbtnNewRadioButton);
-	
-	JButton btnLuaScripts = new JButton("Lua Scripts");
-	btnLuaScripts.setToolTipText("List of paths to the custom Lua scripts that are to be loaded into this instance of Orthanc");
-	btnLuaScripts.addActionListener(new ActionListener() {
+	btnNewButton_1.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent arg0) {
-				FolderDialog dialoglua=new FolderDialog(true, settings);
-				dialoglua.setVisible(true);
-				lua_value.setText(String.valueOf(settings.luaFolder.size()));
-				
+			//On ouvre le JFileChooser pour selectionner un repertoire et on l'ajoute dans la variable adhoc
+			JFileChooser fc =new JFileChooser();
+			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			int ouvrir=fc.showOpenDialog(null);
+			//Si valide
+			if (ouvrir==JFileChooser.APPROVE_OPTION) {
+				settings.indexDirectory=fc.getSelectedFile().getAbsolutePath().toString();
+				index_value.setText(settings.indexDirectory);
 			}
-	});
-	boutton_general.add(btnLuaScripts);
-	
-	JButton btnPlugins = new JButton("plugins");
-	btnPlugins.setToolTipText("List of paths to the plugins that are to be loaded into this instance of Orthanc");
-	btnPlugins.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-			FolderDialog folderDialog=new FolderDialog(false, settings);
-			folderDialog.setVisible(true);
-			plugin_value.setText(String.valueOf(settings.pluginsFolder.size()));
-		}
-	});
-	boutton_general.add(btnPlugins);
+			
+		}});
 	
 	JPanel General_Strings = new JPanel();
 	General.add(General_Strings, BorderLayout.SOUTH);
@@ -245,8 +254,8 @@ public class SettingsGUI extends JFrame {
 	General_Strings.add(plugin_value);
 	
 	JPanel http_Config = new JPanel();
+	tabbedPane.addTab("http", null, http_Config, null);
 	http_Config.setBorder(new LineBorder(new Color(0, 0, 0)));
-	getContentPane().add(http_Config);
 	http_Config.setLayout(new BorderLayout(0, 0));
 	
 	JPanel Titre_Http = new JPanel();
@@ -257,8 +266,13 @@ public class SettingsGUI extends JFrame {
 	
 	JPanel http_bouttons = new JPanel();
 	http_Config.add(http_bouttons, BorderLayout.CENTER);
+	http_bouttons.setLayout(new GridLayout(0, 1, 0, 0));
+	
+	JPanel http = new JPanel();
+	http_bouttons.add(http);
 	
 	JCheckBox rdbtnHttpServerEnabled = new JCheckBox("HTTP Server Enabled");
+	http.add(rdbtnHttpServerEnabled);
 	rdbtnHttpServerEnabled.setToolTipText("Enable the HTTP server. If this parameter is set to \"false\", Orthanc acts as a pure DICOM server. The REST API and Orthanc Explorer will not be available.");
 	rdbtnHttpServerEnabled.addFocusListener(new FocusAdapter() {
 		@Override
@@ -267,24 +281,24 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	rdbtnHttpServerEnabled.setSelected(settings.HttpServerEnabled);
-	http_bouttons.add(rdbtnHttpServerEnabled);
+	
+	JLabel lblHttpPort = new JLabel("HTTP Port");
+	http.add(lblHttpPort);
+	lblHttpPort.setToolTipText("HTTP port for the REST services and for the GUI");
 	
 	textfield_Http_Port = new JTextField();
+	http.add(textfield_Http_Port);
 	textfield_Http_Port.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
 			settings.HttpPort=Integer.valueOf(textfield_Http_Port.getText());
 		}
 	});
-	
-	JLabel lblHttpPort = new JLabel("HTTP Port");
-	lblHttpPort.setToolTipText("HTTP port for the REST services and for the GUI");
-	http_bouttons.add(lblHttpPort);
 	textfield_Http_Port.setText(String.valueOf(settings.HttpPort));
-	http_bouttons.add(textfield_Http_Port);
 	textfield_Http_Port.setColumns(10);
 	
 	JCheckBox rdbtnHttpDescribeErrors = new JCheckBox("HTTP Describe errors");
+	http.add(rdbtnHttpDescribeErrors);
 	rdbtnHttpDescribeErrors.setToolTipText("When the following option is \"true\", if an error is encountered while calling the REST API, a JSON message describing the error is put in the HTTP answer. ");
 	rdbtnHttpDescribeErrors.addFocusListener(new FocusAdapter() {
 		@Override
@@ -293,9 +307,9 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	rdbtnHttpDescribeErrors.setSelected(settings.HttpDescribeErrors);
-	http_bouttons.add(rdbtnHttpDescribeErrors);
 	
 	JCheckBox rdbtnHttpCompression = new JCheckBox("HTTP Compression");
+	http.add(rdbtnHttpCompression);
 	rdbtnHttpCompression.setToolTipText("Enable HTTP compression to improve network bandwidth utilization, at the expense of more computations on the server");
 	rdbtnHttpCompression.addFocusListener(new FocusAdapter() {
 		@Override
@@ -304,11 +318,102 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	rdbtnHttpCompression.setSelected(settings.HttpCompressionEnabled);
-	http_bouttons.add(rdbtnHttpCompression);
+	
+	JPanel http_security = new JPanel();
+	http_bouttons.add(http_security);
+	http_security.setBorder(new LineBorder(new Color(0, 0, 0)));
+	http_security.setLayout(new BorderLayout(0, 0));
+	
+	JPanel HTTP_Security_Title = new JPanel();
+	http_security.add(HTTP_Security_Title, BorderLayout.NORTH);
+	
+	JLabel lblHttpSecurity = new JLabel("HTTP Security");
+	HTTP_Security_Title.add(lblHttpSecurity);
+	
+	JPanel HTTP_Security_Buttons = new JPanel();
+	http_security.add(HTTP_Security_Buttons, BorderLayout.CENTER);
+	
+	JCheckBox chckbxAllowRemoteAccess = new JCheckBox("Allow Remote Access");
+	chckbxAllowRemoteAccess.setToolTipText("Whether remote hosts can connect to the HTTP server");
+	chckbxAllowRemoteAccess.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent arg0) {
+			settings.RemoteAccessAllowed=chckbxAllowRemoteAccess.isSelected();
+		}
+	});
+	chckbxAllowRemoteAccess.setSelected(settings.RemoteAccessAllowed);
+	HTTP_Security_Buttons.add(chckbxAllowRemoteAccess);
+	
+	JCheckBox chckbxSsl = new JCheckBox("SSL");
+	chckbxSsl.setToolTipText("Whether or not SSL is enabled");
+	chckbxSsl.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent arg0) {
+			settings.SslEnabled=chckbxSsl.isSelected();
+		}
+	});
+	chckbxSsl.setSelected(settings.SslEnabled);
+	HTTP_Security_Buttons.add(chckbxSsl);
+	
+	JButton btnSslCertificate = new JButton("SSL Certificate");
+	btnSslCertificate.setToolTipText("Path to the SSL certificate in the PEM format (meaningful only if SSL is enabled)");
+	btnSslCertificate.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent arg0) {
+			//On ouvre le JFileChooser pour selectionner un repertoire et on l'ajoute dans la variable adhoc
+			JFileChooser fc =new JFileChooser();
+			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			int ouvrir=fc.showOpenDialog(null);
+			if (ouvrir==JFileChooser.APPROVE_OPTION) {
+				settings.SslCertificate=fc.getSelectedFile().toString();
+				SSL_Certif_String.setText(settings.SslCertificate);
+			}
+			
+		}
+	});
+	HTTP_Security_Buttons.add(btnSslCertificate);
+	
+	JCheckBox chckbxEnableAuthentication = new JCheckBox("Enable Authentication");
+	chckbxEnableAuthentication.setToolTipText("Whether or not the password protection is enabled");
+	chckbxEnableAuthentication.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.AuthenticationEnabled=chckbxEnableAuthentication.isSelected();
+		}
+	});
+	chckbxEnableAuthentication.setSelected(settings.AuthenticationEnabled);
+	HTTP_Security_Buttons.add(chckbxEnableAuthentication);
+	
+	JButton btnUsersLoginpassword = new JButton("Users Login/Password");
+	btnUsersLoginpassword.setToolTipText("The list of the registered users");
+	btnUsersLoginpassword.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			UserDialog userDialog=new UserDialog(settings);
+			userDialog.setVisible(true);
+			Login_pass_String.setText(String.valueOf(settings.users.size()));
+		}
+	});
+	HTTP_Security_Buttons.add(btnUsersLoginpassword);
+	
+	JPanel HTTP_Security_Strings = new JPanel();
+	http_security.add(HTTP_Security_Strings, BorderLayout.SOUTH);
+	HTTP_Security_Strings.setLayout(new GridLayout(0, 2, 0, 0));
+	
+	JLabel lblNewLabel_6 = new JLabel("SSL Certificate");
+	HTTP_Security_Strings.add(lblNewLabel_6);
+	
+	SSL_Certif_String = new JLabel("New label");
+	SSL_Certif_String.setText(settings.SslCertificate);
+	HTTP_Security_Strings.add(SSL_Certif_String);
+	
+	JLabel User_Login_Pass = new JLabel("User Login/Pass");
+	HTTP_Security_Strings.add(User_Login_Pass);
+	
+	Login_pass_String = new JLabel(String.valueOf(settings.users.size()));
+	HTTP_Security_Strings.add(Login_pass_String);
 	
 	JPanel dicomServer_config = new JPanel();
+	tabbedPane.addTab("dicom", null, dicomServer_config, null);
 	dicomServer_config.setBorder(new LineBorder(new Color(0, 0, 0)));
-	getContentPane().add(dicomServer_config);
 	dicomServer_config.setLayout(new BorderLayout(0, 0));
 	
 	JPanel Titre_DicomServer = new JPanel();
@@ -398,21 +503,27 @@ public class SettingsGUI extends JFrame {
 	});
 	Boutton_DicomServer.add(spinner_SCP_Timeout);
 	
+	JLabel lblTransferSyntax = new JLabel("Transfer Syntax :");
+	lblTransferSyntax.setToolTipText("The transfer syntaxes that are accepted by Orthanc C-Store SCP");
+	Boutton_DicomServer.add(lblTransferSyntax);
+	
+	JPanel panel_TS = new JPanel();
+	panel_TS.setBorder(new LineBorder(new Color(0, 0, 0)));
+	Boutton_DicomServer.add(panel_TS);
+	panel_TS.setLayout(new GridLayout(0, 2, 0, 0));
+	
 	JCheckBox chckbxDeflatedTs = new JCheckBox("Deflated TS");
+	panel_TS.add(chckbxDeflatedTs);
 	chckbxDeflatedTs.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
 			settings.DeflatedTransferSyntaxAccepted=chckbxDeflatedTs.isSelected();
 		}
 	});
-	
-	JLabel lblTransferSyntax = new JLabel("Transfer Syntax :");
-	lblTransferSyntax.setToolTipText("The transfer syntaxes that are accepted by Orthanc C-Store SCP");
-	Boutton_DicomServer.add(lblTransferSyntax);
 	chckbxDeflatedTs.setSelected(settings.DeflatedTransferSyntaxAccepted);
-	Boutton_DicomServer.add(chckbxDeflatedTs);
 	
 	JCheckBox chckbxJpegTs = new JCheckBox("JPEG TS");
+	panel_TS.add(chckbxJpegTs);
 	chckbxJpegTs.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
@@ -420,9 +531,9 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	chckbxJpegTs.setSelected(settings.JpegTransferSyntaxAccepted);
-	Boutton_DicomServer.add(chckbxJpegTs);
 	
 	JCheckBox chckbxJpegTs_1 = new JCheckBox("JPEG 2000 TS");
+	panel_TS.add(chckbxJpegTs_1);
 	chckbxJpegTs_1.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
@@ -430,9 +541,9 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	chckbxJpegTs_1.setSelected(settings.Jpeg2000TransferSyntaxAccepted);
-	Boutton_DicomServer.add(chckbxJpegTs_1);
 	
 	JCheckBox chckbxJpegLoselessTs = new JCheckBox("JPEG loseless TS");
+	panel_TS.add(chckbxJpegLoselessTs);
 	chckbxJpegLoselessTs.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
@@ -440,9 +551,9 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	chckbxJpegLoselessTs.setSelected(settings.JpegLosslessTransferSyntaxAccepted);
-	Boutton_DicomServer.add(chckbxJpegLoselessTs);
 	
 	JCheckBox chckbxJpipTs = new JCheckBox("JPIP TS");
+	panel_TS.add(chckbxJpipTs);
 	chckbxJpipTs.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
@@ -450,9 +561,9 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	chckbxJpipTs.setSelected(settings.JpipTransferSyntaxAccepted);
-	Boutton_DicomServer.add(chckbxJpipTs);
 	
 	JCheckBox chckbxMpegTs = new JCheckBox("MPEG2 TS");
+	panel_TS.add(chckbxMpegTs);
 	chckbxMpegTs.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
@@ -460,9 +571,9 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	chckbxMpegTs.setSelected(settings.Mpeg2TransferSyntaxAccepted);
-	Boutton_DicomServer.add(chckbxMpegTs);
 	
 	JCheckBox chckbxRleTs = new JCheckBox("RLE TS");
+	panel_TS.add(chckbxRleTs);
 	chckbxRleTs.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
@@ -470,13 +581,13 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	chckbxRleTs.setSelected(settings.RleTransferSyntaxAccepted);
-	Boutton_DicomServer.add(chckbxRleTs);
 	
 	JPanel panel = new JPanel();
 	dicomServer_config.add(panel, BorderLayout.SOUTH);
 	
 	JComboBox<String> comboBox_Encoding = new JComboBox<String>();
 	comboBox_Encoding.setToolTipText("the default encoding that is assumed for DICOM files without \"SpecificCharacterSet\" DICOM tag, and that is used when answering C-Find requests (including worklists).");
+	if (settings.DefaultEncoding==null) comboBox_Encoding.setSelectedIndex(0);
 	comboBox_Encoding.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
@@ -486,303 +597,205 @@ public class SettingsGUI extends JFrame {
 	panel.add(comboBox_Encoding);
 	comboBox_Encoding.setModel(new DefaultComboBoxModel<String>(new String[] {"Latin1", "Ascii", "Utf8", "Latin2", "Latin3", "Latin4", "Latin5", "Cyrillic", "Windows1251", "Arabic", "Greek", "Hebrew", "Thai", "Japanese", "Chinese"}));
 	comboBox_Encoding.setSelectedItem(settings.DefaultEncoding);
-	if (settings.DefaultEncoding==null) comboBox_Encoding.setSelectedIndex(0);
 	
-	JPanel http_security = new JPanel();
-	http_security.setBorder(new LineBorder(new Color(0, 0, 0)));
-	getContentPane().add(http_security);
-	http_security.setLayout(new BorderLayout(0, 0));
-	
-	JPanel HTTP_Security_Title = new JPanel();
-	http_security.add(HTTP_Security_Title, BorderLayout.NORTH);
-	
-	JLabel lblHttpSecurity = new JLabel("HTTP Security");
-	HTTP_Security_Title.add(lblHttpSecurity);
-	
-	JPanel HTTP_Security_Buttons = new JPanel();
-	http_security.add(HTTP_Security_Buttons, BorderLayout.CENTER);
-	
-	JCheckBox chckbxAllowRemoteAccess = new JCheckBox("Allow Remote Access");
-	chckbxAllowRemoteAccess.setToolTipText("Whether remote hosts can connect to the HTTP server");
-	chckbxAllowRemoteAccess.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent arg0) {
-			settings.RemoteAccessAllowed=chckbxAllowRemoteAccess.isSelected();
-		}
-	});
-	chckbxAllowRemoteAccess.setSelected(settings.RemoteAccessAllowed);
-	HTTP_Security_Buttons.add(chckbxAllowRemoteAccess);
-	
-	JCheckBox chckbxSsl = new JCheckBox("SSL");
-	chckbxSsl.setToolTipText("Whether or not SSL is enabled");
-	chckbxSsl.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent arg0) {
-			settings.SslEnabled=chckbxSsl.isSelected();
-		}
-	});
-	chckbxSsl.setSelected(settings.SslEnabled);
-	HTTP_Security_Buttons.add(chckbxSsl);
-	
-	JButton btnSslCertificate = new JButton("SSL Certificate");
-	btnSslCertificate.setToolTipText("Path to the SSL certificate in the PEM format (meaningful only if SSL is enabled)");
-	btnSslCertificate.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent arg0) {
-			//On ouvre le JFileChooser pour selectionner un repertoire et on l'ajoute dans la variable adhoc
-			JFileChooser fc =new JFileChooser();
-			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-			int ouvrir=fc.showOpenDialog(null);
-			if (ouvrir==JFileChooser.APPROVE_OPTION) {
-				settings.SslCertificate=fc.getSelectedFile().toString();
-				SSL_Certif_String.setText(settings.SslCertificate);
+		JPanel network = new JPanel();
+		tabbedPane.addTab("network", null, network, null);
+		network.setBorder(new LineBorder(new Color(0, 0, 0)));
+		network.setLayout(new BorderLayout(0, 0));
+		
+		JPanel Network_Title = new JPanel();
+		network.add(Network_Title, BorderLayout.NORTH);
+		
+		JLabel lblNetworkTopology = new JLabel("Network Topology");
+		Network_Title.add(lblNetworkTopology);
+		
+		JPanel Network_Buttons = new JPanel();
+		network.add(Network_Buttons, BorderLayout.CENTER);
+		
+		JButton btnDicomModalities = new JButton("Dicom Modalities");
+		btnDicomModalities.setToolTipText("The list of the known DICOM modalities");
+		btnDicomModalities.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				// On lance la boite de dialog pour gerer les AET
+				DicomDialog dicomDialog=new DicomDialog(settings);
+				dicomDialog.setVisible(true);
+				Dicom_Modalities_Number.setText(String.valueOf(settings.dicomNode.size()));
+				
+				
 			}
-			
-		}
-	});
-	HTTP_Security_Buttons.add(btnSslCertificate);
-	
-	JCheckBox chckbxEnableAuthentication = new JCheckBox("Enable Authentication");
-	chckbxEnableAuthentication.setToolTipText("Whether or not the password protection is enabled");
-	chckbxEnableAuthentication.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.AuthenticationEnabled=chckbxEnableAuthentication.isSelected();
-		}
-	});
-	chckbxEnableAuthentication.setSelected(settings.AuthenticationEnabled);
-	HTTP_Security_Buttons.add(chckbxEnableAuthentication);
-	
-	JButton btnUsersLoginpassword = new JButton("Users Login/Password");
-	btnUsersLoginpassword.setToolTipText("The list of the registered users");
-	btnUsersLoginpassword.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-			UserDialog userDialog=new UserDialog(settings);
-			userDialog.setVisible(true);
-			Login_pass_String.setText(String.valueOf(settings.users.size()));
-		}
-	});
-	HTTP_Security_Buttons.add(btnUsersLoginpassword);
-	
-	JPanel HTTP_Security_Strings = new JPanel();
-	http_security.add(HTTP_Security_Strings, BorderLayout.SOUTH);
-	HTTP_Security_Strings.setLayout(new GridLayout(0, 2, 0, 0));
-	
-	JLabel lblNewLabel_6 = new JLabel("SSL Certificate");
-	HTTP_Security_Strings.add(lblNewLabel_6);
-	
-	SSL_Certif_String = new JLabel("New label");
-	SSL_Certif_String.setText(settings.SslCertificate);
-	HTTP_Security_Strings.add(SSL_Certif_String);
-	
-	JLabel User_Login_Pass = new JLabel("User Login/Pass");
-	HTTP_Security_Strings.add(User_Login_Pass);
-	
-	Login_pass_String = new JLabel(String.valueOf(settings.users.size()));
-	HTTP_Security_Strings.add(Login_pass_String);
-
-	JPanel network = new JPanel();
-	network.setBorder(new LineBorder(new Color(0, 0, 0)));
-	getContentPane().add(network);
-	network.setLayout(new BorderLayout(0, 0));
-	
-	JPanel Network_Title = new JPanel();
-	network.add(Network_Title, BorderLayout.NORTH);
-	
-	JLabel lblNetworkTopology = new JLabel("Network Topology");
-	Network_Title.add(lblNetworkTopology);
-	
-	JPanel Network_Buttons = new JPanel();
-	network.add(Network_Buttons, BorderLayout.CENTER);
-	
-	JButton btnDicomModalities = new JButton("Dicom Modalities");
-	btnDicomModalities.setToolTipText("The list of the known DICOM modalities");
-	btnDicomModalities.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent arg0) {
-			// On lance la boite de dialog pour gerer les AET
-			DicomDialog dicomDialog=new DicomDialog(settings);
-			dicomDialog.setVisible(true);
-			Dicom_Modalities_Number.setText(String.valueOf(settings.dicomNode.size()));
-			
-			
-		}
-	});
-	Network_Buttons.add(btnDicomModalities);
-	
-	JCheckBox chckbx_Dicom_Always_Store = new JCheckBox("Dicom Always Store");
-	chckbx_Dicom_Always_Store.setSelected(settings.DicomAlwaysStore);
-	chckbx_Dicom_Always_Store.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent arg0) {
-			settings.DicomAlwaysStore=chckbx_Dicom_Always_Store.isSelected();
-		}
-	});
-	chckbx_Dicom_Always_Store.setToolTipText("Whether the Orthanc SCP allows incoming C-Store requests, even from SCU modalities it does not know about (i.e. that are not listed in the \"DicomModalities\" option above)");
-	Network_Buttons.add(chckbx_Dicom_Always_Store);
-	
-	JCheckBox chckbx_Check_Modality_Store = new JCheckBox("Dicom Check Modality Host");
-	chckbx_Check_Modality_Store.setSelected(settings.CheckModalityHost);
-	chckbx_Check_Modality_Store.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.CheckModalityHost=chckbx_Check_Modality_Store.isSelected();
-		}
-	});
-	chckbx_Check_Modality_Store.setToolTipText(" Whether Orthanc checks the IP/hostname address of the remote modality initiating a DICOM connection (as listed in the \"DicomModalities\" option above). If this option is set to \"false\", Orthanc only checks the AET of the remote modality.");
-	Network_Buttons.add(chckbx_Check_Modality_Store);
-	
-	JLabel lblDicomScuTimeout = new JLabel("Dicom SCU timeout");
-	lblDicomScuTimeout.setToolTipText("The timeout (in seconds) after which the DICOM associations are considered as closed by the Orthanc SCU (client) if the remote DICOM SCP (server) does not answer.");
-	Network_Buttons.add(lblDicomScuTimeout);
-	
-	JSpinner spinner_Dicom_Scu_Timeout = new JSpinner();
-	spinner_Dicom_Scu_Timeout.setPreferredSize(new Dimension(50, 20));
-	spinner_Dicom_Scu_Timeout.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-	spinner_Dicom_Scu_Timeout.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent arg0) {
-			settings.DicomScuTimeout=Integer.valueOf((spinner_Dicom_Scu_Timeout.getValue().toString()));
-		}
-	});
-	spinner_Dicom_Scu_Timeout.setValue(settings.DicomScuTimeout);
-	Network_Buttons.add(spinner_Dicom_Scu_Timeout);
-	
-	JButton btnOrthancPeers = new JButton("Orthanc Peers");
-	btnOrthancPeers.setToolTipText("The list of the known Orthanc peers");
-	btnOrthancPeers.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-			PeersDialog peerDialog=new PeersDialog(settings);
-			peerDialog.setVisible(true);
-			peerDialog.setAlwaysOnTop(true);
-			label_Peer_number.setText(String.valueOf(settings.orthancPeer.size()));
-		}
-	});
-	Network_Buttons.add(btnOrthancPeers);
-	
-	JLabel lblHttpProxy = new JLabel("HTTP Proxy");
-	lblHttpProxy.setToolTipText("Parameters of the HTTP proxy to be used by Orthanc. If set to the empty string, no HTTP proxy is used. (\"proxyUser:proxyPassword@IP:Port\")");
-	Network_Buttons.add(lblHttpProxy);
-	
-	textField_HTTP_Proxy = new JTextField();
-	textField_HTTP_Proxy.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent arg0) {
-			settings.HttpProxy=textField_HTTP_Proxy.toString();
-		}
-	});
-	Network_Buttons.add(textField_HTTP_Proxy);
-	textField_HTTP_Proxy.setText(settings.HttpProxy);
-	textField_HTTP_Proxy.setColumns(10);
-	
-	JLabel lblHttpTimeout = new JLabel("HTTP timeout");
-	lblHttpTimeout.setToolTipText("Set the timeout for HTTP requests issued by Orthanc (in seconds)");
-	Network_Buttons.add(lblHttpTimeout);
-	
-	JSpinner spinner_Http_Timeout = new JSpinner();
-	spinner_Http_Timeout.setPreferredSize(new Dimension(50, 20));
-	spinner_Http_Timeout.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-	spinner_Http_Timeout.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.HttpTimeout=Integer.valueOf(spinner_Http_Timeout.getValue().toString());
-		}
-	});
-	spinner_Http_Timeout.setValue(settings.HttpTimeout);
-	Network_Buttons.add(spinner_Http_Timeout);
-	
-	JCheckBox chckbxHttpsVerifyPeers = new JCheckBox("HTTPS verify Peers");
-	chckbxHttpsVerifyPeers.setToolTipText("Enable the verification of the peers during HTTPS requests. This option must be set to \"false\" if using self-signed certificates. Pay attention that setting this option to \"false\" results in security risks!");
-	chckbxHttpsVerifyPeers.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.HttpsVerifyPeers=chckbxHttpsVerifyPeers.isSelected();
-		}
-	});
-	chckbxHttpsVerifyPeers.setSelected(settings.HttpsVerifyPeers);
-	Network_Buttons.add(chckbxHttpsVerifyPeers);
-	
-	JButton btnHttpsCaCertificates = new JButton("HTTPS CA Certificates");
-	btnHttpsCaCertificates.setToolTipText("Path to the CA (certification authority) certificates to validate peers in HTTPS requests. ");
-	btnHttpsCaCertificates.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent arg0) {
-			//On ouvre le JFileChooser pour selectionner un repertoire et on l'ajoute dans la variable adhoc
-			JFileChooser fc =new JFileChooser();
-			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-			int ouvrir=fc.showOpenDialog(null);
-			if (ouvrir==JFileChooser.APPROVE_OPTION) {
-				settings.HttpsCACertificates=fc.getSelectedFile().toString();
-				HTTPS_CA_Certificates.setText(settings.HttpsCACertificates);
+		});
+		Network_Buttons.add(btnDicomModalities);
+		
+		JPanel panel_dcm = new JPanel();
+		panel_dcm.setBorder(new LineBorder(new Color(0, 0, 0)));
+		Network_Buttons.add(panel_dcm);
+		panel_dcm.setLayout(new GridLayout(0, 2, 0, 0));
+		
+		JCheckBox chckbx_Dicom_Always_Store = new JCheckBox("Dicom Always Store");
+		panel_dcm.add(chckbx_Dicom_Always_Store);
+		chckbx_Dicom_Always_Store.setSelected(settings.DicomAlwaysStore);
+		chckbx_Dicom_Always_Store.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent arg0) {
+				settings.DicomAlwaysStore=chckbx_Dicom_Always_Store.isSelected();
 			}
-			
-		}
-	});
-	Network_Buttons.add(btnHttpsCaCertificates);
+		});
+		chckbx_Dicom_Always_Store.setToolTipText("Whether the Orthanc SCP allows incoming C-Store requests, even from SCU modalities it does not know about (i.e. that are not listed in the \"DicomModalities\" option above)");
+		
+		JCheckBox chckbx_Check_Modality_Store = new JCheckBox("Dicom Check Modality Host");
+		panel_dcm.add(chckbx_Check_Modality_Store);
+		chckbx_Check_Modality_Store.setSelected(settings.CheckModalityHost);
+		chckbx_Check_Modality_Store.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				settings.CheckModalityHost=chckbx_Check_Modality_Store.isSelected();
+			}
+		});
+		chckbx_Check_Modality_Store.setToolTipText(" Whether Orthanc checks the IP/hostname address of the remote modality initiating a DICOM connection (as listed in the \"DicomModalities\" option above). If this option is set to \"false\", Orthanc only checks the AET of the remote modality.");
+		
+		JLabel lblDicomScuTimeout = new JLabel("Dicom SCU timeout");
+		panel_dcm.add(lblDicomScuTimeout);
+		lblDicomScuTimeout.setToolTipText("The timeout (in seconds) after which the DICOM associations are considered as closed by the Orthanc SCU (client) if the remote DICOM SCP (server) does not answer.");
+		
+		JSpinner spinner_Dicom_Scu_Timeout = new JSpinner();
+		panel_dcm.add(spinner_Dicom_Scu_Timeout);
+		spinner_Dicom_Scu_Timeout.setPreferredSize(new Dimension(50, 20));
+		spinner_Dicom_Scu_Timeout.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+		spinner_Dicom_Scu_Timeout.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent arg0) {
+				settings.DicomScuTimeout=Integer.valueOf((spinner_Dicom_Scu_Timeout.getValue().toString()));
+			}
+		});
+		spinner_Dicom_Scu_Timeout.setValue(settings.DicomScuTimeout);
+		
+		JPanel panel_peers = new JPanel();
+		panel_peers.setBorder(new LineBorder(new Color(0, 0, 0)));
+		Network_Buttons.add(panel_peers);
+		panel_peers.setLayout(new GridLayout(0, 2, 0, 0));
+		
+		JLabel lblHttpProxy = new JLabel("HTTP Proxy");
+		panel_peers.add(lblHttpProxy);
+		lblHttpProxy.setToolTipText("Parameters of the HTTP proxy to be used by Orthanc. If set to the empty string, no HTTP proxy is used. (\"proxyUser:proxyPassword@IP:Port\")");
+		
+		textField_HTTP_Proxy = new JTextField();
+		panel_peers.add(textField_HTTP_Proxy);
+		textField_HTTP_Proxy.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent arg0) {
+				settings.HttpProxy=textField_HTTP_Proxy.toString();
+			}
+		});
+		textField_HTTP_Proxy.setText(settings.HttpProxy);
+		textField_HTTP_Proxy.setColumns(10);
+		
+		JLabel lblHttpTimeout = new JLabel("HTTP timeout");
+		panel_peers.add(lblHttpTimeout);
+		lblHttpTimeout.setToolTipText("Set the timeout for HTTP requests issued by Orthanc (in seconds)");
+		
+		JSpinner spinner_Http_Timeout = new JSpinner();
+		panel_peers.add(spinner_Http_Timeout);
+		spinner_Http_Timeout.setPreferredSize(new Dimension(50, 20));
+		spinner_Http_Timeout.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+		spinner_Http_Timeout.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				settings.HttpTimeout=Integer.valueOf(spinner_Http_Timeout.getValue().toString());
+			}
+		});
+		spinner_Http_Timeout.setValue(settings.HttpTimeout);
+		
+		JCheckBox chckbxHttpsVerifyPeers = new JCheckBox("HTTPS verify Peers");
+		panel_peers.add(chckbxHttpsVerifyPeers);
+		chckbxHttpsVerifyPeers.setToolTipText("Enable the verification of the peers during HTTPS requests. This option must be set to \"false\" if using self-signed certificates. Pay attention that setting this option to \"false\" results in security risks!");
+		chckbxHttpsVerifyPeers.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				settings.HttpsVerifyPeers=chckbxHttpsVerifyPeers.isSelected();
+			}
+		});
+		chckbxHttpsVerifyPeers.setSelected(settings.HttpsVerifyPeers);
+		
+		Component horizontalStrut = Box.createHorizontalStrut(20);
+		panel_peers.add(horizontalStrut);
+		
+		JButton btnOrthancPeers = new JButton("Orthanc Peers");
+		panel_peers.add(btnOrthancPeers);
+		btnOrthancPeers.setToolTipText("The list of the known Orthanc peers");
+		btnOrthancPeers.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				PeersDialog peerDialog=new PeersDialog(settings);
+				peerDialog.setVisible(true);
+				peerDialog.setAlwaysOnTop(true);
+				label_Peer_number.setText(String.valueOf(settings.orthancPeer.size()));
+			}
+		});
+		
+		JButton btnHttpsCaCertificates = new JButton("HTTPS CA Certificates");
+		panel_peers.add(btnHttpsCaCertificates);
+		btnHttpsCaCertificates.setToolTipText("Path to the CA (certification authority) certificates to validate peers in HTTPS requests. ");
+		btnHttpsCaCertificates.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				//On ouvre le JFileChooser pour selectionner un repertoire et on l'ajoute dans la variable adhoc
+				JFileChooser fc =new JFileChooser();
+				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				int ouvrir=fc.showOpenDialog(null);
+				if (ouvrir==JFileChooser.APPROVE_OPTION) {
+					settings.HttpsCACertificates=fc.getSelectedFile().toString();
+					HTTPS_CA_Certificates.setText(settings.HttpsCACertificates);
+				}
+				
+			}
+		});
+		
+		JPanel Network_Strings = new JPanel();
+		network.add(Network_Strings, BorderLayout.SOUTH);
+		Network_Strings.setLayout(new GridLayout(3, 3, 0, 0));
+		
+		JLabel Dicom_Modalities = new JLabel("Dcm Modalities");
+		Network_Strings.add(Dicom_Modalities);
+		
+		Dicom_Modalities_Number = new JLabel(String.valueOf(settings.dicomNode.size()));
+		Network_Strings.add(Dicom_Modalities_Number);
+		
+		JLabel Orthanc_Peer = new JLabel("Orthanc Peer");
+		Network_Strings.add(Orthanc_Peer);
+		
+		label_Peer_number = new JLabel(String.valueOf(settings.orthancPeer.size()));
+		Network_Strings.add(label_Peer_number);
+		
+		JLabel lblNewLabel_12 = new JLabel("Certificates");
+		Network_Strings.add(lblNewLabel_12);
+		
+		HTTPS_CA_Certificates = new JLabel("New label");
+		HTTPS_CA_Certificates.setText(settings.HttpsCACertificates);
+		Network_Strings.add(HTTPS_CA_Certificates);
+		
+		JPanel advanced = new JPanel();
+		tabbedPane.addTab("advanced", null, advanced, null);
+		advanced.setBorder(new LineBorder(new Color(0, 0, 0)));
+		advanced.setLayout(new BorderLayout(0, 0));
+		
+		JPanel Advanced_Title = new JPanel();
+		advanced.add(Advanced_Title, BorderLayout.NORTH);
+		
+		JLabel lblAdvancedOptions = new JLabel("Advanced Options");
+		Advanced_Title.add(lblAdvancedOptions);
+		
+		JPanel Advanced_Buttons = new JPanel();
+		advanced.add(Advanced_Buttons, BorderLayout.CENTER);
+	Advanced_Buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 	
-	JPanel Network_Strings = new JPanel();
-	network.add(Network_Strings, BorderLayout.SOUTH);
-	Network_Strings.setLayout(new GridLayout(3, 3, 0, 0));
-	
-	JLabel Dicom_Modalities = new JLabel("Dcm Modalities");
-	Network_Strings.add(Dicom_Modalities);
-	
-	Dicom_Modalities_Number = new JLabel(String.valueOf(settings.dicomNode.size()));
-	Network_Strings.add(Dicom_Modalities_Number);
-	
-	JLabel Orthanc_Peer = new JLabel("Orthanc Peer");
-	Network_Strings.add(Orthanc_Peer);
-	
-	label_Peer_number = new JLabel(String.valueOf(settings.orthancPeer.size()));
-	Network_Strings.add(label_Peer_number);
-	
-	JLabel lblNewLabel_12 = new JLabel("Certificates");
-	Network_Strings.add(lblNewLabel_12);
-	
-	HTTPS_CA_Certificates = new JLabel("New label");
-	HTTPS_CA_Certificates.setText(settings.HttpsCACertificates);
-	Network_Strings.add(HTTPS_CA_Certificates);
-	
-	JPanel advanced = new JPanel();
-	advanced.setBorder(new LineBorder(new Color(0, 0, 0)));
-	getContentPane().add(advanced);
-	advanced.setLayout(new BorderLayout(0, 0));
-	
-	JPanel Advanced_Title = new JPanel();
-	advanced.add(Advanced_Title, BorderLayout.NORTH);
-	
-	JLabel lblAdvancedOptions = new JLabel("Advanced Options");
-	Advanced_Title.add(lblAdvancedOptions);
-	
-	JPanel Advanced_Buttons = new JPanel();
-	advanced.add(Advanced_Buttons, BorderLayout.CENTER);
-	 
-	JButton btnUserContentType = new JButton("User Content Type");
-	btnUserContentType.setToolTipText("Dictionary of symbolic names for the user-defined types of attached files.");
-	btnUserContentType.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-			Content_Dialog contentDialog=new Content_Dialog(settings);
-			contentDialog.setVisible(true);
-			contentDialog.setAlwaysOnTop(true);
-			Content_Type_Counter.setText(String.valueOf(settings.contentType.size()));
-			
-		}
-	});
-	
-	JButton btnUserMetadata = new JButton("User Metadata");
-	btnUserMetadata.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-			MetadataDialog DialogMetadata=new MetadataDialog(settings);
-			DialogMetadata.setVisible(true);
-			Metadata_Counter.setText(String.valueOf(settings.userMetadata.size()));
-		}
-	});
-	btnUserMetadata.setToolTipText("Dictionary of symbolic names for the user-defined metadata");
-	Advanced_Buttons.add(btnUserMetadata);
-	Advanced_Buttons.add(btnUserContentType);
+	JPanel panel_1 = new JPanel();
+	Advanced_Buttons.add(panel_1);
+	panel_1.setLayout(new GridLayout(0, 2, 5, 3));
 	
 	JLabel lblStableAge = new JLabel("Stable Age");
+	panel_1.add(lblStableAge);
 	lblStableAge.setToolTipText("Number of seconds without receiving any instance before a patient, a study or a series is considered as stable.");
-	Advanced_Buttons.add(lblStableAge);
 	
 	JSpinner spinner_Stable_Age = new JSpinner();
+	panel_1.add(spinner_Stable_Age);
 	spinner_Stable_Age.setPreferredSize(new Dimension(50, 20));
 	spinner_Stable_Age.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
 	spinner_Stable_Age.addFocusListener(new FocusAdapter() {
@@ -792,35 +805,13 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	spinner_Stable_Age.setValue(settings.StableAge);
-	Advanced_Buttons.add(spinner_Stable_Age);
-	
-	JCheckBox chckbxStrictAetComparison = new JCheckBox("Strict AET Comparison");
-	chckbxStrictAetComparison.setToolTipText(" Setting this option to \"true\" will enable case-sensitive matching.");
-	chckbxStrictAetComparison.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.StrictAetComparison=chckbxStrictAetComparison.isSelected();
-		}
-	});
-	chckbxStrictAetComparison.setSelected(settings.StrictAetComparison);
-	Advanced_Buttons.add(chckbxStrictAetComparison);
-	
-	JCheckBox chckbxStoremd = new JCheckBox("StoreMD5");
-	chckbxStoremd.setToolTipText("When the following option is \"true\", the MD5 of the DICOM files will be computed and stored in the Orthanc database. This information can be used to detect disk corruption, at the price of a small performance overhead.");
-	chckbxStoremd.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.StoreMD5ForAttachments=chckbxStoremd.isSelected();
-		}
-	});
-	chckbxStoremd.setSelected(settings.StoreMD5ForAttachments);
-	Advanced_Buttons.add(chckbxStoremd);
 	
 	JLabel lblLimitFindResults = new JLabel("Limit Find Results");
+	panel_1.add(lblLimitFindResults);
 	lblLimitFindResults.setToolTipText("The maximum number of results for a single C-FIND request at the Patient, Study or Series level. Setting this option to \"0\" means no limit.");
-	Advanced_Buttons.add(lblLimitFindResults);
 	
 	JSpinner spinner_limit_Find_Result = new JSpinner();
+	panel_1.add(spinner_limit_Find_Result);
 	spinner_limit_Find_Result.setPreferredSize(new Dimension(50, 20));
 	spinner_limit_Find_Result.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
 	spinner_limit_Find_Result.addFocusListener(new FocusAdapter() {
@@ -830,78 +821,14 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	spinner_limit_Find_Result.setValue(settings.LimitFindResults);
-	Advanced_Buttons.add(spinner_limit_Find_Result);
 	
-	JLabel lblLimitFindInstance = new JLabel("Limit Find Instance");
-	lblLimitFindInstance.setToolTipText("The maximum number of results for a single C-FIND request at the Instance level. Setting this option to \"0\" means no limit.");
-	Advanced_Buttons.add(lblLimitFindInstance);
-	
-	JSpinner spinner_limit_Find_Instance = new JSpinner();
-	spinner_limit_Find_Instance.setPreferredSize(new Dimension(50, 20));
-	spinner_limit_Find_Instance.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-	spinner_limit_Find_Instance.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.LimitFindInstances=Integer.valueOf(spinner_limit_Find_Instance.getValue().toString());
-		}
-	});
-	spinner_limit_Find_Instance.setValue(settings.LimitFindInstances);
-	Advanced_Buttons.add(spinner_limit_Find_Instance);
-	
-	JLabel lblLimitsJobs = new JLabel("Limits Jobs");
-	lblLimitsJobs.setToolTipText("The maximum number of active jobs in the Orthanc scheduler. When this limit is reached, the addition of new jobs is blocked until some job finishes");
-	Advanced_Buttons.add(lblLimitsJobs);
-	
-	JSpinner spinner_limit_Jobs = new JSpinner();
-	spinner_limit_Jobs.setPreferredSize(new Dimension(50, 20));
-	spinner_limit_Jobs.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-	spinner_limit_Jobs.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.LimitJobs=Integer.valueOf(spinner_limit_Jobs.getValue().toString());
-		}
-	});
-	spinner_limit_Jobs.setValue(settings.LimitJobs);
-	Advanced_Buttons.add(spinner_limit_Jobs);
-	
-	JCheckBox chckbxLogExportedRessources = new JCheckBox("Log Exported Ressources");
-	chckbxLogExportedRessources.setToolTipText("If this option is set to \"false\", Orthanc will not log the resources that are exported to other DICOM modalities of Orthanc peers in the URI \"/exports\". ");
-	chckbxLogExportedRessources.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.LogExportedResources=chckbxLogExportedRessources.isSelected();
-		}
-	});
-	chckbxLogExportedRessources.setSelected(settings.LogExportedResources);
-	Advanced_Buttons.add(chckbxLogExportedRessources);
-	
-	JCheckBox chckbxKeepAlive = new JCheckBox("Keep Alive");
-	chckbxKeepAlive.setToolTipText("Enable or disable HTTP Keep-Alive (deprecated). Set this option to \"true\" only in the case of high HTTP loads.");
-	chckbxKeepAlive.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.KeepAlive=chckbxKeepAlive.isSelected();
-		}
-	});
-	chckbxKeepAlive.setSelected(settings.KeepAlive);
-	Advanced_Buttons.add(chckbxKeepAlive);
-	
-	JCheckBox chckbxStoreDicom = new JCheckBox("Store DICOM");
-	chckbxStoreDicom.setToolTipText("If this option is set to \"false\", Orthanc will run in index-only mode. The DICOM files will not be stored on the drive. Note that this option might prevent the upgrade to newer versions of Orthanc.");
-	chckbxStoreDicom.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.StoreDicom=chckbxStoreDicom.isSelected();
-		}
-	});
-	chckbxStoreDicom.setSelected(settings.StoreDicom);
-	Advanced_Buttons.add(chckbxStoreDicom);
-	
-	JLabel lblDicomAssociationClose = new JLabel("DICOM Association Close Delay");
+	JLabel lblDicomAssociationClose = new JLabel("Dcm Assoc. Close Delay");
+	lblDicomAssociationClose.setFont(new Font("Dialog", Font.BOLD, 10));
+	panel_1.add(lblDicomAssociationClose);
 	lblDicomAssociationClose.setToolTipText("DICOM associations are kept open as long as new DICOM commands are issued. This option sets the number of seconds of inactivity to wait before automatically closing a DICOM association. If set to 0, the connection is closed immediately.");
-	Advanced_Buttons.add(lblDicomAssociationClose);
 	
 	JSpinner spinner_DICOM_Association_Close_Delay = new JSpinner();
+	panel_1.add(spinner_DICOM_Association_Close_Delay);
 	spinner_DICOM_Association_Close_Delay.setPreferredSize(new Dimension(50, 20));
 	spinner_DICOM_Association_Close_Delay.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
 	spinner_DICOM_Association_Close_Delay.addFocusListener(new FocusAdapter() {
@@ -911,11 +838,185 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	spinner_DICOM_Association_Close_Delay.setValue(settings.DicomAssociationCloseDelay);
-	Advanced_Buttons.add(spinner_DICOM_Association_Close_Delay);
 	
-	JPanel Options_Strings = new JPanel();
-	advanced.add(Options_Strings, BorderLayout.SOUTH);
-	Options_Strings.setLayout(new GridLayout(2, 2, 0, 0));
+	JLabel lblLimitFindInstance = new JLabel("Limit Find Instance");
+	panel_1.add(lblLimitFindInstance);
+	lblLimitFindInstance.setToolTipText("The maximum number of results for a single C-FIND request at the Instance level. Setting this option to \"0\" means no limit.");
+	
+	JSpinner spinner_limit_Find_Instance = new JSpinner();
+	panel_1.add(spinner_limit_Find_Instance);
+	spinner_limit_Find_Instance.setPreferredSize(new Dimension(50, 20));
+	spinner_limit_Find_Instance.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+	spinner_limit_Find_Instance.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.LimitFindInstances=Integer.valueOf(spinner_limit_Find_Instance.getValue().toString());
+		}
+	});
+	spinner_limit_Find_Instance.setValue(settings.LimitFindInstances);
+	
+	JLabel lblQueryretrieveSize = new JLabel("Query/Retrieve Size");
+	panel_1.add(lblQueryretrieveSize);
+	lblQueryretrieveSize.setToolTipText("Maximum number of query/retrieve DICOM requests that are maintained by Orthanc. The least recently used requests get deleted as new requests are issued.");
+	
+	JSpinner spinner_QueryRetrieve_Size = new JSpinner();
+	panel_1.add(spinner_QueryRetrieve_Size);
+	spinner_QueryRetrieve_Size.setPreferredSize(new Dimension(50, 20));
+	spinner_QueryRetrieve_Size.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+	spinner_QueryRetrieve_Size.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.QueryRetrieveSize=Integer.valueOf(spinner_QueryRetrieve_Size.getValue().toString());
+		}
+	});
+	spinner_QueryRetrieve_Size.setValue(settings.QueryRetrieveSize);
+	
+	JLabel lb_limitJob = new JLabel("Limits Job");
+	panel_1.add(lb_limitJob);
+	
+	JSpinner spinner_limit_Jobs = new JSpinner();
+	panel_1.add(spinner_limit_Jobs);
+	spinner_limit_Jobs.setPreferredSize(new Dimension(50, 20));
+	spinner_limit_Jobs.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+	spinner_limit_Jobs.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.LimitJobs=Integer.valueOf(spinner_limit_Jobs.getValue().toString());
+		}
+	});
+	spinner_limit_Jobs.setValue(settings.LimitJobs);
+	
+	JPanel panel_chkbox = new JPanel();
+	Advanced_Buttons.add(panel_chkbox);
+	panel_chkbox.setLayout(new GridLayout(0, 3, 0, 0));
+	
+	JCheckBox chckbxStrictAetComparison = new JCheckBox("Strict AET Comparison");
+	panel_chkbox.add(chckbxStrictAetComparison);
+	chckbxStrictAetComparison.setToolTipText(" Setting this option to \"true\" will enable case-sensitive matching.");
+	chckbxStrictAetComparison.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.StrictAetComparison=chckbxStrictAetComparison.isSelected();
+		}
+	});
+	chckbxStrictAetComparison.setSelected(settings.StrictAetComparison);
+	
+	JCheckBox chckbxStoremd = new JCheckBox("StoreMD5");
+	panel_chkbox.add(chckbxStoremd);
+	chckbxStoremd.setToolTipText("When the following option is \"true\", the MD5 of the DICOM files will be computed and stored in the Orthanc database. This information can be used to detect disk corruption, at the price of a small performance overhead.");
+	chckbxStoremd.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.StoreMD5ForAttachments=chckbxStoremd.isSelected();
+		}
+	});
+	chckbxStoremd.setSelected(settings.StoreMD5ForAttachments);
+	
+	JCheckBox chckbxLogExportedRessources = new JCheckBox("Log Exported Ressources");
+	panel_chkbox.add(chckbxLogExportedRessources);
+	chckbxLogExportedRessources.setToolTipText("If this option is set to \"false\", Orthanc will not log the resources that are exported to other DICOM modalities of Orthanc peers in the URI \"/exports\". ");
+	chckbxLogExportedRessources.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.LogExportedResources=chckbxLogExportedRessources.isSelected();
+		}
+	});
+	chckbxLogExportedRessources.setSelected(settings.LogExportedResources);
+	
+	JCheckBox chckbxKeepAlive = new JCheckBox("Keep Alive");
+	panel_chkbox.add(chckbxKeepAlive);
+	chckbxKeepAlive.setToolTipText("Enable or disable HTTP Keep-Alive (deprecated). Set this option to \"true\" only in the case of high HTTP loads.");
+	chckbxKeepAlive.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.KeepAlive=chckbxKeepAlive.isSelected();
+		}
+	});
+	chckbxKeepAlive.setSelected(settings.KeepAlive);
+	
+	JCheckBox chckbxStoreDicom = new JCheckBox("Store DICOM");
+	panel_chkbox.add(chckbxStoreDicom);
+	chckbxStoreDicom.setToolTipText("If this option is set to \"false\", Orthanc will run in index-only mode. The DICOM files will not be stored on the drive. Note that this option might prevent the upgrade to newer versions of Orthanc.");
+	chckbxStoreDicom.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.StoreDicom=chckbxStoreDicom.isSelected();
+		}
+	});
+	chckbxStoreDicom.setSelected(settings.StoreDicom);
+	
+	JCheckBox chckbxCaseSensitivePatient = new JCheckBox("Case Sensitive Patient Name");
+	panel_chkbox.add(chckbxCaseSensitivePatient);
+	chckbxCaseSensitivePatient.setToolTipText("When handling a C-Find SCP request, setting this flag to \"true\" will enable case-sensitive match for PN value representation (such as PatientName). By default, the search is case-insensitive, which does not follow the DICOM standard.");
+	chckbxCaseSensitivePatient.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.CaseSensitivePN=chckbxCaseSensitivePatient .isSelected();
+		}
+	});
+	chckbxCaseSensitivePatient.setSelected(settings.CaseSensitivePN);
+	
+	JCheckBox chckbxAllowFindSop = new JCheckBox("Allow Find SOP classe in study");
+	panel_chkbox.add(chckbxAllowFindSop);
+	chckbxAllowFindSop.setToolTipText("If set to \"true\", Orthanc will still handle \"SOP Classes in Study\" (0008,0062) in C-FIND requests, even if the \"SOP Class UID\" metadata is not available in the database.This option is turned off by default, as it requires intensive accesses to the hard drive.");
+	chckbxAllowFindSop.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.AllowFindSopClassesInStudy=chckbxAllowFindSop.isSelected();
+		}
+	});
+	chckbxAllowFindSop.setSelected(settings.AllowFindSopClassesInStudy);
+	
+	JCheckBox chckbxLoadPrivateDictionary = new JCheckBox("Load Private Dictionary");
+	panel_chkbox.add(chckbxLoadPrivateDictionary);
+	chckbxLoadPrivateDictionary.setToolTipText("If set to \"false\", Orthanc will not load its default dictionary of private tags.");
+	chckbxLoadPrivateDictionary.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.LoadPrivateDictionary=chckbxLoadPrivateDictionary.isSelected();
+		}
+	});
+	chckbxLoadPrivateDictionary.setSelected(settings.LoadPrivateDictionary);
+	
+	JPanel panel_btn = new JPanel();
+	Advanced_Buttons.add(panel_btn);
+	panel_btn.setLayout(new GridLayout(0, 2, 0, 0));
+	
+	JButton btnUserMetadata = new JButton("User Metadata");
+	panel_btn.add(btnUserMetadata);
+	btnUserMetadata.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			MetadataDialog DialogMetadata=new MetadataDialog(settings);
+			DialogMetadata.setVisible(true);
+			Metadata_Counter.setText(String.valueOf(settings.userMetadata.size()));
+		}
+	});
+	btnUserMetadata.setToolTipText("Dictionary of symbolic names for the user-defined metadata");
+	
+	JButton btnUserContentType = new JButton("User Content Type");
+	panel_btn.add(btnUserContentType);
+	btnUserContentType.setToolTipText("Dictionary of symbolic names for the user-defined types of attached files.");
+	
+	JButton btnDictionnary = new JButton("Dictionnary");
+	panel_btn.add(btnDictionnary);
+	btnDictionnary.setToolTipText("Register a new tag in the dictionary of DICOM tags that are known to Orthanc.");
+	btnDictionnary.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			Dictionary_Dialog dictionaryDialog=new Dictionary_Dialog(settings);
+			dictionaryDialog.setVisible(true);
+			dictionaryDialog.setAlwaysOnTop(true);
+			Dictionnary_Counter.setText(String.valueOf(settings.dictionary.size()));
+		}
+	});
+	btnUserContentType.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			Content_Dialog contentDialog=new Content_Dialog(settings);
+			contentDialog.setVisible(true);
+			contentDialog.setAlwaysOnTop(true);
+			Content_Type_Counter.setText(String.valueOf(settings.contentType.size()));
+			
+		}
+	});
 	
 	JPanel Advanced_String = new JPanel();
 	advanced.add(Advanced_String, BorderLayout.SOUTH);
@@ -939,141 +1040,14 @@ public class SettingsGUI extends JFrame {
 	Metadata_Counter = new JLabel(String.valueOf(settings.userMetadata.size()));
 	Advanced_String.add(Metadata_Counter);
 	
-	JPanel about = new JPanel();
-	about.setBorder(new LineBorder(new Color(0, 0, 0)));
-	getContentPane().add(about);
-	about.setLayout(new BorderLayout(0, 0));
-	
-	JPanel About_About = new JPanel();
-	about.add(About_About, BorderLayout.SOUTH);
-	About_About.setLayout(new GridLayout(2, 2, 0, 0));
-	
-	JPanel About_Title = new JPanel();
-	about.add(About_Title, BorderLayout.NORTH);
-	
-	JLabel lblAbout = new JLabel("Advanced Options (2)");
-	About_Title.add(lblAbout);
-	
-	JPanel About_Buttons = new JPanel();
-	about.add(About_Buttons, BorderLayout.CENTER);
-	About_Buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-	
-	JLabel lblQueryretrieveSize = new JLabel("Query/Retrieve Size");
-	lblQueryretrieveSize.setToolTipText("Maximum number of query/retrieve DICOM requests that are maintained by Orthanc. The least recently used requests get deleted as new requests are issued.");
-	About_Buttons.add(lblQueryretrieveSize);
-	
-	JSpinner spinner_QueryRetrieve_Size = new JSpinner();
-	spinner_QueryRetrieve_Size.setPreferredSize(new Dimension(50, 20));
-	spinner_QueryRetrieve_Size.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-	About_Buttons.add(spinner_QueryRetrieve_Size);
-	spinner_QueryRetrieve_Size.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.QueryRetrieveSize=Integer.valueOf(spinner_QueryRetrieve_Size.getValue().toString());
-		}
-	});
-	spinner_QueryRetrieve_Size.setValue(settings.QueryRetrieveSize);
-	
-	JCheckBox chckbxCaseSensitivePatient = new JCheckBox("Case Sensitive Patient Name");
-	chckbxCaseSensitivePatient.setToolTipText("When handling a C-Find SCP request, setting this flag to \"true\" will enable case-sensitive match for PN value representation (such as PatientName). By default, the search is case-insensitive, which does not follow the DICOM standard.");
-	About_Buttons.add(chckbxCaseSensitivePatient);
-	chckbxCaseSensitivePatient.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.CaseSensitivePN=chckbxCaseSensitivePatient .isSelected();
-		}
-	});
-	chckbxCaseSensitivePatient.setSelected(settings.CaseSensitivePN);
-	
-	JCheckBox chckbxAllowFindSop = new JCheckBox("Allow Find SOP classe in study");
-	chckbxAllowFindSop.setToolTipText("If set to \"true\", Orthanc will still handle \"SOP Classes in Study\" (0008,0062) in C-FIND requests, even if the \"SOP Class UID\" metadata is not available in the database.This option is turned off by default, as it requires intensive accesses to the hard drive.");
-	About_Buttons.add(chckbxAllowFindSop);
-	chckbxAllowFindSop.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.AllowFindSopClassesInStudy=chckbxAllowFindSop.isSelected();
-		}
-	});
-	chckbxAllowFindSop.setSelected(settings.AllowFindSopClassesInStudy);
-	
-	JCheckBox chckbxLoadPrivateDictionary = new JCheckBox("Load Private Dictionary");
-	chckbxLoadPrivateDictionary.setToolTipText("If set to \"false\", Orthanc will not load its default dictionary of private tags.");
-	About_Buttons.add(chckbxLoadPrivateDictionary);
-	chckbxLoadPrivateDictionary.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.LoadPrivateDictionary=chckbxLoadPrivateDictionary.isSelected();
-		}
-	});
-	chckbxLoadPrivateDictionary.setSelected(settings.LoadPrivateDictionary);
-	
-	JButton btnDictionnary = new JButton("Dictionnary");
-	btnDictionnary.setToolTipText("Register a new tag in the dictionary of DICOM tags that are known to Orthanc.");
-	btnDictionnary.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-			Dictionary_Dialog dictionaryDialog=new Dictionary_Dialog(settings);
-			dictionaryDialog.setVisible(true);
-			dictionaryDialog.setAlwaysOnTop(true);
-			Dictionnary_Counter.setText(String.valueOf(settings.dictionary.size()));
-		}
-	});
-	About_Buttons.add(btnDictionnary);
-	
-	JPanel panel_1 = new JPanel();
-	panel_1.setBorder(new LineBorder(new Color(0, 0, 0)));
-	getContentPane().add(panel_1);
-	panel_1.setLayout(new BorderLayout(0, 0));
-	
-	JPanel panel_4 = new JPanel();
-	panel_1.add(panel_4, BorderLayout.CENTER);
-	panel_4.setLayout(new GridLayout(0, 1, 0, 0));
-	
-	JLabel label_1 = new JLabel("GPL v.3");
-	panel_4.add(label_1);
-	
-	JLabel label_2 = new JLabel("Developper : Salim Kanoun");
-	panel_4.add(label_2);
-	
-	JLabel lblContributionFromPetctviewerorg = new JLabel("Contribution from petctviewer.org");
-	panel_4.add(lblContributionFromPetctviewerorg);
-	
-	JLabel lblNewLabel_4 = new JLabel(" Free and open source PET/CT Viewer");
-	panel_4.add(lblNewLabel_4);
-	
-	JPanel panel_5 = new JPanel();
-	panel_1.add(panel_5, BorderLayout.NORTH);
-	
-	JLabel label = new JLabel("Orthanc JSON Editor");
-	panel_5.add(label);
-	
-	JPanel panel_2 = new JPanel();
-	panel_1.add(panel_2, BorderLayout.WEST);
-	
 	JPanel buttons = new JPanel();
 	buttons.setBorder(new LineBorder(new Color(0, 0, 0)));
-	getContentPane().add(buttons);
+	getContentPane().add(buttons, BorderLayout.SOUTH);
 	buttons.setLayout(new BorderLayout(0, 0));
-	
-	JPanel Bouttons_Title = new JPanel();
-	buttons.add(Bouttons_Title, BorderLayout.NORTH);
-	
-	JLabel lblLoadSave = new JLabel("Load / Save JSON");
-	Bouttons_Title.add(lblLoadSave);
 	
 	JPanel Bouttons_Bouttons = new JPanel();
 	buttons.add(Bouttons_Bouttons, BorderLayout.CENTER);
 	Bouttons_Bouttons.setLayout(new GridLayout(0, 2, 0, 0));
-	
-	JPanel Orthanc_Version_Panel = new JPanel();
-	Bouttons_Bouttons.add(Orthanc_Version_Panel);
-	Orthanc_Version_Panel.setLayout(new BorderLayout(0, 0));
-	
-	JLabel lblNewLabel_5 = new JLabel("For Orthanc 1.3.0");
-	lblNewLabel_5.setHorizontalAlignment(SwingConstants.CENTER);
-	Orthanc_Version_Panel.add(lblNewLabel_5, BorderLayout.SOUTH);
-	
-	JPanel panel_6 = new JPanel();
-	Bouttons_Bouttons.add(panel_6);
 	
 	JButton btnLoadJson = new JButton("Load JSON");
 	btnLoadJson.addActionListener(new ActionListener() {
@@ -1103,9 +1077,9 @@ public class SettingsGUI extends JFrame {
 			}	
 		}
 	});
-	Bouttons_Bouttons.add(btnLoadJson);
 	
 	JButton btnSaveJson = new JButton("Save JSON");
+	Bouttons_Bouttons.add(btnSaveJson);
 	btnSaveJson.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent arg0) {
 			//On ecrit le JSON defini dans Index Orthanc
@@ -1122,20 +1096,19 @@ public class SettingsGUI extends JFrame {
 		}
 		}
 	});
-	Bouttons_Bouttons.add(btnSaveJson);
 	
-	JPanel Orthanc_Connection = new JPanel();
-	buttons.add(Orthanc_Connection, BorderLayout.SOUTH);
+	JLabel lblNewLabel_5 = new JLabel("For Orthanc 1.3.2");
+	Bouttons_Bouttons.add(lblNewLabel_5);
+	lblNewLabel_5.setHorizontalAlignment(SwingConstants.CENTER);
+	Bouttons_Bouttons.add(btnLoadJson);
 	
 	JButton btnRestartOrthancServer = new JButton("Restart Orthanc Server");
+	Bouttons_Bouttons.add(btnRestartOrthancServer);
 	btnRestartOrthancServer.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent arg0) {
 			connexion.restartOrthanc();
 		}
 	});
-	Orthanc_Connection.setLayout(new GridLayout(0, 2, 0, 0));
-	
-	Orthanc_Connection.add(btnRestartOrthancServer);
 	}
 
 public static void main(String[] args)  {
@@ -1146,5 +1119,4 @@ public static void main(String[] args)  {
 		gui.setSize(gui.getPreferredSize());
 		gui.setVisible(true);
 	}
-
 }
