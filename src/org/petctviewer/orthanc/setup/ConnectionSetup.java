@@ -40,6 +40,13 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 import ij.plugin.PlugIn;
+import java.awt.GridLayout;
+import java.awt.BorderLayout;
+import javax.swing.SwingConstants;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
+import java.awt.Component;
+import javax.swing.Box;
 
 public class ConnectionSetup extends JDialog implements PlugIn{
 	
@@ -55,72 +62,64 @@ public class ConnectionSetup extends JDialog implements PlugIn{
 		this.setLocationRelativeTo(null);
 		this.setAlwaysOnTop(true);
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		JPanel mainPanel = new JPanel();
-		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
-		JPanel setupPanel = new JPanel(new GridBagLayout());
-		GridBagConstraints gbc = new GridBagConstraints();
 		
-		JPanel disclaimerPanel = new JPanel(new FlowLayout());
-		JLabel disclaimer = new JLabel("This service needs the installation of the Orthanc Server, see our");
-		disclaimerPanel.add(disclaimer);
-		JButton link = new JButton("<html><font color = 'blue'>documentation</font></html>");
-		link.setFocusPainted(false);
-		link.setMargin(new Insets(0, 0, 0, 0));
-		link.setContentAreaFilled(false);
-		link.setBorderPainted(false);
-		link.setOpaque(false);
-		link.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		link.addActionListener( new ActionListener()
-		{
-		    public void actionPerformed(ActionEvent e)
-		    {
-		        openWebPage("http://petctviewer.org/images/QuickSetupGuide_Networking_DICOM.pdf");
-		    }
-		});
-		disclaimerPanel.add(link);
+		JPanel mainPanel = new JPanel();
+
+		Image image = new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage();
+		this.setIconImage(image);
+		
+		this.getContentPane().add(mainPanel);
+		mainPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		JPanel setupPanel = new JPanel();
+		mainPanel.add(setupPanel);
+		setupPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
+		setupPanel.setLayout(new BorderLayout(0, 0));
+		
+		
+		JLabel lblExistingOrthancServer = new JLabel("Existing Orthanc Server");
+		setupPanel.add(lblExistingOrthancServer, BorderLayout.NORTH);
+		lblExistingOrthancServer.setHorizontalAlignment(SwingConstants.CENTER);
+		
+		JPanel panel_http_settings = new JPanel();
+		panel_http_settings.setLayout(new GridLayout(0, 2, 0, 0));
+
+		JLabel label = new JLabel("Address");
+		panel_http_settings.add(label);
 		
 		JTextField ipTxt = new JTextField();
+		panel_http_settings.add(ipTxt);
 		ipTxt.setPreferredSize(new Dimension(100,18));
+		ipTxt.setText(jpreferPerso.get("ip", "http://"));
+		
+		
+		JLabel label_1 = new JLabel("Port");
 		JTextField portTxt = new JTextField();
 		portTxt.setPreferredSize(new Dimension(100,18));
+		portTxt.setText(jpreferPerso.get("port", ""));
+		
+		
+		JLabel label_2 = new JLabel("Username");
 		JTextField usernameTxt = new JTextField();
 		usernameTxt.setPreferredSize(new Dimension(100,18));
+		usernameTxt.setText(jpreferPerso.get("username", ""));
+		
+		JLabel label_3 = new JLabel("Password");
 		JPasswordField passwordTxt = new JPasswordField();
 		passwordTxt.setPreferredSize(new Dimension(100,18));
-		
-		ipTxt.setText(jpreferPerso.get("ip", "http://"));
-		portTxt.setText(jpreferPerso.get("port", ""));
-		usernameTxt.setText(jpreferPerso.get("username", ""));
 		passwordTxt.setText(jpreferPerso.get("password", ""));
 		
 		
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.insets = new Insets(10, 10, 10, 10);
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		setupPanel.add(new JLabel("Address"), gbc);
-		gbc.gridx = 1;
-		setupPanel.add(ipTxt, gbc);
+		panel_http_settings.add(label_1);
+		panel_http_settings.add(portTxt);
+		panel_http_settings.add(label_2);
+		panel_http_settings.add(usernameTxt);
+		panel_http_settings.add(label_3);
+		panel_http_settings.add(passwordTxt);
 		
-		gbc.gridx = 0;
-		gbc.gridy = 1;
-		setupPanel.add(new JLabel("Port"), gbc);
-		gbc.gridx = 1;
-		setupPanel.add(portTxt, gbc);
-		
-		gbc.gridx = 0;
-		gbc.gridy = 2;
-		setupPanel.add(new JLabel("Username"), gbc);
-		gbc.gridx = 1;
-		setupPanel.add(usernameTxt, gbc);
-		
-		gbc.gridx = 0;
-		gbc.gridy = 3;
-		setupPanel.add(new JLabel("Password"), gbc);
-		gbc.gridx = 1;
-		setupPanel.add(passwordTxt, gbc);
+		setupPanel.add(panel_http_settings);
 		
 		JButton submit = new JButton("Submit");
+		setupPanel.add(submit, BorderLayout.SOUTH);
 		submit.addActionListener(new ActionListener() {
 			
 			@Override
@@ -144,59 +143,82 @@ public class ConnectionSetup extends JDialog implements PlugIn{
 			}
 		});
 		
+		JPanel panel_non_install = new JPanel();
+		mainPanel.add(panel_non_install);
+		panel_non_install.setBorder(new LineBorder(new Color(0, 0, 0)));
+		panel_non_install.setLayout(new BorderLayout(0, 0));
+		
+		JLabel lblStartOrthancWithout = new JLabel("Start Orthanc without Install");
+		lblStartOrthancWithout.setHorizontalAlignment(SwingConstants.CENTER);
+		panel_non_install.add(lblStartOrthancWithout, BorderLayout.NORTH);
+		
+		JPanel button_non_install = new JPanel();
+		panel_non_install.add(button_non_install, BorderLayout.SOUTH);
 		
 		//Display start or stop button depending on local run of orthanc
-			JButton runOrthancLocal;
-			if(orthanc.getIsStarted()) {
-				runOrthancLocal = new JButton("Stop Orthanc Local");
-			}
-			else {
-				runOrthancLocal = new JButton("Run Local Orthanc");
-			}
-				
-
-		
+		JButton runOrthancLocal= new JButton("Run Local Orthanc");
+		if(orthanc.getIsStarted()) {
+			runOrthancLocal.setText("Stop Orthanc Local");
+		}
 		
 		runOrthancLocal.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String os=System.getProperty("os.name");
-				if(os.startsWith("Windows")) {
-					if(runOrthancLocal.getText()=="Run Local Orthanc") {
-						try {
-							orthanc.start();
-							dispose();
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-					}else {
-						orthanc.stopOrthanc();
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			String os=System.getProperty("os.name");
+			if(os.startsWith("Windows")) {
+				if(runOrthancLocal.getText()=="Run Local Orthanc") {
+					try {
+						orthanc.start();
 						dispose();
+					} catch (Exception e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
 					}
+				}else {
+					orthanc.stopOrthanc();
+					dispose();
 				}
-				else {
-					JOptionPane.showMessageDialog(gui, "Only available for Windows", "Error", JOptionPane.ERROR_MESSAGE);
-				}
-					
-				
-				
-
-				}
+			}
+			else {
+				JOptionPane.showMessageDialog(gui, "Only available for Windows", "Error", JOptionPane.ERROR_MESSAGE);
+			}
 				
 			
+			
+
+			}
+			
+		
 		});
 		
-		gbc.gridy = 4;
-		setupPanel.add(submit, gbc);
+		JButton btnReusableRun = new JButton("Re-usable Run");
+		button_non_install.add(btnReusableRun);
+		button_non_install.add(runOrthancLocal);
 		
-		Image image = new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage();
-		this.setIconImage(image);
-		mainPanel.add(disclaimerPanel);
-		mainPanel.add(setupPanel);
-		mainPanel.add(runOrthancLocal);
-		this.getContentPane().add(mainPanel);
+		FlowLayout fl_disclaimerPanel = new FlowLayout();
+		fl_disclaimerPanel.setVgap(10);
+		JPanel disclaimerPanel = new JPanel(fl_disclaimerPanel);
+		getContentPane().add(disclaimerPanel, BorderLayout.NORTH);
+		JLabel disclaimer = new JLabel("This service needs the installation of the Orthanc Server, see our");
+		disclaimerPanel.add(disclaimer);
+		JButton link = new JButton("<html><font color = 'blue'>documentation</font></html>");
+		link.setFocusPainted(false);
+		link.setMargin(new Insets(0, 0, 0, 0));
+		link.setContentAreaFilled(false);
+		link.setBorderPainted(false);
+		link.setOpaque(false);
+		link.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		link.addActionListener( new ActionListener()
+		{
+		    public void actionPerformed(ActionEvent e)
+		    {
+		        openWebPage("http://petctviewer.org/images/QuickSetupGuide_Networking_DICOM.pdf");
+		    }
+		});
+		
+		
+		disclaimerPanel.add(link);
 		setSize(1200, 400);
 		pack();
 	}

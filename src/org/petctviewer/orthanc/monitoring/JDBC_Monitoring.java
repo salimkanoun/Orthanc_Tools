@@ -28,15 +28,6 @@ public class JDBC_Monitoring<accessionNumber> {
 	private Connection connection;
 	
 	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
-	
-	public static void main(String arg[]) {
-			JDBC_Monitoring monitoring=new JDBC_Monitoring();
-			monitoring.InsertPatient("a", "b", "c", "dd","e","f");
-			monitoring.InsertStudy("gd", "dfg", "dfg", "dg","dg", "dfg", "dfg", "dg", "gd");
-			monitoring.InsertSeries("100", "100", "90", "Manifacturer", "Manifacturer_Model", "Performing_Physician_Name", "Series_Description", "Station_Name", "22012015", "15124500", "Protocol_Name", "Series_Instance_UID", "Comment_Radiation_Dose", "Radiopharmaceutical_sequence", "Radiopharmaceutical", "RadiopharmaceuticalStartTime", "RadionuclideTotalDose", "RadionuclideHalfLife", "RadionuclidePositronFraction", "Radiation_Dose_Module", "Shared_Tags", "Orthanc_Serie_ID");
-		
-		
-	}
 		
 
 	public JDBC_Monitoring() {
@@ -74,12 +65,12 @@ public class JDBC_Monitoring<accessionNumber> {
 	}
 	
 	public void InsertStudy(String studyID, String studyInstanceUID, String Orthanc_Study_ID, String accessionNumber, String institutionName, String referringPhysicianName,
-			String studyDate, String studyDescription, String studyTime  ) {
+			String studyDate, String studyDescription, String studyTime, String parentPatientOrthanc  ) {
 	
 		try {
 			Statement st = connection.createStatement();
-			String sql = ("INSERT INTO `studies`(`accessionNumber`, `institutionName`, `referringPhysicianName`, `studyDate`, `studyDescription`, `studyID`, `studyInstanceUID`, `studyTime`, `Orthanc_Study_ID`) "
-					+ "VALUES ('"+accessionNumber+"','"+institutionName+"','"+referringPhysicianName+"','"+studyDate+"','"+studyDescription+"','"+studyID+"','"+studyInstanceUID+"','"+studyTime+"','"+Orthanc_Study_ID+"')");
+			String sql = ("INSERT INTO `studies`(`accessionNumber`, `institutionName`, `referringPhysicianName`, `studyDate`, `studyDescription`, `studyID`, `studyInstanceUID`, `studyTime`, `Orthanc_Study_ID`, `parentPatientOrthanc`) "
+					+ "VALUES ('"+accessionNumber+"','"+institutionName+"','"+referringPhysicianName+"','"+studyDate+"','"+studyDescription+"','"+studyID+"','"+studyInstanceUID+"','"+studyTime+"','"+Orthanc_Study_ID+"','"+parentPatientOrthanc+"')");
 			System.out.println(sql);
 			boolean rs = st.execute(sql);
 		} catch (SQLException e) {
@@ -92,12 +83,12 @@ public class JDBC_Monitoring<accessionNumber> {
 
 	public void InsertSeries(String size, String age, String weight, String Manifacturer, String Manifacturer_Model, String Performing_Physician_Name, String Series_Description, String Station_Name, String Content_Date, String Content_Time,
 			String Protocol_Name, String Series_Instance_UID, String  Comment_Radiation_Dose, String Radiopharmaceutical_sequence, String Radiopharmaceutical, String RadiopharmaceuticalStartTime, String RadionuclideTotalDose, String RadionuclideHalfLife, String RadionuclidePositronFraction,
-			String Radiation_Dose_Module, String Shared_Tags, String Orthanc_Serie_ID) {
+			String Radiation_Dose_Module, String Shared_Tags, String Orthanc_Serie_ID, String parentStudyOrthanc) {
 	
 		try {
 			Statement st = connection.createStatement();
-			String sql = ("INSERT INTO `series`(`size`, `age`, `weight`, `Manifacturer`, `Manifacturer_Model`, `Performing_Physician_Name`, `Series_Description`, `Station_Name`, `Content_Date`, `Content_Time`, `Protocol_Name`, `Series_Instance_UID`, `Comment_Radiation_Dose`, `Radiopharmaceutical_sequence`, `Radiopharmaceutical`, `RadiopharmaceuticalStartTime`, `RadionuclideTotalDose`, `RadionuclideHalfLife`, `RadionuclidePositronFraction`, `Radiation_Dose_Module`, `shared_Tags`, `Orthanc_Serie_ID`) "
-					+ "VALUES ('"+size+"','"+age+"','"+weight+"','"+Manifacturer+"','"+Manifacturer_Model+"','"+Performing_Physician_Name+"','"+Series_Description+"','"+Station_Name+"','"+Content_Date+"','"+Content_Time+"','"+Protocol_Name+"','"+Series_Instance_UID+"','"+Comment_Radiation_Dose+"','"+Radiopharmaceutical_sequence+"','"+Radiopharmaceutical+"','"+RadiopharmaceuticalStartTime+"','"+RadionuclideTotalDose+"','"+RadionuclideHalfLife+"','"+RadionuclidePositronFraction+"','"+Radiation_Dose_Module+"','"+Shared_Tags+"','"+Orthanc_Serie_ID+"')");
+			String sql = ("INSERT INTO `series`(`size`, `age`, `weight`, `Manifacturer`, `Manifacturer_Model`, `Performing_Physician_Name`, `Series_Description`, `Station_Name`, `Content_Date`, `Content_Time`, `Protocol_Name`, `Series_Instance_UID`, `Comment_Radiation_Dose`, `Radiopharmaceutical_sequence`, `Radiopharmaceutical`, `RadiopharmaceuticalStartTime`, `RadionuclideTotalDose`, `RadionuclideHalfLife`, `RadionuclidePositronFraction`, `Radiation_Dose_Module`, `shared_Tags`, `Orthanc_Serie_ID`,`parentStudyOrthanc` ) "
+					+ "VALUES ('"+size+"','"+age+"','"+weight+"','"+Manifacturer+"','"+Manifacturer_Model+"','"+Performing_Physician_Name+"','"+Series_Description+"','"+Station_Name+"','"+Content_Date+"','"+Content_Time+"','"+Protocol_Name+"','"+Series_Instance_UID+"','"+Comment_Radiation_Dose+"','"+Radiopharmaceutical_sequence+"','"+Radiopharmaceutical+"','"+RadiopharmaceuticalStartTime+"','"+RadionuclideTotalDose+"','"+RadionuclideHalfLife+"','"+RadionuclidePositronFraction+"','"+Radiation_Dose_Module+"','"+Shared_Tags+"','"+Orthanc_Serie_ID+"','"+parentStudyOrthanc+"')");
 			System.out.println(sql);
 			boolean rs = st.execute(sql);
 		} catch (SQLException e) {

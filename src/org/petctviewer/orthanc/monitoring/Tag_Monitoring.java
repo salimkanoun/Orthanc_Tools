@@ -72,7 +72,7 @@ public class Tag_Monitoring {
 						}
 						if(jprefer.getBoolean("useDBMonitoring", false)) {
 							db.InsertPatient(studyTag.get("LastName"), studyTag.get("FirstName") ,  studyTag.get("PatientID"), monitoring.newPatientID.get(i), studyTag.get("PatientBirthDate"), studyTag.get("PatientSex") );
-							db.InsertStudy(studyTag.get("StudyID"), studyTag.get("StudyInstanceUID"), studyTag.get(monitoring.newStudyID.get(i)), studyTag.get("AccessionNumber"), studyTag.get("InstitutionName"), studyTag.get("ReferringPhysicianName"), studyTag.get("StudyDate"), studyTag.get("StudyDescription"), studyTag.get("StudyTime"));
+							db.InsertStudy(studyTag.get("StudyID"), studyTag.get("StudyInstanceUID"), studyTag.get(monitoring.newStudyID.get(i)), studyTag.get("AccessionNumber"), studyTag.get("InstitutionName"), studyTag.get("ReferringPhysicianName"), studyTag.get("StudyDate"), studyTag.get("StudyDescription"), studyTag.get("StudyTime"), studyTag.get("ParentPatient"));
 							
 						}
 						if(jprefer.getBoolean("AutoDeleteMonitoring", false)) {
@@ -90,14 +90,13 @@ public class Tag_Monitoring {
 					
 						
 						StringBuilder sbSharedTags=parametre.makeGetConnectionAndStringBuilder("/series/"+monitoring.newStableSeriesID.get(i)+"/shared-tags");
-						textAreaConsole.append("Shared-Tags"+sbSharedTags+",");
+						//textAreaConsole.append("Shared-Tags"+sbSharedTags+",");
 						foundTags.put("Shared_Tags", sbSharedTags.toString());
 						
-						System.out.println(foundTags.toString());
 						if(jprefer.getBoolean("useDBMonitoring", false)) {
 							db.InsertPatient(foundTags.get("LastName"), foundTags.get("FirstName") ,  foundTags.get("PatientID"), foundTags.get("ParentPatient") , foundTags.get("PatientBirthDate"), foundTags.get("PatientSex") );
-							db.InsertStudy(foundTags.get("StudyID"), foundTags.get("StudyInstanceUID"), foundTags.get("ParentStudy") , foundTags.get("AccessionNumber"), foundTags.get("InstitutionName"), foundTags.get("ReferringPhysicianName"), foundTags.get("StudyDate"), foundTags.get("StudyDescription"), foundTags.get("StudyTime"));
-							db.InsertSeries(foundTags.get("PatientSize"), foundTags.get("PatientAge"), foundTags.get("PatientWeight"),foundTags.get("Manufacturer"), foundTags.get("ManufacturerModelName"), foundTags.get("PerformingPhysicianName"), foundTags.get("SeriesDescription"), foundTags.get("StationName"), foundTags.get("ContentDate"), foundTags.get("ContentTime"), foundTags.get("ProtocolName"), foundTags.get("SeriesInstanceUID"), foundTags.get("CommentsOnRadiationDose"), foundTags.get("RadiopharmaceuticalInformationSequence"), foundTags.get("Radiopharmaceutical"), foundTags.get("RadiopharmaceuticalStartTime"), foundTags.get("RadionuclideTotalDose"), foundTags.get("RadionuclideHalfLife"), foundTags.get("RadionuclidePositronFraction"), foundTags.get(Tag_Of_Interest.radiationDoseModule), foundTags.get("Shared_Tags"), foundTags.get(monitoring.newStableSeriesID.get(i)));
+							db.InsertStudy(foundTags.get("StudyID"), foundTags.get("StudyInstanceUID"), foundTags.get("ParentStudy") , foundTags.get("AccessionNumber"), foundTags.get("InstitutionName"), foundTags.get("ReferringPhysicianName"), foundTags.get("StudyDate"), foundTags.get("StudyDescription"), foundTags.get("StudyTime"), foundTags.get("ParentPatient"));
+							db.InsertSeries(foundTags.get("PatientSize"), foundTags.get("PatientAge"), foundTags.get("PatientWeight"),foundTags.get("Manufacturer"), foundTags.get("ManufacturerModelName"), foundTags.get("PerformingPhysicianName"), foundTags.get("SeriesDescription"), foundTags.get("StationName"), foundTags.get("ContentDate"), foundTags.get("ContentTime"), foundTags.get("ProtocolName"), foundTags.get("SeriesInstanceUID"), foundTags.get("CommentsOnRadiationDose"), foundTags.get("RadiopharmaceuticalInformationSequence"), foundTags.get("Radiopharmaceutical"), foundTags.get("RadiopharmaceuticalStartTime"), foundTags.get("RadionuclideTotalDose"), foundTags.get("RadionuclideHalfLife"), foundTags.get("RadionuclidePositronFraction"), foundTags.get(Tag_Of_Interest.radiationDoseModule), foundTags.get("Shared_Tags"), monitoring.newStableSeriesID.get(i), foundTags.get("ParentStudy"));
 							
 						}
 						if(jprefer.getBoolean("AutoDeleteMonitoring", false)) {
@@ -134,12 +133,20 @@ public class Tag_Monitoring {
 		textAreaConsole.append("PatientSex"+ patientSex+ ",");
 		textAreaConsole.append("PatientBirthDate= " +birthDate+ "\n");
 		
-		String[] name =patientName.split("^");
 		HashMap<String, String> hashmapTagPatient=new HashMap<String, String>();
+		
+		if(patientName.indexOf("^") != -1) {
+			String[] namePatient =patientName.split("\\^");
+			hashmapTagPatient.put("LastName", namePatient[0]);
+			hashmapTagPatient.put("FirstName", namePatient[1]);
+		}
+		else {
+			hashmapTagPatient.put("LastName", patientName);
+			hashmapTagPatient.put("FirstName", "N/A");
+		}
+		
 		hashmapTagPatient.put("PatientBirthDate", birthDate);
 		hashmapTagPatient.put("PatientID", patientID);
-		hashmapTagPatient.put("LastName", name[0]);
-		hashmapTagPatient.put("FirstName", name[1]);
 		hashmapTagPatient.put("PatientSex", patientSex);
 		
 		return hashmapTagPatient;
@@ -161,6 +168,7 @@ public class Tag_Monitoring {
 		String studyID=(String) jsonMainStudyTag.get("StudyID");
 		String studyInstanceUID=(String) jsonMainStudyTag.get("StudyInstanceUID");
 		String studyTime=(String) jsonMainStudyTag.get("StudyTime");
+		String parentPatientID=(String) jsonMainStudyTag.get("ParentPatient");
 		
 		textAreaConsole.append("AccessionNumber= "+accessionNumber+ ",");
 		textAreaConsole.append("InstitutionName= " + institutionName+ ",");
@@ -179,6 +187,7 @@ public class Tag_Monitoring {
 		hashmapTagPatient.put("StudyID", studyID);
 		hashmapTagPatient.put("StudyInstanceUID", studyInstanceUID);
 		hashmapTagPatient.put("StudyTime", studyTime);
+		hashmapTagPatient.put("ParentPatient", parentPatientID);
 		
 		return hashmapTagPatient;
 		
@@ -226,9 +235,17 @@ public class Tag_Monitoring {
 			
 		}
 		
-		String[] namePatient =hashmapTag.get("PatientName").split("^");
-		hashmapTag.put("LastName", namePatient[0]);
-		hashmapTag.put("FirstName", namePatient[1]);
+		
+		if(hashmapTag.get("PatientName").indexOf("^") != -1) {
+			String[] namePatient =hashmapTag.get("PatientName").split("\\^");
+			hashmapTag.put("LastName", namePatient[0]);
+			hashmapTag.put("FirstName", namePatient[1]);
+		}
+		else {
+			hashmapTag.put("LastName", hashmapTag.get("PatientName"));
+			hashmapTag.put("FirstName", "N/A");
+		}
+		
 		
 		for (int i=0 ; i<Tag_Of_Interest.tagOfInterestStudy.length; i++) {
 			if (tags.containsKey(Tag_Of_Interest.tagOfInterestStudy[i])) {
@@ -254,10 +271,11 @@ public class Tag_Monitoring {
 		
 		if (tags.containsKey(Tag_Of_Interest.radiopharmaceuticalTag)) {
 			JSONObject radiopharmaceuticalSequence = (JSONObject) tags.get(Tag_Of_Interest.radiopharmaceuticalTag);
+			hashmapTag.put("RadiopharmaceuticalInformationSequence", radiopharmaceuticalSequence.toString());
 			JSONArray radiopharmaceuticalSequenceTags= (JSONArray) radiopharmaceuticalSequence.get("Value");
 			JSONObject radiopharmaceuticalSequenceTagsValue = (JSONObject) radiopharmaceuticalSequenceTags.get(0);
 			for (int i=0 ; i<Tag_Of_Interest.radiopharmaceutical.length; i++) {
-				if (tags.containsKey(Tag_Of_Interest.radiopharmaceutical[i])) {
+				if (radiopharmaceuticalSequenceTagsValue.containsKey(Tag_Of_Interest.radiopharmaceutical[i])) {
 					JSONObject jsonTag=(JSONObject) radiopharmaceuticalSequenceTagsValue.get(Tag_Of_Interest.radiopharmaceutical[i]);
 					String name=(String) jsonTag.get("Name");
 					String value=(String) jsonTag.get("Value");

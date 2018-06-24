@@ -271,14 +271,13 @@ public class CD_Burner {
        SimpleDateFormat formatter = new SimpleDateFormat(dateFormatChoix);
        String formattedDate = formatter.format(dateExamen);
        
-       //On parse le nom pour enlever les _ et passer le prenom en minuscule
+       //On parse le nom pour enlever les ^ et passer le prenom en minuscule
        int separationNomPrenom=nom.indexOf("^", 0);
        if (separationNomPrenom!=-1) {
        	nom=nom.substring(0, separationNomPrenom+2)+nom.substring(separationNomPrenom+2).toLowerCase();
        }
        
-       
-		String datFile = "patientName="+nom.replaceAll("^", " ")+"\n"
+		String datFile = "patientName="+nom.replaceAll("\\^", " ")+"\n"
 					+ "patientId=" + id +"\n"
 					+ "patientDate="+ formattedDate + "\n"
 					+ "studyDescription="+ studyDescription+"\n";
