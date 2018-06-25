@@ -82,6 +82,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -336,7 +337,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					DateFormat df = new SimpleDateFormat("yyyyMMdd");
 					date = df.format(from.getDate())+"-"+df.format(to.getDate());
 					String userInputString=null;
-					if (inputType.getSelectedIndex()==0) {
+					if (inputType.getSelectedIndex()==0 && !userInputFirstName.getText().equals("*") && !StringUtils.isEmpty(userInputFirstName.getText()) ) {
 						userInputString=userInput.getText()+"^"+userInputFirstName.getText();
 						if (userInputString.equals("*^*")) userInputString="*"; 
 					}
