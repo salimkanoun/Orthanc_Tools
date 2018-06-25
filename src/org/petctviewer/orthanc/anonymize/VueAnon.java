@@ -88,6 +88,8 @@ import org.json.simple.parser.JSONParser;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
 
+import ij.IJ;
+import ij.WindowManager;
 import ij.plugin.PlugIn;
 
 import org.petctviewer.orthanc.*;
@@ -2927,15 +2929,8 @@ public class VueAnon extends JFrame implements PlugIn{
 
 	@Override
 	public void run(String string) {
-		SwingUtilities.invokeLater(new Runnable(){
-
-			@Override
-			public void run() {
-				new VueAnon();
-				
-			}
-		
-		});
+				WindowManager.addWindow(gui);
+				IJ.register(VueAnon.class);
 	}
 		
 		
