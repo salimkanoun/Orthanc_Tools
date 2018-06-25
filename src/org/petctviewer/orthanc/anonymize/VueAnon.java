@@ -2850,9 +2850,10 @@ public class VueAnon extends JFrame implements PlugIn{
 									modeleAnonStudies.addNewUid(quAnon.getNewUID());
 									i++;
 									newStudyID = quAnon.getNewUID();
+									//Add anonymized study in export list
+									modeleExportStudies.addStudy(newName, newID, newStudyID);
 								}
-								//Add anonymized study in export list
-								modeleExportStudies.addStudy(newName, newID, newStudyID);
+	
 								j++;
 							}
 							//Empty list
