@@ -101,7 +101,6 @@ public class SettingsGUI extends JFrame {
 	boutton_general.add(lblNewLabel);
 	
 	txtOrthanc = new JTextField();
-	txtOrthanc.setText(settings.orthancName);
 	txtOrthanc.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent arg0) {
@@ -286,7 +285,6 @@ public class SettingsGUI extends JFrame {
 			settings.HttpPort=Integer.valueOf(textfield_Http_Port.getText());
 		}
 	});
-	textfield_Http_Port.setText(String.valueOf(settings.HttpPort));
 	textfield_Http_Port.setColumns(10);
 	
 	JCheckBox rdbtnHttpDescribeErrors = new JCheckBox("HTTP Describe errors");
@@ -452,7 +450,7 @@ public class SettingsGUI extends JFrame {
 	});
 	Boutton_DicomServer.add(textField_AET_Name);
 	textField_AET_Name.setColumns(10);
-	textField_AET_Name.setText(settings.DicomAet);
+
 	
 	JLabel lblNewLabel_3 = new JLabel("Port");
 	lblNewLabel_3.setToolTipText("The DICOM port");
@@ -467,7 +465,7 @@ public class SettingsGUI extends JFrame {
 	});
 	Boutton_DicomServer.add(textField_AET_Port);
 	textField_AET_Port.setColumns(5);
-	textField_AET_Port.setText(String.valueOf(settings.DicomPort));
+	
 	
 	JCheckBox rdbtnUnknowSop = new JCheckBox("Unknow SOP");
 	rdbtnUnknowSop.setToolTipText("Whether Orthanc accepts to act as C-Store SCP for unknown storage SOP classes (aka. \"promiscuous mode\")");
@@ -678,7 +676,6 @@ public class SettingsGUI extends JFrame {
 				settings.HttpProxy=textField_HTTP_Proxy.toString();
 			}
 		});
-		textField_HTTP_Proxy.setText(settings.HttpProxy);
 		textField_HTTP_Proxy.setColumns(10);
 		
 		JLabel lblHttpTimeout = new JLabel("HTTP timeout");
@@ -1052,19 +1049,15 @@ public class SettingsGUI extends JFrame {
 			if (ouvrir==JFileChooser.APPROVE_OPTION) {
 				File input=fc.getSelectedFile();
 				//On injecte le fichier selectionne
-				//settings.fichierInput=input;
+				try {
+					settings.setExistingJsonConfig(input);
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				//System.out.println(settings.fichierInput);
 				//On le parse et on relance cette fenetre
-				try {
-					//settings.definitionFichier();
-					//settings.IndexOrthanc();
-					//On lance une nouvelle fenetre
-					SettingsGUI gui=new SettingsGUI();
-					gui.pack();
-					gui.setLocationRelativeTo(null);
-					gui.setSize(gui.getPreferredSize());
-					gui.setVisible(true);
-				} catch (Exception e) {e.printStackTrace();}
+				updateGUI();
 			
 			}	
 		}
@@ -1103,12 +1096,36 @@ public class SettingsGUI extends JFrame {
 	});
 	}
 
-public static void main(String[] args)  {
-		SettingsGUI gui=new SettingsGUI();
-		//On met la fenetre au centre de l ecran
-		gui.pack();
-		gui.setLocationRelativeTo(null);
-		gui.setSize(gui.getPreferredSize());
-		gui.setVisible(true);
+	public static void main(String[] args)  {
+			SettingsGUI gui=new SettingsGUI();
+			//On met la fenetre au centre de l ecran
+			gui.pack();
+			gui.setLocationRelativeTo(null);
+			gui.setSize(gui.getPreferredSize());
+			gui.updateGUI();
+			gui.setVisible(true);
+		}
+	
+	
+	public void updateGUI() {
+		
+		txtOrthanc.setText(settings.orthancName);
+		textfield_Http_Port.setText(String.valueOf(settings.HttpPort));
+		textField_AET_Name.setText(settings.DicomAet);
+		textField_AET_Port.setText(String.valueOf(settings.DicomPort));
+		textField_HTTP_Proxy.setText(settings.HttpProxy);
+		index_value.setText(settings.indexDirectory);
+		storage_value.setText(settings.storageDirectory);
+		SSL_Certif_String.setText(settings.SslCertificate);
+		HTTPS_CA_Certificates.setText(settings.HttpsCACertificates);
+		plugin_value.setText(String.valueOf(settings.pluginsFolder.size()));
+		lua_value.setText(String.valueOf(settings.luaFolder.size()));
+		Login_pass_String.setText(String.valueOf(settings.users.size()));
+		label_Peer_number.setText(String.valueOf(settings.orthancPeer.size()));
+		Dicom_Modalities_Number.setText(String.valueOf(settings.dicomNode.size()));
+		Dictionnary_Counter.setText(String.valueOf(settings.dictionary.size()));
+		Content_Type_Counter.setText(String.valueOf(settings.contentType.size()));
+		Metadata_Counter.setText(String.valueOf(settings.userMetadata.size()));
 	}
+
 }
