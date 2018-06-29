@@ -1108,7 +1108,6 @@ public class SettingsGUI extends JFrame {
 	
 	
 	public void updateGUI() {
-		
 		txtOrthanc.setText(settings.orthancName);
 		textfield_Http_Port.setText(String.valueOf(settings.HttpPort));
 		textField_AET_Name.setText(settings.DicomAet);
