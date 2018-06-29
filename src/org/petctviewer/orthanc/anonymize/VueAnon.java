@@ -114,7 +114,7 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JSONParser parser=new JSONParser();
 	
 	//QueryFillStore
-	QueryFillStore query ;
+	protected QueryFillStore query ;
 	
 	//Objet de connexion aux restFul API, prend les settings des registery et etabli les connexion a la demande
 	private ParametreConnexionHttp connexionHttp;
@@ -225,30 +225,16 @@ public class VueAnon extends JFrame implements PlugIn{
 	
 	// Last Table focus
 	private JTable lastTableFocus;
-	
+
 	public VueAnon(){
 		super("Orthanc Tools");
 		connexionHttp= new ParametreConnexionHttp();
-		//Check if Orthanc Reachable
-		if(!connexionHttp.testConnexion()) {
-			ConnectionSetup setup = new ConnectionSetup(runOrthanc);
-			setup.setVisible(true);
-			if(runOrthanc.getIsStarted()) {
-				makeGUI();
-			}
-			else {
-				//SK PROBLEME LE PROGRAMME NE QUITTE PAS
-				System.out.println("ici");
-				//this.dispose();
-			}
-			
-		}else {
-			makeGUI();
+		//Until we reach the Orthanc Server we give the setup panel
+		while (!connexionHttp.testConnexion()) {
+				ConnectionSetup setup = new ConnectionSetup(runOrthanc);
+				setup.setVisible(true);
+				connexionHttp=new ParametreConnexionHttp();
 		}
-		
-	}
-
-	public void makeGUI(){
 		gui=this;
 		//On set les objets necessaires
 		modelePatients = new TableDataPatientsAnon(connexionHttp);
@@ -2366,6 +2352,8 @@ public class VueAnon extends JFrame implements PlugIn{
 			public void actionPerformed(ActionEvent arg0) {
 				ConnectionSetup setup = new ConnectionSetup(runOrthanc);
 				setup.setVisible(true);
+				connexionHttp=new ParametreConnexionHttp();
+				if (setup.ok)JOptionPane.showMessageDialog(null,"Restart to take account");
 				
 			}
 			
@@ -2930,9 +2918,11 @@ public class VueAnon extends JFrame implements PlugIn{
 
 	@Override
 	public void run(String string) {
-				WindowManager.addWindow(gui);
-				IJ.register(VueAnon.class);
+		new VueAnon();
+		WindowManager.addWindow(gui);
+		IJ.register(VueAnon.class);
 	}
+
 		
 		
 	

@@ -94,7 +94,7 @@ public class ParametreConnexionHttp {
 			
 			
 		}
-	
+	System.out.println(ip+port);
 		
 	}
 	

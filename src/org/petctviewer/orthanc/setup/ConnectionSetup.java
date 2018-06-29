@@ -17,44 +17,42 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.setup;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.prefs.Preferences;
 
-import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-
-import ij.plugin.PlugIn;
-import java.awt.GridLayout;
-import java.awt.BorderLayout;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
-import java.awt.Color;
-import java.awt.Component;
-import javax.swing.Box;
+
+import ij.plugin.PlugIn;
 
 public class ConnectionSetup extends JDialog implements PlugIn{
 	
 	private static final long serialVersionUID = 1L;
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
+	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
 	private JDialog gui=this;
+	public boolean ok=false;
 
-	
 	public ConnectionSetup(Run_Orthanc orthanc){
 		this.setTitle("Setup");
 		this.setModal(true);
@@ -129,9 +127,9 @@ public class ConnectionSetup extends JDialog implements PlugIn{
 					jpreferPerso.put("port", portTxt.getText());
 					jpreferPerso.put("password", new String(passwordTxt.getPassword()));
 					jpreferPerso.put("username", usernameTxt.getText());
-					JOptionPane.showMessageDialog(gui,
-					    "please restart app");
+					ok=true;
 					dispose();
+					
 				}
 				else {
 					JOptionPane.showMessageDialog(gui,
@@ -169,7 +167,7 @@ public class ConnectionSetup extends JDialog implements PlugIn{
 			if(os.startsWith("Windows")) {
 				if(runOrthancLocal.getText()=="Run Local Orthanc") {
 					try {
-						orthanc.start();
+						orthanc.copyOrthanc(null);
 						dispose();
 					} catch (Exception e1) {
 						// TODO Auto-generated catch block
@@ -195,6 +193,35 @@ public class ConnectionSetup extends JDialog implements PlugIn{
 		JButton btnReusableRun = new JButton("Re-usable Run");
 		button_non_install.add(btnReusableRun);
 		button_non_install.add(runOrthancLocal);
+		
+		btnReusableRun.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String os=System.getProperty("os.name");
+				if(os.startsWith("Windows")) {	
+					boolean copy=orthanc.isCopyAvailable();
+					if (!copy) {
+						JOptionPane.showMessageDialog(gui, "Set folder installation", "Orthanc Install", JOptionPane.WARNING_MESSAGE);
+						JFileChooser chooser = new JFileChooser();
+						chooser.setCurrentDirectory(new File(jprefer.get("OrthancLocalPath", ".")));
+						chooser.setDialogTitle("Install Orthanc in...");
+						chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+						if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+							String install = chooser.getSelectedFile().getAbsolutePath();
+							try {
+								orthanc.copyOrthanc(install);
+								jprefer.put("OrthancLocalPath", install);
+							} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+						}
+					}
+					
+				}
+				dispose();
+			}
+		});
 		
 		FlowLayout fl_disclaimerPanel = new FlowLayout();
 		fl_disclaimerPanel.setVgap(10);
@@ -230,6 +257,7 @@ public class ConnectionSetup extends JDialog implements PlugIn{
 		catch (java.io.IOException e) {
 		}
 	}
+	
 	
 	//IJ run method
 	@Override
