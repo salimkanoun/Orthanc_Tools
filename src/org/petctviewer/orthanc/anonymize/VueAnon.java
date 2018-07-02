@@ -2512,8 +2512,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.getRootPane().setDefaultButton(search);
 		this.addWindowListener(new CloseWindowAdapter(this, this.zipContent, this.modeleAnonStudies.getOldOrthancUIDs(), this.modeleExportStudies.getStudiesList(), monitoring, runOrthanc));
 		pack();
-		setLocationRelativeTo(null);
-		setVisible(true);
+		
 	}
 	
 	private void openCloseAnonTool(boolean open) {
@@ -2912,15 +2911,20 @@ public class VueAnon extends JFrame implements PlugIn{
 	public static void main(String... args){
 		System.setProperty("org.apache.commons.logging.Log",
 				"org.apache.commons.logging.impl.NoOpLog");
-		new VueAnon();
+		VueAnon anon=new VueAnon();
+		anon.setLocationRelativeTo(null);
+		anon.setVisible(true);
+		
 		
 	}
 
 	@Override
 	public void run(String string) {
-		new VueAnon();
+		VueAnon anon=new VueAnon();
 		WindowManager.addWindow(gui);
 		IJ.register(VueAnon.class);
+		anon.setLocationRelativeTo(null);
+		anon.setVisible(true);
 	}
 
 		
