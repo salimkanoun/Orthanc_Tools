@@ -82,17 +82,21 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
 
+import ij.IJ;
+import ij.WindowManager;
 import ij.plugin.PlugIn;
 
 import org.petctviewer.orthanc.*;
 import org.petctviewer.orthanc.CTP.CTP;
 import org.petctviewer.orthanc.CTP.CTP_Gui;
+import org.petctviewer.orthanc.Jsonsettings.SettingsGUI;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.*;
@@ -111,7 +115,7 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JSONParser parser=new JSONParser();
 	
 	//QueryFillStore
-	QueryFillStore query ;
+	protected QueryFillStore query ;
 	
 	//Objet de connexion aux restFul API, prend les settings des registery et etabli les connexion a la demande
 	private ParametreConnexionHttp connexionHttp;
@@ -222,30 +226,16 @@ public class VueAnon extends JFrame implements PlugIn{
 	
 	// Last Table focus
 	private JTable lastTableFocus;
-	
+
 	public VueAnon(){
 		super("Orthanc Tools");
 		connexionHttp= new ParametreConnexionHttp();
-		//Check if Orthanc Reachable
-		if(!connexionHttp.testConnexion()) {
-			ConnectionSetup setup = new ConnectionSetup(runOrthanc);
-			setup.setVisible(true);
-			if(runOrthanc.getIsStarted()) {
-				makeGUI();
-			}
-			else {
-				//SK PROBLEME LE PROGRAMME NE QUITTE PAS
-				System.out.println("ici");
-				//this.dispose();
-			}
-			
-		}else {
-			makeGUI();
+		//Until we reach the Orthanc Server we give the setup panel
+		while (!connexionHttp.testConnexion()) {
+				ConnectionSetup setup = new ConnectionSetup(runOrthanc);
+				setup.setVisible(true);
+				connexionHttp=new ParametreConnexionHttp();
 		}
-		
-	}
-
-	public void makeGUI(){
 		gui=this;
 		//On set les objets necessaires
 		modelePatients = new TableDataPatientsAnon(connexionHttp);
@@ -334,7 +324,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					DateFormat df = new SimpleDateFormat("yyyyMMdd");
 					date = df.format(from.getDate())+"-"+df.format(to.getDate());
 					String userInputString=null;
-					if (inputType.getSelectedIndex()==0) {
+					if (inputType.getSelectedIndex()==0 && !userInputFirstName.getText().equals("*") && !StringUtils.isEmpty(userInputFirstName.getText()) ) {
 						userInputString=userInput.getText()+"^"+userInputFirstName.getText();
 						if (userInputString.equals("*^*")) userInputString="*"; 
 					}
@@ -2363,7 +2353,21 @@ public class VueAnon extends JFrame implements PlugIn{
 			public void actionPerformed(ActionEvent arg0) {
 				ConnectionSetup setup = new ConnectionSetup(runOrthanc);
 				setup.setVisible(true);
+				connexionHttp=new ParametreConnexionHttp();
+				if (setup.ok)JOptionPane.showMessageDialog(null,"Restart to take account");
 				
+			}
+			
+		});
+		
+		JButton jsonEditor = new JButton("Edit Orthanc config");
+		
+		
+		jsonEditor.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				SettingsGUI.main(null);
 			}
 			
 		});
@@ -2382,6 +2386,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		
 		aboutPanel.add(viewerDistribution);
 		aboutPanel.add(setupButton);
+		aboutPanel.add(jsonEditor);
 		aboutPanel.add(aboutBtn);
 		
 		if(!addressFieldCTP.getText().equals("http://")  && !addressFieldCTP.getText().equals("https://") ){
@@ -2521,8 +2526,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		this.getRootPane().setDefaultButton(search);
 		this.addWindowListener(new CloseWindowAdapter(this, this.zipContent, this.modeleAnonStudies.getOldOrthancUIDs(), this.modeleExportStudies.getStudiesList(), monitoring, runOrthanc));
 		pack();
-		setLocationRelativeTo(null);
-		setVisible(true);
+		
 	}
 	
 	private void openCloseAnonTool(boolean open) {
@@ -2850,9 +2854,10 @@ public class VueAnon extends JFrame implements PlugIn{
 									modeleAnonStudies.addNewUid(quAnon.getNewUID());
 									i++;
 									newStudyID = quAnon.getNewUID();
+									//Add anonymized study in export list
+									modeleExportStudies.addStudy(newName, newID, newStudyID);
 								}
-								//Add anonymized study in export list
-								modeleExportStudies.addStudy(newName, newID, newStudyID);
+	
 								j++;
 							}
 							//Empty list
@@ -2920,22 +2925,22 @@ public class VueAnon extends JFrame implements PlugIn{
 	public static void main(String... args){
 		System.setProperty("org.apache.commons.logging.Log",
 				"org.apache.commons.logging.impl.NoOpLog");
-		new VueAnon();
+		VueAnon anon=new VueAnon();
+		anon.setLocationRelativeTo(null);
+		anon.setVisible(true);
+		
 		
 	}
 
 	@Override
 	public void run(String string) {
-		SwingUtilities.invokeLater(new Runnable(){
-
-			@Override
-			public void run() {
-				new VueAnon();
-				
-			}
-		
-		});
+		VueAnon anon=new VueAnon();
+		WindowManager.addWindow(gui);
+		IJ.register(VueAnon.class);
+		anon.setLocationRelativeTo(null);
+		anon.setVisible(true);
 	}
+
 		
 		
 	

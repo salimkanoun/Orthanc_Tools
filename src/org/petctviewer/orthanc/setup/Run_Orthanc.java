@@ -10,35 +10,48 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.prefs.Preferences;
 
 import org.apache.commons.io.IOUtils;
 import org.petctviewer.orthanc.monitoring.CD_Burner;
 
 public class Run_Orthanc {
 	
+	 private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
 	 private Process process;
 	 private Path file;
 	 private Thread orthancThread;
 	 private boolean isStarted;
+	 private File orthancExe;
+	 private File orthancJson;
 	
 	public Run_Orthanc() {
+
+		
 	}
 	
-	public String start() throws Exception {
+	public String copyOrthanc(String installPath) throws Exception {
 		String resourceName="Orthanc_Standalone/Orthanc-1.3.2-Release.exe";
 		String resourceNameJSON="Orthanc_Standalone/Orthanc.json";
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		
-		file = Files.createTempDirectory("Orthanc_"+dateFormat.format(new Date()));
+		//Si pas de destination on met dans le temp directory
+		if (installPath ==null) {
+			file = Files.createTempDirectory("Orthanc_"+dateFormat.format(new Date()));
+			CD_Burner.recursiveDeleteOnExit(file);
+			file.toFile().deleteOnExit();
+		}
+		//Si destination choisie on enregistre le repertoire
+		else file=Paths.get(installPath);
 		File FileExe=new File(file.toString()+File.separator+"Orthanc-1.3.2-Release.exe");
 		File FileJSON=new File(file.toString()+File.separator+"Orthanc.json");
 		
 		InputStream in = ClassLoader.getSystemResourceAsStream(resourceName);
 		InputStream inJson = ClassLoader.getSystemResourceAsStream(resourceNameJSON);
-		System.out.println(inJson);
 		OutputStream out = new FileOutputStream(FileExe);
 		IOUtils.copy(in, out);
 		OutputStream outJson = new FileOutputStream(FileJSON);
@@ -46,18 +59,20 @@ public class Run_Orthanc {
 		out.close();
 		outJson.close();
 		
-	    startOrthanc(FileExe.getAbsolutePath().toString(), FileJSON.getAbsolutePath().toString());
+		orthancExe=FileExe;
+		orthancJson=FileJSON;
+		
+	    startOrthanc();
 
         return resourceName;
-        
   
     }
 	
-	public void startOrthanc(String exe, String json) {
+	public void startOrthanc() {
         orthancThread=new Thread(new Runnable() {
 
 			public void run() {
-				  ProcessBuilder pb = new ProcessBuilder(exe, json);
+				  ProcessBuilder pb = new ProcessBuilder(orthancExe.getAbsolutePath().toString(),orthancJson.getAbsolutePath().toString());
 				  pb.redirectErrorStream(true); 
 				
 				  try {
@@ -100,6 +115,18 @@ public class Run_Orthanc {
 
 	}
 	
+	public boolean isCopyAvailable() {
+		
+		if (!jprefer.get("OrthancLocalPath", "None").equals("None")) {
+			String installPath=jprefer.get("OrthancLocalPath", "None");
+			orthancExe=new File(installPath+File.separator+"Orthanc-1.3.2-Release.exe");
+			orthancJson=new File(installPath+File.separator+"Orthanc.json");
+			startOrthanc();
+			return true;
+		}
+		else return false;
+	}
+	
 	public void stopOrthanc() {
 		System.out.println("Stoping Orthanc");
 		process.destroy();
@@ -107,10 +134,8 @@ public class Run_Orthanc {
 		try {
 			//On Attend sortie d'Orthanc pour liberer le JSON
 			Thread.sleep(2000);
-			CD_Burner.recursiveDeleteOnExit(file);
-			file.toFile().deleteOnExit();
 			 isStarted=false;
-		} catch (IOException | InterruptedException e) {
+		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

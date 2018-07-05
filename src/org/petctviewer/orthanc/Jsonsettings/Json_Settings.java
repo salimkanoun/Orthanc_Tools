@@ -119,6 +119,7 @@ public class Json_Settings {
 	protected boolean CaseSensitivePN;
 	protected boolean AllowFindSopClassesInStudy;
 	protected boolean LoadPrivateDictionary;
+	protected boolean dicomAlwaysAllowEcho;
 	protected boolean DicomAlwaysStore;
 	protected boolean CheckModalityHost;
 	
@@ -176,6 +177,7 @@ public class Json_Settings {
 				LoadPrivateDictionary=true;
 				DicomAlwaysStore=true;
 				CheckModalityHost=false;
+				dicomAlwaysAllowEcho=true;
 	}
 	
 	// permet de creer le JSON avant de l'ecrire
@@ -221,6 +223,11 @@ public class Json_Settings {
 		index.put("AuthenticationEnabled", AuthenticationEnabled);
 		index.put("RegisteredUsers", users);
 		index.put("DicomModalities", dicom);
+		
+		index.put("DicomAlwaysAllowEcho", dicomAlwaysAllowEcho);
+		index.put("DicomAlwaysAllowStore", DicomAlwaysStore);
+		index.put("DicomCheckModalityHost", CheckModalityHost);
+		
 		index.put("DicomScuTimeout", DicomScuTimeout);
 		index.put("OrthancPeers", orthancPeers);
 		index.put("HttpProxy", HttpProxy);
@@ -244,8 +251,6 @@ public class Json_Settings {
 		index.put("AllowFindSopClassesInStudy", AllowFindSopClassesInStudy);
 		index.put("LoadPrivateDictionary", LoadPrivateDictionary);
 		index.put("Dictionary", dictionaries);
-		index.put("DicomAlwaysAllowStore", DicomAlwaysStore);
-		index.put("DicomCheckModalityHost", CheckModalityHost);
 	}
 
 	/**
@@ -431,87 +436,87 @@ public class Json_Settings {
 	
 	//Evnoie le resultat du parsing dans les variables de l'index qui sert a produire le nouveau Json
 	@SuppressWarnings("unchecked")
-	private void parserOrthancJson(JSONObject orthancJson) throws ParseException {
+	private void parserOrthancJson(JSONObject orthancJson) {
 		//Boucle try pour eviter de bloquer en cas d'element manquant lors du parsing (version anterieure de JSON par exemple)
 		try {
-			orthancName=(String) orthancJson.get("Name");
-			storageDirectory=(String) orthancJson.get("StorageDirectory");
-			indexDirectory=(String) orthancJson.get("IndexDirectory");
-			StorageCompression=(boolean) orthancJson.get("StorageCompression");
-			MaximumStorageSize=Integer.valueOf(orthancJson.get("MaximumStorageSize").toString());
-			MaximumPatientCount=Integer.valueOf(orthancJson.get("MaximumPatientCount").toString());
-			HttpServerEnabled=(boolean) orthancJson.get("HttpServerEnabled");
-			HttpPort=Integer.valueOf(orthancJson.get("HttpPort").toString());
-			HttpDescribeErrors=(boolean) orthancJson.get("HttpDescribeErrors");
-			HttpCompressionEnabled=(boolean) orthancJson.get("HttpCompressionEnabled");
-			DicomServerEnabled=(boolean) orthancJson.get("DicomServerEnabled");
-			DicomAet=(String) orthancJson.get("DicomAet");
-			DicomCheckCalledAet=(boolean) orthancJson.get("DicomCheckCalledAet");
-			DicomPort=Integer.valueOf(orthancJson.get("DicomPort").toString());
-			DefaultEncoding=(String) orthancJson.get("DefaultEncoding");
-			DeflatedTransferSyntaxAccepted=(boolean) orthancJson.get("DeflatedTransferSyntaxAccepted");
-			JpegTransferSyntaxAccepted=(boolean) orthancJson.get("JpegTransferSyntaxAccepted");
-			Jpeg2000TransferSyntaxAccepted=(boolean) orthancJson.get("Jpeg2000TransferSyntaxAccepted");
-			JpegLosslessTransferSyntaxAccepted=(boolean) orthancJson.get("JpegLosslessTransferSyntaxAccepted");
-			JpipTransferSyntaxAccepted=(boolean) orthancJson.get("JpipTransferSyntaxAccepted");
-			Mpeg2TransferSyntaxAccepted=(boolean) orthancJson.get("Mpeg2TransferSyntaxAccepted");
-			RleTransferSyntaxAccepted=(boolean) orthancJson.get("RleTransferSyntaxAccepted");
-			UnknownSopClassAccepted=(boolean) orthancJson.get("UnknownSopClassAccepted");
-			DicomScpTimeout=Integer.valueOf(orthancJson.get("DicomScpTimeout").toString());
-			RemoteAccessAllowed=(boolean) orthancJson.get("RemoteAccessAllowed");
-			SslEnabled=(boolean) orthancJson.get("SslEnabled");
-			SslCertificate=(String) orthancJson.get("SslCertificate");
-			AuthenticationEnabled=(boolean) orthancJson.get("AuthenticationEnabled");
-			DicomScuTimeout=Integer.valueOf(orthancJson.get("DicomScuTimeout").toString());
-			HttpProxy=(String) orthancJson.get("HttpProxy");
-			HttpTimeout=Integer.valueOf(orthancJson.get("HttpTimeout").toString());
-			HttpsVerifyPeers=(boolean) orthancJson.get("HttpsVerifyPeers");
-			HttpsCACertificates=(String) orthancJson.get("HttpsCACertificates");
-			StableAge=Integer.valueOf(orthancJson.get("StableAge").toString());
-			StrictAetComparison=(boolean) orthancJson.get("StrictAetComparison");
-			StoreMD5ForAttachments=(boolean) orthancJson.get("StoreMD5ForAttachments");
-			LimitFindResults=Integer.valueOf(orthancJson.get("LimitFindResults").toString());
-			LimitFindInstances=Integer.valueOf(orthancJson.get("LimitFindInstances").toString());
-			LimitJobs=Integer.valueOf(orthancJson.get("LimitJobs").toString());
-			LogExportedResources=(boolean) orthancJson.get("LogExportedResources");
-			KeepAlive=(boolean) orthancJson.get("KeepAlive");
-			StoreDicom=(boolean) orthancJson.get("StoreDicom");
-			DicomAssociationCloseDelay=Integer.valueOf(orthancJson.get("DicomAssociationCloseDelay").toString());
-			QueryRetrieveSize=Integer.valueOf(orthancJson.get("QueryRetrieveSize").toString());
-			CaseSensitivePN=(boolean) orthancJson.get("CaseSensitivePN");
-			AllowFindSopClassesInStudy=(boolean) orthancJson.get("AllowFindSopClassesInStudy");
-			LoadPrivateDictionary=(boolean) orthancJson.get("LoadPrivateDictionary");
-			CheckModalityHost=(boolean)orthancJson.get("DicomCheckModalityHost");
-			DicomAlwaysStore=(boolean)orthancJson.get("DicomAlwaysAllowStore");
-			
+			if (orthancJson.containsKey("Name")) orthancName=(String) orthancJson.get("Name");
+			if (orthancJson.containsKey("StorageDirectory")) storageDirectory=(String) orthancJson.get("StorageDirectory");
+			if (orthancJson.containsKey("IndexDirectory")) indexDirectory=(String) orthancJson.get("IndexDirectory");
+			if (orthancJson.containsKey("StorageCompression")) StorageCompression=(boolean) orthancJson.get("StorageCompression");
+			if (orthancJson.containsKey("MaximumStorageSize")) MaximumStorageSize=Integer.valueOf(orthancJson.get("MaximumStorageSize").toString());
+			if (orthancJson.containsKey("MaximumPatientCount")) MaximumPatientCount=Integer.valueOf(orthancJson.get("MaximumPatientCount").toString());
+			if (orthancJson.containsKey("HttpServerEnabled")) HttpServerEnabled=(boolean) orthancJson.get("HttpServerEnabled");
+			if (orthancJson.containsKey("HttpPort")) HttpPort=Integer.valueOf(orthancJson.get("HttpPort").toString());
+			if (orthancJson.containsKey("HttpDescribeErrors")) HttpDescribeErrors=(boolean) orthancJson.get("HttpDescribeErrors");
+			if (orthancJson.containsKey("HttpCompressionEnabled")) HttpCompressionEnabled=(boolean) orthancJson.get("HttpCompressionEnabled");
+			if (orthancJson.containsKey("DicomServerEnabled")) DicomServerEnabled=(boolean) orthancJson.get("DicomServerEnabled");
+			if (orthancJson.containsKey("DicomAet")) DicomAet=(String) orthancJson.get("DicomAet");
+			if (orthancJson.containsKey("DicomCheckCalledAet")) DicomCheckCalledAet=(boolean) orthancJson.get("DicomCheckCalledAet");
+			if (orthancJson.containsKey("DicomPort")) DicomPort=Integer.valueOf(orthancJson.get("DicomPort").toString());
+			if (orthancJson.containsKey("DefaultEncoding")) DefaultEncoding=(String) orthancJson.get("DefaultEncoding");
+			if (orthancJson.containsKey("DeflatedTransferSyntaxAccepted")) DeflatedTransferSyntaxAccepted=(boolean) orthancJson.get("DeflatedTransferSyntaxAccepted");
+			if (orthancJson.containsKey("JpegTransferSyntaxAccepted")) JpegTransferSyntaxAccepted=(boolean) orthancJson.get("JpegTransferSyntaxAccepted");
+			if (orthancJson.containsKey("Jpeg2000TransferSyntaxAccepted")) Jpeg2000TransferSyntaxAccepted=(boolean) orthancJson.get("Jpeg2000TransferSyntaxAccepted");
+			if (orthancJson.containsKey("JpegLosslessTransferSyntaxAccepted")) JpegLosslessTransferSyntaxAccepted=(boolean) orthancJson.get("JpegLosslessTransferSyntaxAccepted");
+			if (orthancJson.containsKey("JpipTransferSyntaxAccepted")) JpipTransferSyntaxAccepted=(boolean) orthancJson.get("JpipTransferSyntaxAccepted");
+			if (orthancJson.containsKey("Mpeg2TransferSyntaxAccepted")) Mpeg2TransferSyntaxAccepted=(boolean) orthancJson.get("Mpeg2TransferSyntaxAccepted");
+			if (orthancJson.containsKey("RleTransferSyntaxAccepted")) RleTransferSyntaxAccepted=(boolean) orthancJson.get("RleTransferSyntaxAccepted");
+			if (orthancJson.containsKey("UnknownSopClassAccepted")) UnknownSopClassAccepted=(boolean) orthancJson.get("UnknownSopClassAccepted");
+			if (orthancJson.containsKey("DicomScpTimeout")) DicomScpTimeout=Integer.valueOf(orthancJson.get("DicomScpTimeout").toString());
+			if (orthancJson.containsKey("RemoteAccessAllowed")) RemoteAccessAllowed=(boolean) orthancJson.get("RemoteAccessAllowed");
+			if (orthancJson.containsKey("SslEnabled")) SslEnabled=(boolean) orthancJson.get("SslEnabled");
+			if (orthancJson.containsKey("SslCertificate")) SslCertificate=(String) orthancJson.get("SslCertificate");
+			if (orthancJson.containsKey("AuthenticationEnabled")) AuthenticationEnabled=(boolean) orthancJson.get("AuthenticationEnabled");
+			if (orthancJson.containsKey("DicomScuTimeout")) DicomScuTimeout=Integer.valueOf(orthancJson.get("DicomScuTimeout").toString());
+			if (orthancJson.containsKey("HttpProxy")) HttpProxy=(String) orthancJson.get("HttpProxy");
+			if (orthancJson.containsKey("HttpTimeout")) HttpTimeout=Integer.valueOf(orthancJson.get("HttpTimeout").toString());
+			if (orthancJson.containsKey("HttpsVerifyPeers")) HttpsVerifyPeers=(boolean) orthancJson.get("HttpsVerifyPeers");
+			if (orthancJson.containsKey("HttpsCACertificates")) HttpsCACertificates=(String) orthancJson.get("HttpsCACertificates");
+			if (orthancJson.containsKey("StableAge")) StableAge=Integer.valueOf(orthancJson.get("StableAge").toString());
+			if (orthancJson.containsKey("StrictAetComparison")) StrictAetComparison=(boolean) orthancJson.get("StrictAetComparison");
+			if (orthancJson.containsKey("StoreMD5ForAttachments")) StoreMD5ForAttachments=(boolean) orthancJson.get("StoreMD5ForAttachments");
+			if (orthancJson.containsKey("LimitFindResults")) LimitFindResults=Integer.valueOf(orthancJson.get("LimitFindResults").toString());
+			if (orthancJson.containsKey("LimitFindInstances")) LimitFindInstances=Integer.valueOf(orthancJson.get("LimitFindInstances").toString());
+			if (orthancJson.containsKey("LimitJobs")) LimitJobs=Integer.valueOf(orthancJson.get("LimitJobs").toString());
+			if (orthancJson.containsKey("LogExportedResources")) LogExportedResources=(boolean) orthancJson.get("LogExportedResources");
+			if (orthancJson.containsKey("KeepAlive")) KeepAlive=(boolean) orthancJson.get("KeepAlive");
+			if (orthancJson.containsKey("StoreDicom")) StoreDicom=(boolean) orthancJson.get("StoreDicom");
+			if (orthancJson.containsKey("DicomAssociationCloseDelay")) DicomAssociationCloseDelay=Integer.valueOf(orthancJson.get("DicomAssociationCloseDelay").toString());
+			if (orthancJson.containsKey("QueryRetrieveSize")) QueryRetrieveSize=Integer.valueOf(orthancJson.get("QueryRetrieveSize").toString());
+			if (orthancJson.containsKey("CaseSensitivePN")) CaseSensitivePN=(boolean) orthancJson.get("CaseSensitivePN");
+			if (orthancJson.containsKey("AllowFindSopClassesInStudy")) AllowFindSopClassesInStudy=(boolean) orthancJson.get("AllowFindSopClassesInStudy");
+			if (orthancJson.containsKey("LoadPrivateDictionary")) LoadPrivateDictionary=(boolean) orthancJson.get("LoadPrivateDictionary");
+			if (orthancJson.containsKey("DicomCheckModalityHost")) CheckModalityHost=(boolean)orthancJson.get("DicomCheckModalityHost");
+			if (orthancJson.containsKey("DicomAlwaysAllowStore")) DicomAlwaysStore=(boolean)orthancJson.get("DicomAlwaysAllowStore");
+			if (orthancJson.containsKey("DicomAlwaysAllowEcho")) dicomAlwaysAllowEcho=(boolean)orthancJson.get("DicomAlwaysAllowEcho");
 			//On recupere les autres objet JSON dans le JSON principal
 			//on recupere les AET declares par un nouveau parser
 			JSONParser parser = new JSONParser();
-			dicomNode= (JSONObject) parser.parse(orthancJson.get("DicomModalities").toString());
+			if (orthancJson.containsKey("DicomModalities")) dicomNode= (JSONObject) parser.parse(orthancJson.get("DicomModalities").toString());
 			
 			//On recupere les users
-			users= (JSONObject) parser.parse(orthancJson.get("RegisteredUsers").toString());
+			if (orthancJson.containsKey("RegisteredUsers")) users= (JSONObject) parser.parse(orthancJson.get("RegisteredUsers").toString());
 			
 			// On recupere les Lua scripts
-			luaFolder= (JSONArray) parser.parse(orthancJson.get("LuaScripts").toString());
+			if (orthancJson.containsKey("LuaScripts")) luaFolder= (JSONArray) parser.parse(orthancJson.get("LuaScripts").toString());
 			
 			// On recupere les plugins
-			pluginsFolder= (JSONArray) parser.parse(orthancJson.get("Plugins").toString());
+			if (orthancJson.containsKey("Plugins")) pluginsFolder= (JSONArray) parser.parse(orthancJson.get("Plugins").toString());
 			
 			//On recupere les metadata
-			userMetadata= (JSONObject) parser.parse(orthancJson.get("UserMetadata").toString());
+			if (orthancJson.containsKey("UserMetadata")) userMetadata= (JSONObject) parser.parse(orthancJson.get("UserMetadata").toString());
 			
 			// On recupere les dictionnary
-			dictionary= (JSONObject) parser.parse(orthancJson.get("Dictionary").toString());
+			if (orthancJson.containsKey("Dictionary")) dictionary= (JSONObject) parser.parse(orthancJson.get("Dictionary").toString());
 			
 			// On recupere les Content
-			contentType= (JSONObject) parser.parse(orthancJson.get("UserContentType").toString());
+			if (orthancJson.containsKey("UserContentType")) contentType= (JSONObject) parser.parse(orthancJson.get("UserContentType").toString());
 			
 			// On recupere les Peer
-			orthancPeer=(JSONObject) parser.parse(orthancJson.get("OrthancPeers").toString());
+			if (orthancJson.containsKey("OrthancPeers")) orthancPeer=(JSONObject) parser.parse(orthancJson.get("OrthancPeers").toString());
 			
 		}
-		catch (NullPointerException e) {}
+		catch (NullPointerException | ParseException e) {}
 	}
 	
 	/**
