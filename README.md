@@ -29,6 +29,9 @@ Features :
    - Tag-Monitoring : Autocollection of DICOM tag value of recieved patients/studies/series (monitoring injected dose, patient's weight,        acquisition time ...) and possibility to store these data into a structured mySQL database
    - Auto-Routing (Not desgigned yet)
    
+ - Orthanc JSON Editor :  
+   - Edit all Orthanc settings in a comprehensive GUI and generate JSON settings file for Orthanc Server
+   
  Contribution from http://petctviewer.org, free and open source PET/CT viewer based on Fiji/ImageJ
  
  GPL v.3 Licence
