@@ -70,6 +70,15 @@ public class SettingsGUI extends JFrame {
 	private JLabel Content_Type_Counter;
 	private JLabel Metadata_Counter;
 	
+	private JSpinner maxStorageSize, maximumPatientCount,scpTimeout, dicom_Scu_Timeout, http_Timeout,
+	stable_Age,limitFindResult,dicomAssociationCloseDelay,limitFindInstance, queryRetrieveSize,limit_Jobs;
+	private JCheckBox storageCompression, httpServerEnabled, httpDescribeErrors, httpCompression, allowRemoteAccess,
+	ssl, enableAuthentication, serverEnabled, checkCalledAet, unknowSop, deflatedTs, jpegTs, jpeg2000Ts, jpegLoselessTs, jpipTs, mpegTs,rleTs,
+	dicomAlwaysStore,checkModalityStore, allowEcho,httpsVerifyPeers,
+	strictAetComparison, storeMD5, logExportedRessources, keepAlive, storeDicom, caseSensitivePatient, allowFindSop, loadPrivateDictionary;
+	
+	private JComboBox<String> comboBox_Encoding ;
+	
 	private ParametreConnexionHttp connexion=new ParametreConnexionHttp();
 
 	private Json_Settings settings=new Json_Settings();
@@ -114,46 +123,43 @@ public class SettingsGUI extends JFrame {
 	lblMaxStorageSize.setToolTipText("Maximum size of the storage in MB (a value of \"0\" indicates no limit on the storage size)");
 	boutton_general.add(lblMaxStorageSize);
 	
-	JSpinner spinner_Max_Storage_Size = new JSpinner(); 
-	spinner_Max_Storage_Size.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-	spinner_Max_Storage_Size.addFocusListener(new FocusAdapter() {
+	maxStorageSize = new JSpinner(); 
+	maxStorageSize.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+	maxStorageSize.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.MaximumStorageSize=(int) spinner_Max_Storage_Size.getValue();
+			settings.MaximumStorageSize=(int) maxStorageSize.getValue();
 		}
 	});
-	spinner_Max_Storage_Size.setPreferredSize(new Dimension(50, 20));
-	spinner_Max_Storage_Size.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-	spinner_Max_Storage_Size.setValue(settings.MaximumStorageSize);
-	boutton_general.add(spinner_Max_Storage_Size);
+	maxStorageSize.setPreferredSize(new Dimension(50, 20));
+	maxStorageSize.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+	boutton_general.add(maxStorageSize);
 	
 	JLabel lblMaxiumPatientCount = new JLabel("Maxium Patient Count");
 	lblMaxiumPatientCount.setToolTipText("Maximum number of patients that can be stored at a given time in the storage (a value of \"0\" indicates no limit on the number of patients)");
 	boutton_general.add(lblMaxiumPatientCount);
 	
-	JSpinner spinner_Max_Patient_Count = new JSpinner();
-	spinner_Max_Patient_Count.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-	spinner_Max_Patient_Count.addFocusListener(new FocusAdapter() {
+	maximumPatientCount = new JSpinner();
+	maximumPatientCount.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+	maximumPatientCount.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.MaximumPatientCount=(int) spinner_Max_Patient_Count.getValue();
+			settings.MaximumPatientCount=(int) maximumPatientCount.getValue();
 		}
 	});
-	spinner_Max_Patient_Count.setPreferredSize(new Dimension(50, 20));
-	spinner_Max_Patient_Count.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-	spinner_Max_Patient_Count.setValue(settings.MaximumPatientCount);
-	boutton_general.add(spinner_Max_Patient_Count);
+	maximumPatientCount.setPreferredSize(new Dimension(50, 20));
+	maximumPatientCount.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+	boutton_general.add(maximumPatientCount);
 	
-	JCheckBox rdbtnNewRadioButton = new JCheckBox("Storage Compression");
-	rdbtnNewRadioButton.setToolTipText("Enable the transparent compression of the DICOM instances");
-	rdbtnNewRadioButton.addFocusListener(new FocusAdapter() {
+	storageCompression = new JCheckBox("Storage Compression");
+	storageCompression.setToolTipText("Enable the transparent compression of the DICOM instances");
+	storageCompression.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.StorageCompression=rdbtnNewRadioButton.isSelected();
+			settings.StorageCompression=storageCompression.isSelected();
 		}
 	});
-	rdbtnNewRadioButton.setSelected(settings.StorageCompression);
-	boutton_general.add(rdbtnNewRadioButton);
+	boutton_general.add(storageCompression);
 	
 	JPanel panel_btns = new JPanel();
 	boutton_general.add(panel_btns);
@@ -262,16 +268,15 @@ public class SettingsGUI extends JFrame {
 	JPanel http = new JPanel();
 	http_bouttons.add(http);
 	
-	JCheckBox rdbtnHttpServerEnabled = new JCheckBox("HTTP Server Enabled");
-	http.add(rdbtnHttpServerEnabled);
-	rdbtnHttpServerEnabled.setToolTipText("Enable the HTTP server. If this parameter is set to \"false\", Orthanc acts as a pure DICOM server. The REST API and Orthanc Explorer will not be available.");
-	rdbtnHttpServerEnabled.addFocusListener(new FocusAdapter() {
+	httpServerEnabled = new JCheckBox("HTTP Server Enabled");
+	http.add(httpServerEnabled);
+	httpServerEnabled.setToolTipText("Enable the HTTP server. If this parameter is set to \"false\", Orthanc acts as a pure DICOM server. The REST API and Orthanc Explorer will not be available.");
+	httpServerEnabled.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent arg0) {
-			settings.HttpServerEnabled=rdbtnHttpServerEnabled.isSelected();
+			settings.HttpServerEnabled=httpServerEnabled.isSelected();
 		}
 	});
-	rdbtnHttpServerEnabled.setSelected(settings.HttpServerEnabled);
 	
 	JLabel lblHttpPort = new JLabel("HTTP Port");
 	http.add(lblHttpPort);
@@ -287,27 +292,25 @@ public class SettingsGUI extends JFrame {
 	});
 	textfield_Http_Port.setColumns(10);
 	
-	JCheckBox rdbtnHttpDescribeErrors = new JCheckBox("HTTP Describe errors");
-	http.add(rdbtnHttpDescribeErrors);
-	rdbtnHttpDescribeErrors.setToolTipText("When the following option is \"true\", if an error is encountered while calling the REST API, a JSON message describing the error is put in the HTTP answer. ");
-	rdbtnHttpDescribeErrors.addFocusListener(new FocusAdapter() {
+	httpDescribeErrors = new JCheckBox("HTTP Describe errors");
+	http.add(httpDescribeErrors);
+	httpDescribeErrors.setToolTipText("When the following option is \"true\", if an error is encountered while calling the REST API, a JSON message describing the error is put in the HTTP answer. ");
+	httpDescribeErrors.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.HttpDescribeErrors=rdbtnHttpDescribeErrors.isSelected();
+			settings.HttpDescribeErrors=httpDescribeErrors.isSelected();
 		}
 	});
-	rdbtnHttpDescribeErrors.setSelected(settings.HttpDescribeErrors);
 	
-	JCheckBox rdbtnHttpCompression = new JCheckBox("HTTP Compression");
-	http.add(rdbtnHttpCompression);
-	rdbtnHttpCompression.setToolTipText("Enable HTTP compression to improve network bandwidth utilization, at the expense of more computations on the server");
-	rdbtnHttpCompression.addFocusListener(new FocusAdapter() {
+	httpCompression = new JCheckBox("HTTP Compression");
+	http.add(httpCompression);
+	httpCompression.setToolTipText("Enable HTTP compression to improve network bandwidth utilization, at the expense of more computations on the server");
+	httpCompression.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.HttpCompressionEnabled=rdbtnHttpCompression.isSelected();
+			settings.HttpCompressionEnabled=httpCompression.isSelected();
 		}
 	});
-	rdbtnHttpCompression.setSelected(settings.HttpCompressionEnabled);
 	
 	JPanel http_security = new JPanel();
 	http_bouttons.add(http_security);
@@ -323,27 +326,25 @@ public class SettingsGUI extends JFrame {
 	JPanel HTTP_Security_Buttons = new JPanel();
 	http_security.add(HTTP_Security_Buttons, BorderLayout.CENTER);
 	
-	JCheckBox chckbxAllowRemoteAccess = new JCheckBox("Allow Remote Access");
-	chckbxAllowRemoteAccess.setToolTipText("Whether remote hosts can connect to the HTTP server");
-	chckbxAllowRemoteAccess.addFocusListener(new FocusAdapter() {
+	allowRemoteAccess = new JCheckBox("Allow Remote Access");
+	allowRemoteAccess.setToolTipText("Whether remote hosts can connect to the HTTP server");
+	allowRemoteAccess.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent arg0) {
-			settings.RemoteAccessAllowed=chckbxAllowRemoteAccess.isSelected();
+			settings.RemoteAccessAllowed=allowRemoteAccess.isSelected();
 		}
 	});
-	chckbxAllowRemoteAccess.setSelected(settings.RemoteAccessAllowed);
-	HTTP_Security_Buttons.add(chckbxAllowRemoteAccess);
+	HTTP_Security_Buttons.add(allowRemoteAccess);
 	
-	JCheckBox chckbxSsl = new JCheckBox("SSL");
-	chckbxSsl.setToolTipText("Whether or not SSL is enabled");
-	chckbxSsl.addFocusListener(new FocusAdapter() {
+	ssl = new JCheckBox("SSL");
+	ssl.setToolTipText("Whether or not SSL is enabled");
+	ssl.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent arg0) {
-			settings.SslEnabled=chckbxSsl.isSelected();
+			settings.SslEnabled=ssl.isSelected();
 		}
 	});
-	chckbxSsl.setSelected(settings.SslEnabled);
-	HTTP_Security_Buttons.add(chckbxSsl);
+	HTTP_Security_Buttons.add(ssl);
 	
 	JButton btnSslCertificate = new JButton("SSL Certificate");
 	btnSslCertificate.setToolTipText("Path to the SSL certificate in the PEM format (meaningful only if SSL is enabled)");
@@ -362,16 +363,15 @@ public class SettingsGUI extends JFrame {
 	});
 	HTTP_Security_Buttons.add(btnSslCertificate);
 	
-	JCheckBox chckbxEnableAuthentication = new JCheckBox("Enable Authentication");
-	chckbxEnableAuthentication.setToolTipText("Whether or not the password protection is enabled");
-	chckbxEnableAuthentication.addFocusListener(new FocusAdapter() {
+	enableAuthentication = new JCheckBox("Enable Authentication");
+	enableAuthentication.setToolTipText("Whether or not the password protection is enabled");
+	enableAuthentication.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.AuthenticationEnabled=chckbxEnableAuthentication.isSelected();
+			settings.AuthenticationEnabled=enableAuthentication.isSelected();
 		}
 	});
-	chckbxEnableAuthentication.setSelected(settings.AuthenticationEnabled);
-	HTTP_Security_Buttons.add(chckbxEnableAuthentication);
+	HTTP_Security_Buttons.add(enableAuthentication);
 	
 	JButton btnUsersLoginpassword = new JButton("Users Login/Password");
 	btnUsersLoginpassword.setToolTipText("The list of the registered users");
@@ -415,27 +415,27 @@ public class SettingsGUI extends JFrame {
 	JPanel Boutton_DicomServer = new JPanel();
 	dicomServer_config.add(Boutton_DicomServer, BorderLayout.CENTER);
 	
-	JCheckBox rdbtnServerEnabled = new JCheckBox("Server Enabled");
-	rdbtnServerEnabled.setToolTipText("Enable the DICOM server. If this parameter is set to \"false\", Orthanc acts as a pure REST server. It will not be possible to receive files or to do query/retrieve through the DICOM protocol.");
-	rdbtnServerEnabled.addFocusListener(new FocusAdapter() {
+	serverEnabled = new JCheckBox("Server Enabled");
+	serverEnabled.setToolTipText("Enable the DICOM server. If this parameter is set to \"false\", Orthanc acts as a pure REST server. It will not be possible to receive files or to do query/retrieve through the DICOM protocol.");
+	serverEnabled.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.HttpServerEnabled=rdbtnServerEnabled.isSelected();
+			settings.HttpServerEnabled=serverEnabled.isSelected();
 		}
 	});
-	rdbtnServerEnabled.setSelected(settings.DicomServerEnabled);
-	Boutton_DicomServer.add(rdbtnServerEnabled);
+
+	Boutton_DicomServer.add(serverEnabled);
 	
-	JCheckBox rdbtnCheckCalledAet = new JCheckBox("Check AET");
-	rdbtnCheckCalledAet.setToolTipText("Check whether the called AET corresponds to the AET of Orthanc during an incoming DICOM SCU request");
-	rdbtnCheckCalledAet.addFocusListener(new FocusAdapter() {
+	checkCalledAet = new JCheckBox("Check AET");
+	checkCalledAet.setToolTipText("Check whether the called AET corresponds to the AET of Orthanc during an incoming DICOM SCU request");
+	checkCalledAet.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.DicomCheckCalledAet=rdbtnCheckCalledAet.isSelected();
+			settings.DicomCheckCalledAet=checkCalledAet.isSelected();
 		}
 	});
-	rdbtnCheckCalledAet.setSelected(settings.DicomCheckCalledAet);
-	Boutton_DicomServer.add(rdbtnCheckCalledAet);
+
+	Boutton_DicomServer.add(checkCalledAet);
 	
 	JLabel lblAetName = new JLabel("AET Name");
 	lblAetName.setToolTipText("The DICOM Application Entity Title");
@@ -467,31 +467,31 @@ public class SettingsGUI extends JFrame {
 	textField_AET_Port.setColumns(5);
 	
 	
-	JCheckBox rdbtnUnknowSop = new JCheckBox("Unknow SOP");
-	rdbtnUnknowSop.setToolTipText("Whether Orthanc accepts to act as C-Store SCP for unknown storage SOP classes (aka. \"promiscuous mode\")");
-	rdbtnUnknowSop.addFocusListener(new FocusAdapter() {
+	unknowSop = new JCheckBox("Unknow SOP");
+	unknowSop.setToolTipText("Whether Orthanc accepts to act as C-Store SCP for unknown storage SOP classes (aka. \"promiscuous mode\")");
+	unknowSop.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.UnknownSopClassAccepted=rdbtnUnknowSop.isSelected();
+			settings.UnknownSopClassAccepted=unknowSop.isSelected();
 		}
 	});
-	rdbtnUnknowSop.setSelected(settings.UnknownSopClassAccepted);
-	Boutton_DicomServer.add(rdbtnUnknowSop);
+
+	Boutton_DicomServer.add(unknowSop);
 	
 	JLabel lblScpTimout = new JLabel("SCP Timout");
 	lblScpTimout.setToolTipText("Set the timeout (in seconds) after which the DICOM associations are closed by the Orthanc SCP (server) if no further DIMSE command is received from the SCU (client).");
 	Boutton_DicomServer.add(lblScpTimout);
 	
-	JSpinner spinner_SCP_Timeout = new JSpinner();
-	spinner_SCP_Timeout.setPreferredSize(new Dimension(50, 20));
-	spinner_SCP_Timeout.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-	spinner_SCP_Timeout.addFocusListener(new FocusAdapter() {
+	scpTimeout = new JSpinner();
+	scpTimeout.setPreferredSize(new Dimension(50, 20));
+	scpTimeout.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+	scpTimeout.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.DicomScpTimeout=(int) spinner_SCP_Timeout.getValue();
+			settings.DicomScpTimeout=(int) scpTimeout.getValue();
 		}
 	});
-	Boutton_DicomServer.add(spinner_SCP_Timeout);
+	Boutton_DicomServer.add(scpTimeout);
 	
 	JLabel lblTransferSyntax = new JLabel("Transfer Syntax :");
 	lblTransferSyntax.setToolTipText("The transfer syntaxes that are accepted by Orthanc C-Store SCP");
@@ -502,82 +502,74 @@ public class SettingsGUI extends JFrame {
 	Boutton_DicomServer.add(panel_TS);
 	panel_TS.setLayout(new GridLayout(0, 2, 0, 0));
 	
-	JCheckBox chckbxDeflatedTs = new JCheckBox("Deflated TS");
-	panel_TS.add(chckbxDeflatedTs);
-	chckbxDeflatedTs.addFocusListener(new FocusAdapter() {
+	deflatedTs = new JCheckBox("Deflated TS");
+	panel_TS.add(deflatedTs);
+	deflatedTs.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.DeflatedTransferSyntaxAccepted=chckbxDeflatedTs.isSelected();
+			settings.DeflatedTransferSyntaxAccepted=deflatedTs.isSelected();
 		}
 	});
-	chckbxDeflatedTs.setSelected(settings.DeflatedTransferSyntaxAccepted);
 	
-	JCheckBox chckbxJpegTs = new JCheckBox("JPEG TS");
-	panel_TS.add(chckbxJpegTs);
-	chckbxJpegTs.addFocusListener(new FocusAdapter() {
+	jpegTs = new JCheckBox("JPEG TS");
+	panel_TS.add(jpegTs);
+	jpegTs.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.JpegTransferSyntaxAccepted=chckbxJpegTs.isSelected();
+			settings.JpegTransferSyntaxAccepted=jpegTs.isSelected();
 		}
 	});
-	chckbxJpegTs.setSelected(settings.JpegTransferSyntaxAccepted);
 	
-	JCheckBox chckbxJpegTs_1 = new JCheckBox("JPEG 2000 TS");
-	panel_TS.add(chckbxJpegTs_1);
-	chckbxJpegTs_1.addFocusListener(new FocusAdapter() {
+	jpeg2000Ts = new JCheckBox("JPEG 2000 TS");
+	panel_TS.add(jpeg2000Ts);
+	jpeg2000Ts.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.Jpeg2000TransferSyntaxAccepted=chckbxJpegTs_1.isSelected();
+			settings.Jpeg2000TransferSyntaxAccepted=jpeg2000Ts.isSelected();
 		}
 	});
-	chckbxJpegTs_1.setSelected(settings.Jpeg2000TransferSyntaxAccepted);
 	
-	JCheckBox chckbxJpegLoselessTs = new JCheckBox("JPEG loseless TS");
-	panel_TS.add(chckbxJpegLoselessTs);
-	chckbxJpegLoselessTs.addFocusListener(new FocusAdapter() {
+	jpegLoselessTs = new JCheckBox("JPEG loseless TS");
+	panel_TS.add(jpegLoselessTs);
+	jpegLoselessTs.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.JpegLosslessTransferSyntaxAccepted=chckbxJpegLoselessTs.isSelected();
+			settings.JpegLosslessTransferSyntaxAccepted=jpegLoselessTs.isSelected();
 		}
 	});
-	chckbxJpegLoselessTs.setSelected(settings.JpegLosslessTransferSyntaxAccepted);
 	
-	JCheckBox chckbxJpipTs = new JCheckBox("JPIP TS");
-	panel_TS.add(chckbxJpipTs);
-	chckbxJpipTs.addFocusListener(new FocusAdapter() {
+	jpipTs = new JCheckBox("JPIP TS");
+	panel_TS.add(jpipTs);
+	jpipTs.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.JpipTransferSyntaxAccepted=chckbxJpipTs.isSelected();
+			settings.JpipTransferSyntaxAccepted=jpipTs.isSelected();
 		}
 	});
-	chckbxJpipTs.setSelected(settings.JpipTransferSyntaxAccepted);
 	
-	JCheckBox chckbxMpegTs = new JCheckBox("MPEG2 TS");
-	panel_TS.add(chckbxMpegTs);
-	chckbxMpegTs.addFocusListener(new FocusAdapter() {
+	mpegTs = new JCheckBox("MPEG2 TS");
+	panel_TS.add(mpegTs);
+	mpegTs.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.Mpeg2TransferSyntaxAccepted=chckbxMpegTs.isSelected();
+			settings.Mpeg2TransferSyntaxAccepted=mpegTs.isSelected();
 		}
 	});
-	chckbxMpegTs.setSelected(settings.Mpeg2TransferSyntaxAccepted);
 	
-	JCheckBox chckbxRleTs = new JCheckBox("RLE TS");
-	panel_TS.add(chckbxRleTs);
-	chckbxRleTs.addFocusListener(new FocusAdapter() {
+	rleTs = new JCheckBox("RLE TS");
+	panel_TS.add(rleTs);
+	rleTs.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.RleTransferSyntaxAccepted=chckbxRleTs.isSelected();
+			settings.RleTransferSyntaxAccepted=rleTs.isSelected();
 		}
 	});
-	chckbxRleTs.setSelected(settings.RleTransferSyntaxAccepted);
 	
 	JPanel panel = new JPanel();
 	dicomServer_config.add(panel, BorderLayout.SOUTH);
 	
-	JComboBox<String> comboBox_Encoding = new JComboBox<String>();
+	comboBox_Encoding = new JComboBox<String>();
 	comboBox_Encoding.setToolTipText("the default encoding that is assumed for DICOM files without \"SpecificCharacterSet\" DICOM tag, and that is used when answering C-Find requests (including worklists).");
-	if (settings.DefaultEncoding==null) comboBox_Encoding.setSelectedIndex(0);
 	comboBox_Encoding.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
@@ -586,7 +578,7 @@ public class SettingsGUI extends JFrame {
 	});
 	panel.add(comboBox_Encoding);
 	comboBox_Encoding.setModel(new DefaultComboBoxModel<String>(new String[] {"Latin1", "Ascii", "Utf8", "Latin2", "Latin3", "Latin4", "Latin5", "Cyrillic", "Windows1251", "Arabic", "Greek", "Hebrew", "Thai", "Japanese", "Chinese"}));
-	comboBox_Encoding.setSelectedItem(settings.DefaultEncoding);
+	
 	
 		JPanel network = new JPanel();
 		tabbedPane.addTab("network", null, network, null);
@@ -621,43 +613,49 @@ public class SettingsGUI extends JFrame {
 		Network_Buttons.add(panel_dcm);
 		panel_dcm.setLayout(new GridLayout(0, 2, 0, 0));
 		
-		JCheckBox chckbx_Dicom_Always_Store = new JCheckBox("Dicom Always Store");
-		panel_dcm.add(chckbx_Dicom_Always_Store);
-		chckbx_Dicom_Always_Store.setSelected(settings.DicomAlwaysStore);
-		chckbx_Dicom_Always_Store.addFocusListener(new FocusAdapter() {
+		dicomAlwaysStore = new JCheckBox("Dicom Always Store");
+		panel_dcm.add(dicomAlwaysStore);
+		dicomAlwaysStore.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent arg0) {
-				settings.DicomAlwaysStore=chckbx_Dicom_Always_Store.isSelected();
+				settings.DicomAlwaysStore=dicomAlwaysStore.isSelected();
 			}
 		});
-		chckbx_Dicom_Always_Store.setToolTipText("Whether the Orthanc SCP allows incoming C-Store requests, even from SCU modalities it does not know about (i.e. that are not listed in the \"DicomModalities\" option above)");
-		
-		JCheckBox chckbx_Check_Modality_Store = new JCheckBox("Dicom Check Modality Host");
-		panel_dcm.add(chckbx_Check_Modality_Store);
-		chckbx_Check_Modality_Store.setSelected(settings.CheckModalityHost);
-		chckbx_Check_Modality_Store.addFocusListener(new FocusAdapter() {
+		dicomAlwaysStore.setToolTipText("Whether the Orthanc SCP allows incoming C-Store requests, even from SCU modalities it does not know about (i.e. that are not listed in the \"DicomModalities\" option above)");
+
+		checkModalityStore = new JCheckBox("Dicom Check Modality Host");
+		panel_dcm.add(checkModalityStore);
+		checkModalityStore.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent e) {
-				settings.CheckModalityHost=chckbx_Check_Modality_Store.isSelected();
+				settings.CheckModalityHost=checkModalityStore.isSelected();
 			}
 		});
-		chckbx_Check_Modality_Store.setToolTipText(" Whether Orthanc checks the IP/hostname address of the remote modality initiating a DICOM connection (as listed in the \"DicomModalities\" option above). If this option is set to \"false\", Orthanc only checks the AET of the remote modality.");
+		checkModalityStore.setToolTipText(" Whether Orthanc checks the IP/hostname address of the remote modality initiating a DICOM connection (as listed in the \"DicomModalities\" option above). If this option is set to \"false\", Orthanc only checks the AET of the remote modality.");
 		
 		JLabel lblDicomScuTimeout = new JLabel("Dicom SCU timeout");
 		panel_dcm.add(lblDicomScuTimeout);
 		lblDicomScuTimeout.setToolTipText("The timeout (in seconds) after which the DICOM associations are considered as closed by the Orthanc SCU (client) if the remote DICOM SCP (server) does not answer.");
 		
-		JSpinner spinner_Dicom_Scu_Timeout = new JSpinner();
-		panel_dcm.add(spinner_Dicom_Scu_Timeout);
-		spinner_Dicom_Scu_Timeout.setPreferredSize(new Dimension(50, 20));
-		spinner_Dicom_Scu_Timeout.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-		spinner_Dicom_Scu_Timeout.addFocusListener(new FocusAdapter() {
+		dicom_Scu_Timeout = new JSpinner();
+		panel_dcm.add(dicom_Scu_Timeout);
+		dicom_Scu_Timeout.setPreferredSize(new Dimension(50, 20));
+		dicom_Scu_Timeout.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+		dicom_Scu_Timeout.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent arg0) {
-				settings.DicomScuTimeout=Integer.valueOf((spinner_Dicom_Scu_Timeout.getValue().toString()));
+				settings.DicomScuTimeout=Integer.valueOf((dicom_Scu_Timeout.getValue().toString()));
 			}
 		});
-		spinner_Dicom_Scu_Timeout.setValue(settings.DicomScuTimeout);
+		
+		allowEcho = new JCheckBox("Allow echo");
+		panel_dcm.add(allowEcho);
+		allowEcho.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				settings.dicomAlwaysAllowEcho=allowEcho.isSelected();
+			}
+		});
 		
 		JPanel panel_peers = new JPanel();
 		panel_peers.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -681,29 +679,27 @@ public class SettingsGUI extends JFrame {
 		JLabel lblHttpTimeout = new JLabel("HTTP timeout");
 		panel_peers.add(lblHttpTimeout);
 		lblHttpTimeout.setToolTipText("Set the timeout for HTTP requests issued by Orthanc (in seconds)");
-		
-		JSpinner spinner_Http_Timeout = new JSpinner();
-		panel_peers.add(spinner_Http_Timeout);
-		spinner_Http_Timeout.setPreferredSize(new Dimension(50, 20));
-		spinner_Http_Timeout.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-		spinner_Http_Timeout.addFocusListener(new FocusAdapter() {
+
+		http_Timeout = new JSpinner();
+		panel_peers.add(http_Timeout);
+		http_Timeout.setPreferredSize(new Dimension(50, 20));
+		http_Timeout.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+		http_Timeout.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent e) {
-				settings.HttpTimeout=Integer.valueOf(spinner_Http_Timeout.getValue().toString());
+				settings.HttpTimeout=Integer.valueOf(http_Timeout.getValue().toString());
 			}
 		});
-		spinner_Http_Timeout.setValue(settings.HttpTimeout);
 		
-		JCheckBox chckbxHttpsVerifyPeers = new JCheckBox("HTTPS verify Peers");
-		panel_peers.add(chckbxHttpsVerifyPeers);
-		chckbxHttpsVerifyPeers.setToolTipText("Enable the verification of the peers during HTTPS requests. This option must be set to \"false\" if using self-signed certificates. Pay attention that setting this option to \"false\" results in security risks!");
-		chckbxHttpsVerifyPeers.addFocusListener(new FocusAdapter() {
+		httpsVerifyPeers = new JCheckBox("HTTPS verify Peers");
+		panel_peers.add(httpsVerifyPeers);
+		httpsVerifyPeers.setToolTipText("Enable the verification of the peers during HTTPS requests. This option must be set to \"false\" if using self-signed certificates. Pay attention that setting this option to \"false\" results in security risks!");
+		httpsVerifyPeers.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent e) {
-				settings.HttpsVerifyPeers=chckbxHttpsVerifyPeers.isSelected();
+				settings.HttpsVerifyPeers=httpsVerifyPeers.isSelected();
 			}
 		});
-		chckbxHttpsVerifyPeers.setSelected(settings.HttpsVerifyPeers);
 		
 		Component horizontalStrut = Box.createHorizontalStrut(20);
 		panel_peers.add(horizontalStrut);
@@ -783,189 +779,178 @@ public class SettingsGUI extends JFrame {
 	panel_1.add(lblStableAge);
 	lblStableAge.setToolTipText("Number of seconds without receiving any instance before a patient, a study or a series is considered as stable.");
 	
-	JSpinner spinner_Stable_Age = new JSpinner();
-	panel_1.add(spinner_Stable_Age);
-	spinner_Stable_Age.setPreferredSize(new Dimension(50, 20));
-	spinner_Stable_Age.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-	spinner_Stable_Age.addFocusListener(new FocusAdapter() {
+	stable_Age = new JSpinner();
+	panel_1.add(stable_Age);
+	stable_Age.setPreferredSize(new Dimension(50, 20));
+	stable_Age.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+	stable_Age.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.StableAge=Integer.valueOf(spinner_Stable_Age.getValue().toString());
+			settings.StableAge=Integer.valueOf(stable_Age.getValue().toString());
 		}
 	});
-	spinner_Stable_Age.setValue(settings.StableAge);
 	
 	JLabel lblLimitFindResults = new JLabel("Limit Find Results");
 	panel_1.add(lblLimitFindResults);
 	lblLimitFindResults.setToolTipText("The maximum number of results for a single C-FIND request at the Patient, Study or Series level. Setting this option to \"0\" means no limit.");
 	
-	JSpinner spinner_limit_Find_Result = new JSpinner();
-	panel_1.add(spinner_limit_Find_Result);
-	spinner_limit_Find_Result.setPreferredSize(new Dimension(50, 20));
-	spinner_limit_Find_Result.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-	spinner_limit_Find_Result.addFocusListener(new FocusAdapter() {
+	limitFindResult = new JSpinner();
+	panel_1.add(limitFindResult);
+	limitFindResult.setPreferredSize(new Dimension(50, 20));
+	limitFindResult.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+	limitFindResult.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.LimitFindResults=Integer.valueOf(spinner_limit_Find_Result.getValue().toString());
+			settings.LimitFindResults=Integer.valueOf(limitFindResult.getValue().toString());
 		}
 	});
-	spinner_limit_Find_Result.setValue(settings.LimitFindResults);
 	
 	JLabel lblDicomAssociationClose = new JLabel("Dcm Assoc. Close Delay");
 	lblDicomAssociationClose.setFont(new Font("Dialog", Font.BOLD, 10));
 	panel_1.add(lblDicomAssociationClose);
 	lblDicomAssociationClose.setToolTipText("DICOM associations are kept open as long as new DICOM commands are issued. This option sets the number of seconds of inactivity to wait before automatically closing a DICOM association. If set to 0, the connection is closed immediately.");
 	
-	JSpinner spinner_DICOM_Association_Close_Delay = new JSpinner();
-	panel_1.add(spinner_DICOM_Association_Close_Delay);
-	spinner_DICOM_Association_Close_Delay.setPreferredSize(new Dimension(50, 20));
-	spinner_DICOM_Association_Close_Delay.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-	spinner_DICOM_Association_Close_Delay.addFocusListener(new FocusAdapter() {
+	dicomAssociationCloseDelay = new JSpinner();
+	panel_1.add(dicomAssociationCloseDelay);
+	dicomAssociationCloseDelay.setPreferredSize(new Dimension(50, 20));
+	dicomAssociationCloseDelay.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+	dicomAssociationCloseDelay.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.DicomAssociationCloseDelay=Integer.valueOf(spinner_DICOM_Association_Close_Delay.getValue().toString());
+			settings.DicomAssociationCloseDelay=Integer.valueOf(dicomAssociationCloseDelay.getValue().toString());
 		}
 	});
-	spinner_DICOM_Association_Close_Delay.setValue(settings.DicomAssociationCloseDelay);
+	
 	
 	JLabel lblLimitFindInstance = new JLabel("Limit Find Instance");
 	panel_1.add(lblLimitFindInstance);
 	lblLimitFindInstance.setToolTipText("The maximum number of results for a single C-FIND request at the Instance level. Setting this option to \"0\" means no limit.");
 	
-	JSpinner spinner_limit_Find_Instance = new JSpinner();
-	panel_1.add(spinner_limit_Find_Instance);
-	spinner_limit_Find_Instance.setPreferredSize(new Dimension(50, 20));
-	spinner_limit_Find_Instance.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-	spinner_limit_Find_Instance.addFocusListener(new FocusAdapter() {
+	limitFindInstance = new JSpinner();
+	panel_1.add(limitFindInstance);
+	limitFindInstance.setPreferredSize(new Dimension(50, 20));
+	limitFindInstance.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+	limitFindInstance.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.LimitFindInstances=Integer.valueOf(spinner_limit_Find_Instance.getValue().toString());
+			settings.LimitFindInstances=Integer.valueOf(limitFindInstance.getValue().toString());
 		}
 	});
-	spinner_limit_Find_Instance.setValue(settings.LimitFindInstances);
 	
 	JLabel lblQueryretrieveSize = new JLabel("Query/Retrieve Size");
 	panel_1.add(lblQueryretrieveSize);
 	lblQueryretrieveSize.setToolTipText("Maximum number of query/retrieve DICOM requests that are maintained by Orthanc. The least recently used requests get deleted as new requests are issued.");
 	
-	JSpinner spinner_QueryRetrieve_Size = new JSpinner();
-	panel_1.add(spinner_QueryRetrieve_Size);
-	spinner_QueryRetrieve_Size.setPreferredSize(new Dimension(50, 20));
-	spinner_QueryRetrieve_Size.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-	spinner_QueryRetrieve_Size.addFocusListener(new FocusAdapter() {
+	queryRetrieveSize = new JSpinner();
+	panel_1.add(queryRetrieveSize);
+	queryRetrieveSize.setPreferredSize(new Dimension(50, 20));
+	queryRetrieveSize.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+	queryRetrieveSize.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.QueryRetrieveSize=Integer.valueOf(spinner_QueryRetrieve_Size.getValue().toString());
+			settings.QueryRetrieveSize=Integer.valueOf(queryRetrieveSize.getValue().toString());
 		}
 	});
-	spinner_QueryRetrieve_Size.setValue(settings.QueryRetrieveSize);
 	
 	JLabel lb_limitJob = new JLabel("Limits Job");
 	panel_1.add(lb_limitJob);
 	
-	JSpinner spinner_limit_Jobs = new JSpinner();
-	panel_1.add(spinner_limit_Jobs);
-	spinner_limit_Jobs.setPreferredSize(new Dimension(50, 20));
-	spinner_limit_Jobs.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
-	spinner_limit_Jobs.addFocusListener(new FocusAdapter() {
+	limit_Jobs = new JSpinner();
+	panel_1.add(limit_Jobs);
+	limit_Jobs.setPreferredSize(new Dimension(50, 20));
+	limit_Jobs.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+	limit_Jobs.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.LimitJobs=Integer.valueOf(spinner_limit_Jobs.getValue().toString());
+			settings.LimitJobs=Integer.valueOf(limit_Jobs.getValue().toString());
 		}
 	});
-	spinner_limit_Jobs.setValue(settings.LimitJobs);
 	
 	JPanel panel_chkbox = new JPanel();
 	Advanced_Buttons.add(panel_chkbox);
 	panel_chkbox.setLayout(new GridLayout(0, 3, 0, 0));
 	
-	JCheckBox chckbxStrictAetComparison = new JCheckBox("Strict AET Comparison");
-	panel_chkbox.add(chckbxStrictAetComparison);
-	chckbxStrictAetComparison.setToolTipText(" Setting this option to \"true\" will enable case-sensitive matching.");
-	chckbxStrictAetComparison.addFocusListener(new FocusAdapter() {
+	strictAetComparison = new JCheckBox("Strict AET Comparison");
+	panel_chkbox.add(strictAetComparison);
+	strictAetComparison.setToolTipText(" Setting this option to \"true\" will enable case-sensitive matching.");
+	strictAetComparison.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.StrictAetComparison=chckbxStrictAetComparison.isSelected();
+			settings.StrictAetComparison=strictAetComparison.isSelected();
 		}
 	});
-	chckbxStrictAetComparison.setSelected(settings.StrictAetComparison);
 	
-	JCheckBox chckbxStoremd = new JCheckBox("StoreMD5");
-	panel_chkbox.add(chckbxStoremd);
-	chckbxStoremd.setToolTipText("When the following option is \"true\", the MD5 of the DICOM files will be computed and stored in the Orthanc database. This information can be used to detect disk corruption, at the price of a small performance overhead.");
-	chckbxStoremd.addFocusListener(new FocusAdapter() {
+	storeMD5 = new JCheckBox("StoreMD5");
+	panel_chkbox.add(storeMD5);
+	storeMD5.setToolTipText("When the following option is \"true\", the MD5 of the DICOM files will be computed and stored in the Orthanc database. This information can be used to detect disk corruption, at the price of a small performance overhead.");
+	storeMD5.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.StoreMD5ForAttachments=chckbxStoremd.isSelected();
+			settings.StoreMD5ForAttachments=storeMD5.isSelected();
 		}
 	});
-	chckbxStoremd.setSelected(settings.StoreMD5ForAttachments);
 	
-	JCheckBox chckbxLogExportedRessources = new JCheckBox("Log Exported Ressources");
-	panel_chkbox.add(chckbxLogExportedRessources);
-	chckbxLogExportedRessources.setToolTipText("If this option is set to \"false\", Orthanc will not log the resources that are exported to other DICOM modalities of Orthanc peers in the URI \"/exports\". ");
-	chckbxLogExportedRessources.addFocusListener(new FocusAdapter() {
+	logExportedRessources = new JCheckBox("Log Exported Ressources");
+	panel_chkbox.add(logExportedRessources);
+	logExportedRessources.setToolTipText("If this option is set to \"false\", Orthanc will not log the resources that are exported to other DICOM modalities of Orthanc peers in the URI \"/exports\". ");
+	logExportedRessources.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.LogExportedResources=chckbxLogExportedRessources.isSelected();
+			settings.LogExportedResources=logExportedRessources.isSelected();
 		}
 	});
-	chckbxLogExportedRessources.setSelected(settings.LogExportedResources);
 	
-	JCheckBox chckbxKeepAlive = new JCheckBox("Keep Alive");
-	panel_chkbox.add(chckbxKeepAlive);
-	chckbxKeepAlive.setToolTipText("Enable or disable HTTP Keep-Alive (deprecated). Set this option to \"true\" only in the case of high HTTP loads.");
-	chckbxKeepAlive.addFocusListener(new FocusAdapter() {
+	keepAlive = new JCheckBox("Keep Alive");
+	panel_chkbox.add(keepAlive);
+	keepAlive.setToolTipText("Enable or disable HTTP Keep-Alive (deprecated). Set this option to \"true\" only in the case of high HTTP loads.");
+	keepAlive.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.KeepAlive=chckbxKeepAlive.isSelected();
+			settings.KeepAlive=keepAlive.isSelected();
 		}
 	});
-	chckbxKeepAlive.setSelected(settings.KeepAlive);
+
+	storeDicom = new JCheckBox("Store DICOM");
+	panel_chkbox.add(storeDicom);
+	storeDicom.setToolTipText("If this option is set to \"false\", Orthanc will run in index-only mode. The DICOM files will not be stored on the drive. Note that this option might prevent the upgrade to newer versions of Orthanc.");
+	storeDicom.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.StoreDicom=storeDicom.isSelected();
+		}
+	});
 	
-	JCheckBox chckbxStoreDicom = new JCheckBox("Store DICOM");
-	panel_chkbox.add(chckbxStoreDicom);
-	chckbxStoreDicom.setToolTipText("If this option is set to \"false\", Orthanc will run in index-only mode. The DICOM files will not be stored on the drive. Note that this option might prevent the upgrade to newer versions of Orthanc.");
-	chckbxStoreDicom.addFocusListener(new FocusAdapter() {
+	caseSensitivePatient = new JCheckBox("Case Sensitive Patient Name");
+	panel_chkbox.add(caseSensitivePatient);
+	caseSensitivePatient.setToolTipText("When handling a C-Find SCP request, setting this flag to \"true\" will enable case-sensitive match for PN value representation (such as PatientName). By default, the search is case-insensitive, which does not follow the DICOM standard.");
+	caseSensitivePatient.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.StoreDicom=chckbxStoreDicom.isSelected();
+			settings.CaseSensitivePN=caseSensitivePatient .isSelected();
 		}
 	});
-	chckbxStoreDicom.setSelected(settings.StoreDicom);
 	
-	JCheckBox chckbxCaseSensitivePatient = new JCheckBox("Case Sensitive Patient Name");
-	panel_chkbox.add(chckbxCaseSensitivePatient);
-	chckbxCaseSensitivePatient.setToolTipText("When handling a C-Find SCP request, setting this flag to \"true\" will enable case-sensitive match for PN value representation (such as PatientName). By default, the search is case-insensitive, which does not follow the DICOM standard.");
-	chckbxCaseSensitivePatient.addFocusListener(new FocusAdapter() {
+	allowFindSop = new JCheckBox("Allow Find SOP classe in study");
+	panel_chkbox.add(allowFindSop);
+	allowFindSop.setToolTipText("If set to \"true\", Orthanc will still handle \"SOP Classes in Study\" (0008,0062) in C-FIND requests, even if the \"SOP Class UID\" metadata is not available in the database.This option is turned off by default, as it requires intensive accesses to the hard drive.");
+	allowFindSop.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.CaseSensitivePN=chckbxCaseSensitivePatient .isSelected();
+			settings.AllowFindSopClassesInStudy=allowFindSop.isSelected();
 		}
 	});
-	chckbxCaseSensitivePatient.setSelected(settings.CaseSensitivePN);
 	
-	JCheckBox chckbxAllowFindSop = new JCheckBox("Allow Find SOP classe in study");
-	panel_chkbox.add(chckbxAllowFindSop);
-	chckbxAllowFindSop.setToolTipText("If set to \"true\", Orthanc will still handle \"SOP Classes in Study\" (0008,0062) in C-FIND requests, even if the \"SOP Class UID\" metadata is not available in the database.This option is turned off by default, as it requires intensive accesses to the hard drive.");
-	chckbxAllowFindSop.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.AllowFindSopClassesInStudy=chckbxAllowFindSop.isSelected();
-		}
-	});
-	chckbxAllowFindSop.setSelected(settings.AllowFindSopClassesInStudy);
 	
-	JCheckBox chckbxLoadPrivateDictionary = new JCheckBox("Load Private Dictionary");
-	panel_chkbox.add(chckbxLoadPrivateDictionary);
-	chckbxLoadPrivateDictionary.setToolTipText("If set to \"false\", Orthanc will not load its default dictionary of private tags.");
-	chckbxLoadPrivateDictionary.addFocusListener(new FocusAdapter() {
+	loadPrivateDictionary = new JCheckBox("Load Private Dictionary");
+	panel_chkbox.add(loadPrivateDictionary);
+	loadPrivateDictionary.setToolTipText("If set to \"false\", Orthanc will not load its default dictionary of private tags.");
+	loadPrivateDictionary.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
-			settings.LoadPrivateDictionary=chckbxLoadPrivateDictionary.isSelected();
+			settings.LoadPrivateDictionary=loadPrivateDictionary.isSelected();
 		}
 	});
-	chckbxLoadPrivateDictionary.setSelected(settings.LoadPrivateDictionary);
+	
 	
 	JPanel panel_btn = new JPanel();
 	Advanced_Buttons.add(panel_btn);
@@ -1081,9 +1066,9 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	
-	JLabel lblNewLabel_5 = new JLabel("For Orthanc 1.3.2");
-	Bouttons_Bouttons.add(lblNewLabel_5);
-	lblNewLabel_5.setHorizontalAlignment(SwingConstants.CENTER);
+	JLabel orthancVersion = new JLabel("For Orthanc 1.3.2");
+	Bouttons_Bouttons.add(orthancVersion);
+	orthancVersion.setHorizontalAlignment(SwingConstants.CENTER);
 	Bouttons_Bouttons.add(btnLoadJson);
 	
 	JButton btnRestartOrthancServer = new JButton("Restart Orthanc Server");
@@ -1124,6 +1109,51 @@ public class SettingsGUI extends JFrame {
 		Dictionnary_Counter.setText(String.valueOf(settings.dictionary.size()));
 		Content_Type_Counter.setText(String.valueOf(settings.contentType.size()));
 		Metadata_Counter.setText(String.valueOf(settings.userMetadata.size()));
+
+		maxStorageSize.setValue(settings.MaximumStorageSize);
+		maximumPatientCount.setValue(settings.MaximumPatientCount);
+		scpTimeout.setValue(settings.DicomScpTimeout);
+		dicom_Scu_Timeout.setValue(settings.DicomScuTimeout);
+		http_Timeout.setValue(settings.HttpTimeout);
+		stable_Age.setValue(settings.StableAge);
+		limitFindResult.setValue(settings.LimitFindResults);
+		dicomAssociationCloseDelay.setValue(settings.DicomAssociationCloseDelay);
+		limitFindInstance.setValue(settings.LimitFindInstances);
+		queryRetrieveSize.setValue(settings.QueryRetrieveSize);
+		limit_Jobs.setValue(settings.LimitJobs);
+
+		storageCompression.setSelected(settings.StorageCompression);
+		httpServerEnabled.setSelected(settings.HttpServerEnabled);
+		httpDescribeErrors.setSelected(settings.HttpDescribeErrors);
+		httpCompression.setSelected(settings.HttpCompressionEnabled);
+		allowRemoteAccess.setSelected(settings.RemoteAccessAllowed);
+		ssl.setSelected(settings.SslEnabled);
+		enableAuthentication.setSelected(settings.AuthenticationEnabled);
+		serverEnabled.setSelected(settings.DicomServerEnabled);
+		checkCalledAet.setSelected(settings.DicomCheckCalledAet);
+		unknowSop.setSelected(settings.UnknownSopClassAccepted);
+		deflatedTs.setSelected(settings.DeflatedTransferSyntaxAccepted);
+		jpegTs.setSelected(settings.JpegTransferSyntaxAccepted);
+		jpeg2000Ts.setSelected(settings.Jpeg2000TransferSyntaxAccepted);
+		jpegLoselessTs.setSelected(settings.JpegLosslessTransferSyntaxAccepted);
+		jpipTs.setSelected(settings.JpipTransferSyntaxAccepted);
+		mpegTs.setSelected(settings.Mpeg2TransferSyntaxAccepted);
+		rleTs.setSelected(settings.RleTransferSyntaxAccepted);
+		dicomAlwaysStore.setSelected(settings.DicomAlwaysStore);
+		checkModalityStore.setSelected(settings.CheckModalityHost);
+		allowEcho.setSelected(settings.dicomAlwaysAllowEcho);
+		httpsVerifyPeers.setSelected(settings.HttpsVerifyPeers);
+		strictAetComparison.setSelected(settings.StrictAetComparison);
+		storeMD5.setSelected(settings.StoreMD5ForAttachments);
+		logExportedRessources.setSelected(settings.LogExportedResources);
+		keepAlive.setSelected(settings.KeepAlive);
+		storeDicom.setSelected(settings.StoreDicom);
+		caseSensitivePatient.setSelected(settings.CaseSensitivePN);
+		allowFindSop.setSelected(settings.AllowFindSopClassesInStudy);
+		loadPrivateDictionary.setSelected(settings.LoadPrivateDictionary);
+		
+		comboBox_Encoding.setSelectedItem(settings.DefaultEncoding);
+		
 	}
 
 }

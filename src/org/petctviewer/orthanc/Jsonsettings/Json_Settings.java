@@ -119,6 +119,7 @@ public class Json_Settings {
 	protected boolean CaseSensitivePN;
 	protected boolean AllowFindSopClassesInStudy;
 	protected boolean LoadPrivateDictionary;
+	protected boolean dicomAlwaysAllowEcho;
 	protected boolean DicomAlwaysStore;
 	protected boolean CheckModalityHost;
 	
@@ -176,6 +177,7 @@ public class Json_Settings {
 				LoadPrivateDictionary=true;
 				DicomAlwaysStore=true;
 				CheckModalityHost=false;
+				dicomAlwaysAllowEcho=true;
 	}
 	
 	// permet de creer le JSON avant de l'ecrire
@@ -221,6 +223,11 @@ public class Json_Settings {
 		index.put("AuthenticationEnabled", AuthenticationEnabled);
 		index.put("RegisteredUsers", users);
 		index.put("DicomModalities", dicom);
+		
+		index.put("DicomAlwaysAllowEcho", dicomAlwaysAllowEcho);
+		index.put("DicomAlwaysAllowStore", DicomAlwaysStore);
+		index.put("DicomCheckModalityHost", CheckModalityHost);
+		
 		index.put("DicomScuTimeout", DicomScuTimeout);
 		index.put("OrthancPeers", orthancPeers);
 		index.put("HttpProxy", HttpProxy);
@@ -244,8 +251,6 @@ public class Json_Settings {
 		index.put("AllowFindSopClassesInStudy", AllowFindSopClassesInStudy);
 		index.put("LoadPrivateDictionary", LoadPrivateDictionary);
 		index.put("Dictionary", dictionaries);
-		index.put("DicomAlwaysAllowStore", DicomAlwaysStore);
-		index.put("DicomCheckModalityHost", CheckModalityHost);
 	}
 
 	/**
@@ -483,7 +488,7 @@ public class Json_Settings {
 			if (orthancJson.containsKey("LoadPrivateDictionary")) LoadPrivateDictionary=(boolean) orthancJson.get("LoadPrivateDictionary");
 			if (orthancJson.containsKey("DicomCheckModalityHost")) CheckModalityHost=(boolean)orthancJson.get("DicomCheckModalityHost");
 			if (orthancJson.containsKey("DicomAlwaysAllowStore")) DicomAlwaysStore=(boolean)orthancJson.get("DicomAlwaysAllowStore");
-			
+			if (orthancJson.containsKey("DicomAlwaysAllowEcho")) dicomAlwaysAllowEcho=(boolean)orthancJson.get("DicomAlwaysAllowEcho");
 			//On recupere les autres objet JSON dans le JSON principal
 			//on recupere les AET declares par un nouveau parser
 			JSONParser parser = new JSONParser();
