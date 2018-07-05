@@ -77,7 +77,7 @@ public class SettingsGUI extends JFrame {
 
 	public SettingsGUI() {
 	setTitle("Orthanc JSON editor");
-	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	getContentPane().setLayout(new BorderLayout(0, 0));
 	
 	JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
@@ -1055,7 +1055,6 @@ public class SettingsGUI extends JFrame {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				//System.out.println(settings.fichierInput);
 				//On le parse et on relance cette fenetre
 				updateGUI();
 			
@@ -1091,7 +1090,7 @@ public class SettingsGUI extends JFrame {
 	Bouttons_Bouttons.add(btnRestartOrthancServer);
 	btnRestartOrthancServer.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent arg0) {
-			connexion.restartOrthanc();
+			if (connexion.testConnexion()) connexion.restartOrthanc();
 		}
 	});
 	}

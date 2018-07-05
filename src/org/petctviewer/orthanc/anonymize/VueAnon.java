@@ -96,6 +96,7 @@ import ij.plugin.PlugIn;
 import org.petctviewer.orthanc.*;
 import org.petctviewer.orthanc.CTP.CTP;
 import org.petctviewer.orthanc.CTP.CTP_Gui;
+import org.petctviewer.orthanc.Jsonsettings.SettingsGUI;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.*;
@@ -2359,6 +2360,18 @@ public class VueAnon extends JFrame implements PlugIn{
 			
 		});
 		
+		JButton jsonEditor = new JButton("Edit Orthanc config");
+		
+		
+		jsonEditor.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				SettingsGUI.main(null);
+			}
+			
+		});
+		
 		JButton aboutBtn = new JButton("About us");
 		aboutBtn.addActionListener(new ActionListener() {
 			
@@ -2373,6 +2386,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		
 		aboutPanel.add(viewerDistribution);
 		aboutPanel.add(setupButton);
+		aboutPanel.add(jsonEditor);
 		aboutPanel.add(aboutBtn);
 		
 		if(!addressFieldCTP.getText().equals("http://")  && !addressFieldCTP.getText().equals("https://") ){
