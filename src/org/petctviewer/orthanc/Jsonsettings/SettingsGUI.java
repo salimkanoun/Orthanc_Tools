@@ -671,7 +671,7 @@ public class SettingsGUI extends JFrame {
 		textField_HTTP_Proxy.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent arg0) {
-				settings.HttpProxy=textField_HTTP_Proxy.toString();
+				settings.HttpProxy=textField_HTTP_Proxy.getText();
 			}
 		});
 		textField_HTTP_Proxy.setColumns(10);
