@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -163,6 +161,12 @@ public class QueryAnon {
 		conn.disconnect();
 	}
 
+	/**
+	 * Send the Anonymization request
+	 * @param level
+	 * @param id
+	 * @throws IOException
+	 */
 	public void sendQuery(String level, String id) throws IOException{
 		this.setQuery();
 		HttpURLConnection conn=connexionHttp.makePostConnection("/"+level + "/" + id +"/anonymize", this.query);
@@ -180,7 +184,6 @@ public class QueryAnon {
 		JSONObject response = null;
 		try {
 			response = (JSONObject) parser.parse(sb.toString());
-			System.out.print(response);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -205,25 +208,6 @@ public class QueryAnon {
 	 */
 	public String getNewUID(){
 		return this.newUID;
-	}
-
-	public ArrayList<String> getNewStudyIDs() throws IOException{
-		ArrayList<String> newStudyIDs = new ArrayList<String>();
-		StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder("/patients/" + getNewUID());
-		String pattern1 = "Studies\" : [";
-		String pattern2 = "],";
-		Pattern p = Pattern.compile(Pattern.quote(pattern1) + "(.*?)" + Pattern.quote(pattern2));
-		Matcher m = p.matcher(sb.toString());
-		while(m.find()){
-			String pattern3 = "\"";
-			String pattern4 = "\"";
-			Pattern p2 = Pattern.compile(Pattern.quote(pattern3) + "(.*?)" + Pattern.quote(pattern4));
-			Matcher m2 = p2.matcher(m.group(1));
-			while(m2.find()){
-				newStudyIDs.add(m2.group(1));
-			}
-		}
-		return newStudyIDs;
 	}
 
 }
