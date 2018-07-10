@@ -2346,12 +2346,12 @@ public class VueAnon extends JFrame implements PlugIn{
 		//Setup button only for starting outside Fiji
 		JButton setupButton = new JButton("Orthanc HTTP Setup");
 		
-		
 		setupButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				ConnectionSetup setup = new ConnectionSetup(runOrthanc);
+				setup.setLocationRelativeTo(gui);
 				setup.setVisible(true);
 				connexionHttp=new ParametreConnexionHttp();
 				if (setup.ok)JOptionPane.showMessageDialog(null,"Restart to take account");
@@ -2367,7 +2367,11 @@ public class VueAnon extends JFrame implements PlugIn{
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				SettingsGUI.main(null);
+				SettingsGUI settings=new SettingsGUI();
+				settings.pack();
+				settings.setLocationRelativeTo(gui);
+				settings.updateGUI();
+				settings.setVisible(true);
 			}
 			
 		});
@@ -2378,8 +2382,8 @@ public class VueAnon extends JFrame implements PlugIn{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				AboutBoxFrame ab = new AboutBoxFrame();
-				ab.setLocationRelativeTo(gui);
 				ab.pack();
+				ab.setLocationRelativeTo(gui);
 				ab.setVisible(true);
 			}
 		});

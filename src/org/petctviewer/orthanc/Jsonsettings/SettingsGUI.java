@@ -441,7 +441,7 @@ public class SettingsGUI extends JFrame {
 	lblAetName.setToolTipText("The DICOM Application Entity Title");
 	Boutton_DicomServer.add(lblAetName);
 	
-	textField_AET_Name = new JTextField();
+	textField_AET_Name=new JTextField();
 	textField_AET_Name.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
@@ -1085,7 +1085,6 @@ public class SettingsGUI extends JFrame {
 			//On met la fenetre au centre de l ecran
 			gui.pack();
 			gui.setLocationRelativeTo(null);
-			gui.setSize(gui.getPreferredSize());
 			gui.updateGUI();
 			gui.setVisible(true);
 		}

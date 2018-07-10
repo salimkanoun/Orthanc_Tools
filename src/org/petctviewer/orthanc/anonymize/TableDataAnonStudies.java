@@ -24,9 +24,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.petctviewer.orthanc.*;
 
 import javax.swing.table.AbstractTableModel;
@@ -105,19 +106,24 @@ public class TableDataAnonStudies extends AbstractTableModel{
 		}
 	}
 
-	public ArrayList<String> getModalities() throws IOException{
+	public ArrayList<String> getModalities() {
 		ArrayList<String> listeModalities = new ArrayList<String>();
 		for(Study s : this.studies){
 			this.url="/studies/" + s.getId() + "/series";
+			
 			StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder(url);
-			String pattern1 = "Modality\" : \"";
-			String pattern2 = "\"";
-			Pattern p = Pattern.compile(Pattern.quote(pattern1) + "(.*?)" + Pattern.quote(pattern2));
-			Matcher m = p.matcher(sb.toString());
-			while(m.find()){
-				if(!listeModalities.contains(m.group(1))){
-					listeModalities.add(m.group(1));
+			JSONParser parser=new JSONParser();
+			try {
+				JSONArray series=(JSONArray) parser.parse(sb.toString());
+				for(int i=0; i<series.size(); i++) {
+					JSONObject serieData=(JSONObject) series.get(i);
+					JSONObject sereiesMain=(JSONObject) serieData.get("MainDicomTags");
+					listeModalities.add(sereiesMain.get("Modality").toString());
 				}
+				
+			} catch (org.json.simple.parser.ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 		return listeModalities;
@@ -142,10 +148,10 @@ public class TableDataAnonStudies extends AbstractTableModel{
 		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.67");
 
 		ArrayList<String> listeSerieUids = new ArrayList<String>();
-		listeSerieUids = this.fillListUids(this.listeNewOrthancUIDs, "studies", "Series");
+		listeSerieUids = this.fillListIDs(this.listeNewOrthancUIDs, "studies", "Series");
 
 		ArrayList<String> listeInstanceUids = new ArrayList<String>();
-		listeInstanceUids = this.fillListUids(listeSerieUids,"series", "Instances");
+		listeInstanceUids = this.fillListIDs(listeSerieUids,"series", "Instances");
 
 		for(String instanceUid : listeInstanceUids){
 			this.url="/instances/" + instanceUid + "/metadata/SopClassUid";
@@ -289,14 +295,35 @@ public class TableDataAnonStudies extends AbstractTableModel{
 			}
 		}
 	}
+	
+	/**
+	 * retrieve list series IDs of a given study
+	 * @param sourceList
+	 * @param level
+	 * @param pattern
+	 * @return
+	 * @throws IOException
+	 */
 
-	public ArrayList<String> fillListUids(ArrayList<String> sourceList, String level, String pattern) throws IOException{
+	private ArrayList<String> fillListIDs(ArrayList<String> sourceList, String level, String pattern) throws IOException{
 		ArrayList<String> list = new ArrayList<String>();
 		for(String uid : sourceList){
 			this.url="/"+ level + "/" + uid;
 			StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder(url);
-			
-			String pattern1 = pattern + "\" : [";
+			JSONParser parser=new JSONParser();
+				try {
+					JSONObject json=(JSONObject) parser.parse(sb.toString());
+					JSONArray jsonArray=(JSONArray) json.get(pattern);
+					for (int i=0; i<jsonArray.size(); i++){
+						list.add(jsonArray.get(i).toString());
+					} 
+				}catch (org.json.simple.parser.ParseException e) {
+					
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			/*String pattern1 = pattern + "\" : [";
 			String pattern2 = "]";
 			Pattern p = Pattern.compile(Pattern.quote(pattern1) + "(.*?)" + Pattern.quote(pattern2));
 			Matcher m = p.matcher(sb.toString());
@@ -309,7 +336,7 @@ public class TableDataAnonStudies extends AbstractTableModel{
 					list.add(m2.group(1));
 				}
 			}
-		}
+		}*/
 		return list;
 	}
 }
