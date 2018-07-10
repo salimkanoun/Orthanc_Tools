@@ -43,9 +43,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
-import ij.plugin.PlugIn;
-
-public class ConnectionSetup extends JDialog implements PlugIn{
+public class ConnectionSetup extends JDialog {
 	
 	private static final long serialVersionUID = 1L;
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
@@ -256,15 +254,5 @@ public class ConnectionSetup extends JDialog implements PlugIn{
 		}
 		catch (java.io.IOException e) {
 		}
-	}
-	
-	
-	//IJ run method
-	@Override
-	public void run(String arg0) {
-		ConnectionSetup vue = new ConnectionSetup(new Run_Orthanc());
-		vue.setSize(1200, 400);
-		vue.pack();
-		vue.setVisible(true);
 	}
 }
