@@ -277,17 +277,15 @@ public class Rest {
 	 */
 	public Object[] getAET() throws IOException{
 		
-		ArrayList<String> indexes=null;
+		ArrayList<String> indexes=new ArrayList<String>();
 		try {
 			JSONArray contentArray=(JSONArray) parser.parse(connexion.makeGetConnectionAndStringBuilder("/modalities/").toString());
-			indexes = new ArrayList<String>();
 			for (int i=0; i<contentArray.size(); i++) {
 				indexes.add((String) contentArray.get(i));
 			}
 		} catch (ParseException | NullPointerException e) {
 			e.printStackTrace();
 		}
-		
 		
 		return indexes.toArray();
 	}
