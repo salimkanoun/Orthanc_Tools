@@ -123,6 +123,8 @@ public class Json_Settings {
 	protected boolean DicomAlwaysStore;
 	protected boolean CheckModalityHost;
 	
+	protected File fichierInput;
+	
 	public Json_Settings() {
 		initialiserIndex();
 	}
@@ -414,7 +416,7 @@ public class Json_Settings {
 	public void setExistingJsonConfig(File fichierInput) throws Exception {
 		 try {
 			 FileReader reader= new FileReader(fichierInput);
-			 
+			 this.fichierInput=fichierInput;
 			 //On passe dans JSMin pour enlever les commentaire avant le parsing
 			 StringWriter out = new StringWriter();
 			 JSMin js= new JSMin(reader, out);

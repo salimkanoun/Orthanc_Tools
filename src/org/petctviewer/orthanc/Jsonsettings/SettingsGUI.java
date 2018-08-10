@@ -1046,6 +1046,7 @@ public class SettingsGUI extends JFrame {
 			}	
 		}
 	});
+	Bouttons_Bouttons.add(btnLoadJson);
 	
 	JButton btnSaveJson = new JButton("Save JSON");
 	Bouttons_Bouttons.add(btnSaveJson);
@@ -1055,8 +1056,7 @@ public class SettingsGUI extends JFrame {
 			settings.construireIndex();
 			JFileChooser fc =new JFileChooser();
 			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-			//fc.setSelectedFile(settings.fichierInput);
-			//System.out.println(settings.fichierInput);
+			fc.setSelectedFile(settings.fichierInput);
 			int ouvrir=fc.showSaveDialog(null);
 			//Si valide
 			if (ouvrir==JFileChooser.APPROVE_OPTION) {
@@ -1069,7 +1069,6 @@ public class SettingsGUI extends JFrame {
 	JLabel orthancVersion = new JLabel("For Orthanc 1.3.2");
 	Bouttons_Bouttons.add(orthancVersion);
 	orthancVersion.setHorizontalAlignment(SwingConstants.CENTER);
-	Bouttons_Bouttons.add(btnLoadJson);
 	
 	JButton btnRestartOrthancServer = new JButton("Restart Orthanc Server");
 	Bouttons_Bouttons.add(btnRestartOrthancServer);
