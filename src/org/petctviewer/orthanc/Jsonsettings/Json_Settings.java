@@ -122,6 +122,12 @@ public class Json_Settings {
 	protected boolean dicomAlwaysAllowEcho;
 	protected boolean DicomAlwaysStore;
 	protected boolean CheckModalityHost;
+	protected boolean SynchronousCMove;
+	protected int JobsHistorySize;
+	protected int ConcurrentJobs;
+	
+	
+	protected File fichierInput;
 	
 	public Json_Settings() {
 		initialiserIndex();
@@ -178,6 +184,9 @@ public class Json_Settings {
 				DicomAlwaysStore=true;
 				CheckModalityHost=false;
 				dicomAlwaysAllowEcho=true;
+				SynchronousCMove=false;
+				JobsHistorySize=10;
+				ConcurrentJobs=2;
 	}
 	
 	// permet de creer le JSON avant de l'ecrire
@@ -199,6 +208,7 @@ public class Json_Settings {
 		index.put("MaximumPatientCount", MaximumPatientCount);
 		index.put("LuaScripts", luaFolder);
 		index.put("Plugins", pluginsFolder);
+		index.put("ConcurrentJobs", ConcurrentJobs);
 		index.put("HttpServerEnabled", HttpServerEnabled);
 		index.put("HttpPort", HttpPort);
 		index.put("HttpDescribeErrors", HttpDescribeErrors);
@@ -251,6 +261,9 @@ public class Json_Settings {
 		index.put("AllowFindSopClassesInStudy", AllowFindSopClassesInStudy);
 		index.put("LoadPrivateDictionary", LoadPrivateDictionary);
 		index.put("Dictionary", dictionaries);
+		index.put("SynchronousCMove", SynchronousCMove);
+		index.put("JobsHistorySize", JobsHistorySize);
+
 	}
 
 	/**
@@ -414,7 +427,7 @@ public class Json_Settings {
 	public void setExistingJsonConfig(File fichierInput) throws Exception {
 		 try {
 			 FileReader reader= new FileReader(fichierInput);
-			 
+			 this.fichierInput=fichierInput;
 			 //On passe dans JSMin pour enlever les commentaire avant le parsing
 			 StringWriter out = new StringWriter();
 			 JSMin js= new JSMin(reader, out);
@@ -489,6 +502,9 @@ public class Json_Settings {
 			if (orthancJson.containsKey("DicomCheckModalityHost")) CheckModalityHost=(boolean)orthancJson.get("DicomCheckModalityHost");
 			if (orthancJson.containsKey("DicomAlwaysAllowStore")) DicomAlwaysStore=(boolean)orthancJson.get("DicomAlwaysAllowStore");
 			if (orthancJson.containsKey("DicomAlwaysAllowEcho")) dicomAlwaysAllowEcho=(boolean)orthancJson.get("DicomAlwaysAllowEcho");
+			if (orthancJson.containsKey("SynchronousCMove")) SynchronousCMove=(boolean) orthancJson.get("SynchronousCMove");
+			if(orthancJson.containsKey("JobsHistorySize")) JobsHistorySize=Integer.valueOf(orthancJson.get("JobsHistorySize").toString());
+			if(orthancJson.containsKey("ConcurrentJobs")) ConcurrentJobs=Integer.valueOf(orthancJson.get("ConcurrentJobs").toString());
 			//On recupere les autres objet JSON dans le JSON principal
 			//on recupere les AET declares par un nouveau parser
 			JSONParser parser = new JSONParser();
@@ -514,6 +530,7 @@ public class Json_Settings {
 			
 			// On recupere les Peer
 			if (orthancJson.containsKey("OrthancPeers")) orthancPeer=(JSONObject) parser.parse(orthancJson.get("OrthancPeers").toString());
+			
 			
 		}
 		catch (NullPointerException | ParseException e) {}

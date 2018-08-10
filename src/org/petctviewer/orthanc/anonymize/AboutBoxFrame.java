@@ -39,7 +39,7 @@ public class AboutBoxFrame extends JFrame{
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		JPanel labelPanel = new JPanel();
 		labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.PAGE_AXIS));
-		JLabel title = new JLabel("Dicom Tools v.1.0");
+		JLabel title = new JLabel("Dicom Tools v.1.01");
 		title.setBorder(new EmptyBorder(3, 150, 3, 150));
 		labelPanel.add(title);
 		JLabel orthancSite = new JLabel("<html><i>Based on Orthanc http://www.orthanc-server.com</i></html>");
