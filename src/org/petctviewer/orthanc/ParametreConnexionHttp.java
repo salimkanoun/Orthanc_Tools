@@ -84,7 +84,7 @@ public class ParametreConnexionHttp {
 				}
 				
 		}
-		else if (typeDb != 5){
+		else if (typeDb != 5 ){
 			ip = jpreferPerso.get("ip", "http://localhost");
 			port = jpreferPerso.get("port", "8042");
 			this.fullAddress = ip + ":" + port;

@@ -85,13 +85,13 @@ public class ConnectionSetup extends JDialog {
 		JTextField ipTxt = new JTextField();
 		panel_http_settings.add(ipTxt);
 		ipTxt.setPreferredSize(new Dimension(100,18));
-		ipTxt.setText(jpreferPerso.get("ip", "http://"));
+		ipTxt.setText(jpreferPerso.get("ip", "http://localhost"));
 		
 		
 		JLabel label_1 = new JLabel("Port");
 		JTextField portTxt = new JTextField();
 		portTxt.setPreferredSize(new Dimension(100,18));
-		portTxt.setText(jpreferPerso.get("port", ""));
+		portTxt.setText(jpreferPerso.get("port", "8042"));
 		
 		
 		JLabel label_2 = new JLabel("Username");
@@ -159,10 +159,8 @@ public class ConnectionSetup extends JDialog {
 		
 		runOrthancLocal.addActionListener(new ActionListener() {
 		
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			String os=System.getProperty("os.name");
-			if(os.startsWith("Windows")) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
 				if(runOrthancLocal.getText()=="Run Local Orthanc") {
 					try {
 						orthanc.copyOrthanc(null);
@@ -176,16 +174,6 @@ public class ConnectionSetup extends JDialog {
 					dispose();
 				}
 			}
-			else {
-				JOptionPane.showMessageDialog(gui, "Only available for Windows", "Error", JOptionPane.ERROR_MESSAGE);
-			}
-				
-			
-			
-
-			}
-			
-		
 		});
 		
 		JButton btnReusableRun = new JButton("Re-usable Run");

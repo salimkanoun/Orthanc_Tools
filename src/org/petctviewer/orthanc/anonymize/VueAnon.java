@@ -231,10 +231,14 @@ public class VueAnon extends JFrame implements PlugIn{
 		super("Orthanc Tools");
 		connexionHttp= new ParametreConnexionHttp();
 		//Until we reach the Orthanc Server we give the setup panel
-		while (!connexionHttp.testConnexion()) {
+		int check=0;
+		while (!connexionHttp.testConnexion() && check<3) {
+				if (check>0) JOptionPane.showMessageDialog(null, "Settings Attempt " + (check+1) +"/3", "Attempt", JOptionPane.INFORMATION_MESSAGE);
 				ConnectionSetup setup = new ConnectionSetup(runOrthanc);
 				setup.setVisible(true);
 				connexionHttp=new ParametreConnexionHttp();
+				check++;
+				if(check ==3) JOptionPane.showMessageDialog(null, "Programme is starting without connexion (no services)", "Failure", JOptionPane.ERROR_MESSAGE);
 		}
 		gui=this;
 		//On set les objets necessaires
