@@ -44,6 +44,8 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import org.petctviewer.orthanc.ParametreConnexionHttp;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 
 public class SettingsGUI extends JFrame {
@@ -71,12 +73,13 @@ public class SettingsGUI extends JFrame {
 	private JLabel Metadata_Counter;
 	
 	private JSpinner maxStorageSize, maximumPatientCount,scpTimeout, dicom_Scu_Timeout, http_Timeout,
-	stable_Age,limitFindResult,dicomAssociationCloseDelay,limitFindInstance, queryRetrieveSize,limit_Jobs;
+	stable_Age,limitFindResult,dicomAssociationCloseDelay,limitFindInstance, queryRetrieveSize,limit_Jobs,
+	jobsHistorySize, concurrentJobs;
 	private JCheckBox storageCompression, httpServerEnabled, httpDescribeErrors, httpCompression, allowRemoteAccess,
 	ssl, enableAuthentication, serverEnabled, checkCalledAet, unknowSop, deflatedTs, jpegTs, jpeg2000Ts, jpegLoselessTs, jpipTs, mpegTs,rleTs,
 	dicomAlwaysStore,checkModalityStore, allowEcho,httpsVerifyPeers,
-	strictAetComparison, storeMD5, logExportedRessources, keepAlive, storeDicom, caseSensitivePatient, allowFindSop, loadPrivateDictionary;
-	
+	strictAetComparison, storeMD5, logExportedRessources, keepAlive, storeDicom, caseSensitivePatient, allowFindSop, loadPrivateDictionary,
+	synchronousCMove;
 	private JComboBox<String> comboBox_Encoding ;
 	
 	private ParametreConnexionHttp connexion=new ParametreConnexionHttp();
@@ -160,6 +163,20 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	boutton_general.add(storageCompression);
+	
+	JLabel lblConcurrentJobs = new JLabel("Concurrent Jobs:");
+	boutton_general.add(lblConcurrentJobs);
+	
+	concurrentJobs = new JSpinner();
+	concurrentJobs.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent arg0) {
+			settings.ConcurrentJobs=(int) concurrentJobs.getValue();
+		}
+	});
+	
+	concurrentJobs.setModel(new SpinnerNumberModel(new Integer(2), new Integer(0), null, new Integer(1)));
+	boutton_general.add(concurrentJobs);
 	
 	JPanel panel_btns = new JPanel();
 	boutton_general.add(panel_btns);
@@ -944,6 +961,29 @@ public class SettingsGUI extends JFrame {
 	loadPrivateDictionary = new JCheckBox("Load Private Dictionary");
 	panel_chkbox.add(loadPrivateDictionary);
 	loadPrivateDictionary.setToolTipText("If set to \"false\", Orthanc will not load its default dictionary of private tags.");
+	
+	synchronousCMove = new JCheckBox("Synchronous C-Move");
+	synchronousCMove.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.SynchronousCMove=synchronousCMove.isSelected();
+		}
+	});
+	panel_chkbox.add(synchronousCMove);
+	
+	JLabel jobHistorySizeLabel=new JLabel("Job History Size");
+	panel_chkbox.add(jobHistorySizeLabel);
+	
+	jobsHistorySize = new JSpinner();
+	jobsHistorySize.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.JobsHistorySize=(int) jobsHistorySize.getValue();
+		}
+	});
+	jobsHistorySize.setModel(new SpinnerNumberModel(new Integer(10), new Integer(0), null, new Integer(1)));
+	panel_chkbox.add(jobsHistorySize);
+	
 	loadPrivateDictionary.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
@@ -1066,7 +1106,7 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	
-	JLabel orthancVersion = new JLabel("For Orthanc 1.3.2");
+	JLabel orthancVersion = new JLabel("For Orthanc 1.4.1");
 	Bouttons_Bouttons.add(orthancVersion);
 	orthancVersion.setHorizontalAlignment(SwingConstants.CENTER);
 	
@@ -1151,6 +1191,10 @@ public class SettingsGUI extends JFrame {
 		loadPrivateDictionary.setSelected(settings.LoadPrivateDictionary);
 		
 		comboBox_Encoding.setSelectedItem(settings.DefaultEncoding);
+		
+		jobsHistorySize.setValue(settings.JobsHistorySize);
+		synchronousCMove.setSelected(settings.SynchronousCMove);
+		concurrentJobs.setValue(settings.ConcurrentJobs);
 		
 	}
 
