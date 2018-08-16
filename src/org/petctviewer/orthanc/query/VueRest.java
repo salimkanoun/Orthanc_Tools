@@ -707,6 +707,7 @@ public class VueRest extends JFrame implements PlugIn{
 		table.putClientProperty("terminateEditOnFocusLost", true);
 		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		table.setModel(new DefaultTableModel(new Object[] {"Last Name", "First Name", "ID", "Accession Nb", "Study Date From","Study Date To", "Modality", "Study Description" },0));
+		table.setToolTipText("Date Format YYYYMMDD, Modality example : CT//MRI");
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 		scrollPane.setViewportView(table);
 		
