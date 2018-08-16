@@ -527,6 +527,7 @@ public class Monitoring_GUI extends JFrame {
 						panel_AutoFetch_Filter.add(lblModalityInStudy);
 						
 						textField_AutoFecth_Modality_Study = new JTextField();
+						textField_AutoFecth_Modality_Study.setToolTipText("Ex : CT//MRI//PT");
 						textField_AutoFecth_Modality_Study.setText("*");
 						panel_AutoFetch_Filter.add(textField_AutoFecth_Modality_Study);
 						textField_AutoFecth_Modality_Study.setColumns(10);
