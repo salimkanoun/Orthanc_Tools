@@ -1,6 +1,8 @@
 # Orthanc_Tools
 DICOM tools built on Orthanc API in Java
 
+Detailled Documentation : https://github.com/salimkanoun/Orthanc_Tools/blob/master/Orthanc_Tools_Documentation.pdf
+
 Features : 
 
 - Anonymization : Fine tunable anonymization and sharing services of Anonymized DICOMs (FTP/SSH/WebDAV)
