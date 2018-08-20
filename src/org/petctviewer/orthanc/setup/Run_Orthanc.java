@@ -33,16 +33,28 @@ public class Run_Orthanc {
 	 private File orthancJson;
 	 private String resourceName;
 	 private String fileExecName;
+	 private String resourceLibPath, resourceLibName;
 	 
 	
 	public Run_Orthanc() {
+		System.out.println(System.getProperty("os.name"));
 		if(System.getProperty("os.name").toLowerCase().startsWith("win")) {
 			resourceName="Orthanc_Standalone/Orthanc-1.3.2-Release.exe";
 			fileExecName="Orthanc-1.3.2-Release.exe";
+			resourceLibName=null;
 		}
 		else if (System.getProperty("os.name").toLowerCase().startsWith("mac")){
 			resourceName="Orthanc_Standalone/Orthanc-1.3.2-ReleaseMac";
 			fileExecName="Orthanc-1.3.2-ReleaseMac";
+			resourceLibName=null;
+		}
+		else if (System.getProperty("os.name").toLowerCase().startsWith("linux")){
+			resourceName="Orthanc_Standalone/Orthanc-1.3.2-ReleaseLinux";
+			fileExecName="Orthanc-1.3.2-ReleaseLinux";
+			resourceLibPath="Orthanc_Standalone/libOrthancWebViewer.so";
+			resourceLibName="libOrthancWebViewer.so";
+			
+			
 		}
 	}
 	
@@ -58,17 +70,32 @@ public class Run_Orthanc {
 		}
 		//Si destination choisie on enregistre le repertoire
 		else file=Paths.get(installPath);
+		
 		File FileExe=new File(file.toString()+File.separator+fileExecName);
 		File FileJSON=new File(file.toString()+File.separator+"Orthanc.json");
 		
 		InputStream in = ClassLoader.getSystemResourceAsStream(resourceName);
 		InputStream inJson = ClassLoader.getSystemResourceAsStream(resourceNameJSON);
+		
 		OutputStream out = new FileOutputStream(FileExe);
 		IOUtils.copy(in, out);
+		out.close();
 		OutputStream outJson = new FileOutputStream(FileJSON);
 		IOUtils.copy(inJson, outJson);
-		out.close();
 		outJson.close();
+		
+		if(resourceLibName!=null) {
+			new File(file.toString()+File.separator+"lib").mkdirs();
+			File FileLib=new File(file.toString()+File.separator+"lib"+File.separator+resourceLibName);
+			InputStream inLib = ClassLoader.getSystemResourceAsStream(resourceLibPath);
+			OutputStream outLib = new FileOutputStream(FileLib);
+			IOUtils.copy(inLib, outLib);
+			outLib.close();
+		}
+		
+		
+		
+	
 		
 		orthancExe=FileExe;
 		orthancJson=FileJSON;
@@ -86,7 +113,7 @@ public class Run_Orthanc {
 				
 				 	if ( ! System.getProperty("os.name").toLowerCase().startsWith("win")) {
 				 		Set<PosixFilePermission> perms = new HashSet<>();
-				 		 perms.add(PosixFilePermission.OWNER_READ);
+				 		 	perms.add(PosixFilePermission.OWNER_READ);
 						    perms.add(PosixFilePermission.OWNER_WRITE);
 						    perms.add(PosixFilePermission.OWNER_EXECUTE);
 
@@ -120,7 +147,7 @@ public class Run_Orthanc {
 				  //BufferedReader stinn = new BufferedReader (new OutputStreamReader(stdin));
 				  String line = null;
 		
-				  while ( (line = reader.readLine()) != null) {
+				  while ( (line = reader.readLine()) != null ) {
 						 	//If JSON Object parse it
 						 System.out.println(line);
 						 if (line.contains("Orthanc has started")) {
