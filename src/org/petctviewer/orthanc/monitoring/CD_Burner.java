@@ -37,6 +37,7 @@ import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.io.FileDeleteStrategy;
 import org.apache.commons.io.FileUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -100,11 +101,6 @@ public class CD_Burner {
 	        //Toutes les 90 seconds
 	        timer.scheduleAtFixedRate(timerTask, 0, (90*1000));
 		}
-		
-
-               
- 
-
 		
 	}
 	
@@ -298,6 +294,11 @@ public class CD_Burner {
 		return dat;
 	}
 	
+	/**
+	 * Delete a path itself and all subdirectories
+	 * @param path
+	 * @throws IOException
+	 */
 	public static void recursiveDeleteOnExit(Path path) throws IOException {
 		  Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 		    @Override

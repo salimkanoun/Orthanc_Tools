@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.prefs.Preferences;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.petctviewer.orthanc.monitoring.CD_Burner;
 
@@ -69,8 +70,6 @@ public class Run_Orthanc {
 		if (installPath ==null) {
 			temp=true;
 			file = Files.createTempDirectory("Orthanc_"+dateFormat.format(new Date()));
-			CD_Burner.recursiveDeleteOnExit(file);
-			file.toFile().deleteOnExit();
 		}
 		//Si destination choisie on enregistre le repertoire
 		else file=Paths.get(installPath);
@@ -96,11 +95,6 @@ public class Run_Orthanc {
 		OutputStream outLib = new FileOutputStream(FileLib);
 		IOUtils.copy(inLib, outLib);
 		outLib.close();
-
-		
-		
-		
-	
 		
 		orthancExe=FileExe;
 		orthancJson=FileJSON;
@@ -228,10 +222,9 @@ public class Run_Orthanc {
 			try {
 				CD_Burner.recursiveDeleteOnExit(file);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				System.out.println(e);
 				e.printStackTrace();
 			}
-			file.toFile().deleteOnExit();
 		}
 		
 		orthancThread.interrupt();
