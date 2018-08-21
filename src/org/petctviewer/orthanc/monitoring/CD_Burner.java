@@ -147,6 +147,8 @@ public class CD_Burner {
 				File dat = printDat(nom, id, date, studyDescription);
 				//On efface tout a la sortie JVM
 				recursiveDeleteOnExit(folder);
+				//Efface le zip dezipe
+				zip.delete();
 				//Get size of viewer and images to determine if CD or DVD to Burn
 				Long imageSize=FileUtils.sizeOfDirectory(folder.toFile());
 				Long ViewerSize=FileUtils.sizeOfDirectory(new File(fijiDirectory));
