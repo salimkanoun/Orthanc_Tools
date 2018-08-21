@@ -212,7 +212,6 @@ public class Run_Orthanc {
 	public void stopOrthanc() {
 		System.out.println("Stoping Orthanc");
 		process.destroy();
-		orthancThread.interrupt();
 		try {
 			//On Attend sortie d'Orthanc pour liberer le JSON
 			Thread.sleep(2000);
@@ -221,6 +220,7 @@ public class Run_Orthanc {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		orthancThread.interrupt();
 
 	}
 	
