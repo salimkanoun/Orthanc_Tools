@@ -33,16 +33,31 @@ public class Run_Orthanc {
 	 private File orthancJson;
 	 private String resourceName;
 	 private String fileExecName;
+	 private String resourceLibPath, resourceLibName;
+	 private boolean temp;
 	 
 	
 	public Run_Orthanc() {
 		if(System.getProperty("os.name").toLowerCase().startsWith("win")) {
-			resourceName="Orthanc_Standalone/Orthanc-1.3.2-Release.exe";
-			fileExecName="Orthanc-1.3.2-Release.exe";
+			resourceName="Orthanc_Standalone/Orthanc-1.4.1-Release.exe";
+			fileExecName="Orthanc-1.4.1-Release.exe";
+			resourceLibPath="Orthanc_Standalone/OrthancWebViewer.dll";
+			resourceLibName="OrthancWebViewer.dll";
+			
 		}
 		else if (System.getProperty("os.name").toLowerCase().startsWith("mac")){
-			resourceName="Orthanc_Standalone/Orthanc-1.3.2-ReleaseMac";
-			fileExecName="Orthanc-1.3.2-ReleaseMac";
+			resourceName="Orthanc_Standalone/Orthanc-1.4.1-ReleaseMac";
+			fileExecName="Orthanc-1.4.1-ReleaseMac";
+			resourceLibPath="Orthanc_Standalone/libOsimisWebViewer.dylib";
+			resourceLibName="libOsimisWebViewer.dylib";
+		}
+		else if (System.getProperty("os.name").toLowerCase().startsWith("linux")){
+			resourceName="Orthanc_Standalone/Orthanc-1.4.1-ReleaseLinux";
+			fileExecName="Orthanc-1.4.1-ReleaseLinux";
+			resourceLibPath="Orthanc_Standalone/libOrthancWebViewer.so";
+			resourceLibName="libOrthancWebViewer.so";
+			
+			
 		}
 	}
 	
@@ -52,23 +67,40 @@ public class Run_Orthanc {
 		
 		//Si pas de destination on met dans le temp directory
 		if (installPath ==null) {
+			temp=true;
 			file = Files.createTempDirectory("Orthanc_"+dateFormat.format(new Date()));
 			CD_Burner.recursiveDeleteOnExit(file);
 			file.toFile().deleteOnExit();
 		}
 		//Si destination choisie on enregistre le repertoire
 		else file=Paths.get(installPath);
+		
 		File FileExe=new File(file.toString()+File.separator+fileExecName);
 		File FileJSON=new File(file.toString()+File.separator+"Orthanc.json");
 		
 		InputStream in = ClassLoader.getSystemResourceAsStream(resourceName);
 		InputStream inJson = ClassLoader.getSystemResourceAsStream(resourceNameJSON);
+		
 		OutputStream out = new FileOutputStream(FileExe);
 		IOUtils.copy(in, out);
+		out.close();
 		OutputStream outJson = new FileOutputStream(FileJSON);
 		IOUtils.copy(inJson, outJson);
-		out.close();
 		outJson.close();
+		//Create OrthancStorageDirectory
+		new File(file.toString()+File.separator+"OrthancStorage").mkdirs();
+		
+		//Add lib to get GDCM decoder
+		File FileLib=new File(file.toString()+File.separator+resourceLibName);
+		InputStream inLib = ClassLoader.getSystemResourceAsStream(resourceLibPath);
+		OutputStream outLib = new FileOutputStream(FileLib);
+		IOUtils.copy(inLib, outLib);
+		outLib.close();
+
+		
+		
+		
+	
 		
 		orthancExe=FileExe;
 		orthancJson=FileJSON;
@@ -86,7 +118,7 @@ public class Run_Orthanc {
 				
 				 	if ( ! System.getProperty("os.name").toLowerCase().startsWith("win")) {
 				 		Set<PosixFilePermission> perms = new HashSet<>();
-				 		 perms.add(PosixFilePermission.OWNER_READ);
+				 		 	perms.add(PosixFilePermission.OWNER_READ);
 						    perms.add(PosixFilePermission.OWNER_WRITE);
 						    perms.add(PosixFilePermission.OWNER_EXECUTE);
 
@@ -108,10 +140,12 @@ public class Run_Orthanc {
 				   
 				    
 				  ProcessBuilder pb = new ProcessBuilder(orthancExe.getAbsolutePath().toString(),orthancJson.getAbsolutePath().toString());
+				  pb.directory(orthancExe.getParentFile());
 				  pb.redirectErrorStream(true); 
 				
 				  try {
 				  process = pb.start();
+				  Thread.sleep(1000);
 				  InputStream stdout = process.getInputStream(); 
 			      InputStream stderr = process.getErrorStream();
 			      //OutputStream stdin = process.getOutputStream(); 
@@ -120,7 +154,7 @@ public class Run_Orthanc {
 				  //BufferedReader stinn = new BufferedReader (new OutputStreamReader(stdin));
 				  String line = null;
 		
-				  while ( (line = reader.readLine()) != null) {
+				  while ( (line = reader.readLine()) != null ) {
 						 	//If JSON Object parse it
 						 System.out.println(line);
 						 if (line.contains("Orthanc has started")) {
@@ -135,7 +169,7 @@ public class Run_Orthanc {
 				    }
 					
 
-				} catch (IOException e) {
+				} catch (IOException | InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -178,8 +212,9 @@ public class Run_Orthanc {
 	
 	public void stopOrthanc() {
 		System.out.println("Stoping Orthanc");
+		//If temp session make the directory in the delete list
+		
 		process.destroy();
-		orthancThread.interrupt();
 		try {
 			//On Attend sortie d'Orthanc pour liberer le JSON
 			Thread.sleep(2000);
@@ -188,6 +223,18 @@ public class Run_Orthanc {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		if (temp) {
+			try {
+				CD_Burner.recursiveDeleteOnExit(file);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			file.toFile().deleteOnExit();
+		}
+		
+		orthancThread.interrupt();
 
 	}
 	
