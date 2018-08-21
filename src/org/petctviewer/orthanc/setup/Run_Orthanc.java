@@ -144,7 +144,7 @@ public class Run_Orthanc {
 				
 				  try {
 				  process = pb.start();
-				  Thread.sleep(200);
+				  Thread.sleep(1000);
 				  InputStream stdout = process.getInputStream(); 
 			      InputStream stderr = process.getErrorStream();
 			      //OutputStream stdin = process.getOutputStream(); 
