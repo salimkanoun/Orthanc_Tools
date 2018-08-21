@@ -140,6 +140,7 @@ public class Run_Orthanc {
 				   
 				    
 				  ProcessBuilder pb = new ProcessBuilder(orthancExe.getAbsolutePath().toString(),orthancJson.getAbsolutePath().toString());
+				  pb.directory(orthancExe.getParentFile());
 				  pb.redirectErrorStream(true); 
 				
 				  try {
