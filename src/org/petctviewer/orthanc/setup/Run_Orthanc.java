@@ -34,10 +34,10 @@ public class Run_Orthanc {
 	 private String resourceName;
 	 private String fileExecName;
 	 private String resourceLibPath, resourceLibName;
+	 private boolean temp;
 	 
 	
 	public Run_Orthanc() {
-		System.out.println(System.getProperty("os.name"));
 		if(System.getProperty("os.name").toLowerCase().startsWith("win")) {
 			resourceName="Orthanc_Standalone/Orthanc-1.4.1-Release.exe";
 			fileExecName="Orthanc-1.4.1-Release.exe";
@@ -67,6 +67,7 @@ public class Run_Orthanc {
 		
 		//Si pas de destination on met dans le temp directory
 		if (installPath ==null) {
+			temp=true;
 			file = Files.createTempDirectory("Orthanc_"+dateFormat.format(new Date()));
 			CD_Burner.recursiveDeleteOnExit(file);
 			file.toFile().deleteOnExit();
@@ -211,6 +212,8 @@ public class Run_Orthanc {
 	
 	public void stopOrthanc() {
 		System.out.println("Stoping Orthanc");
+		//If temp session make the directory in the delete list
+		
 		process.destroy();
 		try {
 			//On Attend sortie d'Orthanc pour liberer le JSON
@@ -220,6 +223,17 @@ public class Run_Orthanc {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		if (temp) {
+			try {
+				CD_Burner.recursiveDeleteOnExit(file);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			file.toFile().deleteOnExit();
+		}
+		
 		orthancThread.interrupt();
 
 	}
