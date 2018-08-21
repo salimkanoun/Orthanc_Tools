@@ -39,18 +39,21 @@ public class Run_Orthanc {
 	public Run_Orthanc() {
 		System.out.println(System.getProperty("os.name"));
 		if(System.getProperty("os.name").toLowerCase().startsWith("win")) {
-			resourceName="Orthanc_Standalone/Orthanc-1.3.2-Release.exe";
-			fileExecName="Orthanc-1.3.2-Release.exe";
-			resourceLibName=null;
+			resourceName="Orthanc_Standalone/Orthanc-1.4.1-Release.exe";
+			fileExecName="Orthanc-1.4.1-Release.exe";
+			resourceLibPath="Orthanc_Standalone/OrthancWebViewer.dll";
+			resourceLibName="OrthancWebViewer.dll";
+			
 		}
 		else if (System.getProperty("os.name").toLowerCase().startsWith("mac")){
-			resourceName="Orthanc_Standalone/Orthanc-1.3.2-ReleaseMac";
-			fileExecName="Orthanc-1.3.2-ReleaseMac";
-			resourceLibName=null;
+			resourceName="Orthanc_Standalone/Orthanc-1.4.1-ReleaseMac";
+			fileExecName="Orthanc-1.4.1-ReleaseMac";
+			resourceLibPath="Orthanc_Standalone/libOsimisWebViewer.dylib";
+			resourceLibName="libOsimisWebViewer.dylib";
 		}
 		else if (System.getProperty("os.name").toLowerCase().startsWith("linux")){
-			resourceName="Orthanc_Standalone/Orthanc-1.3.2-ReleaseLinux";
-			fileExecName="Orthanc-1.3.2-ReleaseLinux";
+			resourceName="Orthanc_Standalone/Orthanc-1.4.1-ReleaseLinux";
+			fileExecName="Orthanc-1.4.1-ReleaseLinux";
 			resourceLibPath="Orthanc_Standalone/libOrthancWebViewer.so";
 			resourceLibName="libOrthancWebViewer.so";
 			
@@ -83,15 +86,17 @@ public class Run_Orthanc {
 		OutputStream outJson = new FileOutputStream(FileJSON);
 		IOUtils.copy(inJson, outJson);
 		outJson.close();
+		//Create OrthancStorageDirectory
+		new File(file.toString()+File.separator+"OrthancStorage").mkdirs();
 		
-		if(resourceLibName!=null) {
-			new File(file.toString()+File.separator+"lib").mkdirs();
-			File FileLib=new File(file.toString()+File.separator+"lib"+File.separator+resourceLibName);
-			InputStream inLib = ClassLoader.getSystemResourceAsStream(resourceLibPath);
-			OutputStream outLib = new FileOutputStream(FileLib);
-			IOUtils.copy(inLib, outLib);
-			outLib.close();
-		}
+		//Add lib to get GDCM decoder
+		new File(file.toString()+File.separator+"lib").mkdirs();
+		File FileLib=new File(file.toString()+File.separator+"lib"+File.separator+resourceLibName);
+		InputStream inLib = ClassLoader.getSystemResourceAsStream(resourceLibPath);
+		OutputStream outLib = new FileOutputStream(FileLib);
+		IOUtils.copy(inLib, outLib);
+		outLib.close();
+
 		
 		
 		
@@ -139,6 +144,7 @@ public class Run_Orthanc {
 				
 				  try {
 				  process = pb.start();
+				  Thread.sleep(200);
 				  InputStream stdout = process.getInputStream(); 
 			      InputStream stderr = process.getErrorStream();
 			      //OutputStream stdin = process.getOutputStream(); 
@@ -162,7 +168,7 @@ public class Run_Orthanc {
 				    }
 					
 
-				} catch (IOException e) {
+				} catch (IOException | InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
