@@ -91,8 +91,7 @@ public class Run_Orthanc {
 		new File(file.toString()+File.separator+"OrthancStorage").mkdirs();
 		
 		//Add lib to get GDCM decoder
-		new File(file.toString()+File.separator+"lib").mkdirs();
-		File FileLib=new File(file.toString()+File.separator+"lib"+File.separator+resourceLibName);
+		File FileLib=new File(file.toString()+File.separator+resourceLibName);
 		InputStream inLib = ClassLoader.getSystemResourceAsStream(resourceLibPath);
 		OutputStream outLib = new FileOutputStream(FileLib);
 		IOUtils.copy(inLib, outLib);
