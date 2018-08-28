@@ -37,6 +37,7 @@ import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.io.FileDeleteStrategy;
 import org.apache.commons.io.FileUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -101,11 +102,6 @@ public class CD_Burner {
 	        timer.scheduleAtFixedRate(timerTask, 0, (90*1000));
 		}
 		
-
-               
- 
-
-		
 	}
 	
 	/**
@@ -147,6 +143,8 @@ public class CD_Burner {
 				File dat = printDat(nom, id, date, studyDescription);
 				//On efface tout a la sortie JVM
 				recursiveDeleteOnExit(folder);
+				//Efface le zip dezipe
+				zip.delete();
 				//Get size of viewer and images to determine if CD or DVD to Burn
 				Long imageSize=FileUtils.sizeOfDirectory(folder.toFile());
 				Long ViewerSize=FileUtils.sizeOfDirectory(new File(fijiDirectory));
@@ -296,6 +294,11 @@ public class CD_Burner {
 		return dat;
 	}
 	
+	/**
+	 * Delete a path itself and all subdirectories
+	 * @param path
+	 * @throws IOException
+	 */
 	public static void recursiveDeleteOnExit(Path path) throws IOException {
 		  Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 		    @Override

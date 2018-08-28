@@ -152,16 +152,16 @@ public class ConnectionSetup extends JDialog {
 		panel_non_install.add(button_non_install, BorderLayout.SOUTH);
 		
 		//Display start or stop button depending on local run of orthanc
-		JButton runOrthancLocal= new JButton("Run Local Orthanc");
+		JButton runOrthancLocal= new JButton("Run Temporary Orthanc");
 		if(orthanc.getIsStarted()) {
-			runOrthancLocal.setText("Stop Orthanc Local");
+			runOrthancLocal.setText("Stop Temporary Orthanc");
 		}
 		
 		runOrthancLocal.addActionListener(new ActionListener() {
 		
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(runOrthancLocal.getText()=="Run Local Orthanc") {
+				if(runOrthancLocal.getText()=="Run Temporary Orthanc") {
 					try {
 						orthanc.copyOrthanc(null);
 						dispose();
@@ -183,8 +183,7 @@ public class ConnectionSetup extends JDialog {
 		btnReusableRun.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String os=System.getProperty("os.name");
-				if(os.startsWith("Windows")) {	
+				
 					boolean copy=orthanc.isCopyAvailable();
 					if (!copy) {
 						JOptionPane.showMessageDialog(gui, "Set folder installation", "Orthanc Install", JOptionPane.WARNING_MESSAGE);
@@ -204,7 +203,6 @@ public class ConnectionSetup extends JDialog {
 						}
 					}
 					
-				}
 				dispose();
 			}
 		});
