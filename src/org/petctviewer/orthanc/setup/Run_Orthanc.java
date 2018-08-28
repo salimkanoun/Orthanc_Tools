@@ -19,7 +19,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.prefs.Preferences;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.petctviewer.orthanc.monitoring.CD_Burner;
 
@@ -198,10 +197,14 @@ public class Run_Orthanc {
 			String installPath=jprefer.get("OrthancLocalPath", "None");
 			orthancExe=new File(installPath+File.separator+fileExecName);
 			orthancJson=new File(installPath+File.separator+"Orthanc.json");
-			startOrthanc();
-			return true;
+			if(orthancExe.exists() && orthancJson.exists()) {
+				startOrthanc();
+				return true;
+			}
+				
 		}
-		else return false;
+			
+		return false;
 	}
 	
 	public void stopOrthanc() {
