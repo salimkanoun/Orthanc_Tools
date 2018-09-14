@@ -29,6 +29,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.prefs.Preferences;
 import java.awt.event.ActionEvent;
 import javax.swing.JRadioButton;
@@ -108,7 +112,22 @@ public class Burner_Settings extends JDialog {
 			}
 			{
 				comboBoxBurnerManufacturer = new JComboBox<String>(new String[] {"Epson", "Primera"});
-				comboBoxBurnerManufacturer.setSelectedItem(burnerManifacturer);
+				
+				comboBoxBurnerManufacturer.addItemListener(new ItemListener() {
+				
+					@Override
+					public void itemStateChanged(ItemEvent arg0) {
+						if(comboBoxBurnerManufacturer.getSelectedItem().equals("Primera")) {
+							comboBoxSupportType.setEnabled(false);
+						}else {
+							comboBoxSupportType.setEnabled(true);
+						}
+						
+					}
+					
+				});
+				
+				
 				contentPanel.add(comboBoxBurnerManufacturer);
 			}
 			contentPanel.add(imageJ);
@@ -248,6 +267,8 @@ public class Burner_Settings extends JDialog {
 				okButton.setActionCommand("OK");
 				buttonPane.add(okButton);
 				getRootPane().setDefaultButton(okButton);
+				//Select the Burner set in the options registery
+				comboBoxBurnerManufacturer.setSelectedItem(burnerManifacturer);
 			}
 		}
 		
