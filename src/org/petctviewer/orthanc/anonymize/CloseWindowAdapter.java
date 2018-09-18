@@ -27,8 +27,6 @@ import javax.swing.JOptionPane;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.setup.Run_Orthanc;
 
-import ij.IJ;
-
 public class CloseWindowAdapter extends WindowAdapter{
 
 	JFrame frame;
@@ -54,9 +52,8 @@ public class CloseWindowAdapter extends WindowAdapter{
 		if(!zipContent.isEmpty() || !oldOrthancUIDs.isEmpty() || !listeExport.isEmpty() || monitoring.isRunningMonitoringService()){
 			String ObjButtons[] = {"Yes","No"};
 			int PromptResult = JOptionPane.showOptionDialog(null,"Are you sure you want to exit?","Orthanc Tools",JOptionPane.DEFAULT_OPTION,JOptionPane.WARNING_MESSAGE,null,ObjButtons,ObjButtons[1]);
-			if(PromptResult==JOptionPane.YES_OPTION)
-			{
-			closeAll();
+			if(PromptResult==JOptionPane.YES_OPTION) {
+				closeAll();
 			}
 		}else{
 			closeAll();

@@ -64,6 +64,7 @@ public class Rest {
 	public String[] getQueryAnswerIndexes(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber, String aet) {
 		// We call getQueryID to generate a query ID
 		String idQuery =  this.getQueryID(level, name, id, studyDate, modality, studyDescription, accessionNumber, aet);
+		
 		JSONArray contentArray = null;
 		try {
 			contentArray = (JSONArray) parser.parse(connexion.makeGetConnectionAndStringBuilder("/queries/" + idQuery + "/answers/").toString());
@@ -231,6 +232,7 @@ public class Rest {
 			values = new String[3][serverResponseArray.size()];
 			for(int i = 0; i < serverResponseArray.size(); i++){
 				contentJson= (JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/queries/" + idURL + "/answers/" + i + "/content").toString());
+				
 				if (contentJson.containsKey("0008,103e")) {
 					JSONObject studyDescriptionJson=(JSONObject) parser.parse(contentJson.get("0008,103e").toString());
 					values[0][i]=(String) studyDescriptionJson.get("Value");	

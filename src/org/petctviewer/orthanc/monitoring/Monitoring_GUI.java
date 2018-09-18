@@ -215,6 +215,8 @@ public class Monitoring_GUI extends JFrame {
 						btnSettings.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
 								Burner_Settings settings=new Burner_Settings();
+								settings.setLocationRelativeTo(gui);
+								settings.setResizable(false);
 								settings.setVisible(true);
 								settings.setModal(true);
 								//Refresh settings if already started
@@ -252,7 +254,7 @@ public class Monitoring_GUI extends JFrame {
 						JLabel lblCdburnerBySassa = new JLabel("CD Burner");
 						Title.add(lblCdburnerBySassa);
 						
-						JLabel lblforEpsonPp = new JLabel("(For Epson PP100 Disc Producer)");
+						JLabel lblforEpsonPp = new JLabel("(For Epson or Primera Disc Producer)");
 						Title.add(lblforEpsonPp);
 						
 						JPanel panel_tag_monitoring = new JPanel();

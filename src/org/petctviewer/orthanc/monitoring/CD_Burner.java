@@ -37,7 +37,6 @@ import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.io.FileDeleteStrategy;
 import org.apache.commons.io.FileUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -49,6 +48,7 @@ import javax.swing.JTextArea;
 
 public class CD_Burner {
 	
+	private String burnerManifacturer;
 	private  String dateFormatChoix;
 	private  String labelFile;
 	private  String epsonDirectory;
@@ -165,7 +165,13 @@ public class CD_Burner {
 				}
 				
 				// Creation du Cd
-				createCdBurner(nom, id, date, studyDescription, dat, discType);
+				if (burnerManifacturer.equals("Epson")) {
+					createCdBurnerEpson(nom, id, date, studyDescription, dat, discType);
+				}
+				else if(burnerManifacturer.equals("Primera")) {
+					createCdBurnerPrimera(nom, id, date, studyDescription, discType);
+				}
+				
 				//On efface la study de Orthanc
 				if (deleteStudies) connexion.makeDeleteConnection("/studies/"+newStableStudyID.get(i));
 			} catch (IOException | org.json.simple.parser.ParseException | ParseException e) {
@@ -229,7 +235,7 @@ public class CD_Burner {
 	 * @param studyDescription
 	 * @param dat
 	 */
-	private void createCdBurner(String nom, String id, String date, String studyDescription, File dat, String discType){
+	private void createCdBurnerEpson(String nom, String id, String date, String studyDescription, File dat, String discType){
 		
 		//REalisation du texte pour le Robot
 		String txtRobot= "# Making data CD\n"
@@ -260,12 +266,62 @@ public class CD_Burner {
 		textArea.append("Request Sent , Patient name "+nom+" id "+id+" date "+date+" study "+studyDescription+"\n");
 	}
 	
+	/**
+	 * Method for Primera Disc Burner
+	 * @param nom
+	 * @param id
+	 * @param date
+	 * @param studyDescription
+	 * @param discType
+	 */
+	private void createCdBurnerPrimera(String nom, String id, String date, String studyDescription, String discType){
+	//Command Keys/Values for Primera Robot
+			String txtRobot= "Copies = 1\n"
+					+ "DataImageType = UDF\n"
+					+ "Data="+fijiDirectory+"\n"
+					+ "Data="+folder+ File.separator+ "DICOM\n"
+					+ "RejectIfNotBlank=YES\n"
+					+ "CloseDisc=YES\n"
+					+ "VerifyDisc=YES\n"
+					/* PrintQuality - This key specifies the print quality. Key is optional.
+					The possible values : Low = 0, Medium =1, Better =2 High =3 Best =4*/
+					+ "PrintQuality=1\n"
+					/*PrintLabel - This specifies path and filename of the label to print on disc.
+	                The possible file types are .STD (SureThingTM), .jpg (JPEG), .bmp (Windows Bitmap), or .PRN (printed to file through any application). 
+	                If this key is not given then no printing will be performed. 
+	                */
+					+ "PrintLabel="+labelFile+"\n"
+					/* MergeField - This key specifies a “Merge” field for SureThing printing.
+					The print file specified within the JRQ must be a SureThing file, 
+					and it must have been designed with a Merge File specified.
+					Fields should be specified in the correct order to match the SureThing design.
+					*/
+					+ "MergeField="+nom+"\n"
+					+ "MergeField="+id+"\n"
+					+ "MergeField="+date+"\n"
+					+ "MergeField="+studyDescription+"\n";
+					
+			
+					// Making a .JRQ file in the watched folder
+					File f = new File(epsonDirectory + File.separator + "CD_"+dateFormat.format(datenow)+".JRQ");
+					PrintWriter pw = null;
+					try {
+						pw = new PrintWriter(f);
+						pw.write(txtRobot);
+					} catch (IOException e) {
+						e.printStackTrace();
+					} finally {
+						pw.close();
+					}
+					
+			textArea.append("Request Sent , Patient name "+nom+" id "+id+" date "+date+" study "+studyDescription+"\n");
+	}
+	
 	//Creer le fichier DAT pour injecter NOM, Date, Modalite
 	private File printDat(String nom, String id, String date, String studyDescription) throws ParseException {
 		
        SimpleDateFormat parser = new SimpleDateFormat("yyyyMMdd");
        Date dateExamen = parser.parse(date);
-       //dateExamen=DateUtils.truncate(dateExamen, Calendar.DAY_OF_MONTH);
        SimpleDateFormat formatter = new SimpleDateFormat(dateFormatChoix);
        String formattedDate = formatter.format(dateExamen);
        
@@ -320,6 +376,7 @@ public class CD_Burner {
 				//On prends les settings du registery
 				Preferences jPrefer = Preferences.userNodeForPackage(Burner_Settings.class);
 				jPrefer = jPrefer.node("CDburner");
+				burnerManifacturer=jPrefer.get("buernerManufacturer", "Epson");
 				fijiDirectory=jPrefer.get("fijiDirectory", null);
 				epsonDirectory=jPrefer.get("epsonDirectory", null);
 				labelFile=jPrefer.get("labelFile", null);

@@ -1155,8 +1155,16 @@ public class VueRest extends JFrame implements PlugIn{
 				if (searchingParam.getSelectedItem().equals("Patient name")){
 					String inputString=userInput.getText()+"^"+userInputFirstName.getText();
 					if (inputString.equals("*^*")) inputString="*";
-					modele.addPatient(inputString.toUpperCase(), "*", 
-					df.format(from.getDate().getTime())+"-"+df.format(to.getDate().getTime()), 
+					
+					String date;
+					if(df.format(from.getDate().getTime()) .equals(df.format(to.getDate().getTime()))){
+						date=df.format(from.getDate().getTime());
+						
+					}else {
+						date=df.format(from.getDate().getTime())+"-"+df.format(to.getDate().getTime());
+					}
+					
+					modele.addPatient(inputString.toUpperCase(), "*", date , 
 					modalities.toString(), description.getText(),"*", queryAET.getSelectedItem().toString());
 				}
 				// Query with the patient's ID

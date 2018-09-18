@@ -29,6 +29,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.prefs.Preferences;
 import java.awt.event.ActionEvent;
 import javax.swing.JRadioButton;
@@ -56,8 +60,9 @@ public class Burner_Settings extends JDialog {
 	private  String labelFile;
 	private  String epsonDirectory;
 	private  String fijiDirectory;
+	private  String burnerManifacturer;
 	private  Boolean deleteStudies;
-	private JComboBox<String> comboBoxSupportType;
+	private JComboBox<String> comboBoxSupportType, comboBoxBurnerManufacturer;
 	
 	/**
 	 * Launch the application.
@@ -100,6 +105,31 @@ public class Burner_Settings extends JDialog {
 					}
 				}
 			});
+			{
+				JLabel lblDiscburnerManufacturer = new JLabel("DiscBurner Manufacturer : ");
+				lblDiscburnerManufacturer.setHorizontalAlignment(SwingConstants.CENTER);
+				contentPanel.add(lblDiscburnerManufacturer);
+			}
+			{
+				comboBoxBurnerManufacturer = new JComboBox<String>(new String[] {"Epson", "Primera"});
+				
+				comboBoxBurnerManufacturer.addItemListener(new ItemListener() {
+				
+					@Override
+					public void itemStateChanged(ItemEvent arg0) {
+						if(comboBoxBurnerManufacturer.getSelectedItem().equals("Primera")) {
+							comboBoxSupportType.setEnabled(false);
+						}else {
+							comboBoxSupportType.setEnabled(true);
+						}
+						
+					}
+					
+				});
+				
+				
+				contentPanel.add(comboBoxBurnerManufacturer);
+			}
 			contentPanel.add(imageJ);
 		}
 		{
@@ -126,7 +156,7 @@ public class Burner_Settings extends JDialog {
 			contentPanel.add(labelFilePath);
 		}
 		{
-			JButton epsonDirectoryButton = new JButton("Set Epson Directory");
+			JButton epsonDirectoryButton = new JButton("Set Monitored Directory");
 			epsonDirectoryButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					JFileChooser fc=new JFileChooser();
@@ -203,6 +233,7 @@ public class Burner_Settings extends JDialog {
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						//On sauve dans le registery
+						jPrefer.put("buernerManufacturer", (String) comboBoxBurnerManufacturer.getSelectedItem());
 						if (epsonDirectory!=null) jPrefer.put("epsonDirectory", epsonDirectory);
 						if (fijiDirectory!=null) jPrefer.put("fijiDirectory", fijiDirectory);
 						if (labelFile!=null) jPrefer.put("labelFile", labelFile);
@@ -236,6 +267,8 @@ public class Burner_Settings extends JDialog {
 				okButton.setActionCommand("OK");
 				buttonPane.add(okButton);
 				getRootPane().setDefaultButton(okButton);
+				//Select the Burner set in the options registery
+				comboBoxBurnerManufacturer.setSelectedItem(burnerManifacturer);
 			}
 		}
 		
@@ -243,13 +276,12 @@ public class Burner_Settings extends JDialog {
 	
 	public void setCDPreference() {
 		//On prends les settings du registery
+		burnerManifacturer=jPrefer.get("buernerManufacturer", "Epson");
 		fijiDirectory=jPrefer.get("fijiDirectory", null);
 		epsonDirectory=jPrefer.get("epsonDirectory", null);
 		labelFile=jPrefer.get("labelFile", null);
 		dateFormatChoix=jPrefer.get("DateFormat", null);
 		deleteStudies=jPrefer.getBoolean("deleteStudies", false);
-		
-
 
 		
 	}
