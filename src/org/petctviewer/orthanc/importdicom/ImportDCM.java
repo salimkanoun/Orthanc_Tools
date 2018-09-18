@@ -36,6 +36,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
 import java.util.prefs.Preferences;
 
 import javax.swing.ImageIcon;
@@ -49,6 +52,9 @@ import javax.swing.SwingWorker;
 
 import ij.plugin.PlugIn;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
 
 public class ImportDCM extends JFrame implements PlugIn{
@@ -57,6 +63,9 @@ public class ImportDCM extends JFrame implements PlugIn{
 	private JLabel state;
 	private ParametreConnexionHttp connexion=new ParametreConnexionHttp();
 	private JFrame gui;
+	private ArrayList<String> importAnswer=new ArrayList<String>();
+	private HashMap<String, HashMap<String,String> > importedstudy=new HashMap<String, HashMap<String,String> >();
+	private JSONParser parser=new JSONParser();
 
 	public ImportDCM(){
 		super("Import DICOM files");
@@ -106,6 +115,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 							state.setText(state.getText()+" - Finished");
 							state.setForeground(Color.BLUE);
 							gui.pack();
+							findNewStudy();
 						}
 					};
 					worker.execute();
@@ -144,6 +154,8 @@ public class ImportDCM extends JFrame implements PlugIn{
 		Image image = new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage();
 		this.setIconImage(image);
 		this.getContentPane().add(mainPanel);
+		
+		
 	}
 
 	public void importFiles(Path path){
@@ -161,18 +173,19 @@ public class ImportDCM extends JFrame implements PlugIn{
 					
 					if(conn.getResponseCode() == 200){
 						System.out.println("=> Success \n");
+						//Get response after save
+						BufferedReader br = new BufferedReader(new InputStreamReader( (conn.getInputStream() )));
+						String output;
+						StringBuilder sb=new StringBuilder();
+						while ((output = br.readLine()) != null) {
+							sb.append(output);
+						}
+						importAnswer.add(sb.toString());
 						successCount++;
 					}else{
 						System.out.println("=> Failure (Is it a DICOM file ?)\n");
 					}
-					
-					//Get response after save
-					BufferedReader br = new BufferedReader(new InputStreamReader( (conn.getInputStream() )));
-					String output;
-					while ((output = br.readLine()) != null) {
-						//System.out.println(output);
-					}
-					
+
 					conn.disconnect();
 					totalFiles++;
 					state.setText(successCount + "/" + totalFiles + " files were imported. (Fiji>Window>Console)");
@@ -184,6 +197,46 @@ public class ImportDCM extends JFrame implements PlugIn{
 			System.out.println("Bad URL");
 		} catch (IOException e) {
 			System.out.println("=> Unable to connect (Is Orthanc running ? Is there a password ?)\n");
+		}
+		
+	}
+	
+	private void findNewStudy() {
+		
+		for (int i=0; i<importAnswer.size(); i++) {
+			try {
+				JSONObject importedInstance=(JSONObject) parser.parse(importAnswer.get(i));
+				StringBuilder sbStudy=connexion.makeGetConnectionAndStringBuilder("/instances/"+importedInstance.get("ID")+"/study");
+				JSONObject parentStudy=(JSONObject) parser.parse(sbStudy.toString());
+				String studyID=(String) parentStudy.get("ID");
+				//If new study Add it to the global Hashmap
+				if( ! importedstudy.containsKey(studyID)) {
+					//HashMap for a new Study imported
+					HashMap<String, String> newStudy=new HashMap<String,String>();
+					String studyDate=(String) ((JSONObject) (parentStudy.get("MainDicomTags"))).get("StudyDate");
+					String patientID=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientID");
+					String patientName=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientName");
+					newStudy.put("studyDate", studyDate);
+					newStudy.put("patientID", patientID);
+					newStudy.put("patientName", patientName);
+					importedstudy.put(studyID, newStudy);
+				}
+				
+				
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		Set<String> keys=importedstudy.keySet();
+		String[] keysArray=new String[keys.size()];
+		keys.toArray(keysArray);
+		
+		for (int i=0; i<keysArray.length; i++) {
+			System.out.println(importedstudy.get(keysArray[i]).get("patientName"));
+			System.out.println(importedstudy.get(keysArray[i]).get("patientID"));
+			System.out.println(importedstudy.get(keysArray[i]).get("studyDate"));
+			
 		}
 		
 	}
