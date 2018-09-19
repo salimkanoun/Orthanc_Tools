@@ -323,20 +323,7 @@ public class TableDataAnonStudies extends AbstractTableModel{
 					e.printStackTrace();
 				}
 			}
-			/*String pattern1 = pattern + "\" : [";
-			String pattern2 = "]";
-			Pattern p = Pattern.compile(Pattern.quote(pattern1) + "(.*?)" + Pattern.quote(pattern2));
-			Matcher m = p.matcher(sb.toString());
-			while(m.find()){
-				String pattern3 = "\"";
-				String pattern4 = "\"";
-				Pattern p2 = Pattern.compile(Pattern.quote(pattern3) + "(.*?)" + Pattern.quote(pattern4));
-				Matcher m2 = p2.matcher(m.group(1));
-				while(m2.find()){
-					list.add(m2.group(1));
-				}
-			}
-		}*/
+			
 		return list;
 	}
 }

@@ -120,8 +120,10 @@ public class VueAnon extends JFrame implements PlugIn{
 	//Objet de connexion aux restFul API, prend les settings des registery et etabli les connexion a la demande
 	private ParametreConnexionHttp connexionHttp;
 	
+	
+	private JPanel tablesPanel, mainPanel, topPanel;
+	
 	// Tables (p1)
-	private String date;
 	private JTable tableauPatients;
 	private JTable tableauStudies;
 	private JTable tableauSeries;
@@ -253,14 +255,14 @@ public class VueAnon extends JFrame implements PlugIn{
 		////////////////////////// PANEL 1 : ANONYMIZATION ////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		JPanel mainPanel = new JPanel();
+		mainPanel = new JPanel();
 		mainPanel.setLayout(new BoxLayout(mainPanel,BoxLayout.PAGE_AXIS));
 
 		/////////////////////////////////////////////////////////////////////////////
 		////////////////////////// TOP PANEL ////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////
 
-		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		topPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 
 		String[] patientParam = {"Patient name", "Patient ID", "Accession number"};
 		JComboBox<String> inputType = new JComboBox<String>(patientParam);
@@ -326,7 +328,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					modeleSeries.clear();
 
 					DateFormat df = new SimpleDateFormat("yyyyMMdd");
-					date = df.format(from.getDate())+"-"+df.format(to.getDate());
+					String date = df.format(from.getDate())+"-"+df.format(to.getDate());
 					String userInputString=null;
 					if (inputType.getSelectedIndex()==0 && !userInputFirstName.getText().equals("*") && !StringUtils.isEmpty(userInputFirstName.getText()) ) {
 						userInputString=userInput.getText()+"^"+userInputFirstName.getText();
@@ -390,8 +392,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		/////////////////////////////////////////////////////////////////////////////
 		
 
-		
-		JPanel tablesPanel = new JPanel(new FlowLayout());
+		tablesPanel = new JPanel(new FlowLayout());
 		this.tableauPatients = new JTable(modelePatients);
 		this.tableauStudies = new JTable(modeleStudies);
 		this.tableauSeries = new JTable(modeleSeries);
@@ -2537,7 +2538,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		
 	}
 	
-	private void openCloseAnonTool(boolean open) {
+	protected void openCloseAnonTool(boolean open) {
 		if (open) {
 			oToolRight.setVisible(false);
 			anonTablesPanel.setVisible(true);
@@ -2948,6 +2949,33 @@ public class VueAnon extends JFrame implements PlugIn{
 		anon.setLocationRelativeTo(null);
 		anon.setVisible(true);
 	}
+
+	
+	//Getters for inherited CTP import programm
+	public JTable getTablePatient() {
+		return tableauPatients;
+	}
+	
+	public JTable getTableStudy() {
+		return tableauStudies;
+	}
+	
+	public JTable getTableSerie() {
+		return tableauSeries;
+	}
+	
+	public JPanel getTablePanel() {
+		return tablesPanel;
+	}
+	
+	public JPanel getMainPanel() {
+		return mainPanel;
+	}
+	
+	public JPanel getTopPanel() {
+		return topPanel;
+	}
+
 
 		
 		
