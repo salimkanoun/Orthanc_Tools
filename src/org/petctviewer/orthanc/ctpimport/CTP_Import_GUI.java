@@ -15,6 +15,10 @@ import org.petctviewer.orthanc.importdicom.ImportDCM;
 public class CTP_Import_GUI extends VueAnon implements ImportListener {
 	
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private ImportDCM importFrame;
 	
 	public CTP_Import_GUI() {
