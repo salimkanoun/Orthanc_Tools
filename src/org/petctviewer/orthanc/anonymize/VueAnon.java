@@ -107,7 +107,7 @@ import org.petctviewer.orthanc.setup.Run_Orthanc;
 public class VueAnon extends JFrame implements PlugIn{
 	private static final long serialVersionUID = 1L;
 	
-	private JTabbedPane tabbedPane;
+	protected JTabbedPane tabbedPane;
 	private JLabel state = new JLabel();
 	private DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
 	private DateFormat dfZip = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
@@ -118,10 +118,10 @@ public class VueAnon extends JFrame implements PlugIn{
 	protected QueryFillStore query ;
 	
 	//Objet de connexion aux restFul API, prend les settings des registery et etabli les connexion a la demande
-	private ParametreConnexionHttp connexionHttp;
+	public ParametreConnexionHttp connexionHttp;
 	
 	
-	private JPanel tablesPanel, mainPanel, topPanel;
+	protected JPanel tablesPanel, mainPanel, topPanel, anonBtnPanelTop;
 	
 	// Tables (p1)
 	private JTable tableauPatients;
@@ -130,8 +130,8 @@ public class VueAnon extends JFrame implements PlugIn{
 	private TableDataPatientsAnon modelePatients;
 	private TableDataStudies modeleStudies;
 	private TableDataSeries modeleSeries;
-	private TableDataAnonPatients modeleAnonPatients = new TableDataAnonPatients();
-	private TableDataAnonStudies modeleAnonStudies;
+	protected TableDataAnonPatients modeleAnonPatients = new TableDataAnonPatients();
+	protected TableDataAnonStudies modeleAnonStudies;
 	private TableRowSorter<TableDataPatientsAnon> sorterPatients;
 	private TableRowSorter<TableDataStudies> sorterStudies;
 	private TableRowSorter<TableDataSeries> sorterSeries;
@@ -143,7 +143,7 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JButton displayExportTool;
 	private JButton displayManageTool;
 	private JButton addToAnon;
-	private JButton anonBtn;
+	protected JButton anonBtn;
 	private JButton removeFromAnonList;
 	private JButton setNamesIdBtn;
 	private JButton exportZip = new JButton("Export list");
@@ -213,7 +213,7 @@ public class VueAnon extends JFrame implements PlugIn{
 	
 	//CTP
 	private JTextField addressFieldCTP;
-	private JComboBox<Object> listePeersCTP ;
+	protected JComboBox<Object> listePeersCTP ;
 	private JButton exportCTP;
 	private String CTPUsername;
 	private String CTPPassword;
@@ -1100,13 +1100,9 @@ public class VueAnon extends JFrame implements PlugIn{
 								}
 							}
 						}
-					}catch (IOException e) {
+					}catch (IOException | ParseException e) {
 						e.printStackTrace();
-					} catch (ParseException e) {
-						e.printStackTrace();
-					} catch (Exception e){
-						e.printStackTrace();
-					}
+					} 
 				}
 				pack();
 			}
@@ -1191,7 +1187,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		anonBtn.setPreferredSize(new Dimension(120,27));
 		anonBtn.addActionListener(new AnonAction());
 
-		JPanel anonBtnPanelTop = new JPanel(new FlowLayout());
+		anonBtnPanelTop = new JPanel(new FlowLayout());
 		anonBtnPanelTop.add(addToAnon);
 		anonBtnPanelTop.add(displayAnonTool);
 		anonBtnPanelTop.add(displayExportTool);
@@ -2948,32 +2944,6 @@ public class VueAnon extends JFrame implements PlugIn{
 		IJ.register(VueAnon.class);
 		anon.setLocationRelativeTo(null);
 		anon.setVisible(true);
-	}
-
-	
-	//Getters for inherited CTP import programm
-	public JTable getTablePatient() {
-		return tableauPatients;
-	}
-	
-	public JTable getTableStudy() {
-		return tableauStudies;
-	}
-	
-	public JTable getTableSerie() {
-		return tableauSeries;
-	}
-	
-	public JPanel getTablePanel() {
-		return tablesPanel;
-	}
-	
-	public JPanel getMainPanel() {
-		return mainPanel;
-	}
-	
-	public JPanel getTopPanel() {
-		return topPanel;
 	}
 
 

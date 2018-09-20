@@ -56,6 +56,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
+import org.petctviewer.orthanc.ctpimport.ImportListener;
 
 public class ImportDCM extends JFrame implements PlugIn{
 	private static final long serialVersionUID = 1L;
@@ -66,6 +67,8 @@ public class ImportDCM extends JFrame implements PlugIn{
 	private ArrayList<String> importAnswer=new ArrayList<String>();
 	private HashMap<String, HashMap<String,String> > importedstudy=new HashMap<String, HashMap<String,String> >();
 	private JSONParser parser=new JSONParser();
+	
+	private ImportListener listener;
 
 	public ImportDCM(){
 		super("Import DICOM files");
@@ -115,7 +118,10 @@ public class ImportDCM extends JFrame implements PlugIn{
 							state.setText(state.getText()+" - Finished");
 							state.setForeground(Color.BLUE);
 							gui.pack();
-							findNewStudy();
+							if(listener !=null) {
+								getImportedStudy();
+								listener.ImportFinished(importedstudy);
+							}
 						}
 					};
 					worker.execute();
@@ -157,6 +163,10 @@ public class ImportDCM extends JFrame implements PlugIn{
 		
 		
 	}
+	
+	public void setImportListener(ImportListener listener) {
+		this.listener=listener;
+	}
 
 	public void importFiles(Path path){
 		try {
@@ -167,7 +177,6 @@ public class ImportDCM extends JFrame implements PlugIn{
 				@Override
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 					System.out.println("Importing " + file);
-					
 					
 					HttpURLConnection conn = connexion.sendDicom("/instances", (Files.readAllBytes(file)));
 					
@@ -201,7 +210,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 		
 	}
 	
-	private void findNewStudy() {
+	public HashMap<String, HashMap<String, String>> getImportedStudy() {
 		
 		for (int i=0; i<importAnswer.size(); i++) {
 			try {
@@ -216,9 +225,13 @@ public class ImportDCM extends JFrame implements PlugIn{
 					String studyDate=(String) ((JSONObject) (parentStudy.get("MainDicomTags"))).get("StudyDate");
 					String patientID=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientID");
 					String patientName=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientName");
+					String patientDOB=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientBirthDate");
+					String patientSex=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientSex");
 					newStudy.put("studyDate", studyDate);
 					newStudy.put("patientID", patientID);
 					newStudy.put("patientName", patientName);
+					newStudy.put("patientDOB", patientDOB);
+					newStudy.put("patientSex", patientSex);
 					importedstudy.put(studyID, newStudy);
 				}
 				
@@ -228,16 +241,9 @@ public class ImportDCM extends JFrame implements PlugIn{
 				e.printStackTrace();
 			}
 		}
-		Set<String> keys=importedstudy.keySet();
-		String[] keysArray=new String[keys.size()];
-		keys.toArray(keysArray);
 		
-		for (int i=0; i<keysArray.length; i++) {
-			System.out.println(importedstudy.get(keysArray[i]).get("patientName"));
-			System.out.println(importedstudy.get(keysArray[i]).get("patientID"));
-			System.out.println(importedstudy.get(keysArray[i]).get("studyDate"));
-			
-		}
+		return importedstudy;
+	
 		
 	}
 
