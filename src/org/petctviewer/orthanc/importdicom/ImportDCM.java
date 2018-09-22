@@ -38,7 +38,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.prefs.Preferences;
 
 import javax.swing.ImageIcon;
@@ -90,6 +89,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 				chooser.setAcceptAllFileFilterUsed(false);
 				if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 					path.setText(chooser.getSelectedFile().toPath().toString());
+					gui.pack();
 					jpreferPerso.put("filesLocation", path.getText());
 				}
 			}
@@ -251,7 +251,6 @@ public class ImportDCM extends JFrame implements PlugIn{
 
 	public static void main(String... args){
 		ImportDCM vue = new ImportDCM();
-		vue.setSize(1200,640);
 		vue.setLocationRelativeTo(null);
 		vue.setVisible(true);
 		vue.pack();
@@ -260,7 +259,6 @@ public class ImportDCM extends JFrame implements PlugIn{
 	@Override
 	public void run(String arg0) {
 		ImportDCM vue = new ImportDCM();
-		vue.setSize(1200, 400);
 		vue.setLocationRelativeTo(null);
 		vue.pack();
 		vue.setVisible(true);
