@@ -97,6 +97,7 @@ import org.petctviewer.orthanc.*;
 import org.petctviewer.orthanc.CTP.CTP;
 import org.petctviewer.orthanc.CTP.CTP_Gui;
 import org.petctviewer.orthanc.Jsonsettings.SettingsGUI;
+import org.petctviewer.orthanc.ctpimport.AnonymizeListener;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.*;
@@ -229,6 +230,9 @@ public class VueAnon extends JFrame implements PlugIn{
 	
 	// Last Table focus
 	private JTable lastTableFocus;
+	
+	//CustomListener
+	AnonymizeListener anonymizeListener;
 	
 	public VueAnon() {
 		
@@ -2555,8 +2559,6 @@ public class VueAnon extends JFrame implements PlugIn{
 		p3.add(mainPanelSetup);
 		tabbedPane.add("Setup", p3);
 		
-		
-
 		Image image = new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage();
 		this.setIconImage(image);
 		this.getContentPane().add(tabbedPane);
@@ -2778,11 +2780,8 @@ public class VueAnon extends JFrame implements PlugIn{
 
 					jprefer.put("profileAnon", anonProfiles.getSelectedItem().toString());
 
-					anonBtn.setEnabled(false);
-					setNamesIdBtn.setEnabled(false);
-					addToAnon.setEnabled(false);
-					removeFromAnonList.setEnabled(false);
-					importCTP.setEnabled(false);
+					//Disable the anons button during anonymization
+					enableAnonButton(false);
 
 					anonBtn.setText("Anonymizing");
 					// SETTING UP THE CHOICES
@@ -2918,11 +2917,8 @@ public class VueAnon extends JFrame implements PlugIn{
 					if(scList[1].isSelected()){
 						workerRemoveScAndSr.execute();
 					}
-					anonBtn.setEnabled(true);
-					addToAnon.setEnabled(true);
-					setNamesIdBtn.setEnabled(true);
-					removeFromAnonList.setEnabled(true);
-					importCTP.setEnabled(true);
+					//Re-enable anon button
+					enableAnonButton(true);
 					anonBtn.setText("Anonymize");
 					if(dialogResult == JOptionPane.YES_OPTION){
 						state.setText("<html><font color='green'>The data has successfully been anonymized.</font></html>");
@@ -2951,6 +2947,9 @@ public class VueAnon extends JFrame implements PlugIn{
 						exportCTP.doClick();
 						autoSendCTP=false;
 					}
+					if(anonymizeListener!=null) {
+						anonymizeListener.AnonymizationDone();
+					}
 				}
 			};
 			if(!modeleAnonStudies.getOldOrthancUIDs().isEmpty()){
@@ -2959,6 +2958,18 @@ public class VueAnon extends JFrame implements PlugIn{
 				}
 			}
 		}
+	}
+	
+	public void enableAnonButton(boolean enable) {
+		anonBtn.setEnabled(enable);
+		addToAnon.setEnabled(enable);
+		setNamesIdBtn.setEnabled(enable);
+		removeFromAnonList.setEnabled(enable);
+		importCTP.setEnabled(enable);
+	}
+	
+	public void setAnonymizeListener(AnonymizeListener anonymizeListener) {
+		this.anonymizeListener=anonymizeListener;
 	}
 	
 	// LAUNCHERS

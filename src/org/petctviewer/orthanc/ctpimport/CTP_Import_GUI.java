@@ -14,18 +14,21 @@ import java.util.Set;
 import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 
-public class CTP_Import_GUI extends VueAnon implements ImportListener {
+public class CTP_Import_GUI extends VueAnon implements ImportListener, AnonymizeListener {
 	
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private ImportDCM importFrame;
 	CTP_Import_GUI importGUI=this;
 	
+	public static void main(String[] args) {
+		new CTP_Import_GUI();
+
+	}
+	
 	public CTP_Import_GUI() {
 		super("OrthancCTP.json");
+		this.setAnonymizeListener(this);
 		//Make a simplified version of Orthanc Tools
 		tablesPanel.setVisible(false);
 		topPanel.setVisible(false);
@@ -59,11 +62,6 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener {
 		importFrame.setLocationRelativeTo(this);
 		importFrame.setVisible(true);
 		
-	}
-
-	public static void main(String[] args) {
-		new CTP_Import_GUI();
-
 	}
 
 	@Override
@@ -103,6 +101,12 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener {
 		}
 		
 		importFrame.dispose();
+		
+	}
+
+	@Override
+	public void AnonymizationDone() {
+		openCloseAnonTool(true);
 		
 	}
 
