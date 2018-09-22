@@ -1,5 +1,7 @@
 package org.petctviewer.orthanc.ctpimport;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -20,14 +22,29 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener {
 	 */
 	private static final long serialVersionUID = 1L;
 	private ImportDCM importFrame;
+	CTP_Import_GUI importGUI=this;
 	
 	public CTP_Import_GUI() {
-		super();
-		
+		super("OrthancCTP.json");
+		//Make a simplified version of Orthanc Tools
 		tablesPanel.setVisible(false);
 		topPanel.setVisible(false);
 		anonBtnPanelTop.setVisible(false);
-		anonBtn.setVisible(false);
+		importCTP.setVisible(true);
+		importCTP.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				importFrame=new ImportDCM();
+				importFrame.setImportListener(importGUI);
+				importFrame.pack();
+				importFrame.setLocationRelativeTo(importGUI);
+				importFrame.setVisible(true);
+				
+			}
+			
+		});
+		anonBtn.setText("Send");
 		openCloseAnonTool(true);
 		tabbedPane.remove(2);
 		listePeersCTP.setSelectedIndex(1);
@@ -35,6 +52,7 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener {
 		this.pack();
 		this.setLocationRelativeTo(null);
 		this.setVisible(true);
+		//Run the import app
 		importFrame=new ImportDCM();
 		importFrame.setImportListener(this);
 		importFrame.pack();

@@ -145,6 +145,7 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JButton addToAnon;
 	protected JButton anonBtn;
 	private JButton removeFromAnonList;
+	protected JButton importCTP;
 	private JButton setNamesIdBtn;
 	private JButton exportZip = new JButton("Export list");
 	private JButton removeFromZip = new JButton("Remove from list");
@@ -224,14 +225,16 @@ public class VueAnon extends JFrame implements PlugIn{
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	
 	//Run Orthanc
-	Run_Orthanc runOrthanc=new Run_Orthanc();
+	Run_Orthanc runOrthanc;
 	
 	// Last Table focus
 	private JTable lastTableFocus;
-
-	public VueAnon(){
+	
+	public VueAnon() {
+		
 		super("Orthanc Tools");
 		connexionHttp= new ParametreConnexionHttp();
+		runOrthanc=new Run_Orthanc(connexionHttp);
 		//Until we reach the Orthanc Server we give the setup panel
 		int check=0;
 		while (!connexionHttp.testConnexion() && check<3) {
@@ -242,6 +245,33 @@ public class VueAnon extends JFrame implements PlugIn{
 				check++;
 				if(check ==3) JOptionPane.showMessageDialog(null, "Programme is starting without connexion (no services)", "Failure", JOptionPane.ERROR_MESSAGE);
 		}
+		buildGui();
+		
+	}
+	
+	/**
+	 * Force temporary session of Orthanc, with a specified JSON config file
+	 * @param startTemporaryOrthanc
+	 */
+	public VueAnon(String orthancJsonName) {
+		super("Orthanc Tools");
+		connexionHttp= new ParametreConnexionHttp();
+		try {
+			runOrthanc=new Run_Orthanc(connexionHttp);
+			runOrthanc.orthancJsonName=orthancJsonName;
+			runOrthanc.copyOrthanc(null);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		buildGui();
+		
+	}
+
+	public void buildGui(){
+		
 		gui=this;
 		//On set les objets necessaires
 		modelePatients = new TableDataPatientsAnon(connexionHttp);
@@ -1132,7 +1162,10 @@ public class VueAnon extends JFrame implements PlugIn{
 			}
 		});
 		
-		setNamesIdBtn = new JButton("CTP");
+		importCTP = new JButton("Import DICOM");
+		importCTP.setVisible(false);
+		
+		setNamesIdBtn = new JButton("Query CTP");
 		setNamesIdBtn.setPreferredSize(new Dimension(120,27));
 		setNamesIdBtn.addActionListener(new ActionListener() {
 			
@@ -1186,6 +1219,9 @@ public class VueAnon extends JFrame implements PlugIn{
 		anonBtn = new JButton("Anonymize");
 		anonBtn.setPreferredSize(new Dimension(120,27));
 		anonBtn.addActionListener(new AnonAction());
+		
+		//Label to show the currently selected profile in the main panel
+		JLabel profileLabel = new JLabel();
 
 		anonBtnPanelTop = new JPanel(new FlowLayout());
 		anonBtnPanelTop.add(addToAnon);
@@ -1195,16 +1231,15 @@ public class VueAnon extends JFrame implements PlugIn{
 		anonDetailed.add(anonBtnPanelTop, BorderLayout.NORTH);
 		anonTablesPanel.add(new JScrollPane(anonPatientTable));
 		anonTablesPanel.add(new JScrollPane(anonStudiesTable));
-		JPanel anonBtnPanelRight = new JPanel(new GridBagLayout());
-		GridBagConstraints gbBtnPanel = new GridBagConstraints();
-		gbBtnPanel.gridx = 0;
-		gbBtnPanel.gridy = 0;
-		anonBtnPanelRight.add(removeFromAnonList, gbBtnPanel);
-		gbBtnPanel.insets = new Insets(10, 0, 0, 0);
-		gbBtnPanel.gridy = 1;
-		anonBtnPanelRight.add(setNamesIdBtn, gbBtnPanel);
-		gbBtnPanel.gridy = 2;
-		anonBtnPanelRight.add(anonBtn, gbBtnPanel);
+		
+		JPanel anonBtnPanelRight = new JPanel(new GridLayout(0,1));
+		anonBtnPanelRight.add(importCTP);
+		anonBtnPanelRight.add(removeFromAnonList);
+		anonBtnPanelRight.add(setNamesIdBtn);
+		anonBtnPanelRight.add(anonBtn);
+		anonBtnPanelRight.add(profileLabel);
+		
+		
 		anonTablesPanel.add(anonBtnPanelRight);
 		anonTablesPanel.setVisible(false);
 		addToAnon.setVisible(false);
@@ -2185,8 +2220,8 @@ public class VueAnon extends JFrame implements PlugIn{
 		bgDesc.add(radioDesc2);
 		gbSetup.gridx = 2;
 		tabSetup.add(radioDesc2, gbSetup);
-
-		JLabel profileLabel = new JLabel();
+		
+		
 
 		anonProfiles.addActionListener(
 				new AnonActionProfileListener(anonProfiles, profileLabel, radioBodyCharac1, 
@@ -2195,9 +2230,7 @@ public class VueAnon extends JFrame implements PlugIn{
 
 		anonProfiles.setSelectedItem(jprefer.get("profileAnon", "Default"));
 
-		// Showing the currently selected profile in the main panel
-		gbBtnPanel.gridy = 3;
-		anonBtnPanelRight.add(profileLabel, gbBtnPanel);
+		
 
 		JTabbedPane eastSetupPane = new JTabbedPane();
 		eastSetupPane.add("Export setup", eastExport);
@@ -2749,6 +2782,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					setNamesIdBtn.setEnabled(false);
 					addToAnon.setEnabled(false);
 					removeFromAnonList.setEnabled(false);
+					importCTP.setEnabled(false);
 
 					anonBtn.setText("Anonymizing");
 					// SETTING UP THE CHOICES
@@ -2888,6 +2922,7 @@ public class VueAnon extends JFrame implements PlugIn{
 					addToAnon.setEnabled(true);
 					setNamesIdBtn.setEnabled(true);
 					removeFromAnonList.setEnabled(true);
+					importCTP.setEnabled(true);
 					anonBtn.setText("Anonymize");
 					if(dialogResult == JOptionPane.YES_OPTION){
 						state.setText("<html><font color='green'>The data has successfully been anonymized.</font></html>");
