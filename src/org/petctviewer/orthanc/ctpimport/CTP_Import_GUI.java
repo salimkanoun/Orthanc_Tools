@@ -34,11 +34,24 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 		topPanel.setVisible(false);
 		anonBtnPanelTop.setVisible(false);
 		importCTP.setVisible(true);
+		
+		peerExport.setVisible(false);
+		csvReport.setVisible(false);
+		exportToZip.setVisible(false);
+		exportBtn.setVisible(false);
+		dicomStoreExport.setVisible(false);
+		exportCTP.setText("Send");
+		
+		listePeers.setVisible(false);
+		listeAETExport.setVisible(false);
+		
+		addressFieldCTP.setText("http://163.172.150.187/");
+		
 		importCTP.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				importFrame=new ImportDCM();
+				importFrame=new ImportDCM(importGUI.connexionHttp);
 				importFrame.setImportListener(importGUI);
 				importFrame.pack();
 				importFrame.setLocationRelativeTo(importGUI);
@@ -56,7 +69,7 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 		this.setLocationRelativeTo(null);
 		this.setVisible(true);
 		//Run the import app
-		importFrame=new ImportDCM();
+		importFrame=new ImportDCM(importGUI.connexionHttp);
 		importFrame.setImportListener(this);
 		importFrame.pack();
 		importFrame.setLocationRelativeTo(this);
@@ -94,6 +107,7 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 				modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientDOB, patientSex, studyID);
 				modeleAnonStudies.clear();
 				modeleAnonStudies.addStudies(patientName, patientID, studyID);
+				anonPatientTable.addRowSelectionInterval(0, 0);
 			} catch (IOException | ParseException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();

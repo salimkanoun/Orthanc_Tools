@@ -61,7 +61,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 	private static final long serialVersionUID = 1L;
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	private JLabel state;
-	private ParametreConnexionHttp connexion=new ParametreConnexionHttp();
+	private ParametreConnexionHttp connexion;
 	private JFrame gui;
 	private ArrayList<String> importAnswer=new ArrayList<String>();
 	private HashMap<String, HashMap<String,String> > importedstudy=new HashMap<String, HashMap<String,String> >();
@@ -69,8 +69,14 @@ public class ImportDCM extends JFrame implements PlugIn{
 	
 	private ImportListener listener;
 
-	public ImportDCM(){
+	public ImportDCM(ParametreConnexionHttp connexion){
 		super("Import DICOM files");
+		if(connexion ==null) {
+			this.connexion=new ParametreConnexionHttp();
+		}else {
+			this.connexion=connexion;
+		}
+		
 		this.gui=this;
 		JPanel mainPanel = new JPanel(new GridBagLayout());
 		JLabel labelPath = new JLabel("DICOM files path");
@@ -250,7 +256,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 
 
 	public static void main(String... args){
-		ImportDCM vue = new ImportDCM();
+		ImportDCM vue = new ImportDCM(null);
 		vue.setLocationRelativeTo(null);
 		vue.setVisible(true);
 		vue.pack();
@@ -258,7 +264,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 
 	@Override
 	public void run(String arg0) {
-		ImportDCM vue = new ImportDCM();
+		ImportDCM vue = new ImportDCM(null);
 		vue.setLocationRelativeTo(null);
 		vue.pack();
 		vue.setVisible(true);

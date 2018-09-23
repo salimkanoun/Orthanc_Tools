@@ -138,8 +138,8 @@ public class VueAnon extends JFrame implements PlugIn{
 	private TableRowSorter<TableDataSeries> sorterSeries;
 
 	// Orthanc toolbox (p1)
-	private JTable anonPatientTable;
-	private JTable anonStudiesTable;
+	protected JTable anonPatientTable;
+	protected JTable anonStudiesTable;
 	private JButton displayAnonTool;
 	private JButton displayExportTool;
 	private JButton displayManageTool;
@@ -147,7 +147,7 @@ public class VueAnon extends JFrame implements PlugIn{
 	protected JButton anonBtn;
 	private JButton removeFromAnonList;
 	protected JButton importCTP;
-	private JButton setNamesIdBtn;
+	private JButton queryCTPBtn;
 	private JButton exportZip = new JButton("Export list");
 	private JButton removeFromZip = new JButton("Remove from list");
 	private JButton addToZip = new JButton("Add to list");
@@ -178,7 +178,8 @@ public class VueAnon extends JFrame implements PlugIn{
 
 	// Tab Export (p2)
 	private JLabel stateExports = new JLabel("");
-	private JButton peerExport;
+	protected JButton peerExport,csvReport, exportToZip, exportBtn, dicomStoreExport;
+	protected JComboBox<Object> listePeers, listeAETExport ;
 	private JTable tableauExportStudies;
 	private JTable tableauExportSeries;
 	private TableDataExportStudies modeleExportStudies;
@@ -186,7 +187,7 @@ public class VueAnon extends JFrame implements PlugIn{
 	private TableRowSorter<TableDataExportStudies> sorterExportStudies;
 	private TableRowSorter<TableDataExportSeries> sorterExportSeries;
 	private StringBuilder remoteFileName;
-	private JComboBox<Object> listePeers ;
+	
 
 	//Monitoring (p3)
 	Monitoring_GUI monitoring;
@@ -214,9 +215,9 @@ public class VueAnon extends JFrame implements PlugIn{
 	private JComboBox<String> exportType;
 	
 	//CTP
-	private JTextField addressFieldCTP;
+	protected JTextField addressFieldCTP;
 	protected JComboBox<Object> listePeersCTP ;
-	private JButton exportCTP;
+	protected JButton exportCTP;
 	private String CTPUsername;
 	private String CTPPassword;
 	private boolean autoSendCTP=false;
@@ -259,7 +260,8 @@ public class VueAnon extends JFrame implements PlugIn{
 	 */
 	public VueAnon(String orthancJsonName) {
 		super("Orthanc Tools");
-		connexionHttp= new ParametreConnexionHttp();
+		connexionHttp= new ParametreConnexionHttp(true);
+		
 		try {
 			runOrthanc=new Run_Orthanc(connexionHttp);
 			runOrthanc.orthancJsonName=orthancJsonName;
@@ -408,7 +410,10 @@ public class VueAnon extends JFrame implements PlugIn{
 
 					@Override
 					public void run() {
-						ImportDCM.main();
+						ImportDCM importFrame=new ImportDCM(connexionHttp);
+						importFrame.pack();
+						importFrame.setLocationRelativeTo(gui);
+						importFrame.setVisible(true);
 					}
 					
 				});
@@ -1169,9 +1174,9 @@ public class VueAnon extends JFrame implements PlugIn{
 		importCTP = new JButton("Import DICOM");
 		importCTP.setVisible(false);
 		
-		setNamesIdBtn = new JButton("Query CTP");
-		setNamesIdBtn.setPreferredSize(new Dimension(120,27));
-		setNamesIdBtn.addActionListener(new ActionListener() {
+		queryCTPBtn = new JButton("Query CTP");
+		queryCTPBtn.setPreferredSize(new Dimension(120,27));
+		queryCTPBtn.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -1239,7 +1244,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		JPanel anonBtnPanelRight = new JPanel(new GridLayout(0,1));
 		anonBtnPanelRight.add(importCTP);
 		anonBtnPanelRight.add(removeFromAnonList);
-		anonBtnPanelRight.add(setNamesIdBtn);
+		anonBtnPanelRight.add(queryCTPBtn);
 		anonBtnPanelRight.add(anonBtn);
 		anonBtnPanelRight.add(profileLabel);
 		
@@ -1587,7 +1592,7 @@ public class VueAnon extends JFrame implements PlugIn{
 
 		stateExports.setBorder(new EmptyBorder(0, 0, 0, 40));
 
-		JPanel exportPanel = new JPanel(new FlowLayout());
+	
 
 		JPanel labelPanelExport = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JLabel exportToLabel = new JLabel("<html><font size=\"5\">Export list to...</font></html>");
@@ -1595,7 +1600,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		labelPanelExport.add(exportToLabel);
 		labelPanelExport.add(stateExports);
 
-		JButton exportBtn = new JButton("Remote server");
+		exportBtn = new JButton("Remote server");
 		exportBtn.addActionListener(new ActionListener() {
 
 			@Override
@@ -1679,7 +1684,7 @@ public class VueAnon extends JFrame implements PlugIn{
 
 		exportBtn.setToolTipText("Fill the remote server parameters in the setup tab before attempting an export.");
 
-		JButton csvReport = new JButton("CSV Report");
+		csvReport = new JButton("CSV Report");
 		csvReport.addActionListener(new ActionListener() {
 
 			@Override
@@ -1815,6 +1820,7 @@ public class VueAnon extends JFrame implements PlugIn{
 			public void actionPerformed(ActionEvent e) {
 				
 					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+						
 						boolean sendOk=false;
 						boolean validateOk=false;
 						
@@ -1824,6 +1830,7 @@ public class VueAnon extends JFrame implements PlugIn{
 							//Send DICOM to CTP selected Peer
 							try {
 								stateExports.setText("<html><font color= 'green'> Step 1/3 Sending to CTP Peer :"+listePeers.getSelectedItem().toString()+ "</font></html>");
+								exportCTP.setEnabled(false);
 								query.sendPeer(listePeersCTP.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
 								sendOk=true;
 							} catch (IOException e1) {
@@ -1880,6 +1887,7 @@ public class VueAnon extends JFrame implements PlugIn{
 				
 						@Override
 						protected void done(){
+							exportCTP.setEnabled(true);
 							if (sendOk && validateOk)stateExports.setText("<html><font color= 'green'>CTP Export Done </font></html>");
 							else if ( !sendOk) stateExports.setText("<html><font color= 'red'> Upload Failed </font></html>");
 							else if (!validateOk) stateExports.setText("<html><font color= 'red'> Validation Failed </font></html>");
@@ -1899,7 +1907,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		
 			QueryFillStore query = new QueryFillStore(connexionHttp);
 
-			JButton exportToZip = new JButton("Zip");
+			exportToZip = new JButton("Zip");
 			exportToZip.addActionListener(new ActionListener() {
 				boolean confirm = true;
 				@Override
@@ -1954,17 +1962,17 @@ public class VueAnon extends JFrame implements PlugIn{
 			});
 
 
-			JComboBox<Object> listeAETExport = new JComboBox<Object>(query.getAET());
-			JButton storeExport = new JButton("Store");
-			storeExport.addActionListener(new ActionListener() {
+			listeAETExport = new JComboBox<Object>(query.getAET());
+			dicomStoreExport = new JButton("Store");
+			dicomStoreExport.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 						@Override
 						protected Void doInBackground() {
 							try {
-								storeExport.setEnabled(false);
-								storeExport.setText("Storing...");
+								dicomStoreExport.setEnabled(false);
+								dicomStoreExport.setText("Storing...");
 								query.store(listeAETExport.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
 							} catch (IOException e1) {
 								stateExports.setText("<html><font color= 'red'>The request was not received (" + e1.getMessage() + ") </font></html>");
@@ -1975,8 +1983,8 @@ public class VueAnon extends JFrame implements PlugIn{
 						@Override
 						protected void done(){
 							stateExports.setText("<html><font color= 'green'>The request was successfully received</font></html>");
-							storeExport.setText("Store");
-							storeExport.setEnabled(true);
+							dicomStoreExport.setText("Store");
+							dicomStoreExport.setEnabled(true);
 						}
 					};
 					if(!modeleExportStudies.getOrthancIds().isEmpty()){
@@ -2022,31 +2030,23 @@ public class VueAnon extends JFrame implements PlugIn{
 				}
 			});
 			
-			
+			JPanel exportPanel = new JPanel(new FlowLayout(FlowLayout.CENTER,50,10));
 			exportPanel.add(exportCTP);
-			JLabel dummyLabel4 = new JLabel("");
-			dummyLabel4.setBorder(new EmptyBorder(0,0,0,50));
-			exportPanel.add(dummyLabel4);
 			exportPanel.add(csvReport);
-			JLabel dummyLabel0 = new JLabel("");
-			dummyLabel0.setBorder(new EmptyBorder(0,0,0,50));
-			exportPanel.add(dummyLabel0);
 			exportPanel.add(exportToZip);
-			JLabel dummyLabel1 = new JLabel("");
-			dummyLabel1.setBorder(new EmptyBorder(0,0,0,50));
-			exportPanel.add(dummyLabel1);
 			exportPanel.add(exportBtn);
-			JLabel dummyLabel2 = new JLabel("");
-			dummyLabel2.setBorder(new EmptyBorder(0,0,0,50));
-			exportPanel.add(dummyLabel2);
-			exportPanel.add(listeAETExport);
-			exportPanel.add(storeExport);
-			JLabel dummyLabel3 = new JLabel("");
-			dummyLabel3.setBorder(new EmptyBorder(0,0,0,50));
-			exportPanel.add(dummyLabel3);
-			exportPanel.add(listePeers);
-			exportPanel.add(peerExport);
 
+			JPanel dicomExport=new JPanel();
+			dicomExport.add(listeAETExport);
+			dicomExport.add(dicomStoreExport);
+			
+			JPanel peersExport=new JPanel();
+			peersExport.add(listePeers);
+			peersExport.add(peerExport);
+			
+			exportPanel.add(dicomExport);
+			exportPanel.add(peersExport);
+			
 		JPanel southExport = new JPanel();
 		southExport.setLayout(new BoxLayout(southExport, BoxLayout.PAGE_AXIS));
 		southExport.add(labelPanelExport);
@@ -2432,7 +2432,7 @@ public class VueAnon extends JFrame implements PlugIn{
 		aboutPanel.add(aboutBtn);
 		
 		if(!addressFieldCTP.getText().equals("http://")  && !addressFieldCTP.getText().equals("https://") ){
-			setNamesIdBtn.setVisible(false);
+			queryCTPBtn.setVisible(false);
 		}
 		
 		mainPanelSetup.add(westSetup, BorderLayout.WEST);
@@ -2530,10 +2530,10 @@ public class VueAnon extends JFrame implements PlugIn{
 				
 				if(addressFieldCTP.getText().equals("http://") || addressFieldCTP.getText().equals("https://") || addressFieldCTP.getText().isEmpty()){
 					exportCTP.setVisible(false);
-					setNamesIdBtn.setVisible(false);
+					queryCTPBtn.setVisible(false);
 				}else {
 					exportCTP.setVisible(true);
-					setNamesIdBtn.setVisible(true);
+					queryCTPBtn.setVisible(true);
 				}
 				
 				if(remoteServer.getText().length() == 0){
@@ -2963,7 +2963,7 @@ public class VueAnon extends JFrame implements PlugIn{
 	public void enableAnonButton(boolean enable) {
 		anonBtn.setEnabled(enable);
 		addToAnon.setEnabled(enable);
-		setNamesIdBtn.setEnabled(enable);
+		queryCTPBtn.setEnabled(enable);
 		removeFromAnonList.setEnabled(enable);
 		importCTP.setEnabled(enable);
 	}
