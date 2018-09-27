@@ -206,7 +206,7 @@
      **/
     // "peer"  : [ "http://127.0.0.1:8043/", "alice", "alicePassword" ]
     // "peer2" : [ "http://127.0.0.1:8044/" ]
-    "Lysarc"  : [ "http://51.15.232.81:80/", "salim", "salim" ]
+    "Lysarc"  : [ "http://orthanc.kanoun.fr:80/", "salim", "salim" ]
 
     /**
      * This is another, more advanced format to define Orthanc
