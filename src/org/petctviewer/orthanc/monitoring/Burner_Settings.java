@@ -56,12 +56,13 @@ public class Burner_Settings extends JDialog {
 	
 	private JDialog dialogSettings;
 
-	private  String dateFormatChoix;
-	private  String labelFile;
-	private  String epsonDirectory;
-	private  String fijiDirectory;
-	private  String burnerManifacturer;
-	private  Boolean deleteStudies;
+	private String dateFormatChoix;
+	private String labelFile;
+	private String epsonDirectory;
+	private String fijiDirectory;
+	private String burnerManifacturer;
+	private String suportType;
+	private Boolean deleteStudies;
 	private JComboBox<String> comboBoxSupportType, comboBoxBurnerManufacturer;
 	
 	/**
@@ -217,7 +218,7 @@ public class Burner_Settings extends JDialog {
 					{
 						comboBoxSupportType = new JComboBox<String>();
 						comboBoxSupportType.setModel(new DefaultComboBoxModel<String>(new String[] {"Auto", "CD", "DVD"}));
-						comboBoxSupportType.setSelectedItem(jPrefer.get("suportType", "Auto"));
+						comboBoxSupportType.setSelectedItem(suportType);
 						panel_1.add(comboBoxSupportType);
 					}
 				}
@@ -282,6 +283,7 @@ public class Burner_Settings extends JDialog {
 		labelFile=jPrefer.get("labelFile", null);
 		dateFormatChoix=jPrefer.get("DateFormat", null);
 		deleteStudies=jPrefer.getBoolean("deleteStudies", false);
+		suportType=jPrefer.get("suportType", "Auto");
 
 		
 	}
