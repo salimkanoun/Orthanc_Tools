@@ -59,7 +59,7 @@
   "HttpServerEnabled" : true,
 
   // HTTP port for the REST services and for the GUI
-  "HttpPort" : 8042,
+  "HttpPort" : 8043,
 
   // When the following option is "true", if an error is encountered
   // while calling the REST API, a JSON message describing the error
@@ -91,7 +91,7 @@
   "DicomCheckCalledAet" : false,
 
   // The DICOM port
-  "DicomPort" : 4242,
+  "DicomPort" : 4243,
 
   // The default encoding that is assumed for DICOM files without
   // "SpecificCharacterSet" DICOM tag, and that is used when answering
@@ -206,6 +206,7 @@
      **/
     // "peer"  : [ "http://127.0.0.1:8043/", "alice", "alicePassword" ]
     // "peer2" : [ "http://127.0.0.1:8044/" ]
+    "Lysarc"  : [ "http://orthanc.kanoun.fr:80/", "salim", "salim" ]
 
     /**
      * This is another, more advanced format to define Orthanc
