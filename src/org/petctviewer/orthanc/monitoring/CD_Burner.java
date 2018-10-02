@@ -38,6 +38,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
@@ -49,11 +50,11 @@ import javax.swing.JTextArea;
 public class CD_Burner {
 	
 	private String burnerManifacturer;
-	private  String dateFormatChoix;
-	private  String labelFile;
-	private  String epsonDirectory;
-	private  String fijiDirectory;
-	private  Boolean deleteStudies;
+	private String dateFormatChoix;
+	private String labelFile;
+	private String epsonDirectory;
+	private String fijiDirectory;
+	private Boolean deleteStudies;
 	private String suportType;
 	private JTextArea textArea;
 	private Path folder;
@@ -87,7 +88,6 @@ public class CD_Burner {
 	
 				@Override
 				public void run() {
-					System.out.println("starting scann");
 					monitoring.makeMonitor();
 					makeCD(monitoring.newStableStudyID);
 					monitoring.clearAllList();
@@ -109,7 +109,6 @@ public class CD_Burner {
 	 */
 	public void stopCDMonitoring() {
 		timer.cancel();
-		System.out.println("Stoping scann");
 	}
 	
 	/**
@@ -131,16 +130,40 @@ public class CD_Burner {
 				// Recuperation des donnï¿½es patients
 				JSONParser parser=new JSONParser();
 				JSONObject response=(JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/studies/"+ newStableStudyID.get(i)).toString());			JSONObject mainPatientTag=(JSONObject) response.get("PatientMainDicomTags");
+				
+				//Get value of interest : Patient Name / ID / DOB / study date and description
 				String nom=(String) mainPatientTag.get("PatientName");
 				String id=(String) mainPatientTag.get("PatientID");
+				String patientDOB=(String) mainPatientTag.get("PatientBirthDate");
 				JSONObject mainDicomTag=(JSONObject) response.get("MainDicomTags");
-				String date=(String) mainDicomTag.get("StudyDate");
+				String studyDate=(String) mainDicomTag.get("StudyDate");
 				String studyDescription=(String) mainDicomTag.get("StudyDescription");
+				
+				//Parse date and generate string in the date format set in the options by the user
+				SimpleDateFormat parserDate = new SimpleDateFormat("yyyyMMdd");
+				SimpleDateFormat formatter = new SimpleDateFormat(dateFormatChoix);
+				
+				String formattedDateExamen;
+				if(StringUtils.isNotEmpty(studyDate)) {
+					Date dateExamen = parserDate.parse(studyDate);
+					formattedDateExamen = formatter.format(dateExamen);
+				}else {
+					formattedDateExamen="N/A";
+				}
+				
+				String patientDOBString;
+				if(StringUtils.isNotEmpty(patientDOB)) {
+					Date patientDOBDate = parserDate.parse(patientDOB);
+					patientDOBString = formatter.format(patientDOBDate);
+				}else {
+					patientDOBString="N/A";
+				}
+				
+				
 				if (studyDescription==null) studyDescription="N/A";
 				// Unzip du fichier ZIP recupere
 				unzip(zip);
-				//Generation du Dat
-				File dat = printDat(nom, id, date, studyDescription);
+			
 				//On efface tout a la sortie JVM
 				recursiveDeleteOnExit(folder);
 				//Efface le zip dezipe
@@ -166,14 +189,17 @@ public class CD_Burner {
 				
 				// Creation du Cd
 				if (burnerManifacturer.equals("Epson")) {
-					createCdBurnerEpson(nom, id, date, studyDescription, dat, discType);
+					//Generation du Dat
+					File dat = printDat(nom, id, studyDate, studyDescription, patientDOBString);
+					createCdBurnerEpson(nom, id, formattedDateExamen, studyDescription, dat, discType);
 				}
 				else if(burnerManifacturer.equals("Primera")) {
-					createCdBurnerPrimera(nom, id, date, studyDescription, discType);
+					createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, patientDOBString, discType);
 				}
 				
 				//On efface la study de Orthanc
 				if (deleteStudies) connexion.makeDeleteConnection("/studies/"+newStableStudyID.get(i));
+				
 			} catch (IOException | org.json.simple.parser.ParseException | ParseException e) {
 				e.printStackTrace();
 			}
@@ -274,7 +300,7 @@ public class CD_Burner {
 	 * @param studyDescription
 	 * @param discType
 	 */
-	private void createCdBurnerPrimera(String nom, String id, String date, String studyDescription, String discType){
+	private void createCdBurnerPrimera(String nom, String id, String date, String studyDescription, String patientDOB, String discType){
 	//Command Keys/Values for Primera Robot
 			String txtRobot= "Copies = 1\n"
 					+ "DataImageType = UDF\n"
@@ -291,7 +317,7 @@ public class CD_Burner {
 	                If this key is not given then no printing will be performed. 
 	                */
 					+ "PrintLabel="+labelFile+"\n"
-					/* MergeField - This key specifies a “Merge” field for SureThing printing.
+					/* MergeField - This key specifies a ï¿½Mergeï¿½ field for SureThing printing.
 					The print file specified within the JRQ must be a SureThing file, 
 					and it must have been designed with a Merge File specified.
 					Fields should be specified in the correct order to match the SureThing design.
@@ -299,7 +325,8 @@ public class CD_Burner {
 					+ "MergeField="+nom+"\n"
 					+ "MergeField="+id+"\n"
 					+ "MergeField="+date+"\n"
-					+ "MergeField="+studyDescription+"\n";
+					+ "MergeField="+studyDescription+"\n"
+					+ "MargeField="+patientDOB+"\n";
 					
 			
 					// Making a .JRQ file in the watched folder
@@ -318,12 +345,9 @@ public class CD_Burner {
 	}
 	
 	//Creer le fichier DAT pour injecter NOM, Date, Modalite
-	private File printDat(String nom, String id, String date, String studyDescription) throws ParseException {
+	private File printDat(String nom, String id, String date, String studyDescription, String patientDOB) throws ParseException {
 		
-       SimpleDateFormat parser = new SimpleDateFormat("yyyyMMdd");
-       Date dateExamen = parser.parse(date);
-       SimpleDateFormat formatter = new SimpleDateFormat(dateFormatChoix);
-       String formattedDate = formatter.format(dateExamen);
+       
        
        //On parse le nom pour enlever les ^ et passer le prenom en minuscule
        int separationNomPrenom=nom.indexOf("^", 0);
@@ -333,8 +357,9 @@ public class CD_Burner {
        
 		String datFile = "patientName="+nom.replaceAll("\\^", " ")+"\n"
 					+ "patientId=" + id +"\n"
-					+ "patientDate="+ formattedDate + "\n"
-					+ "studyDescription="+ studyDescription+"\n";
+					+ "patientDate="+ date + "\n"
+					+ "studyDescription="+ studyDescription+"\n"
+					+ "patientDOB="+patientDOB+"\n";
 		
 		
 		File dat = new File(folder + File.separator + "CD"+dateFormat.format(datenow)+".dat");
