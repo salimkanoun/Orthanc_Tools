@@ -164,10 +164,7 @@ public class CD_Burner {
 				// Unzip du fichier ZIP recupere
 				unzip(zip);
 			
-				//On efface tout a la sortie JVM
-				recursiveDeleteOnExit(folder);
-				//Efface le zip dezipe
-				zip.delete();
+				
 				//Get size of viewer and images to determine if CD or DVD to Burn
 				Long imageSize=FileUtils.sizeOfDirectory(folder.toFile());
 				Long ViewerSize=FileUtils.sizeOfDirectory(new File(fijiDirectory));
@@ -196,6 +193,11 @@ public class CD_Burner {
 				else if(burnerManifacturer.equals("Primera")) {
 					createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, patientDOBString, discType);
 				}
+				
+				//On efface tout a la sortie JVM
+				recursiveDeleteOnExit(folder);
+				//Efface le zip dezipe
+				zip.delete();
 				
 				//On efface la study de Orthanc
 				if (deleteStudies) connexion.makeDeleteConnection("/studies/"+newStableStudyID.get(i));
