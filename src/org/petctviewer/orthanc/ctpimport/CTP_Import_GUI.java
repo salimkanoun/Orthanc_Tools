@@ -45,7 +45,7 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 		listePeers.setVisible(false);
 		listeAETExport.setVisible(false);
 		
-		addressFieldCTP.setText("http://kanoun.fr/");
+		addressFieldCTP.setText("http://localhost/");
 		
 		importCTP.addActionListener(new ActionListener() {
 
