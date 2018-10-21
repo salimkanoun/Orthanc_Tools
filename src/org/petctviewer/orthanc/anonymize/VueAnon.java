@@ -2974,8 +2974,6 @@ public class VueAnon extends JFrame implements PlugIn{
 	
 	// LAUNCHERS
 	public static void main(String... args){
-		System.setProperty("org.apache.commons.logging.Log",
-				"org.apache.commons.logging.impl.NoOpLog");
 		VueAnon anon=new VueAnon();
 		anon.setLocationRelativeTo(null);
 		anon.setVisible(true);

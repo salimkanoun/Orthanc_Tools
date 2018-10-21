@@ -63,7 +63,6 @@ public class CloseWindowAdapter extends WindowAdapter{
 	private void closeAll() {
 		if (monitoring.isRunningMonitoringService())  monitoring.closeAllMonitoringServices();
 		if(runOrthanc.getIsStarted()) {
-			
 			runOrthanc.stopOrthanc();
 		}
 		frame.dispose();
