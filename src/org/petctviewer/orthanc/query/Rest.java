@@ -316,6 +316,7 @@ public class Rest {
 				+ "\"StudyDescription\" : \"" + studyDescription + "\","
 				+ "\"AccessionNumber\" : \"" + accessionNumber + "\"}"
 				+ "}";
+		System.out.println(query);
 		return query;
 	}
 
