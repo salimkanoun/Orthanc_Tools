@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 
 import org.apache.commons.io.IOUtils;
+import org.petctviewer.orthanc.ParametreConnexionHttp;
 import org.petctviewer.orthanc.monitoring.CD_Burner;
 
 public class Run_Orthanc {
@@ -33,11 +34,13 @@ public class Run_Orthanc {
 	 private File orthancJson;
 	 private String resourceName;
 	 private String fileExecName;
+	 public String orthancJsonName="Orthanc.json";
 	 private String resourceLibPath, resourceLibName;
 	 private boolean temp;
-	 
+	 private ParametreConnexionHttp connexionHttp;
 	
-	public Run_Orthanc() {
+	public Run_Orthanc(ParametreConnexionHttp connexionHttp) {
+		this.connexionHttp=connexionHttp;
 		if(System.getProperty("os.name").toLowerCase().startsWith("win")) {
 			resourceName="Orthanc_Standalone/Orthanc-1.4.1-Release.exe";
 			fileExecName="Orthanc-1.4.1-Release.exe";
@@ -62,7 +65,7 @@ public class Run_Orthanc {
 	}
 	
 	public String copyOrthanc(String installPath) throws Exception {
-		String resourceNameJSON="Orthanc_Standalone/Orthanc.json";
+		String resourceNameJSON="Orthanc_Standalone/"+orthancJsonName;
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		
 		//Si pas de destination on met dans le temp directory
@@ -74,7 +77,7 @@ public class Run_Orthanc {
 		else file=Paths.get(installPath);
 		
 		File FileExe=new File(file.toString()+File.separator+fileExecName);
-		File FileJSON=new File(file.toString()+File.separator+"Orthanc.json");
+		File FileJSON=new File(file.toString()+File.separator+orthancJsonName);
 		
 		InputStream in = ClassLoader.getSystemResourceAsStream(resourceName);
 		InputStream inJson = ClassLoader.getSystemResourceAsStream(resourceNameJSON);
@@ -209,28 +212,31 @@ public class Run_Orthanc {
 	
 	public void stopOrthanc() {
 		System.out.println("Stoping Orthanc");
-		//If temp session make the directory in the delete list
-		
-		process.destroy();
+		//Ask Orthanc to shutdown
+		connexionHttp.makePostConnection("/tools/shutdown", "");
+		//Destroy the process
 		try {
-			//On Attend sortie d'Orthanc pour liberer le JSON
-			Thread.sleep(2000);
-			 isStarted=false;
+			while (process.isAlive()) {
+				Thread.sleep(1000);
+			}
+			process.destroy();
+			orthancThread.interrupt();
+			isStarted=false;
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
+		//If temp session make the directory in the delete list
 		if (temp) {
 			try {
 				CD_Burner.recursiveDeleteOnExit(file);
 			} catch (IOException e) {
-				System.out.println(e);
 				e.printStackTrace();
 			}
 		}
 		
-		orthancThread.interrupt();
+		
 
 	}
 	

@@ -36,6 +36,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.prefs.Preferences;
 
 import javax.swing.ImageIcon;
@@ -49,17 +51,32 @@ import javax.swing.SwingWorker;
 
 import ij.plugin.PlugIn;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
+import org.petctviewer.orthanc.ctpimport.ImportListener;
 
 public class ImportDCM extends JFrame implements PlugIn{
 	private static final long serialVersionUID = 1L;
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	private JLabel state;
-	private ParametreConnexionHttp connexion=new ParametreConnexionHttp();
+	private ParametreConnexionHttp connexion;
 	private JFrame gui;
+	private ArrayList<String> importAnswer=new ArrayList<String>();
+	private HashMap<String, HashMap<String,String> > importedstudy=new HashMap<String, HashMap<String,String> >();
+	private JSONParser parser=new JSONParser();
+	
+	private ImportListener listener;
 
-	public ImportDCM(){
+	public ImportDCM(ParametreConnexionHttp connexion){
 		super("Import DICOM files");
+		if(connexion ==null) {
+			this.connexion=new ParametreConnexionHttp();
+		}else {
+			this.connexion=connexion;
+		}
+		
 		this.gui=this;
 		JPanel mainPanel = new JPanel(new GridBagLayout());
 		JLabel labelPath = new JLabel("DICOM files path");
@@ -78,6 +95,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 				chooser.setAcceptAllFileFilterUsed(false);
 				if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 					path.setText(chooser.getSelectedFile().toPath().toString());
+					gui.pack();
 					jpreferPerso.put("filesLocation", path.getText());
 				}
 			}
@@ -106,6 +124,10 @@ public class ImportDCM extends JFrame implements PlugIn{
 							state.setText(state.getText()+" - Finished");
 							state.setForeground(Color.BLUE);
 							gui.pack();
+							if(listener !=null) {
+								getImportedStudy();
+								listener.ImportFinished(importedstudy);
+							}
 						}
 					};
 					worker.execute();
@@ -144,6 +166,12 @@ public class ImportDCM extends JFrame implements PlugIn{
 		Image image = new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage();
 		this.setIconImage(image);
 		this.getContentPane().add(mainPanel);
+		
+		
+	}
+	
+	public void setImportListener(ImportListener listener) {
+		this.listener=listener;
 	}
 
 	public void importFiles(Path path){
@@ -156,23 +184,23 @@ public class ImportDCM extends JFrame implements PlugIn{
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 					System.out.println("Importing " + file);
 					
-					
 					HttpURLConnection conn = connexion.sendDicom("/instances", (Files.readAllBytes(file)));
 					
 					if(conn.getResponseCode() == 200){
 						System.out.println("=> Success \n");
+						//Get response after save
+						BufferedReader br = new BufferedReader(new InputStreamReader( (conn.getInputStream() )));
+						String output;
+						StringBuilder sb=new StringBuilder();
+						while ((output = br.readLine()) != null) {
+							sb.append(output);
+						}
+						importAnswer.add(sb.toString());
 						successCount++;
 					}else{
 						System.out.println("=> Failure (Is it a DICOM file ?)\n");
 					}
-					
-					//Get response after save
-					BufferedReader br = new BufferedReader(new InputStreamReader( (conn.getInputStream() )));
-					String output;
-					while ((output = br.readLine()) != null) {
-						//System.out.println(output);
-					}
-					
+
 					conn.disconnect();
 					totalFiles++;
 					state.setText(successCount + "/" + totalFiles + " files were imported. (Fiji>Window>Console)");
@@ -187,12 +215,48 @@ public class ImportDCM extends JFrame implements PlugIn{
 		}
 		
 	}
+	
+	public HashMap<String, HashMap<String, String>> getImportedStudy() {
+		
+		for (int i=0; i<importAnswer.size(); i++) {
+			try {
+				JSONObject importedInstance=(JSONObject) parser.parse(importAnswer.get(i));
+				StringBuilder sbStudy=connexion.makeGetConnectionAndStringBuilder("/instances/"+importedInstance.get("ID")+"/study");
+				JSONObject parentStudy=(JSONObject) parser.parse(sbStudy.toString());
+				String studyID=(String) parentStudy.get("ID");
+				//If new study Add it to the global Hashmap
+				if( ! importedstudy.containsKey(studyID)) {
+					//HashMap for a new Study imported
+					HashMap<String, String> newStudy=new HashMap<String,String>();
+					String studyDate=(String) ((JSONObject) (parentStudy.get("MainDicomTags"))).get("StudyDate");
+					String patientID=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientID");
+					String patientName=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientName");
+					String patientDOB=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientBirthDate");
+					String patientSex=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientSex");
+					newStudy.put("studyDate", studyDate);
+					newStudy.put("patientID", patientID);
+					newStudy.put("patientName", patientName);
+					newStudy.put("patientDOB", patientDOB);
+					newStudy.put("patientSex", patientSex);
+					importedstudy.put(studyID, newStudy);
+				}
+				
+				
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		return importedstudy;
+	
+		
+	}
 
 
 
 	public static void main(String... args){
-		ImportDCM vue = new ImportDCM();
-		vue.setSize(1200,640);
+		ImportDCM vue = new ImportDCM(null);
 		vue.setLocationRelativeTo(null);
 		vue.setVisible(true);
 		vue.pack();
@@ -200,8 +264,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 
 	@Override
 	public void run(String arg0) {
-		ImportDCM vue = new ImportDCM();
-		vue.setSize(1200, 400);
+		ImportDCM vue = new ImportDCM(null);
 		vue.setLocationRelativeTo(null);
 		vue.pack();
 		vue.setVisible(true);

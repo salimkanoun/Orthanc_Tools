@@ -98,6 +98,12 @@ public class ParametreConnexionHttp {
 		
 	}
 	
+	public ParametreConnexionHttp(boolean CTP)  {
+		this.fullAddress = "http://localhost:8043";
+		
+	}
+	
+	
 	public HttpURLConnection makeGetConnection(String apiUrl) {
 		
 		HttpURLConnection conn=null;
