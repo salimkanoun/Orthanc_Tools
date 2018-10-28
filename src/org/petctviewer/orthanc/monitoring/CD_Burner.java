@@ -417,7 +417,6 @@ public class CD_Burner {
 		    		String extension=FilenameUtils.getExtension(file.toString());
 		    		int rowNubmer=(int) espsonStatus.get(baseName)[0];
 		    		File tempFolder=(File) espsonStatus.get(baseName)[1];
-		    		System.out.println(tempFolder);
 		    		if(extension.equals("ERR")) {
 		    			table_burning_history.setValueAt("Burning Error", rowNubmer, 5);
 		    			FileUtils.deleteDirectory(tempFolder);
