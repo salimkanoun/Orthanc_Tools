@@ -169,7 +169,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	private JPopupMenu popMenuSeries = new JPopupMenu();
 	private ArrayList<String> zipContent = new ArrayList<String>();
 	private ArrayList<String> manageContent = new ArrayList<String>();
-	private JPanel anonTablesPanel;
+	protected JPanel anonTablesPanel;
 	private int anonCount;
 	
 
@@ -279,7 +279,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		//On set les objets necessaires
 		modelePatients = new TableDataPatientsAnon(connexionHttp);
 		modeleExportSeries = new TableDataExportSeries(connexionHttp, this, stateExports);
-		modeleSeries = new TableDataSeries(connexionHttp, state, this);
+		modeleSeries = new TableDataSeries(connexionHttp);
 		modeleExportStudies = new TableDataExportStudies(connexionHttp);
 		modeleAnonStudies = new TableDataAnonStudies(connexionHttp);
 		modeleStudies = new TableDataStudies(connexionHttp);
@@ -703,9 +703,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 					modeleSeries.addSerie(tableauStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 3).toString());
 				} catch (IOException e1) {
 					e1.printStackTrace();
-				} catch (ParseException e1) {
-					e1.printStackTrace();
-				}
+				} 
 			}
 		});
 		JMenuItem menuItemDeleteAllSop = new JMenuItem("Remove all secondary captures");
@@ -719,9 +717,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 					modeleSeries.addSerie(tableauStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 3).toString());
 				} catch (IOException e1) {
 					e1.printStackTrace();
-				} catch (ParseException e1) {
-					e1.printStackTrace();
-				}
+				} 
 			}
 		});
 		JMenuItem menuItemDeleteSeries = new JMenuItem("Delete this serie");

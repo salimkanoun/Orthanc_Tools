@@ -18,7 +18,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 package org.petctviewer.orthanc.anonymize;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +46,7 @@ public class QueryFillStore {
 	}
 	
 	public QueryFillStore(ParametreConnexionHttp connexion, String level, String inputType, String input, 
-			String date, String studyDesc) throws MalformedURLException{
+			String date, String studyDesc) {
 		
 		this.connexion=connexion;
 	
@@ -126,7 +125,7 @@ public class QueryFillStore {
 		return this.query;
 	}
 
-	private String sendQuery(String action) throws IOException{
+	private String sendQuery(String action){
 		StringBuilder sb = new StringBuilder();
 		
 		if(action.equals("storeIDs") && this.url.toString().contains("tools/find")){
@@ -140,7 +139,7 @@ public class QueryFillStore {
 		return sb.toString();
 	}
 	
-	private void storeIDs() throws IOException{
+	private void storeIDs(){
 		
 		if(this.level.equals("series")){
 			
@@ -188,9 +187,10 @@ public class QueryFillStore {
 	}
 	
 	// Renvoie les responses JSON par niveau de query
-	public List<JSONObject> getJsonResponse() throws IOException{
+	public List<JSONObject> getJsonResponse() {
 		ids.removeAll(ids);
 		this.storeIDs();
+	
 		List<JSONObject> jsonResponses=new ArrayList<JSONObject>();
 		
 		for(String id : ids){
@@ -237,7 +237,7 @@ public class QueryFillStore {
 			for (int i=0 ; i<aet.size(); i++){
 				indexes.add(aet.get(i).toString());
 			}
-		} catch (ParseException | IOException e) {e.printStackTrace();}
+		} catch (ParseException e) {e.printStackTrace();}
 		
 		// We convert the ArrayList to an Object[]
 		return indexes.toArray();
@@ -266,7 +266,7 @@ public class QueryFillStore {
 			for (int i=0 ; i<peers.size(); i++){
 				indexes.add(peers.get(i).toString());
 			}
-		} catch (ParseException | IOException e) {e.printStackTrace();}
+		} catch (ParseException e) {e.printStackTrace();}
 		
 		// We convert the ArrayList to an Object[]
 		return indexes.toArray();

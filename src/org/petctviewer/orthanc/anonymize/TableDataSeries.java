@@ -18,14 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 package org.petctviewer.orthanc.anonymize;
 
 import java.io.IOException;
-//import java.net.HttpURLConnection;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-//import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
 
 import org.json.simple.JSONArray;
@@ -42,12 +37,10 @@ public class TableDataSeries extends AbstractTableModel{
 	private String url;
 	private ParametreConnexionHttp connexionHttp;
 
-	public TableDataSeries(ParametreConnexionHttp connexionHttp, JLabel state, JFrame frame){
+	public TableDataSeries(ParametreConnexionHttp connexionHttp){
 		super();
 		//Recupere les settings
 		this.connexionHttp=connexionHttp;
-		//this.state = state;
-		//this.frame = frame;
 		
 	}
 
@@ -145,7 +138,7 @@ public class TableDataSeries extends AbstractTableModel{
 		fireTableRowsDeleted(rowIndex, rowIndex);
 	}
 
-	public void addSerie(String studyID) throws IOException, ParseException{
+	public void addSerie(String studyID) {
 		//this.studyID = studyID;
 		QueryFillStore querySeries = new QueryFillStore(connexionHttp,"series", null, studyID, null, null);
 		List<JSONObject> jsonResponsesPatient=querySeries.getJsonResponse();

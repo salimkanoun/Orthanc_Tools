@@ -11,6 +11,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
 
+import javax.swing.JButton;
+
 import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 
@@ -64,6 +66,20 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 		openCloseAnonTool(true);
 		tabbedPane.remove(2);
 		listePeersCTP.setSelectedIndex(1);
+		
+		JButton selectSeries=new JButton("Select Series");
+		this.anonTablesPanel.add(selectSeries);
+		selectSeries.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				Select_Series selectSeriesDialog=new Select_Series(connexionHttp, anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 3).toString() );
+				selectSeriesDialog.setVisible(true);
+				
+				
+			}
+			
+		});
 		this.revalidate();
 		this.pack();
 		this.setLocationRelativeTo(null);
