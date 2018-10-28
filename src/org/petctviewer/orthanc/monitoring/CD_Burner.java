@@ -30,6 +30,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -38,6 +39,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -64,6 +66,7 @@ public class CD_Burner {
 	private ParametreConnexionHttp connexion;
 	private Timer timer;
 	private JSONParser parser=new JSONParser();
+	private HashMap<String, Object[]> espsonStatus=new HashMap<String, Object[]>();
 	
 	public CD_Burner (ParametreConnexionHttp connexion, JTable table_burning_history) {
 		this.connexion=connexion;
@@ -92,6 +95,12 @@ public class CD_Burner {
 					monitoring.makeMonitor();
 					makeCD(monitoring.newStableStudyID);
 					monitoring.clearAllList();
+					try {
+						updateEpsonProgress();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					
 				}
 				
@@ -135,7 +144,7 @@ public class CD_Burner {
 				String studyDate=(String) mainDicomTag.get("StudyDate");
 				String studyDescription=(String) mainDicomTag.get("StudyDescription");
 				
-				//SK ICI GERER L AFFICHAGE
+				//Update display status
 				(( DefaultTableModel) table_burning_history.getModel()).addRow(new String[]{nom,id,studyDate,studyDescription,"01011900","Recieved" });
 		
 				
@@ -201,11 +210,16 @@ public class CD_Burner {
 				if (burnerManifacturer.equals("Epson")) {
 					//Generation du Dat
 					File dat = printDat(nom, id, studyDate, studyDescription, patientDOBString);
-					createCdBurnerEpson(nom, id, formattedDateExamen, studyDescription, dat, discType);
+					File epsonJDF=createCdBurnerEpson(nom, id, formattedDateExamen, studyDescription, dat, discType);
+					
+					//Put the JDF base name associated to the Row number of the table for Monitoring
+					espsonStatus.put(FilenameUtils.getBaseName(epsonJDF.getAbsolutePath().toString()), new Object[] {rownumber, folder.toFile()});
+					
 				}
 				else if(burnerManifacturer.equals("Primera")) {
 					createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, patientDOBString, discType);
 				}
+				
 				
 				table_burning_history.setValueAt("Sent to Burner", rownumber, 5);
 				
@@ -278,7 +292,7 @@ public class CD_Burner {
 	 * @param studyDescription
 	 * @param dat
 	 */
-	private void createCdBurnerEpson(String nom, String id, String date, String studyDescription, File dat, String discType){
+	private File createCdBurnerEpson(String nom, String id, String date, String studyDescription, File dat, String discType){
 		
 		//REalisation du texte pour le Robot
 		String txtRobot= "# Making data CD\n"
@@ -305,6 +319,8 @@ public class CD_Burner {
 				} finally {
 					pw.close();
 				}
+				
+				return f;
 				
 	}
 	
@@ -388,6 +404,36 @@ public class CD_Burner {
 			pw.close();
 		}
 		return dat;
+	}
+	
+	private void updateEpsonProgress() throws IOException {
+		File folder = new File(epsonDirectory);
+		File[] listOfFiles = folder.listFiles();
+
+		for (File file : listOfFiles) {
+		    if (file.isFile()) {
+		    	String baseName=FilenameUtils.getBaseName(file.toString());
+		    	if(espsonStatus.containsKey(baseName)) {
+		    		String extension=FilenameUtils.getExtension(file.toString());
+		    		int rowNubmer=(int) espsonStatus.get(baseName)[0];
+		    		File tempFolder=(File) espsonStatus.get(baseName)[1];
+		    		System.out.println(tempFolder);
+		    		if(extension.equals("ERR")) {
+		    			table_burning_history.setValueAt("Burning Error", rowNubmer, 5);
+		    			FileUtils.deleteDirectory(tempFolder);
+		    		}else if(extension.equals("INP")) {
+		    			table_burning_history.setValueAt("Burning In Progress", rowNubmer, 5);
+		    		}else if(extension.equals("DON")) {
+		    			table_burning_history.setValueAt("Burning Done", rowNubmer, 5);
+		    			FileUtils.deleteDirectory(tempFolder);
+		    		}
+		    	}
+		    }
+		}
+		
+		
+	
+		
 	}
 	
 	/**
