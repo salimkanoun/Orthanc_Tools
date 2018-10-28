@@ -45,7 +45,8 @@ import org.petctviewer.orthanc.ParametreConnexionHttp;
 import org.petctviewer.orthanc.anonymize.ConvertZipAction;
 
 import javax.swing.JOptionPane;
-import javax.swing.JTextArea;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
 public class CD_Burner {
 	
@@ -56,16 +57,17 @@ public class CD_Burner {
 	private String fijiDirectory;
 	private Boolean deleteStudies;
 	private String suportType;
-	private JTextArea textArea;
+	private JTable table_burning_history;
 	private Path folder;
 	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 	private Date datenow;
 	private ParametreConnexionHttp connexion;
 	private Timer timer;
+	private JSONParser parser=new JSONParser();
 	
-	public CD_Burner (ParametreConnexionHttp connexion, JTextArea textArea) {
+	public CD_Burner (ParametreConnexionHttp connexion, JTable table_burning_history) {
 		this.connexion=connexion;
-		this.textArea=textArea;
+		this.table_burning_history=table_burning_history;
 		setCDPreference();
 	}
 
@@ -79,7 +81,6 @@ public class CD_Burner {
 			JOptionPane.showMessageDialog(null, "Go to settings Menu to set missing paths", "Set directories and date format", JOptionPane.ERROR_MESSAGE);
 		}
 		else {
-			textArea.append("Monitoring Orthanc \n");
 			Orthanc_Monitoring monitoring=new Orthanc_Monitoring(connexion);
 			//Met la derniere ligne pour commencer le monitoring
 			monitoring.autoSetChangeLastLine();
@@ -120,16 +121,11 @@ public class CD_Burner {
 			ConvertZipAction zipDownloader=new ConvertZipAction(connexion);
 			Path file;
 			try {
-				datenow=new Date();
-				file = Files.createTempFile("CD_"+dateFormat.format(datenow) , ".zip");
-				file.toFile().deleteOnExit();
-				zipDownloader.setConvertZipAction(file.toString(), newStableStudyID.get(i), true);
-				//generate ZIP of DICOMs
-				zipDownloader.generateZip(true);
-				File zip=zipDownloader.getGeneratedZipFile();
-				// Recuperation des donn�es patients
-				JSONParser parser=new JSONParser();
-				JSONObject response=(JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/studies/"+ newStableStudyID.get(i)).toString());			JSONObject mainPatientTag=(JSONObject) response.get("PatientMainDicomTags");
+				//Store the Row number where we are going to display progress
+				int rownumber=table_burning_history.getRowCount();
+				
+				JSONObject response=(JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/studies/"+ newStableStudyID.get(i)).toString());			
+				JSONObject mainPatientTag=(JSONObject) response.get("PatientMainDicomTags");
 				
 				//Get value of interest : Patient Name / ID / DOB / study date and description
 				String nom=(String) mainPatientTag.get("PatientName");
@@ -138,6 +134,22 @@ public class CD_Burner {
 				JSONObject mainDicomTag=(JSONObject) response.get("MainDicomTags");
 				String studyDate=(String) mainDicomTag.get("StudyDate");
 				String studyDescription=(String) mainDicomTag.get("StudyDescription");
+				
+				//SK ICI GERER L AFFICHAGE
+				(( DefaultTableModel) table_burning_history.getModel()).addRow(new String[]{nom,id,studyDate,studyDescription,"01011900","Recieved" });
+		
+				
+				datenow=new Date();
+				file = Files.createTempFile("CD_"+dateFormat.format(datenow) , ".zip");
+				file.toFile().deleteOnExit();
+				zipDownloader.setConvertZipAction(file.toString(), newStableStudyID.get(i), true);
+				
+				table_burning_history.setValueAt("Retriving DICOMs", rownumber, 5);
+				
+				//generate ZIP of DICOMs
+				zipDownloader.generateZip(true);
+				File zip=zipDownloader.getGeneratedZipFile();
+				
 				
 				//Parse date and generate string in the date format set in the options by the user
 				SimpleDateFormat parserDate = new SimpleDateFormat("yyyyMMdd");
@@ -162,6 +174,7 @@ public class CD_Burner {
 				
 				if (studyDescription==null) studyDescription="N/A";
 				// Unzip du fichier ZIP recupere
+				table_burning_history.setValueAt("Unzipping", rownumber, 5);
 				unzip(zip);
 			
 				
@@ -194,6 +207,8 @@ public class CD_Burner {
 					createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, patientDOBString, discType);
 				}
 				
+				table_burning_history.setValueAt("Sent to Burner", rownumber, 5);
+				
 				//On efface tout a la sortie JVM
 				recursiveDeleteOnExit(folder);
 				//Efface le zip dezipe
@@ -221,7 +236,7 @@ public class CD_Burner {
 			
 	    	//get the zipped file list entry
 	    	ZipEntry ze = zis.getNextEntry();
-	    	textArea.append("Unzipping ");
+	    	
 	    	
 	    	while(ze!=null){
 	     	   	String fileName = ze.getName();
@@ -291,7 +306,6 @@ public class CD_Burner {
 					pw.close();
 				}
 				
-		textArea.append("Request Sent , Patient name "+nom+" id "+id+" date "+date+" study "+studyDescription+"\n");
 	}
 	
 	/**
@@ -343,7 +357,6 @@ public class CD_Burner {
 						pw.close();
 					}
 					
-			textArea.append("Request Sent , Patient name "+nom+" id "+id+" date "+date+" study "+studyDescription+"\n");
 	}
 	
 	//Creer le fichier DAT pour injecter NOM, Date, Modalite
