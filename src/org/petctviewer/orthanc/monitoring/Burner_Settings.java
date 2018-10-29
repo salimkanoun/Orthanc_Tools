@@ -31,8 +31,6 @@ import javax.swing.JOptionPane;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.prefs.Preferences;
 import java.awt.event.ActionEvent;
 import javax.swing.JRadioButton;

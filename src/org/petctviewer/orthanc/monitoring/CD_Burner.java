@@ -66,7 +66,7 @@ public class CD_Burner {
 	private ParametreConnexionHttp connexion;
 	private Timer timer;
 	private JSONParser parser=new JSONParser();
-	private HashMap<String, Object[]> espsonStatus=new HashMap<String, Object[]>();
+	private HashMap<String, Object[]> burningStatus=new HashMap<String, Object[]>();
 	
 	public CD_Burner (ParametreConnexionHttp connexion, JTable table_burning_history) {
 		this.connexion=connexion;
@@ -96,7 +96,7 @@ public class CD_Burner {
 					makeCD(monitoring.newStableStudyID);
 					monitoring.clearAllList();
 					try {
-						updateEpsonProgress();
+						updateProgress();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -205,21 +205,21 @@ public class CD_Burner {
 				else {
 					discType=suportType;
 				}
-				
+				File robotRequestFile=null;
 				// Creation du Cd
 				if (burnerManifacturer.equals("Epson")) {
 					//Generation du Dat
 					File dat = printDat(nom, id, studyDate, studyDescription, patientDOBString);
-					File epsonJDF=createCdBurnerEpson(nom, id, formattedDateExamen, studyDescription, dat, discType);
+					robotRequestFile=createCdBurnerEpson(nom, id, formattedDateExamen, studyDescription, dat, discType);
 					
-					//Put the JDF base name associated to the Row number of the table for Monitoring
-					espsonStatus.put(FilenameUtils.getBaseName(epsonJDF.getAbsolutePath().toString()), new Object[] {rownumber, folder.toFile()});
 					
 				}
 				else if(burnerManifacturer.equals("Primera")) {
-					createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, patientDOBString, discType);
+					robotRequestFile=createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, patientDOBString, discType);
 				}
 				
+				//Put the JDF base name associated to the Row number of the table for Monitoring
+				burningStatus.put(FilenameUtils.getBaseName(robotRequestFile.getAbsolutePath().toString()), new Object[] {rownumber, folder.toFile()});
 				
 				table_burning_history.setValueAt("Sent to Burner", rownumber, 5);
 				
@@ -332,7 +332,7 @@ public class CD_Burner {
 	 * @param studyDescription
 	 * @param discType
 	 */
-	private void createCdBurnerPrimera(String nom, String id, String date, String studyDescription, String patientDOB, String discType){
+	private File createCdBurnerPrimera(String nom, String id, String date, String studyDescription, String patientDOB, String discType){
 	//Command Keys/Values for Primera Robot
 			String txtRobot= "Copies = 1\n"
 					+ "DataImageType = UDF\n"
@@ -349,7 +349,7 @@ public class CD_Burner {
 	                If this key is not given then no printing will be performed. 
 	                */
 					+ "PrintLabel="+labelFile+"\n"
-					/* MergeField - This key specifies a �Merge� field for SureThing printing.
+					/* MergeField - This key specifies a merge field for SureThing printing.
 					The print file specified within the JRQ must be a SureThing file, 
 					and it must have been designed with a Merge File specified.
 					Fields should be specified in the correct order to match the SureThing design.
@@ -372,6 +372,7 @@ public class CD_Burner {
 					} finally {
 						pw.close();
 					}
+					return f;
 					
 	}
 	
@@ -406,17 +407,17 @@ public class CD_Burner {
 		return dat;
 	}
 	
-	private void updateEpsonProgress() throws IOException {
+	private void updateProgress() throws IOException {
 		File folder = new File(epsonDirectory);
 		File[] listOfFiles = folder.listFiles();
 
 		for (File file : listOfFiles) {
 		    if (file.isFile()) {
 		    	String baseName=FilenameUtils.getBaseName(file.toString());
-		    	if(espsonStatus.containsKey(baseName)) {
+		    	if(burningStatus.containsKey(baseName)) {
 		    		String extension=FilenameUtils.getExtension(file.toString());
-		    		int rowNubmer=(int) espsonStatus.get(baseName)[0];
-		    		File tempFolder=(File) espsonStatus.get(baseName)[1];
+		    		int rowNubmer=(int) burningStatus.get(baseName)[0];
+		    		File tempFolder=(File) burningStatus.get(baseName)[1];
 		    		if(extension.equals("ERR")) {
 		    			table_burning_history.setValueAt("Burning Error", rowNubmer, 5);
 		    			FileUtils.deleteDirectory(tempFolder);
