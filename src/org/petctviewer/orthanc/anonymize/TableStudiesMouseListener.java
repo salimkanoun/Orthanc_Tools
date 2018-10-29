@@ -19,8 +19,6 @@ package org.petctviewer.orthanc.anonymize;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
-
 import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -50,9 +48,6 @@ public class TableStudiesMouseListener extends MouseAdapter {
 				String studyID = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 3);
 				this.modeleSeries.addSerie(studyID);
 			}
-		} catch (IOException e1) {
-			e1.printStackTrace();
-
 		} catch (Exception e1) {
 			//ignore
 		}

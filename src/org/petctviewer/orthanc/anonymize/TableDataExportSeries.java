@@ -19,7 +19,6 @@ package org.petctviewer.orthanc.anonymize;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -121,13 +120,7 @@ public class TableDataExportSeries extends AbstractTableModel{
 			@Override
 			protected void done(){
 				clear();
-				try {
-					addSerie(studyID);
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (ParseException e) {
-					e.printStackTrace();
-				}
+				addSerie(studyID);
 				stateExport.setText("<html><font color='green'>The description has been changed.</font></html>");
 				frame.pack();
 			}
@@ -142,7 +135,7 @@ public class TableDataExportSeries extends AbstractTableModel{
 		return this.series.get(rowIndex);
 	}
 
-	public boolean checkSopClassUid(String instanceUid) throws IOException{
+	public boolean checkSopClassUid(String instanceUid) {
 		if(instanceUid != null){
 			url="/instances/" + instanceUid + "/metadata/SopClassUid";
 			StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder(url);
@@ -194,7 +187,7 @@ public class TableDataExportSeries extends AbstractTableModel{
 		return this.series;
 	}
 	
-	public void addSerie(String studyID) throws IOException, ParseException{
+	public void addSerie(String studyID) {
 		this.studyID = studyID;
 		
 		QueryFillStore querySeries = new QueryFillStore(connexionHttp,"series", null, studyID, null, null);

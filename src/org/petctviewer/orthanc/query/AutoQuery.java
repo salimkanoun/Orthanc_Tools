@@ -121,6 +121,7 @@ public class AutoQuery  {
 			if (From==null && To==null) date="*";getClass();
 			//On lance la query
 			if (StringUtils.equals(name, "*")==false || StringUtils.equals(id, "*")==false || StringUtils.equals(dateFrom, "*")==false || StringUtils.equals(dateTo, "*")==false || StringUtils.equals(modality, "*")==false || StringUtils.equals(studyDescription, "*")==false|| StringUtils.equals(accessionNumber, "*")==false) {
+				
 				results=api.getQueryAnswerIndexes("Study", name , id, date, modality, studyDescription , accessionNumber, aet);
 				
 			}
@@ -203,8 +204,15 @@ public class AutoQuery  {
 	 * @throws IOException
 	 */
 	protected void csvReading(File file, JTable table) throws IOException {
+		
   	  CSVFormat csvFileFormat = CSVFormat.EXCEL.withFirstRecordAsHeader().withIgnoreEmptyLines();
   	  CSVParser csvParser=CSVParser.parse(file, StandardCharsets.UTF_8,  csvFileFormat);
+  	  
+  	  //If only one column maybe French CSV with semi column Separator
+  	  if(csvParser.getHeaderMap().size()==1) {
+  		CSVFormat csvFileFormatFrench = CSVFormat.EXCEL.withDelimiter(';').withFirstRecordAsHeader().withIgnoreEmptyLines();
+  		csvParser=CSVParser.parse(file, StandardCharsets.UTF_8,  csvFileFormatFrench);
+  	  };
   	  //On met les records dans une list
   	  List<CSVRecord> csvRecord=csvParser.getRecords();
   	  // On balaie le fichier ligne par ligne

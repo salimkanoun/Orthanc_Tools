@@ -30,6 +30,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -38,6 +39,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -45,7 +47,8 @@ import org.petctviewer.orthanc.ParametreConnexionHttp;
 import org.petctviewer.orthanc.anonymize.ConvertZipAction;
 
 import javax.swing.JOptionPane;
-import javax.swing.JTextArea;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
 public class CD_Burner {
 	
@@ -56,16 +59,18 @@ public class CD_Burner {
 	private String fijiDirectory;
 	private Boolean deleteStudies;
 	private String suportType;
-	private JTextArea textArea;
+	private JTable table_burning_history;
 	private Path folder;
 	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 	private Date datenow;
 	private ParametreConnexionHttp connexion;
 	private Timer timer;
+	private JSONParser parser=new JSONParser();
+	private HashMap<String, Object[]> burningStatus=new HashMap<String, Object[]>();
 	
-	public CD_Burner (ParametreConnexionHttp connexion, JTextArea textArea) {
+	public CD_Burner (ParametreConnexionHttp connexion, JTable table_burning_history) {
 		this.connexion=connexion;
-		this.textArea=textArea;
+		this.table_burning_history=table_burning_history;
 		setCDPreference();
 	}
 
@@ -79,7 +84,6 @@ public class CD_Burner {
 			JOptionPane.showMessageDialog(null, "Go to settings Menu to set missing paths", "Set directories and date format", JOptionPane.ERROR_MESSAGE);
 		}
 		else {
-			textArea.append("Monitoring Orthanc \n");
 			Orthanc_Monitoring monitoring=new Orthanc_Monitoring(connexion);
 			//Met la derniere ligne pour commencer le monitoring
 			monitoring.autoSetChangeLastLine();
@@ -91,6 +95,12 @@ public class CD_Burner {
 					monitoring.makeMonitor();
 					makeCD(monitoring.newStableStudyID);
 					monitoring.clearAllList();
+					try {
+						updateProgress();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					
 				}
 				
@@ -120,16 +130,11 @@ public class CD_Burner {
 			ConvertZipAction zipDownloader=new ConvertZipAction(connexion);
 			Path file;
 			try {
-				datenow=new Date();
-				file = Files.createTempFile("CD_"+dateFormat.format(datenow) , ".zip");
-				file.toFile().deleteOnExit();
-				zipDownloader.setConvertZipAction(file.toString(), newStableStudyID.get(i), true);
-				//generate ZIP of DICOMs
-				zipDownloader.generateZip(true);
-				File zip=zipDownloader.getGeneratedZipFile();
-				// Recuperation des donn�es patients
-				JSONParser parser=new JSONParser();
-				JSONObject response=(JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/studies/"+ newStableStudyID.get(i)).toString());			JSONObject mainPatientTag=(JSONObject) response.get("PatientMainDicomTags");
+				//Store the Row number where we are going to display progress
+				int rownumber=table_burning_history.getRowCount();
+				
+				JSONObject response=(JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/studies/"+ newStableStudyID.get(i)).toString());			
+				JSONObject mainPatientTag=(JSONObject) response.get("PatientMainDicomTags");
 				
 				//Get value of interest : Patient Name / ID / DOB / study date and description
 				String nom=(String) mainPatientTag.get("PatientName");
@@ -138,6 +143,22 @@ public class CD_Burner {
 				JSONObject mainDicomTag=(JSONObject) response.get("MainDicomTags");
 				String studyDate=(String) mainDicomTag.get("StudyDate");
 				String studyDescription=(String) mainDicomTag.get("StudyDescription");
+				
+				//Update display status
+				(( DefaultTableModel) table_burning_history.getModel()).addRow(new String[]{nom,id, patientDOB ,studyDate,studyDescription,"Recieved" });
+		
+				
+				datenow=new Date();
+				file = Files.createTempFile("CD_"+dateFormat.format(datenow) , ".zip");
+				file.toFile().deleteOnExit();
+				zipDownloader.setConvertZipAction(file.toString(), newStableStudyID.get(i), true);
+				
+				table_burning_history.setValueAt("Retriving DICOMs", rownumber, 5);
+				
+				//generate ZIP of DICOMs
+				zipDownloader.generateZip(true);
+				File zip=zipDownloader.getGeneratedZipFile();
+				
 				
 				//Parse date and generate string in the date format set in the options by the user
 				SimpleDateFormat parserDate = new SimpleDateFormat("yyyyMMdd");
@@ -162,6 +183,7 @@ public class CD_Burner {
 				
 				if (studyDescription==null) studyDescription="N/A";
 				// Unzip du fichier ZIP recupere
+				table_burning_history.setValueAt("Unzipping", rownumber, 5);
 				unzip(zip);
 			
 				
@@ -183,16 +205,23 @@ public class CD_Burner {
 				else {
 					discType=suportType;
 				}
-				
+				File robotRequestFile=null;
 				// Creation du Cd
 				if (burnerManifacturer.equals("Epson")) {
 					//Generation du Dat
 					File dat = printDat(nom, id, studyDate, studyDescription, patientDOBString);
-					createCdBurnerEpson(nom, id, formattedDateExamen, studyDescription, dat, discType);
+					robotRequestFile=createCdBurnerEpson(nom, id, formattedDateExamen, studyDescription, dat, discType);
+					
+					
 				}
 				else if(burnerManifacturer.equals("Primera")) {
-					createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, patientDOBString, discType);
+					robotRequestFile=createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, patientDOBString, discType);
 				}
+				
+				//Put the JDF base name associated to the Row number of the table for Monitoring
+				burningStatus.put(FilenameUtils.getBaseName(robotRequestFile.getAbsolutePath().toString()), new Object[] {rownumber, folder.toFile()});
+				
+				table_burning_history.setValueAt("Sent to Burner", rownumber, 5);
 				
 				//On efface tout a la sortie JVM
 				recursiveDeleteOnExit(folder);
@@ -221,7 +250,7 @@ public class CD_Burner {
 			
 	    	//get the zipped file list entry
 	    	ZipEntry ze = zis.getNextEntry();
-	    	textArea.append("Unzipping ");
+	    	
 	    	
 	    	while(ze!=null){
 	     	   	String fileName = ze.getName();
@@ -263,7 +292,7 @@ public class CD_Burner {
 	 * @param studyDescription
 	 * @param dat
 	 */
-	private void createCdBurnerEpson(String nom, String id, String date, String studyDescription, File dat, String discType){
+	private File createCdBurnerEpson(String nom, String id, String date, String studyDescription, File dat, String discType){
 		
 		//REalisation du texte pour le Robot
 		String txtRobot= "# Making data CD\n"
@@ -291,7 +320,8 @@ public class CD_Burner {
 					pw.close();
 				}
 				
-		textArea.append("Request Sent , Patient name "+nom+" id "+id+" date "+date+" study "+studyDescription+"\n");
+				return f;
+				
 	}
 	
 	/**
@@ -302,7 +332,7 @@ public class CD_Burner {
 	 * @param studyDescription
 	 * @param discType
 	 */
-	private void createCdBurnerPrimera(String nom, String id, String date, String studyDescription, String patientDOB, String discType){
+	private File createCdBurnerPrimera(String nom, String id, String date, String studyDescription, String patientDOB, String discType){
 	//Command Keys/Values for Primera Robot
 			String txtRobot= "Copies = 1\n"
 					+ "DataImageType = UDF\n"
@@ -319,7 +349,7 @@ public class CD_Burner {
 	                If this key is not given then no printing will be performed. 
 	                */
 					+ "PrintLabel="+labelFile+"\n"
-					/* MergeField - This key specifies a �Merge� field for SureThing printing.
+					/* MergeField - This key specifies a merge field for SureThing printing.
 					The print file specified within the JRQ must be a SureThing file, 
 					and it must have been designed with a Merge File specified.
 					Fields should be specified in the correct order to match the SureThing design.
@@ -342,8 +372,8 @@ public class CD_Burner {
 					} finally {
 						pw.close();
 					}
+					return f;
 					
-			textArea.append("Request Sent , Patient name "+nom+" id "+id+" date "+date+" study "+studyDescription+"\n");
 	}
 	
 	//Creer le fichier DAT pour injecter NOM, Date, Modalite
@@ -375,6 +405,35 @@ public class CD_Burner {
 			pw.close();
 		}
 		return dat;
+	}
+	
+	private void updateProgress() throws IOException {
+		File folder = new File(epsonDirectory);
+		File[] listOfFiles = folder.listFiles();
+
+		for (File file : listOfFiles) {
+		    if (file.isFile()) {
+		    	String baseName=FilenameUtils.getBaseName(file.toString());
+		    	if(burningStatus.containsKey(baseName)) {
+		    		String extension=FilenameUtils.getExtension(file.toString());
+		    		int rowNubmer=(int) burningStatus.get(baseName)[0];
+		    		File tempFolder=(File) burningStatus.get(baseName)[1];
+		    		if(extension.equals("ERR")) {
+		    			table_burning_history.setValueAt("Burning Error", rowNubmer, 5);
+		    			FileUtils.deleteDirectory(tempFolder);
+		    		}else if(extension.equals("INP")) {
+		    			table_burning_history.setValueAt("Burning In Progress", rowNubmer, 5);
+		    		}else if(extension.equals("DON")) {
+		    			table_burning_history.setValueAt("Burning Done", rowNubmer, 5);
+		    			FileUtils.deleteDirectory(tempFolder);
+		    		}
+		    	}
+		    }
+		}
+		
+		
+	
+		
 	}
 	
 	/**

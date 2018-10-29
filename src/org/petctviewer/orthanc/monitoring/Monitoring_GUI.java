@@ -44,10 +44,10 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.DefaultCaret;
 
 import org.petctviewer.orthanc.ParametreConnexionHttp;
 import org.petctviewer.orthanc.query.Rest;
+import javax.swing.ListSelectionModel;
 
 @SuppressWarnings("serial")
 public class Monitoring_GUI extends JFrame {
@@ -60,7 +60,6 @@ public class Monitoring_GUI extends JFrame {
 	
 	//CD Burner Service
 	private JButton btnStopMonitoring, btnStartMonitoring;
-	private JTextArea textAreaCD;
 	private CD_Burner cdBurner;
 	
 	//Service Status in Main tab
@@ -93,6 +92,7 @@ public class Monitoring_GUI extends JFrame {
 	 * @wbp.nonvisual location=-24,419
 	 */
 	private JTable table;
+	private JTable table_burning_history;
 	/**
 	 * Launch the application.
 	 */
@@ -180,17 +180,29 @@ public class Monitoring_GUI extends JFrame {
 		
 		tabbedPane.addTab("CD-Burner", null, CD_Burner_Tab, null);
 		
-		textAreaCD = new JTextArea();
-		textAreaCD.setColumns(30);
-		textAreaCD.setAutoscrolls(true);
-		textAreaCD.setRows(5);
-		DefaultCaret caret = (DefaultCaret) textAreaCD.getCaret();
-		caret.setUpdatePolicy(DefaultCaret.OUT_BOTTOM);
 						CD_Burner_Tab.setLayout(new BorderLayout(0, 0));
 		
 						JScrollPane scrollPane = new JScrollPane();
 						CD_Burner_Tab.add(scrollPane, BorderLayout.CENTER);
-						scrollPane.setViewportView(textAreaCD);
+						
+						table_burning_history = new JTable();
+						table_burning_history.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+						table_burning_history.setPreferredScrollableViewportSize(new Dimension(450, 200));
+						table_burning_history.setModel(new DefaultTableModel(
+							new String[][] {
+							},
+							new String[] {
+								"Name", "ID", "DOB", "Date", "Description", "Status"
+							}
+						) {
+							Class[] columnTypes = new Class[] {
+								String.class, String.class, String.class, String.class, String.class, String.class
+							};
+							public Class getColumnClass(int columnIndex) {
+								return columnTypes[columnIndex];
+							}
+						});
+						scrollPane.setViewportView(table_burning_history);
 						
 						JPanel panel = new JPanel();
 						CD_Burner_Tab.add(panel, BorderLayout.SOUTH);
@@ -198,7 +210,7 @@ public class Monitoring_GUI extends JFrame {
 						btnStartMonitoring = new JButton("Start monitoring");
 						btnStartMonitoring.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent arg0) {
-								cdBurner=new CD_Burner(parametre, textAreaCD);
+								cdBurner=new CD_Burner(parametre, table_burning_history);
 								cdBurner.setCDPreference();
 								//On ouvre le watcher dans un nouveau thread pour ne pas bloquer l'interface				
 								cdBurner.startCDMonitoring();
@@ -239,7 +251,6 @@ public class Monitoring_GUI extends JFrame {
 								cdMonitoringStarted=false;
 								jPrefer.putBoolean("CDMonitoringStarted", false);
 								updateStatusLabel();
-								textAreaCD.append("Monitoring Terminated \n");
 								btnStartMonitoring.setEnabled(true);
 								btnStopMonitoring.setEnabled(false);
 								
