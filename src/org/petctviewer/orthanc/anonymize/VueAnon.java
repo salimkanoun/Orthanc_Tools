@@ -109,7 +109,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	private JLabel state = new JLabel();
 	private DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
 	private DateFormat dfZip = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
-	private JFrame gui;
+	public JFrame gui;
 	private JSONParser parser=new JSONParser();
 	
 	//QueryFillStore

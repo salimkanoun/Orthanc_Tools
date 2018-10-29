@@ -73,7 +73,9 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Select_Series selectSeriesDialog=new Select_Series(connexionHttp, anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 3).toString() );
+				Select_Series selectSeriesDialog=new Select_Series(connexionHttp, modeleAnonStudies.getShownStudies().get(anonStudiesTable.getSelectedRow()).getId() );
+				selectSeriesDialog.pack();
+				selectSeriesDialog.setLocationRelativeTo(gui);
 				selectSeriesDialog.setVisible(true);
 				
 				
