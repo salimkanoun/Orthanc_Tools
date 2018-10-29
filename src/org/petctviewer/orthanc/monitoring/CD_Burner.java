@@ -145,7 +145,7 @@ public class CD_Burner {
 				String studyDescription=(String) mainDicomTag.get("StudyDescription");
 				
 				//Update display status
-				(( DefaultTableModel) table_burning_history.getModel()).addRow(new String[]{nom,id,studyDate,studyDescription,"01011900","Recieved" });
+				(( DefaultTableModel) table_burning_history.getModel()).addRow(new String[]{nom,id, patientDOB ,studyDate,studyDescription,"Recieved" });
 		
 				
 				datenow=new Date();
