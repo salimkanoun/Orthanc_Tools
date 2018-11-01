@@ -1,5 +1,6 @@
 package org.petctviewer.orthanc.ctpimport;
 
+import java.awt.MouseInfo;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -11,7 +12,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
 
-import javax.swing.JButton;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 
 import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
@@ -67,9 +72,38 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 		tabbedPane.remove(2);
 		listePeersCTP.setSelectedIndex(1);
 		
-		JButton selectSeries=new JButton("Select Series");
-		this.anonTablesPanel.add(selectSeries);
-		selectSeries.addActionListener(new ActionListener() {
+		//PopUp menu for series selections in Study anonymization list (most usefull for CTP)
+		JPopupMenu popMenuSelectSeries = new JPopupMenu();
+		JMenuItem menuItemSelectSeries = new JMenuItem("Select Series");
+		popMenuSelectSeries.add(menuItemSelectSeries);
+		
+		popMenuSelectSeries.addPopupMenuListener(new PopupMenuListener() {
+
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        int rowAtPoint = anonStudiesTable.rowAtPoint(SwingUtilities.convertPoint(anonStudiesTable, MouseInfo.getPointerInfo().getLocation() , anonStudiesTable));
+                        if (rowAtPoint > -1) {
+                        	anonStudiesTable.setRowSelectionInterval(rowAtPoint, rowAtPoint);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+
+            }
+
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
+				
+			}
+        });
+		
+		menuItemSelectSeries.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -78,10 +112,15 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 				selectSeriesDialog.setLocationRelativeTo(gui);
 				selectSeriesDialog.setVisible(true);
 				
-				
 			}
 			
 		});
+		
+		anonStudiesTable.setComponentPopupMenu(popMenuSelectSeries);
+		
+				
+		
+
 		this.revalidate();
 		this.pack();
 		this.setLocationRelativeTo(null);

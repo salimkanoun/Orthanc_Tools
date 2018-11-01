@@ -8,10 +8,13 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 
 import org.petctviewer.orthanc.ParametreConnexionHttp;
 import org.petctviewer.orthanc.anonymize.TableDataSeries;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class Select_Series extends JDialog {
 
@@ -40,35 +43,52 @@ public class Select_Series extends JDialog {
 	 */
 	public Select_Series(ParametreConnexionHttp connexionHttp, String studyUID) {
 		TableDataSeries tableSeriesModel=new TableDataSeries(connexionHttp);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		tableSeriesModel.addSerie(studyUID);
+		tableSeriesModel.detectAllSecondaryCaptures();
 		tableSeries = new JTable(tableSeriesModel);
-		setBounds(100, 100, 450, 300);
+		tableSeries.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		tableSeries.getColumnModel().getColumn(3).setMinWidth(0);;
+		tableSeries.getColumnModel().getColumn(4).setMinWidth(0);
+		tableSeries.getColumnModel().getColumn(3).setMaxWidth(0);
+		tableSeries.getColumnModel().getColumn(4).setMaxWidth(0);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setLayout(new FlowLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
-		{
-			JScrollPane scrollPane = new JScrollPane();
-			contentPanel.add(scrollPane);
-			{
-				
-				scrollPane.setViewportView(tableSeries);
-			}
-		}
+		JScrollPane scrollPane = new JScrollPane();
+		contentPanel.add(scrollPane);
+		scrollPane.setViewportView(tableSeries);
+
 		{
 			JPanel buttonPane = new JPanel();
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
-				JButton okButton = new JButton("OK");
-				okButton.setActionCommand("OK");
-				buttonPane.add(okButton);
-				getRootPane().setDefaultButton(okButton);
-			}
-			{
-				JButton cancelButton = new JButton("Cancel");
-				cancelButton.setActionCommand("Cancel");
-				buttonPane.add(cancelButton);
+				JButton closeButton = new JButton("Close");
+				closeButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						dispose();
+					}
+				});
+				{
+					JButton btnDeleteSelected = new JButton("Delete Selected");
+					btnDeleteSelected.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent arg0) {
+							int[] selectedRows=tableSeries.getSelectedRows();
+							for(int i=0; i<selectedRows.length; i++) {
+								connexionHttp.makeDeleteConnection("/series/"+tableSeries.getValueAt(selectedRows[i], 4));
+								
+							}
+							tableSeriesModel.clear();
+							tableSeriesModel.addSerie(studyUID);
+							
+						}
+					});
+					buttonPane.add(btnDeleteSelected);
+				}
+				closeButton.setActionCommand("Close");
+				buttonPane.add(closeButton);
 			}
 		}
 	}

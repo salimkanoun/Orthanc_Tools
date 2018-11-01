@@ -683,27 +683,20 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		menuItemSopClass.addActionListener(new ActionListener() {			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-					String instanceUid = modeleSeries.getSerie(tableauSeries.convertRowIndexToModel(tableauSeries.getSelectedRow())).getInstance();
-					modeleSeries.checkSopClassUid(instanceUid);
-					modeleSeries.setValueAt(modeleSeries.checkSopClassUid(instanceUid), tableauSeries.convertRowIndexToModel(tableauSeries.getSelectedRow()), 3);
-					modeleSeries.fireTableCellUpdated(tableauSeries.getSelectedRow(), 3);
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
+				String instanceUid = modeleSeries.getSerie(tableauSeries.convertRowIndexToModel(tableauSeries.getSelectedRow())).getInstance();
+				modeleSeries.checkSopClassUid(instanceUid);
+				modeleSeries.setValueAt(modeleSeries.checkSopClassUid(instanceUid), tableauSeries.convertRowIndexToModel(tableauSeries.getSelectedRow()), 3);
+				modeleSeries.fireTableCellUpdated(tableauSeries.getSelectedRow(), 3);
+				
 			}
 		});
 		JMenuItem menuItemAllSopClass = new JMenuItem("Detect all secondary captures");
 		menuItemAllSopClass.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-					modeleSeries.detectAllSecondaryCaptures();
-					modeleSeries.clear();
-					modeleSeries.addSerie(tableauStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 3).toString());
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				} 
+				modeleSeries.detectAllSecondaryCaptures();
+				modeleSeries.clear();
+				modeleSeries.addSerie(tableauStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 3).toString());
 			}
 		});
 		JMenuItem menuItemDeleteAllSop = new JMenuItem("Remove all secondary captures");
@@ -1037,6 +1030,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		anonStudiesTable.getColumnModel().getColumn(3).setMaxWidth(0);
 		anonStudiesTable.setPreferredScrollableViewportSize(new Dimension(430,130));
 		anonStudiesTable.setDefaultRenderer(Date.class, new DateRendererAnon());
+		
+		
 
 		TableColumn studyDescCol = anonStudiesTable.getColumnModel().getColumn(0);
 		studyDescCol.setCellEditor(new DialogCellEditor());
