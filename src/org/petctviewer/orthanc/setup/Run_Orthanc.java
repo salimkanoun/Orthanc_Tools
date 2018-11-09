@@ -42,10 +42,19 @@ public class Run_Orthanc {
 	public Run_Orthanc(ParametreConnexionHttp connexionHttp) {
 		this.connexionHttp=connexionHttp;
 		if(System.getProperty("os.name").toLowerCase().startsWith("win")) {
-			resourceName="Orthanc_Standalone/Orthanc-1.4.1-Release.exe";
-			fileExecName="Orthanc-1.4.1-Release.exe";
-			resourceLibPath="Orthanc_Standalone/OrthancWebViewer.dll";
-			resourceLibName="OrthancWebViewer.dll";
+			if (System.getProperty("os.arch").contains("86")){
+				resourceName="Orthanc_Standalone/Orthanc-1.4.2-Release_32.exe";
+				fileExecName="Orthanc-1.4.2-Release_32.exe";
+				resourceLibPath="Orthanc_Standalone/OrthancWebViewer-2.4_32.dll";
+				resourceLibName="OrthancWebViewer-2.4_32.dll";
+				
+			}else {
+				resourceName="Orthanc_Standalone/Orthanc-1.4.1-Release.exe";
+				fileExecName="Orthanc-1.4.1-Release.exe";
+				resourceLibPath="Orthanc_Standalone/OrthancWebViewer.dll";
+				resourceLibName="OrthancWebViewer.dll";
+			}
+			
 			
 		}
 		else if (System.getProperty("os.name").toLowerCase().startsWith("mac")){
