@@ -18,11 +18,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 package org.petctviewer.orthanc.anonymize;
 
 import java.io.IOException;
-import java.sql.Date;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 import org.json.simple.JSONArray;
@@ -241,9 +241,16 @@ public class TableDataAnonStudies extends AbstractTableModel{
 		DateFormat parser = new SimpleDateFormat("yyyyMMdd");
 		QueryFillStore query = new QueryFillStore(connexionHttp);
 		for(String uid : listeUIDs){
+			Date studyDate;
 			String[] separatedResponse=query.getStudyDescriptionAndUID(uid);
+			try{
+			studyDate = parser.parse(separatedResponse[2]);
+			}catch(ParseException e){
+				studyDate=parser.parse("19000101");
+			}
+			
 			// We insert dummy dates and accession numbers which won't be useful for the anonymization
-			Study s = new Study(separatedResponse[0], parser.parse(separatedResponse[2]), "0", uid, separatedResponse[1], patientName, patientID, null);
+			Study s = new Study(separatedResponse[0], studyDate , "0", uid, separatedResponse[1], patientName, patientID, null);
 			if(newDescriptions.containsKey(uid)){
 				s.setStudyDescription(newDescriptions.get(uid));
 			}
