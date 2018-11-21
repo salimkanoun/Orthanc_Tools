@@ -212,19 +212,22 @@ public class Monitoring_GUI extends JFrame {
 						btnStartMonitoring.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent arg0) {
 								if(autoFetchStarted) {
-									JOptionPane.showMessageDialog(gui, "Stoping AutoFetch as autofetch will trigger unwanted burning", "CD Burner Incompatible", JOptionPane.WARNING_MESSAGE);
-									btnStartAutoFetch.doClick();
+									JOptionPane.showMessageDialog(gui, "Stop Autofetch service before using CD Burner, as it would create unwanted CD burning", "CD Burner Incompatible", JOptionPane.WARNING_MESSAGE);
+									
+								}else {
+									cdBurner=new CD_Burner(parametre, table_burning_history);
+									cdBurner.setCDPreference();
+									//On ouvre le watcher dans un nouveau thread pour ne pas bloquer l'interface				
+									cdBurner.startCDMonitoring();
+									cdMonitoringStarted=true;
+									jPrefer.putBoolean("CDMonitoringStarted", true);
+									//On grise le boutton pour empecher la creation d'un nouveau watcher
+									btnStartMonitoring.setEnabled(false);
+									btnStopMonitoring.setEnabled(true);
+									updateStatusLabel();
+									
 								}
-								cdBurner=new CD_Burner(parametre, table_burning_history);
-								cdBurner.setCDPreference();
-								//On ouvre le watcher dans un nouveau thread pour ne pas bloquer l'interface				
-								cdBurner.startCDMonitoring();
-								cdMonitoringStarted=true;
-								jPrefer.putBoolean("CDMonitoringStarted", true);
-								//On grise le boutton pour empecher la creation d'un nouveau watcher
-								btnStartMonitoring.setEnabled(false);
-								btnStopMonitoring.setEnabled(true);
-								updateStatusLabel();
+								
 												
 							}
 						});
@@ -577,15 +580,17 @@ public class Monitoring_GUI extends JFrame {
 							public void actionPerformed(ActionEvent arg0) {
 								if (!autoFetchStarted) {
 									if(cdMonitoringStarted) {
-										JOptionPane.showMessageDialog(gui, "Stoping CD Monitoring as autofetch will trigger unwanted burning", "CD Burner Incompatible", JOptionPane.WARNING_MESSAGE);
-										btnStopMonitoring.doClick();
+										JOptionPane.showMessageDialog(gui, "Stop CD Monitoring before stating autofetch as it would trigger unwanted burning", "CD Burner Incompatible", JOptionPane.WARNING_MESSAGE);
+									}else {
+										autoFetch=new Auto_Fetch(parametre, levelAutoFecth.getSelection().getActionCommand(), textField_AutoFecth_Date.getText(), textField_AutoFecth_Modality_Study.getText(), textField_AutoFetch_StudyDescription.getText(), comboBoxAET_AutoFetch.getSelectedItem().toString(), lblStatus_AutoFetch );
+										autoFetch.startAutoFetch();
+										btnStartAutoFetch.setText("Stop Auto-Fetch");
+										autoFetchStarted=true;
+										jPrefer.putBoolean("autoFetchStarted", true);
+										updateStatusLabel();
+										
 									}
-									autoFetch=new Auto_Fetch(parametre, levelAutoFecth.getSelection().getActionCommand(), textField_AutoFecth_Date.getText(), textField_AutoFecth_Modality_Study.getText(), textField_AutoFetch_StudyDescription.getText(), comboBoxAET_AutoFetch.getSelectedItem().toString(), lblStatus_AutoFetch );
-									autoFetch.startAutoFetch();
-									btnStartAutoFetch.setText("Stop Auto-Fetch");
-									autoFetchStarted=true;
-									jPrefer.putBoolean("autoFetchStarted", true);
-									updateStatusLabel();
+									
 								}
 								else if(autoFetchStarted) {
 									autoFetch.stopAutoFecth();
