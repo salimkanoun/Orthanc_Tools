@@ -35,6 +35,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -210,6 +211,10 @@ public class Monitoring_GUI extends JFrame {
 						btnStartMonitoring = new JButton("Start monitoring");
 						btnStartMonitoring.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent arg0) {
+								if(autoFetchStarted) {
+									JOptionPane.showMessageDialog(gui, "Stoping AutoFetch as autofetch will trigger unwanted burning", "CD Burner Incompatible", JOptionPane.WARNING_MESSAGE);
+									btnStartAutoFetch.doClick();
+								}
 								cdBurner=new CD_Burner(parametre, table_burning_history);
 								cdBurner.setCDPreference();
 								//On ouvre le watcher dans un nouveau thread pour ne pas bloquer l'interface				
@@ -571,6 +576,10 @@ public class Monitoring_GUI extends JFrame {
 						btnStartAutoFetch.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent arg0) {
 								if (!autoFetchStarted) {
+									if(cdMonitoringStarted) {
+										JOptionPane.showMessageDialog(gui, "Stoping CD Monitoring as autofetch will trigger unwanted burning", "CD Burner Incompatible", JOptionPane.WARNING_MESSAGE);
+										btnStopMonitoring.doClick();
+									}
 									autoFetch=new Auto_Fetch(parametre, levelAutoFecth.getSelection().getActionCommand(), textField_AutoFecth_Date.getText(), textField_AutoFecth_Modality_Study.getText(), textField_AutoFetch_StudyDescription.getText(), comboBoxAET_AutoFetch.getSelectedItem().toString(), lblStatus_AutoFetch );
 									autoFetch.startAutoFetch();
 									btnStartAutoFetch.setText("Stop Auto-Fetch");
