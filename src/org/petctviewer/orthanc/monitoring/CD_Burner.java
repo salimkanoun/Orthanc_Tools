@@ -391,6 +391,8 @@ public class CD_Burner {
 		String datFile = "patientName="+nom.replaceAll("\\^", " ")+"\n"
 					+ "patientId=" + id +"\n"
 					+ "studyDate="+ date + "\n"
+					//patient date is a duplicate of studydate (depreciated)
+					+ "patientDate="+ date + "\n"
 					+ "studyDescription="+ studyDescription+"\n"
 					+ "accessionNumber="+ accessionNumber+"\n"
 					+ "patientDOB="+patientDOB+"\n";
