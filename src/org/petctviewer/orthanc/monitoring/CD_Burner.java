@@ -173,12 +173,12 @@ public class CD_Burner {
 					formattedDateExamen="N/A";
 				}
 				
-				String patientDOBString;
+				String formattedPatientDOB;
 				if(StringUtils.isNotEmpty(patientDOB)) {
 					Date patientDOBDate = parserDate.parse(patientDOB);
-					patientDOBString = formatter.format(patientDOBDate);
+					formattedPatientDOB = formatter.format(patientDOBDate);
 				}else {
-					patientDOBString="N/A";
+					formattedPatientDOB="N/A";
 				}
 				
 				
@@ -210,13 +210,13 @@ public class CD_Burner {
 				// Creation du Cd
 				if (burnerManifacturer.equals("Epson")) {
 					//Generation du Dat
-					File dat = printDat(nom, id, studyDate, studyDescription,accessionNumber, patientDOBString );
-					robotRequestFile=createCdBurnerEpson(nom, id, formattedDateExamen, studyDescription, dat, discType);
+					File dat = printDat(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB );
+					robotRequestFile=createCdBurnerEpson(dat, discType);
 					
 					
 				}
 				else if(burnerManifacturer.equals("Primera")) {
-					robotRequestFile=createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription,accessionNumber, patientDOBString, discType);
+					robotRequestFile=createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB, discType);
 				}
 				
 				//Put the JDF base name associated to the Row number of the table for Monitoring
@@ -293,7 +293,7 @@ public class CD_Burner {
 	 * @param studyDescription
 	 * @param dat
 	 */
-	private File createCdBurnerEpson(String nom, String id, String date, String studyDescription, File dat, String discType){
+	private File createCdBurnerEpson(File dat, String discType){
 		
 		//REalisation du texte pour le Robot
 		String txtRobot= "# Making data CD\n"
