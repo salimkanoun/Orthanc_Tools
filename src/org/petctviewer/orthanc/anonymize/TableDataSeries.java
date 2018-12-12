@@ -90,7 +90,7 @@ public class TableDataSeries extends AbstractTableModel{
 		return false;
 	}
 
-	public boolean checkSopClassUid(String instanceUid) throws IOException{
+	public boolean checkSopClassUid(String instanceUid) {
 		this.url="/instances/" + instanceUid + "/metadata/SopClassUid";
 		StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder(url);
 		
@@ -116,7 +116,7 @@ public class TableDataSeries extends AbstractTableModel{
 		return false;
 	}
 
-	public void detectAllSecondaryCaptures() throws IOException{
+	public void detectAllSecondaryCaptures() {
 		for(Serie s : series){
 			s.setSecondaryCapture(this.checkSopClassUid(s.getInstance()));
 			this.fireTableCellUpdated(this.series.indexOf(s), 3);
@@ -169,7 +169,7 @@ public class TableDataSeries extends AbstractTableModel{
 			}
 			
 			if (mainDicomTag.containsKey("Modality")) {
-				modality[i]=((String) mainDicomTag.get("SeriesDescription"));
+				modality[i]=((String) mainDicomTag.get("Modality"));
 			} else {
 				modality[i]="";
 			}

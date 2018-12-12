@@ -143,6 +143,7 @@ public class CD_Burner {
 				JSONObject mainDicomTag=(JSONObject) response.get("MainDicomTags");
 				String studyDate=(String) mainDicomTag.get("StudyDate");
 				String studyDescription=(String) mainDicomTag.get("StudyDescription");
+				String accessionNumber=(String) mainDicomTag.get("AccessionNumber");
 				
 				//Update display status
 				(( DefaultTableModel) table_burning_history.getModel()).addRow(new String[]{nom,id, patientDOB ,studyDate,studyDescription,"Recieved" });
@@ -209,13 +210,13 @@ public class CD_Burner {
 				// Creation du Cd
 				if (burnerManifacturer.equals("Epson")) {
 					//Generation du Dat
-					File dat = printDat(nom, id, studyDate, studyDescription, patientDOBString);
+					File dat = printDat(nom, id, studyDate, studyDescription,accessionNumber, patientDOBString );
 					robotRequestFile=createCdBurnerEpson(nom, id, formattedDateExamen, studyDescription, dat, discType);
 					
 					
 				}
 				else if(burnerManifacturer.equals("Primera")) {
-					robotRequestFile=createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, patientDOBString, discType);
+					robotRequestFile=createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription,accessionNumber, patientDOBString, discType);
 				}
 				
 				//Put the JDF base name associated to the Row number of the table for Monitoring
@@ -332,7 +333,7 @@ public class CD_Burner {
 	 * @param studyDescription
 	 * @param discType
 	 */
-	private File createCdBurnerPrimera(String nom, String id, String date, String studyDescription, String patientDOB, String discType){
+	private File createCdBurnerPrimera(String nom, String id, String date, String studyDescription, String accessionNumber, String patientDOB, String discType){
 	//Command Keys/Values for Primera Robot
 			String txtRobot= "Copies = 1\n"
 					+ "DataImageType = UDF\n"
@@ -358,8 +359,8 @@ public class CD_Burner {
 					+ "MergeField="+id+"\n"
 					+ "MergeField="+date+"\n"
 					+ "MergeField="+studyDescription+"\n"
-					+ "MargeField="+patientDOB+"\n";
-					
+					+ "MargeField="+patientDOB+"\n"
+					+ "MergeField="+accessionNumber+"\n";
 			
 					// Making a .JRQ file in the watched folder
 					File f = new File(epsonDirectory + File.separator + "CD_"+dateFormat.format(datenow)+".JRQ");
@@ -377,7 +378,7 @@ public class CD_Burner {
 	}
 	
 	//Creer le fichier DAT pour injecter NOM, Date, Modalite
-	private File printDat(String nom, String id, String date, String studyDescription, String patientDOB) throws ParseException {
+	private File printDat(String nom, String id, String date, String studyDescription, String accessionNumber, String patientDOB) throws ParseException {
 		
        
        
@@ -389,8 +390,11 @@ public class CD_Burner {
        
 		String datFile = "patientName="+nom.replaceAll("\\^", " ")+"\n"
 					+ "patientId=" + id +"\n"
+					+ "studyDate="+ date + "\n"
+					//patient date is a duplicate of studydate (depreciated)
 					+ "patientDate="+ date + "\n"
 					+ "studyDescription="+ studyDescription+"\n"
+					+ "accessionNumber="+ accessionNumber+"\n"
 					+ "patientDOB="+patientDOB+"\n";
 		
 		
