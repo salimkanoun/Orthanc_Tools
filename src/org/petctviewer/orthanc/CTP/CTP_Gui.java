@@ -16,6 +16,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
@@ -304,7 +305,7 @@ public class CTP_Gui extends JDialog {
 								String[] dateCTP =tableDetailsPatient.getValueAt(3, 2).toString().split("/");
 								boolean matchDate=true;
 								for (int i=0 ; i<3 ; i++) {
-									if ( !dateCTP[i].equals("ND"))  matchDate= (dateLocale[i].equals(dateCTP[i]));
+									if ( !dateCTP[i].equals("ND") && !dateLocale[i].equals(dateCTP[i]))  matchDate= false ;
 								}
 								if(matchDate) {
 									tableDetailsPatient.setValueAt("Yes", 3, 3);
@@ -333,6 +334,7 @@ public class CTP_Gui extends JDialog {
 				panel.add(panel_1, BorderLayout.EAST);
 				{
 					tableDetailsPatient = new JTable();
+					tableDetailsPatient.setEnabled(false);
 					
 					tableDetailsPatient.setModel(new DefaultTableModel(
 						new String[][] {
@@ -372,7 +374,7 @@ public class CTP_Gui extends JDialog {
 				JButton okButton = new JButton("OK");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
-						if(tablePatient.getSelectedRowCount()==1) {
+						if(tablePatient.getSelectedRowCount()==1 && checkMatch()) {
 							patientAnonID=tablePatient.getValueAt(tablePatient.getSelectedRow(), 0).toString();
 							patientAnonName=tablePatient.getValueAt(tablePatient.getSelectedRow(), 0).toString();
 							ok=true;
@@ -436,6 +438,29 @@ public class CTP_Gui extends JDialog {
 	}
 	public String getPassword() {
 		return new String(CTP_Password.getPassword());
+	}
+	
+	private boolean checkMatch() {
+		boolean check=true;
+		int rowNb=tableDetailsPatient.getModel().getRowCount();
+		String[] checkMessage= {"Last Name", "First Name", "Sex", "Date Of Birth", "Acquisition Date"};
+		for(int i=0; i<rowNb; i++) {
+			if(! tableDetailsPatient.getValueAt( i, 3).equals("Yes")) {
+				check=false;
+				
+				int response=JOptionPane.showConfirmDialog(this, "<html>The <font color='red'>"+checkMessage[i]+"</font> don't not match with the expected patient, are you sure this patient is correct for this visit ?</html>", "Check Failed", JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
+				if(response==JOptionPane.YES_OPTION) {
+					check=true;
+				}else {
+					break;
+				}
+			};
+			
+		}
+		
+		
+		return check;
+		
 	}
 	
 	//https://www.javaworld.com/article/2077430/core-java/set-the-jtable.html
