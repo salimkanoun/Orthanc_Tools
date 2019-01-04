@@ -14,8 +14,10 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 
@@ -35,46 +37,51 @@ public class Run_Orthanc {
 	 private String resourceName;
 	 private String fileExecName;
 	 public String orthancJsonName="Orthanc.json";
-	 private String resourceLibPath, resourceLibName;
+	 private String resourceLibPath="Orthanc_Standalone";
+	 private List<String> resourceLibName=new ArrayList<String>();
 	 private boolean temp;
 	 private ParametreConnexionHttp connexionHttp;
 	
 	public Run_Orthanc(ParametreConnexionHttp connexionHttp) {
 		this.connexionHttp=connexionHttp;
+		
+		//SK AJOUTER ORTHANC TRANSFERS
+		//LIBRAIRIE A COMPILER POUR WINDOWS ET MAC
+		
 		if(System.getProperty("os.name").toLowerCase().startsWith("win")) {
 			if (System.getProperty("os.arch").contains("86")){
-				resourceName="Orthanc_Standalone/Orthanc-1.4.2-Release_32.exe";
-				fileExecName="Orthanc-1.4.2-Release_32.exe";
-				resourceLibPath="Orthanc_Standalone/OrthancWebViewer-2.4_32.dll";
-				resourceLibName="OrthancWebViewer-2.4_32.dll";
+				resourceName="Orthanc_Standalone/Orthanc-1.5.1-Release_32.exe";
+				fileExecName="Orthanc-1.5.1-Release_32.exe";
+				resourceLibName.add("OrthancWebViewer-2.4_32.dll");
 				
 			}else {
-				resourceName="Orthanc_Standalone/Orthanc-1.4.1-Release.exe";
-				fileExecName="Orthanc-1.4.1-Release.exe";
-				resourceLibPath="Orthanc_Standalone/OrthancWebViewer.dll";
-				resourceLibName="OrthancWebViewer.dll";
+				resourceName="Orthanc_Standalone/Orthanc-1.5.1-Release.exe";
+				fileExecName="Orthanc-1.5.1-Release.exe";
+				resourceLibName.add("OrthancWebViewer.dll");
 			}
 			
 			
 		}
 		else if (System.getProperty("os.name").toLowerCase().startsWith("mac")){
-			resourceName="Orthanc_Standalone/Orthanc-1.4.1-ReleaseMac";
-			fileExecName="Orthanc-1.4.1-ReleaseMac";
-			resourceLibPath="Orthanc_Standalone/libOsimisWebViewer.dylib";
-			resourceLibName="libOsimisWebViewer.dylib";
+			resourceName="Orthanc_Standalone/Orthanc-1.5.1-ReleaseMac";
+			fileExecName="Orthanc-1.5.1-ReleaseMac";
+			resourceLibName.add("libOsimisWebViewer.dylib");
+			
 		}
 		else if (System.getProperty("os.name").toLowerCase().startsWith("linux")){
-			resourceName="Orthanc_Standalone/Orthanc-1.4.1-ReleaseLinux";
-			fileExecName="Orthanc-1.4.1-ReleaseLinux";
+			resourceName="Orthanc_Standalone/Orthanc-1.5.1-ReleaseLinux";
+			fileExecName="Orthanc-1.5.1-ReleaseLinux";
 			resourceLibPath="Orthanc_Standalone/libOrthancWebViewer.so";
-			resourceLibName="libOrthancWebViewer.so";
+			resourceLibName.add("libOrthancWebViewer.so");
+			resourceLibName.add("libOrthancTransfers.so");
+			
 			
 			
 		}
 	}
 	
 	public String copyOrthanc(String installPath) throws Exception {
-		String resourceNameJSON="Orthanc_Standalone/"+orthancJsonName;
+		String resourceNameJSON=resourceLibPath+File.separator+orthancJsonName;
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		
 		//Si pas de destination on met dans le temp directory
@@ -86,6 +93,7 @@ public class Run_Orthanc {
 		else file=Paths.get(installPath);
 		
 		File FileExe=new File(file.toString()+File.separator+fileExecName);
+		System.out.println(FileExe);
 		File FileJSON=new File(file.toString()+File.separator+orthancJsonName);
 		
 		InputStream in = ClassLoader.getSystemResourceAsStream(resourceName);
@@ -101,11 +109,14 @@ public class Run_Orthanc {
 		new File(file.toString()+File.separator+"OrthancStorage").mkdirs();
 		
 		//Add lib to get GDCM decoder
-		File FileLib=new File(file.toString()+File.separator+resourceLibName);
-		InputStream inLib = ClassLoader.getSystemResourceAsStream(resourceLibPath);
-		OutputStream outLib = new FileOutputStream(FileLib);
-		IOUtils.copy(inLib, outLib);
-		outLib.close();
+		for (int i=0; i<resourceLibName.size(); i++) {
+			File FileLib=new File(file.toString()+File.separator+resourceLibName.get(i));
+			InputStream inLib = ClassLoader.getSystemResourceAsStream(resourceLibPath+File.separator+resourceLibName.get(i));
+			OutputStream outLib = new FileOutputStream(FileLib);
+			IOUtils.copy(inLib, outLib);
+			outLib.close();
+		}
+
 		
 		orthancExe=FileExe;
 		orthancJson=FileJSON;
@@ -150,7 +161,7 @@ public class Run_Orthanc {
 				
 				  try {
 				  process = pb.start();
-				  Thread.sleep(1000);
+				  Thread.sleep(2000);
 				  InputStream stdout = process.getInputStream(); 
 			      InputStream stderr = process.getErrorStream();
 			      //OutputStream stdin = process.getOutputStream(); 

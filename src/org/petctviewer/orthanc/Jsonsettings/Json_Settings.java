@@ -117,7 +117,6 @@ public class Json_Settings {
 	protected int DicomAssociationCloseDelay;
 	protected int QueryRetrieveSize;
 	protected boolean CaseSensitivePN;
-	protected boolean AllowFindSopClassesInStudy;
 	protected boolean LoadPrivateDictionary;
 	protected boolean dicomAlwaysAllowEcho;
 	protected boolean DicomAlwaysStore;
@@ -125,6 +124,12 @@ public class Json_Settings {
 	protected boolean SynchronousCMove;
 	protected int JobsHistorySize;
 	protected int ConcurrentJobs;
+	
+	protected boolean dicomModalitiesInDb;
+	protected boolean orthancPeerInDb;
+	protected boolean overwriteInstances;
+	protected int mediaArchiveSize;
+	protected String storageAccessOnFind;
 	
 	
 	protected File fichierInput;
@@ -179,14 +184,19 @@ public class Json_Settings {
 				DicomAssociationCloseDelay=5;
 				QueryRetrieveSize=10;
 				CaseSensitivePN=false;
-				AllowFindSopClassesInStudy=false;
 				LoadPrivateDictionary=true;
 				DicomAlwaysStore=true;
 				CheckModalityHost=false;
 				dicomAlwaysAllowEcho=true;
-				SynchronousCMove=false;
+				SynchronousCMove=true;
 				JobsHistorySize=10;
 				ConcurrentJobs=2;
+				
+				dicomModalitiesInDb=false;
+				orthancPeerInDb=false;
+				overwriteInstances=false;
+				mediaArchiveSize=1;
+				storageAccessOnFind="Always";
 	}
 	
 	// permet de creer le JSON avant de l'ecrire
@@ -258,11 +268,16 @@ public class Json_Settings {
 		index.put("DicomAssociationCloseDelay", DicomAssociationCloseDelay);
 		index.put("QueryRetrieveSize", QueryRetrieveSize);
 		index.put("CaseSensitivePN", CaseSensitivePN);
-		index.put("AllowFindSopClassesInStudy", AllowFindSopClassesInStudy);
 		index.put("LoadPrivateDictionary", LoadPrivateDictionary);
 		index.put("Dictionary", dictionaries);
 		index.put("SynchronousCMove", SynchronousCMove);
 		index.put("JobsHistorySize", JobsHistorySize);
+		index.put("dicomModalitiesInDb", dicomModalitiesInDb);
+		index.put("orthancPeerInDb", orthancPeerInDb);
+		index.put("overwriteInstances", overwriteInstances);
+		index.put("mediaArchiveSize", mediaArchiveSize);
+		index.put("storageAccessOnFind", storageAccessOnFind);
+		
 
 	}
 
@@ -497,7 +512,6 @@ public class Json_Settings {
 			if (orthancJson.containsKey("DicomAssociationCloseDelay")) DicomAssociationCloseDelay=Integer.valueOf(orthancJson.get("DicomAssociationCloseDelay").toString());
 			if (orthancJson.containsKey("QueryRetrieveSize")) QueryRetrieveSize=Integer.valueOf(orthancJson.get("QueryRetrieveSize").toString());
 			if (orthancJson.containsKey("CaseSensitivePN")) CaseSensitivePN=(boolean) orthancJson.get("CaseSensitivePN");
-			if (orthancJson.containsKey("AllowFindSopClassesInStudy")) AllowFindSopClassesInStudy=(boolean) orthancJson.get("AllowFindSopClassesInStudy");
 			if (orthancJson.containsKey("LoadPrivateDictionary")) LoadPrivateDictionary=(boolean) orthancJson.get("LoadPrivateDictionary");
 			if (orthancJson.containsKey("DicomCheckModalityHost")) CheckModalityHost=(boolean)orthancJson.get("DicomCheckModalityHost");
 			if (orthancJson.containsKey("DicomAlwaysAllowStore")) DicomAlwaysStore=(boolean)orthancJson.get("DicomAlwaysAllowStore");
@@ -505,6 +519,14 @@ public class Json_Settings {
 			if (orthancJson.containsKey("SynchronousCMove")) SynchronousCMove=(boolean) orthancJson.get("SynchronousCMove");
 			if(orthancJson.containsKey("JobsHistorySize")) JobsHistorySize=Integer.valueOf(orthancJson.get("JobsHistorySize").toString());
 			if(orthancJson.containsKey("ConcurrentJobs")) ConcurrentJobs=Integer.valueOf(orthancJson.get("ConcurrentJobs").toString());
+			if(orthancJson.containsKey("dicomModalitiesInDb")) dicomModalitiesInDb=(boolean)(orthancJson.get("dicomModalitiesInDb"));
+			if(orthancJson.containsKey("orthancPeerInDb")) orthancPeerInDb=(boolean)(orthancJson.get("dicomPeerInDb"));
+			if(orthancJson.containsKey("overwriteInstances")) overwriteInstances=(boolean)(orthancJson.get("overwriteInstances"));
+			if(orthancJson.containsKey("mediaArchiveSize")) mediaArchiveSize=Integer.valueOf(orthancJson.get("mediaArchiveSize").toString());
+			if(orthancJson.containsKey("storageAccessOnFind")) storageAccessOnFind=orthancJson.get("storageAccessOnFind").toString();
+			
+	
+			
 			//On recupere les autres objet JSON dans le JSON principal
 			//on recupere les AET declares par un nouveau parser
 			JSONParser parser = new JSONParser();

@@ -426,11 +426,6 @@ public class Modify_Gui extends JDialog {
 		
 		else if (level.equals("studies")) {
 			serie_panel.setVisible(false);
-			table_patient.setEnabled(false);
-		}
-		
-		else if (level.equals("series")) {
-			table_patient.setEnabled(false);
 		}
 		
 		else if (level.equals("all")) {

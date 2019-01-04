@@ -221,11 +221,14 @@ public class ImportDCM extends JFrame implements PlugIn{
 		for (int i=0; i<importAnswer.size(); i++) {
 			try {
 				JSONObject importedInstance=(JSONObject) parser.parse(importAnswer.get(i));
-				StringBuilder sbStudy=connexion.makeGetConnectionAndStringBuilder("/instances/"+importedInstance.get("ID")+"/study");
-				JSONObject parentStudy=(JSONObject) parser.parse(sbStudy.toString());
-				String studyID=(String) parentStudy.get("ID");
+				String parentStudyID=(String) importedInstance.get("ParentStudy");
+				
 				//If new study Add it to the global Hashmap
-				if( ! importedstudy.containsKey(studyID)) {
+				if( ! importedstudy.containsKey(parentStudyID)) {
+					
+					StringBuilder studyQuery=connexion.makeGetConnectionAndStringBuilder("/studies/"+parentStudyID);
+					JSONObject parentStudy=(JSONObject)parser.parse(studyQuery.toString());
+					
 					//HashMap for a new Study imported
 					HashMap<String, String> newStudy=new HashMap<String,String>();
 					String studyDate=(String) ((JSONObject) (parentStudy.get("MainDicomTags"))).get("StudyDate");
@@ -238,7 +241,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 					newStudy.put("patientName", patientName);
 					newStudy.put("patientDOB", patientDOB);
 					newStudy.put("patientSex", patientSex);
-					importedstudy.put(studyID, newStudy);
+					importedstudy.put(parentStudyID, newStudy);
 				}
 				
 				
