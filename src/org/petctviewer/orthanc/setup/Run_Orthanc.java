@@ -71,7 +71,6 @@ public class Run_Orthanc {
 		else if (System.getProperty("os.name").toLowerCase().startsWith("linux")){
 			resourceName="Orthanc_Standalone/Orthanc-1.5.1-ReleaseLinux";
 			fileExecName="Orthanc-1.5.1-ReleaseLinux";
-			resourceLibPath="Orthanc_Standalone/libOrthancWebViewer.so";
 			resourceLibName.add("libOrthancWebViewer.so");
 			resourceLibName.add("libOrthancTransfers.so");
 			
@@ -95,6 +94,7 @@ public class Run_Orthanc {
 		File FileExe=new File(file.toString()+File.separator+fileExecName);
 		System.out.println(FileExe);
 		File FileJSON=new File(file.toString()+File.separator+orthancJsonName);
+		System.out.println(FileJSON);
 		
 		InputStream in = ClassLoader.getSystemResourceAsStream(resourceName);
 		InputStream inJson = ClassLoader.getSystemResourceAsStream(resourceNameJSON);
@@ -122,6 +122,8 @@ public class Run_Orthanc {
 		orthancJson=FileJSON;
 		
 	    startOrthanc();
+	    
+	    
 
         return resourceName;
   
@@ -175,7 +177,9 @@ public class Run_Orthanc {
 						 System.out.println(line);
 						 if (line.contains("Orthanc has started")) {
 							 isStarted=true;
-							 System.out.println("confirmation"); ;
+							 System.out.println("confirmation");
+							//SK A REVOIR
+							connexionHttp.testConnexion();
 						 }
 					 }
 					
