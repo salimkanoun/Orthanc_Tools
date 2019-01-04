@@ -160,7 +160,7 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 
 			
 			try {
-				modeleAnonPatients.clear();
+				//modeleAnonPatients.clear();
 				modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientDOB, patientSex, studyID);
 				modeleAnonStudies.clear();
 				modeleAnonStudies.addStudies(patientName, patientID, studyID);

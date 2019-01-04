@@ -44,8 +44,6 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import org.petctviewer.orthanc.ParametreConnexionHttp;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
 
 
 public class SettingsGUI extends JFrame {
@@ -74,13 +72,13 @@ public class SettingsGUI extends JFrame {
 	
 	private JSpinner maxStorageSize, maximumPatientCount,scpTimeout, dicom_Scu_Timeout, http_Timeout,
 	stable_Age,limitFindResult,dicomAssociationCloseDelay,limitFindInstance, queryRetrieveSize,limit_Jobs,
-	jobsHistorySize, concurrentJobs;
+	jobsHistorySize, concurrentJobs, mediaArchiveSize;
 	private JCheckBox storageCompression, httpServerEnabled, httpDescribeErrors, httpCompression, allowRemoteAccess,
 	ssl, enableAuthentication, serverEnabled, checkCalledAet, unknowSop, deflatedTs, jpegTs, jpeg2000Ts, jpegLoselessTs, jpipTs, mpegTs,rleTs,
-	dicomAlwaysStore,checkModalityStore, allowEcho,httpsVerifyPeers,
-	strictAetComparison, storeMD5, logExportedRessources, keepAlive, storeDicom, caseSensitivePatient, allowFindSop, loadPrivateDictionary,
-	synchronousCMove;
-	private JComboBox<String> comboBox_Encoding ;
+	dicomAlwaysStore,checkModalityStore, allowEcho,httpsVerifyPeers, dicomModalitiesInDb,orthancPeerInDb,
+	strictAetComparison, storeMD5, logExportedRessources, keepAlive, storeDicom, caseSensitivePatient, loadPrivateDictionary,
+	synchronousCMove, overwriteInstances;
+	private JComboBox<String> comboBox_Encoding, storageAccessOnFind ;
 	
 	private ParametreConnexionHttp connexion=new ParametreConnexionHttp();
 
@@ -595,7 +593,7 @@ public class SettingsGUI extends JFrame {
 	});
 	panel.add(comboBox_Encoding);
 	comboBox_Encoding.setModel(new DefaultComboBoxModel<String>(new String[] {"Latin1", "Ascii", "Utf8", "Latin2", "Latin3", "Latin4", "Latin5", "Cyrillic", "Windows1251", "Arabic", "Greek", "Hebrew", "Thai", "Japanese", "Chinese"}));
-	
+	comboBox_Encoding.setSelectedItem(settings.DefaultEncoding);
 	
 		JPanel network = new JPanel();
 		tabbedPane.addTab("network", null, network, null);
@@ -630,6 +628,10 @@ public class SettingsGUI extends JFrame {
 		Network_Buttons.add(panel_dcm);
 		panel_dcm.setLayout(new GridLayout(0, 2, 0, 0));
 		
+		dicomModalitiesInDb = new JCheckBox("Dicom Modalities in DB");
+		dicomModalitiesInDb.setSelected(settings.dicomModalitiesInDb);
+		panel_dcm.add(dicomModalitiesInDb);
+		
 		dicomAlwaysStore = new JCheckBox("Dicom Always Store");
 		panel_dcm.add(dicomAlwaysStore);
 		dicomAlwaysStore.addFocusListener(new FocusAdapter() {
@@ -657,7 +659,7 @@ public class SettingsGUI extends JFrame {
 		dicom_Scu_Timeout = new JSpinner();
 		panel_dcm.add(dicom_Scu_Timeout);
 		dicom_Scu_Timeout.setPreferredSize(new Dimension(50, 20));
-		dicom_Scu_Timeout.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+		dicom_Scu_Timeout.setModel(new SpinnerNumberModel(new Double(0), new Double(0), null, new Double(1)));
 		dicom_Scu_Timeout.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent arg0) {
@@ -678,6 +680,21 @@ public class SettingsGUI extends JFrame {
 		panel_peers.setBorder(new LineBorder(new Color(0, 0, 0)));
 		Network_Buttons.add(panel_peers);
 		panel_peers.setLayout(new GridLayout(0, 2, 0, 0));
+		
+		orthancPeerInDb = new JCheckBox("Peer In DB");
+		orthancPeerInDb.setSelected(settings.orthancPeerInDb);
+		panel_peers.add(orthancPeerInDb);
+		
+		httpsVerifyPeers = new JCheckBox("HTTPS verify Peers");
+		httpsVerifyPeers.setSelected(true);
+		panel_peers.add(httpsVerifyPeers);
+		httpsVerifyPeers.setToolTipText("Enable the verification of the peers during HTTPS requests. This option must be set to \"false\" if using self-signed certificates. Pay attention that setting this option to \"false\" results in security risks!");
+		httpsVerifyPeers.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				settings.HttpsVerifyPeers=httpsVerifyPeers.isSelected();
+			}
+		});
 		
 		JLabel lblHttpProxy = new JLabel("HTTP Proxy");
 		panel_peers.add(lblHttpProxy);
@@ -700,26 +717,13 @@ public class SettingsGUI extends JFrame {
 		http_Timeout = new JSpinner();
 		panel_peers.add(http_Timeout);
 		http_Timeout.setPreferredSize(new Dimension(50, 20));
-		http_Timeout.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+		http_Timeout.setModel(new SpinnerNumberModel(new Double(0), new Double(0), null, new Double(1)));
 		http_Timeout.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent e) {
 				settings.HttpTimeout=Integer.valueOf(http_Timeout.getValue().toString());
 			}
 		});
-		
-		httpsVerifyPeers = new JCheckBox("HTTPS verify Peers");
-		panel_peers.add(httpsVerifyPeers);
-		httpsVerifyPeers.setToolTipText("Enable the verification of the peers during HTTPS requests. This option must be set to \"false\" if using self-signed certificates. Pay attention that setting this option to \"false\" results in security risks!");
-		httpsVerifyPeers.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusLost(FocusEvent e) {
-				settings.HttpsVerifyPeers=httpsVerifyPeers.isSelected();
-			}
-		});
-		
-		Component horizontalStrut = Box.createHorizontalStrut(20);
-		panel_peers.add(horizontalStrut);
 		
 		JButton btnOrthancPeers = new JButton("Orthanc Peers");
 		panel_peers.add(btnOrthancPeers);
@@ -790,7 +794,7 @@ public class SettingsGUI extends JFrame {
 	
 	JPanel panel_1 = new JPanel();
 	Advanced_Buttons.add(panel_1);
-	panel_1.setLayout(new GridLayout(0, 2, 5, 3));
+	panel_1.setLayout(new GridLayout(0, 4, 5, 3));
 	
 	JLabel lblStableAge = new JLabel("Stable Age");
 	panel_1.add(lblStableAge);
@@ -876,6 +880,37 @@ public class SettingsGUI extends JFrame {
 	panel_1.add(limit_Jobs);
 	limit_Jobs.setPreferredSize(new Dimension(50, 20));
 	limit_Jobs.setModel(new SpinnerNumberModel (0.0, 0.0, null, 1.0));
+	
+	JLabel lblMediaArchiveSize = new JLabel("Media Archive Size");
+	panel_1.add(lblMediaArchiveSize);
+	
+	mediaArchiveSize = new JSpinner();
+	mediaArchiveSize.setModel(new SpinnerNumberModel(new Integer(0), new Integer(0), null, new Integer(1)));
+	panel_1.add(mediaArchiveSize);
+	mediaArchiveSize.setValue(settings.mediaArchiveSize);
+	
+	JLabel jobHistorySizeLabel=new JLabel("Job History Size");
+	panel_1.add(jobHistorySizeLabel);
+	
+	jobsHistorySize = new JSpinner();
+	panel_1.add(jobsHistorySize);
+	jobsHistorySize.setValue(settings.JobsHistorySize);
+	jobsHistorySize.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.JobsHistorySize=(int) jobsHistorySize.getValue();
+		}
+	});
+	jobsHistorySize.setModel(new SpinnerNumberModel(new Integer(10), new Integer(0), null, new Integer(1)));
+	
+	JLabel lblStorageAccessOn = new JLabel("Storage Access On Find");
+	panel_1.add(lblStorageAccessOn);
+	
+	storageAccessOnFind = new JComboBox<String>();
+	storageAccessOnFind.setModel(new DefaultComboBoxModel<String>(new String[] {"Always", "Answers", "Never"}));
+	storageAccessOnFind.setSelectedItem(settings.storageAccessOnFind);
+	panel_1.add(storageAccessOnFind);
+	
 	limit_Jobs.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
@@ -885,7 +920,7 @@ public class SettingsGUI extends JFrame {
 	
 	JPanel panel_chkbox = new JPanel();
 	Advanced_Buttons.add(panel_chkbox);
-	panel_chkbox.setLayout(new GridLayout(0, 3, 0, 0));
+	panel_chkbox.setLayout(new GridLayout(0, 2, 0, 0));
 	
 	strictAetComparison = new JCheckBox("Strict AET Comparison");
 	panel_chkbox.add(strictAetComparison);
@@ -947,16 +982,6 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	
-	allowFindSop = new JCheckBox("Allow Find SOP classe in study");
-	panel_chkbox.add(allowFindSop);
-	allowFindSop.setToolTipText("If set to \"true\", Orthanc will still handle \"SOP Classes in Study\" (0008,0062) in C-FIND requests, even if the \"SOP Class UID\" metadata is not available in the database.This option is turned off by default, as it requires intensive accesses to the hard drive.");
-	allowFindSop.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.AllowFindSopClassesInStudy=allowFindSop.isSelected();
-		}
-	});
-	
 	
 	loadPrivateDictionary = new JCheckBox("Load Private Dictionary");
 	panel_chkbox.add(loadPrivateDictionary);
@@ -971,18 +996,9 @@ public class SettingsGUI extends JFrame {
 	});
 	panel_chkbox.add(synchronousCMove);
 	
-	JLabel jobHistorySizeLabel=new JLabel("Job History Size");
-	panel_chkbox.add(jobHistorySizeLabel);
-	
-	jobsHistorySize = new JSpinner();
-	jobsHistorySize.addFocusListener(new FocusAdapter() {
-		@Override
-		public void focusLost(FocusEvent e) {
-			settings.JobsHistorySize=(int) jobsHistorySize.getValue();
-		}
-	});
-	jobsHistorySize.setModel(new SpinnerNumberModel(new Integer(10), new Integer(0), null, new Integer(1)));
-	panel_chkbox.add(jobsHistorySize);
+	overwriteInstances = new JCheckBox("Overwrite Instances");
+	panel_chkbox.add(overwriteInstances);
+	overwriteInstances.setSelected(settings.overwriteInstances);
 	
 	loadPrivateDictionary.addFocusListener(new FocusAdapter() {
 		@Override
@@ -1106,7 +1122,7 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	
-	JLabel orthancVersion = new JLabel("For Orthanc 1.4.1");
+	JLabel orthancVersion = new JLabel("For Orthanc 1.5.1");
 	Bouttons_Bouttons.add(orthancVersion);
 	orthancVersion.setHorizontalAlignment(SwingConstants.CENTER);
 	
@@ -1187,7 +1203,6 @@ public class SettingsGUI extends JFrame {
 		keepAlive.setSelected(settings.KeepAlive);
 		storeDicom.setSelected(settings.StoreDicom);
 		caseSensitivePatient.setSelected(settings.CaseSensitivePN);
-		allowFindSop.setSelected(settings.AllowFindSopClassesInStudy);
 		loadPrivateDictionary.setSelected(settings.LoadPrivateDictionary);
 		
 		comboBox_Encoding.setSelectedItem(settings.DefaultEncoding);
