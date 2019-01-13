@@ -195,16 +195,18 @@ public class CTP_Gui extends JDialog {
 							comboBox_Visits.removeAllItems();
 							if (tablePatient.getModel().getRowCount()>0) modelTablePatient.setRowCount(0);							
 							ctp=new CTP(CTP_Username.getText(), new String(CTP_Password.getPassword()), CTPAddress );
-							try {
-								ctp.checkLogin();
+							
+							boolean checklogin=ctp.checkLogin();
+							if(checklogin) {
 								String[] studies=ctp.getAvailableStudies();
 								comboBox_Studies.addItem("Choose");
 								for (int i=0; i<studies.length; i++) {
 									comboBox_Studies.addItem(studies[i]);
 								}
-							}catch(Exception e) {
 								
 							}
+							
+							
 							
 						}
 					});

@@ -30,12 +30,11 @@ public class CTP {
 		this.username=username;
 		this.password=password;
 		this.serverAdress=serverAdress;
-		getAvailableStudies();
 		//String authentication = Base64.getEncoder().encodeToString(("httpLogin" + ":" + "httpPassword").getBytes());
 		
 	}
 	
-	public void checkLogin() throws Exception {
+	public boolean checkLogin() {
 		JSONObject jsonPost=new JSONObject();
 		jsonPost.put("username", username);
 		jsonPost.put("password", password);
@@ -48,10 +47,12 @@ public class CTP {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if(!response.get("login").equals("Allowed")) {
+		if(!response.get("login").equals("Allowed") ) {
 			JOptionPane.showMessageDialog(null, response.get("login").toString(), "Login Error",  JOptionPane.ERROR_MESSAGE);
-			throw new Exception("No access");
+			return false;
 		}
+		
+		return true;
 		
 	}
 	
