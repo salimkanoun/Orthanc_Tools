@@ -57,6 +57,7 @@ public class CD_Burner {
 	private String labelFile;
 	private String epsonDirectory;
 	private String fijiDirectory;
+	private int monitoringTime;
 	private Boolean deleteStudies;
 	private String suportType;
 	private JTable table_burning_history;
@@ -109,7 +110,7 @@ public class CD_Burner {
 	        //running timer task as daemon thread
 	        timer = new Timer(true);
 	        //Toutes les 90 seconds
-	        timer.scheduleAtFixedRate(timerTask, 0, (90*1000));
+	        timer.scheduleAtFixedRate(timerTask, 0, (monitoringTime*1000));
 		}
 		
 	}
@@ -473,6 +474,7 @@ public class CD_Burner {
 				dateFormatChoix=jPrefer.get("DateFormat", null);
 				deleteStudies=jPrefer.getBoolean("deleteStudies", false);
 				suportType=jPrefer.get("suportType", "Auto");
+				monitoringTime=jPrefer.getInt("monitoringTime", 90);
 		
 				
 	}

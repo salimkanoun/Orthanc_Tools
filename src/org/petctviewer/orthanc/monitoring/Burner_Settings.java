@@ -39,6 +39,8 @@ import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 
 @SuppressWarnings("serial")
 public class Burner_Settings extends JDialog {
@@ -60,6 +62,7 @@ public class Burner_Settings extends JDialog {
 	private String fijiDirectory;
 	private String burnerManifacturer;
 	private String suportType;
+	private JSpinner spinnerTiming;
 	private Boolean deleteStudies;
 	private JComboBox<String> comboBoxSupportType, comboBoxBurnerManufacturer;
 	
@@ -270,6 +273,20 @@ public class Burner_Settings extends JDialog {
 				comboBoxBurnerManufacturer.setSelectedItem(burnerManifacturer);
 			}
 		}
+		{
+			JLabel lblMonitorEachsec = new JLabel("Monitor Each (sec)");
+			lblMonitorEachsec.setHorizontalAlignment(SwingConstants.CENTER);
+			contentPanel.add(lblMonitorEachsec);
+		}
+		{
+			JPanel panel = new JPanel();
+			contentPanel.add(panel);
+		
+			spinnerTiming = new JSpinner();
+			spinnerTiming.setModel(new SpinnerNumberModel(new Integer(90), new Integer(10), null, new Integer(1)));
+			panel.add(spinnerTiming);
+		
+		}
 		
 	}
 	
@@ -282,6 +299,7 @@ public class Burner_Settings extends JDialog {
 		dateFormatChoix=jPrefer.get("DateFormat", null);
 		deleteStudies=jPrefer.getBoolean("deleteStudies", false);
 		suportType=jPrefer.get("suportType", "Auto");
+		monitoringTime=jPrefer.get("monitoringTime", 90);
 
 		
 	}
