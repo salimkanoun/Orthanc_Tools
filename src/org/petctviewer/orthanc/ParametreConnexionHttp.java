@@ -18,7 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 package org.petctviewer.orthanc;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -235,6 +237,19 @@ public class ParametreConnexionHttp {
 		return sb; 
 	}
 
+	public InputStream OpenUrl(String apiUrl) {
+		HttpURLConnection conn = this.makeGetConnection(apiUrl);
+		InputStream is=null;
+		
+		try {
+			is =  conn.getInputStream();
+		} catch(FileNotFoundException fnfe) {return null;}
+		
+		catch (Exception e) { }
+		
+		return is;
+	}
+	
 	public void makeDeleteConnection(String apiUrl) {
 		
 		URL url = null;
