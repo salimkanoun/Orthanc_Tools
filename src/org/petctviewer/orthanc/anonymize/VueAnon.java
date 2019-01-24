@@ -39,6 +39,8 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -100,7 +102,6 @@ import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.*;
 import org.petctviewer.orthanc.reader.Read_Orthanc;
-import org.petctviewer.orthanc.reader.Run_Pet_Ct;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
 import org.petctviewer.orthanc.setup.Run_Orthanc;
 
@@ -1376,6 +1377,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		JButton btnReadSeries=new JButton("Open Images");
 		btnReadSeries.addActionListener(new ActionListener() {
 
+			@SuppressWarnings("unchecked")
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				int[] selectedListes=tableauSeries.getSelectedRows();
@@ -1419,7 +1421,21 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				
 				if(pet && ct && fijiEnvironement) {
 					System.out.println("start viewer");
-					new Run_Pet_Ct(imagestacks);
+					Class Run_Pet_Ct = null;
+					try {
+						Run_Pet_Ct = Class.forName("Run_Pet_Ct");
+					} catch (ClassNotFoundException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					try {
+						Constructor cs=Run_Pet_Ct.getDeclaredConstructor(ArrayList.class);
+						cs.newInstance(imagestacks);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} 
+					
 				}
 				
 				

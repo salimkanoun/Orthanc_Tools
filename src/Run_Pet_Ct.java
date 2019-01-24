@@ -1,4 +1,4 @@
-package org.petctviewer.orthanc.reader;
+
 
 import java.util.ArrayList;
 
