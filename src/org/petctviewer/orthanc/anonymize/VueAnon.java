@@ -235,6 +235,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	//CustomListener
 	AnonymizeListener anonymizeListener;
 	
+	//
+	private boolean fijiEnvironement=false;
+	
 	public VueAnon() {
 		
 		super("Orthanc Tools");
@@ -1414,7 +1417,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				
 				worker.execute();
 				
-				if(pet && ct) {
+				if(pet && ct && fijiEnvironement) {
 					System.out.println("start viewer");
 					new Run_Pet_Ct(imagestacks);
 				}
@@ -3017,6 +3020,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		VueAnon anon=new VueAnon();
 		anon.setLocationRelativeTo(null);
 		anon.setVisible(true);
+		fijiEnvironement=true;
 	}
 
 
