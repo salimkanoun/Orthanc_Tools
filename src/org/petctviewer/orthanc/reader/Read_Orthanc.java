@@ -28,12 +28,12 @@ public class Read_Orthanc {
 	JSONParser parser=new JSONParser();
 	ParametreConnexionHttp connexion;
 	
-	public Read_Orthanc(String serieUID, ParametreConnexionHttp connexion) {
+	public Read_Orthanc(ParametreConnexionHttp connexion) {
 		this.connexion=connexion;
-		readSerie(serieUID);
+		
 	}
 	
-	public void readSerie(String uuid) {
+	public ImagePlus readSerie(String uuid) {
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/series/"+uuid);
 		JSONObject seriesDetails = null;
 		try {
@@ -71,6 +71,7 @@ public class Read_Orthanc {
 		imp.setStack(stack);
 		updateCalibration(imp);
 		imp.show();
+		return imp;
 		
 	}
 

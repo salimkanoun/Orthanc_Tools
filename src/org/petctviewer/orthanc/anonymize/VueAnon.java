@@ -88,6 +88,7 @@ import org.json.simple.parser.JSONParser;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
 
+import ij.ImagePlus;
 import ij.plugin.PlugIn;
 
 import org.petctviewer.orthanc.*;
@@ -99,6 +100,7 @@ import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.*;
 import org.petctviewer.orthanc.reader.Read_Orthanc;
+import org.petctviewer.orthanc.reader.Run_Pet_Ct;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
 import org.petctviewer.orthanc.setup.Run_Orthanc;
 
@@ -1375,6 +1377,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			public void actionPerformed(ActionEvent arg0) {
 				int[] selectedListes=tableauSeries.getSelectedRows();
 				List<String> ids=new ArrayList<String>();
+				ArrayList<ImagePlus> imagestacks=new ArrayList<ImagePlus>();
 				boolean pet = false;
 				boolean ct = false;
 				
@@ -1391,7 +1394,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 					protected Void doInBackground() {
 						btnReadSeries.setText("Reading Series");
 						for(String id : ids) {
-							new Read_Orthanc(id, connexionHttp);
+							Read_Orthanc reader=new Read_Orthanc(connexionHttp);
+							ImagePlus ip=reader.readSerie(id);
+							imagestacks.add(ip);
 							
 						}
 						
@@ -1411,7 +1416,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				
 				if(pet && ct) {
 					System.out.println("start viewer");
-					
+					new Run_Pet_Ct(imagestacks);
 				}
 				
 				

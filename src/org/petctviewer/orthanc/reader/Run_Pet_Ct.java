@@ -9,7 +9,7 @@ import ij.ImagePlus;
 public class Run_Pet_Ct {
 	
 	
-	private Run_Pet_Ct(ArrayList<ImagePlus> imagePlusList) {
+	public Run_Pet_Ct(ArrayList<ImagePlus> imagePlusList) {
 		String seriesUIDs = ChoosePetCt.buildSeriesUIDs(imagePlusList);
 		if( seriesUIDs == null) return;
 		if( seriesUIDs.startsWith("2CTs")) seriesUIDs = "";
