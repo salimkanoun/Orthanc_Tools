@@ -273,8 +273,7 @@ public HttpURLConnection makeGetConnectionImage(String apiUrl) {
 		try {
 			is = conn.getInputStream();
 		} catch(IOException e) { e.printStackTrace();}
-		
-		System.out.println(conn);
+
 		return is;
 	}
 	

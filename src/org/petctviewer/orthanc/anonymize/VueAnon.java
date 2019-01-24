@@ -98,6 +98,7 @@ import org.petctviewer.orthanc.ctpimport.AnonymizeListener;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.*;
+import org.petctviewer.orthanc.reader.Read_Orthanc;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
 import org.petctviewer.orthanc.setup.Run_Orthanc;
 
@@ -1361,11 +1362,29 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		c.gridy = 0;
 		tablesPanel.add(jscp2,c);
 
+		JPanel panelTableauSeries=new JPanel(new BorderLayout());
 		JScrollPane jscp3 = new JScrollPane(tableauSeries);
 		jscp3.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		c.gridx = 2;
 		c.gridy = 0;
-		tablesPanel.add(jscp3,c);
+		panelTableauSeries.add(jscp3, BorderLayout.CENTER);
+		JButton btnReadSeries=new JButton("Open Images");
+		btnReadSeries.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				int[] selectedListes=tableauSeries.getSelectedRows();
+				for( int line : selectedListes) {
+					String id=(String) tableauSeries.getValueAt(line, 4);
+					new Read_Orthanc(id, connexionHttp);
+				}
+				
+				
+			}
+			
+		});
+		panelTableauSeries.add(btnReadSeries, BorderLayout.SOUTH);
+		tablesPanel.add(panelTableauSeries,c);
 
 		mainPanel.add(tablesPanel);
 		mainPanel.add(toolbox);
