@@ -27,7 +27,7 @@ Features :
    
  - Monitoring :
    - Auto-Fetch : Automatically retrieve patient's history for each new study/patient recieved in Orthanc
-   - CD-Burner : Generate DVD burning intruction for Epson PP100II diskmaker
+   - CD-Burner : Trigger DVD burning for Epson and Primera discproducers from DICOM transfert
    - Tag-Monitoring : Autocollection of DICOM tag value of recieved patients/studies/series (monitoring injected dose, patient's weight,        acquisition time ...) and possibility to store these data into a structured mySQL database
    - Auto-Routing (Not desgigned yet)
    
