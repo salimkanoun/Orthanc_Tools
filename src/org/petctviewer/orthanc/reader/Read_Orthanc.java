@@ -1,7 +1,6 @@
 package org.petctviewer.orthanc.reader;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -9,17 +8,23 @@ import javax.imageio.ImageIO;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
 
 import ij.ImagePlus;
-import ij.ImageStack;
-import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
+
 
 public class Read_Orthanc {
 	
 	ParametreConnexionHttp connexion=new ParametreConnexionHttp();
+	
+	public static void main(String[] args) {
+		Read_Orthanc orthancReader= new Read_Orthanc();
+		orthancReader.readCompressed("87c4fd56-6d4e7573-c3c640ca-b33a09b9-5adfa7ee");
+	}
 
 	ImageProcessor readCompressed(String uuid) {
 		ImageProcessor slice=null;
@@ -32,7 +37,7 @@ public class Read_Orthanc {
 				bufType = BufferedImage.TYPE_3BYTE_BGR;
 			}*/
 			String uri = "/instances/" + uuid +  "/image-uint16";
-			BufferedImage bi = ImageIO.read( connexion.OpenUrl(uri));
+			BufferedImage bi = ImageIO.read( connexion.openImage(uri));
 			
 			//if( SC) slice = new ColorProcessor(bi);
 			//else 
@@ -47,12 +52,20 @@ public class Read_Orthanc {
 			String tmp1 = "Compressed \n" + this.extractDicomInfo(uuid);
 			ImagePlus ip=new ImagePlus(tmp1,slice);
 			ip.show();
-		} catch (Exception e) { }
+		} catch (Exception e) { e.printStackTrace();}
 		return slice;
 	}
 	
 	private String extractDicomInfo(String uuid) {
-		JSONObject tags = (JSONObject) ReadJson("instances/" + uuid + "/tags");
+		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/instances/" + uuid + "/tags");
+		JSONParser parser=new JSONParser();
+		JSONObject tags=null;
+		try {
+			tags = (JSONObject) parser.parse(sb.toString());
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (tags == null || tags.isEmpty()) return "";
 		String info = new String();
 		String type1;

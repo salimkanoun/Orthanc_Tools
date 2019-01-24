@@ -132,6 +132,34 @@ public class ParametreConnexionHttp {
 		return conn;
 	
 	}
+	
+public HttpURLConnection makeGetConnectionImage(String apiUrl) {
+		
+		HttpURLConnection conn=null;
+		URL url = null;
+			try {
+				url = new URL(fullAddress+apiUrl);
+				conn = (HttpURLConnection) url.openConnection();
+				conn.setRequestProperty("Accept", "image/png");
+				conn.setDoOutput(true);
+				conn.setRequestMethod("GET");
+				if((fullAddress != null && fullAddress.contains("https"))){
+						HttpsTrustModifier.Trust(conn);
+				}
+				if(authentication != null){
+					conn.setRequestProperty("Authorization", "Basic " + authentication);
+				}
+				conn.getResponseMessage();
+				
+			} catch (IOException | KeyManagementException | NoSuchAlgorithmException | KeyStoreException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		
+
+		return conn;
+	
+	}
 
 	public StringBuilder makeGetConnectionAndStringBuilder(String apiUrl) {
 		HttpURLConnection conn = null;
@@ -237,16 +265,16 @@ public class ParametreConnexionHttp {
 		return sb; 
 	}
 
-	public InputStream OpenUrl(String apiUrl) {
-		HttpURLConnection conn = this.makeGetConnection(apiUrl);
+	public InputStream openImage(String apiUrl) {
+		HttpURLConnection conn = this.makeGetConnectionImage(apiUrl);
+
 		InputStream is=null;
 		
 		try {
-			is =  conn.getInputStream();
-		} catch(FileNotFoundException fnfe) {return null;}
+			is = conn.getInputStream();
+		} catch(IOException e) { e.printStackTrace();}
 		
-		catch (Exception e) { }
-		
+		System.out.println(conn);
 		return is;
 	}
 	
