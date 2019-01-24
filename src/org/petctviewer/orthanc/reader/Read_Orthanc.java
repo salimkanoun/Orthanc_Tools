@@ -13,24 +13,56 @@ import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
 
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 
 
 public class Read_Orthanc {
 	
+	JSONParser parser=new JSONParser();
 	ParametreConnexionHttp connexion=new ParametreConnexionHttp();
 	
 	public static void main(String[] args) {
 		Read_Orthanc orthancReader= new Read_Orthanc();
-		orthancReader.readCompressed("87c4fd56-6d4e7573-c3c640ca-b33a09b9-5adfa7ee");
+		orthancReader.readSerie("c527df8d-4472b531-e22cdd98-5c5512a4-9287556d");
+	}
+	
+	public void readSerie(String uuid) {
+		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/series/"+uuid);
+		JSONObject seriesDetails = null;
+		try {
+			seriesDetails=(JSONObject)parser.parse(sb.toString());
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		ImageStack stack = null;
+		
+		JSONArray instanceIDList=(JSONArray) seriesDetails.get("Instances");
+		for(int i=0 ; i<instanceIDList.size(); i++) {
+			
+			ImageProcessor ip=readCompressed(instanceIDList.get(i).toString());
+			String metadata = "Compressed \n" + this.extractDicomInfo(instanceIDList.get(i).toString());
+			
+			if(i==0) {
+				stack= new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
+			}
+
+
+			stack.addSlice(metadata, ip);
+		}
+		ImagePlus imp=new ImagePlus();
+		imp.setStack(stack);
+		imp.show();
+		
 	}
 
-	ImageProcessor readCompressed(String uuid) {
+	private ImageProcessor readCompressed(String uuid ) {
 		ImageProcessor slice=null;
 		try {
 			
-			String imgType = "/image-uint16";
+			//String imgType = "/image-uint16";
 			//int bufType = BufferedImage.TYPE_USHORT_GRAY;
 			/*if(SC) {
 				imgType = "/preview";
@@ -49,16 +81,19 @@ public class Read_Orthanc {
 			}
 			stack.addSlice(tmp1, slice);
 			*/
-			String tmp1 = "Compressed \n" + this.extractDicomInfo(uuid);
-			ImagePlus ip=new ImagePlus(tmp1,slice);
-			ip.show();
+			
+			
+			
+
+			
 		} catch (Exception e) { e.printStackTrace();}
 		return slice;
+		
 	}
 	
 	private String extractDicomInfo(String uuid) {
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/instances/" + uuid + "/tags");
-		JSONParser parser=new JSONParser();
+		
 		JSONObject tags=null;
 		try {
 			tags = (JSONObject) parser.parse(sb.toString());
