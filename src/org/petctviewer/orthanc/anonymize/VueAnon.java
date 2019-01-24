@@ -1375,8 +1375,13 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			public void actionPerformed(ActionEvent arg0) {
 				int[] selectedListes=tableauSeries.getSelectedRows();
 				List<String> ids=new ArrayList<String>();
+				boolean pet = false;
+				boolean ct = false;
+				
 				for( int line : selectedListes) {
 					ids.add((String) tableauSeries.getValueAt(line, 4));
+					if(tableauSeries.getValueAt(line, 1).equals("PT")) pet=true;
+					if(tableauSeries.getValueAt(line, 1).equals("CT")) ct=true;
 					
 				}
 				
@@ -1390,6 +1395,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 							
 						}
 						
+						
+						
 						return null;
 					}
 
@@ -1402,7 +1409,15 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				
 				worker.execute();
 				
+				if(pet && ct) {
+					System.out.println("start viewer");
+					
+				}
+				
+				
 			}
+			
+			
 			
 		});
 		panelTableauSeries.add(btnReadSeries, BorderLayout.SOUTH);

@@ -33,10 +33,6 @@ public class Read_Orthanc {
 		readSerie(serieUID);
 	}
 	
-	public static void main(String[] args) {
-		new Read_Orthanc("b90e3e43-478efadb-ed824c50-46f2193f-b7dd8941", new ParametreConnexionHttp());
-	}
-	
 	public void readSerie(String uuid) {
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/series/"+uuid);
 		JSONObject seriesDetails = null;
@@ -69,7 +65,7 @@ public class Read_Orthanc {
 
 			stack.addSlice(metadata, ip);
 			
-			IJ.showProgress((double) i/instanceIDList.size());
+			IJ.showProgress((double) i+1/instanceIDList.size());
 		}
 		ImagePlus imp=new ImagePlus();
 		imp.setStack(stack);
