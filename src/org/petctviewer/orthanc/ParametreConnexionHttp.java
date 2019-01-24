@@ -18,7 +18,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 package org.petctviewer.orthanc;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
