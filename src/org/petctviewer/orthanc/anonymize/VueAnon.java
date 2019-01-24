@@ -40,7 +40,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -1374,6 +1373,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		c.gridx = 2;
 		c.gridy = 0;
 		panelTableauSeries.add(jscp3, BorderLayout.CENTER);
+		JPanel panelButton=new JPanel();
 		JButton btnReadSeries=new JButton("Open Images");
 		btnReadSeries.addActionListener(new ActionListener() {
 
@@ -1381,10 +1381,15 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				int[] selectedListes=tableauSeries.getSelectedRows();
+				
+				if(selectedListes.length==0) {
+					JOptionPane.showMessageDialog(gui, "Select Series to read", "No series", JOptionPane.ERROR_MESSAGE);
+				}
 				List<String> ids=new ArrayList<String>();
 				ArrayList<ImagePlus> imagestacks=new ArrayList<ImagePlus>();
-				boolean pet = false;
+				
 				boolean ct = false;
+				boolean pet = false;
 				
 				for( int line : selectedListes) {
 					ids.add((String) tableauSeries.getValueAt(line, 4));
@@ -1393,8 +1398,11 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 					
 				}
 				
+				boolean startViewer=(pet && ct && fijiEnvironement);
+				
 				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 					
+					@SuppressWarnings("rawtypes")
 					@Override
 					protected Void doInBackground() {
 						btnReadSeries.setText("Reading Series");
@@ -1402,6 +1410,25 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 							Read_Orthanc reader=new Read_Orthanc(connexionHttp);
 							ImagePlus ip=reader.readSerie(id);
 							imagestacks.add(ip);
+							
+						}
+						
+						if(startViewer) {
+							System.out.println("start viewer");
+							Class Run_Pet_Ct = null;
+							try {
+								Run_Pet_Ct = Class.forName("Run_Pet_Ct");
+							} catch (ClassNotFoundException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							try {
+								Constructor cs=Run_Pet_Ct.getDeclaredConstructor(ArrayList.class);
+								cs.newInstance(imagestacks);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} 
 							
 						}
 						
@@ -1419,24 +1446,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				
 				worker.execute();
 				
-				if(pet && ct && fijiEnvironement) {
-					System.out.println("start viewer");
-					Class Run_Pet_Ct = null;
-					try {
-						Run_Pet_Ct = Class.forName("Run_Pet_Ct");
-					} catch (ClassNotFoundException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					try {
-						Constructor cs=Run_Pet_Ct.getDeclaredConstructor(ArrayList.class);
-						cs.newInstance(imagestacks);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} 
-					
-				}
+
 				
 				
 			}
@@ -1444,7 +1454,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			
 			
 		});
-		panelTableauSeries.add(btnReadSeries, BorderLayout.SOUTH);
+		panelButton.add(btnReadSeries);
+		panelTableauSeries.add(panelButton, BorderLayout.EAST);
 		tablesPanel.add(panelTableauSeries,c);
 
 		mainPanel.add(tablesPanel);
@@ -3033,11 +3044,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 	@Override
 	public void run(String string) {
-		VueAnon anon=new VueAnon();
-		anon.setLocationRelativeTo(null);
-		anon.setVisible(true);
+		setLocationRelativeTo(null);
+		this.setVisible(true);
 		fijiEnvironement=true;
-		System.out.println(fijiEnvironement);
 	}
 
 
