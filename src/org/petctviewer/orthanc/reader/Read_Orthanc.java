@@ -74,7 +74,6 @@ public class Read_Orthanc {
 		ImagePlus imp=new ImagePlus();
 		imp.setStack(stack);
 		updateCalibration(imp);
-		
 		imp.show();
 		
 	}
@@ -199,7 +198,7 @@ public class Read_Orthanc {
 		img.getCalibration().pixelHeight = spacing[1];
 		img.getCalibration().setUnit("mm");
 		
-		img.setTitle(getDicomValue(meta, "0010,0010")+getDicomValue(meta, "0008,0022")+getDicomValue(meta, "0008,0103E"));
+		img.setTitle(getDicomValue(meta, "0010,0010")+"-"+getDicomValue(meta, "0008,0022")+"-"+getDicomValue(meta, "0008,0103E"));
 	}
 	
 	private String getDicomValue( String meta, String key1) {
