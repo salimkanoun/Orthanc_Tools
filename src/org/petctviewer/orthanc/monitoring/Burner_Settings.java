@@ -64,6 +64,7 @@ public class Burner_Settings extends JDialog {
 	private String suportType;
 	private JSpinner spinnerTiming;
 	private Boolean deleteStudies;
+	private int monitoringTime;
 	private JComboBox<String> comboBoxSupportType, comboBoxBurnerManufacturer;
 	
 	/**
@@ -243,6 +244,7 @@ public class Burner_Settings extends JDialog {
 						jPrefer.put("suportType", comboBoxSupportType.getSelectedItem().toString());
 						//On ajoute la string du format date
 						jPrefer.put("DateFormat", buttonGroup.getSelection().getActionCommand());
+						jPrefer.putInt("monitoringTime", (int) spinnerTiming.getValue());
 						//on dispose 
 						dispose();
 					}
@@ -284,6 +286,7 @@ public class Burner_Settings extends JDialog {
 		
 			spinnerTiming = new JSpinner();
 			spinnerTiming.setModel(new SpinnerNumberModel(new Integer(90), new Integer(10), null, new Integer(1)));
+			spinnerTiming.setValue(monitoringTime);
 			panel.add(spinnerTiming);
 		
 		}
@@ -299,7 +302,7 @@ public class Burner_Settings extends JDialog {
 		dateFormatChoix=jPrefer.get("DateFormat", null);
 		deleteStudies=jPrefer.getBoolean("deleteStudies", false);
 		suportType=jPrefer.get("suportType", "Auto");
-		monitoringTime=jPrefer.get("monitoringTime", 90);
+		monitoringTime=jPrefer.getInt("monitoringTime", 90);
 
 		
 	}
