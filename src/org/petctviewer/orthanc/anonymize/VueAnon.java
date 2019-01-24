@@ -3037,6 +3037,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		anon.setLocationRelativeTo(null);
 		anon.setVisible(true);
 		fijiEnvironement=true;
+		System.out.println(fijiEnvironement);
 	}
 
 
