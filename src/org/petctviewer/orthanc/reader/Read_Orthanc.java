@@ -14,6 +14,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.Calibration;
@@ -67,10 +68,13 @@ public class Read_Orthanc {
 
 
 			stack.addSlice(metadata, ip);
+			
+			IJ.showProgress((double) i/instanceIDList.size());
 		}
 		ImagePlus imp=new ImagePlus();
 		imp.setStack(stack);
 		updateCalibration(imp);
+		
 		imp.show();
 		
 	}
@@ -177,7 +181,7 @@ public class Read_Orthanc {
 	}
 	
 	private void updateCalibration( ImagePlus img) {
-		String meta=img.getInfoProperty();
+		String meta=img.getStack().getSliceLabel(1);
 		double[] coeff = new double[2];
 		float[] spacing;
 		String tmp1;
@@ -194,6 +198,8 @@ public class Read_Orthanc {
 		img.getCalibration().pixelWidth = spacing[0];
 		img.getCalibration().pixelHeight = spacing[1];
 		img.getCalibration().setUnit("mm");
+		
+		img.setTitle(getDicomValue(meta, "0010,0010")+getDicomValue(meta, "0008,0022")+getDicomValue(meta, "0008,0103E"));
 	}
 	
 	private String getDicomValue( String meta, String key1) {
@@ -234,6 +240,7 @@ public class Read_Orthanc {
 		int i, n = 0;
 		if( tmp1 == null) return null;
 		String tmp2 = tmp1.replace("\\ ", "\\");
+		@SuppressWarnings("resource")
 		Scanner sc = new Scanner(tmp2).useDelimiter("\\\\");
 		sc.useLocale(Locale.US);
 		while(sc.hasNextDouble() && n < 32) {

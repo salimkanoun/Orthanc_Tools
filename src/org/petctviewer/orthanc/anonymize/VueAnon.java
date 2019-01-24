@@ -1374,11 +1374,33 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				int[] selectedListes=tableauSeries.getSelectedRows();
+				List<String> ids=new ArrayList<String>();
 				for( int line : selectedListes) {
-					String id=(String) tableauSeries.getValueAt(line, 4);
-					new Read_Orthanc(id, connexionHttp);
+					ids.add((String) tableauSeries.getValueAt(line, 4));
+					
 				}
 				
+				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+					
+					@Override
+					protected Void doInBackground() {
+						btnReadSeries.setText("Reading Series");
+						for(String id : ids) {
+							new Read_Orthanc(id, connexionHttp);
+							
+						}
+						
+						return null;
+					}
+
+					@Override
+					public void done(){
+						btnReadSeries.setText("Open Images");
+					
+					}
+				};
+				
+				worker.execute();
 				
 			}
 			
