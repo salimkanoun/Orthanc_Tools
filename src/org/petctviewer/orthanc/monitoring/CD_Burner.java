@@ -300,7 +300,7 @@ public class CD_Burner {
 		String txtRobot= "# Making data CD\n";
 		//Peut definir le Job ID et le mettre le compteur dans registery si besoin de tracer les operation avec fichier STF
 		if(createJobID(name, formattedStudyDate)!=null) txtRobot+="JOB_ID="+createJobID(name, formattedStudyDate)+"\n";
-		System.out.println(createJobID(name, formattedStudyDate));
+		
 		txtRobot+="#nombre de copies\n"
 		+ "COPIES=1\n"
 		+ "#CD ou DVD\n"
