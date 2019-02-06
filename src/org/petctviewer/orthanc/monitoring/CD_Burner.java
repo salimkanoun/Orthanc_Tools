@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -212,7 +213,7 @@ public class CD_Burner {
 				if (burnerManifacturer.equals("Epson")) {
 					//Generation du Dat
 					File dat = printDat(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB );
-					robotRequestFile=createCdBurnerEpson(dat, discType);
+					robotRequestFile=createCdBurnerEpson(dat, discType, nom, formattedDateExamen);
 					
 					
 				}
@@ -294,35 +295,36 @@ public class CD_Burner {
 	 * @param studyDescription
 	 * @param dat
 	 */
-	private File createCdBurnerEpson(File dat, String discType){
-		
+	private File createCdBurnerEpson(File dat, String discType, String name, String formattedStudyDate){
 		//REalisation du texte pour le Robot
-		String txtRobot= "# Making data CD\n"
-				//Peut definir le Job ID et le mettre le compteur dans registery si besoin de tracer les operation avec fichier STF
-				+ "#nombre de copies\n"
-				+ "COPIES=1\n"
-				+ "#CD ou DVD\n"
-				+ "DISC_TYPE="+discType+"\n"
-				+ "FORMAT=UDF102\n"
-				+ "DATA="+fijiDirectory+"\n"
-				+ "DATA="+folder+ File.separator+ "DICOM" +File.separator+"\n"
-				+ "#Instruction d'impression\n"
-				+ "LABEL="+labelFile+"\n"
-				+ "REPLACE_FIELD="+dat.getAbsolutePath().toString();
-		
+		String txtRobot= "# Making data CD\n";
+		//Peut definir le Job ID et le mettre le compteur dans registery si besoin de tracer les operation avec fichier STF
+		if(createJobID(name, formattedStudyDate)!=null) txtRobot+="JOB_ID="+createJobID(name, formattedStudyDate)+"\n";
+		System.out.println(createJobID(name, formattedStudyDate));
+		txtRobot+="#nombre de copies\n"
+		+ "COPIES=1\n"
+		+ "#CD ou DVD\n"
+		+ "DISC_TYPE="+discType+"\n"
+		+ "FORMAT=UDF102\n"
+		+ "DATA="+fijiDirectory+"\n"
+		+ "DATA="+folder+ File.separator+ "DICOM" +File.separator+"\n"
+		+ "#Instruction d'impression\n"
+		+ "LABEL="+labelFile+"\n"
+		+ "REPLACE_FIELD="+dat.getAbsolutePath().toString();
+
 		// On ecrit le fichier JDF
-				File f = new File(epsonDirectory + File.separator + "CD_"+dateFormat.format(datenow)+".JDF");
-				PrintWriter pw = null;
-				try {
-					pw = new PrintWriter(f);
-					pw.write(txtRobot);
-				} catch (IOException e) {
-					e.printStackTrace();
-				} finally {
-					pw.close();
-				}
-				
-				return f;
+		File f = new File(epsonDirectory + File.separator + "CD_"+dateFormat.format(datenow)+".JDF");
+		PrintWriter pw = null;
+		try {
+			pw = new PrintWriter(f);
+			pw.write(txtRobot);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			pw.close();
+		}
+		
+		return f;
 				
 	}
 	
@@ -336,7 +338,11 @@ public class CD_Burner {
 	 */
 	private File createCdBurnerPrimera(String nom, String id, String date, String studyDescription, String accessionNumber, String patientDOB, String discType){
 	//Command Keys/Values for Primera Robot
-			String txtRobot= "Copies = 1\n"
+			String txtRobot=new String();
+			
+			if(createJobID(nom, date) != null) txtRobot +="JobID="+createJobID(nom,date)+"\n";
+				
+			txtRobot+="Copies = 1\n"
 					+ "DataImageType = UDF\n"
 					+ "Data="+fijiDirectory+"\n"
 					+ "Data="+folder+ File.separator+ "DICOM\n"
@@ -380,9 +386,7 @@ public class CD_Burner {
 	
 	//Creer le fichier DAT pour injecter NOM, Date, Modalite
 	private File printDat(String nom, String id, String date, String studyDescription, String accessionNumber, String patientDOB) throws ParseException {
-		
-       
-       
+
        //On parse le nom pour enlever les ^ et passer le prenom en minuscule
        int separationNomPrenom=nom.indexOf("^", 0);
        if (separationNomPrenom!=-1) {
@@ -439,6 +443,29 @@ public class CD_Burner {
 		
 	
 		
+	}
+	
+	private String createJobID(String name, String formattedStudyDate) {
+		String lastName = null;
+		String firstName= "";
+		//prepare JOB_ID string.
+		if(name.contains("^")) {
+			String[] names=name.split(Pattern.quote("^"));
+			//Get 10 first character of lastname and first name if input over 10 characters
+			if(names[0].length()>5) lastName=names[0].substring(0, 5); else lastName=names[0];
+			if(names[1].length()>5) firstName=names[1].substring(0, 5); else firstName=names[1];
+			
+		}else {
+			if(!StringUtils.isEmpty(name)) {
+				if(name.length()>10) lastName=name.substring(0, 10); else lastName=name;
+			//No name information return null
+			}else {
+				return null;
+			}
+			
+		}
+		
+		return ( lastName+"_"+firstName+"_"+StringUtils.remove(formattedStudyDate, "/")+"_"+( (int) Math.round(Math.random()*1000)) );
 	}
 	
 	/**
