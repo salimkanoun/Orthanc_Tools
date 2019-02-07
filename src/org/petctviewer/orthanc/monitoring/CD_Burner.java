@@ -465,7 +465,8 @@ public class CD_Burner {
 			
 		}
 		
-		return ( lastName+"_"+firstName+"_"+StringUtils.remove(formattedStudyDate, "/")+"_"+( (int) Math.round(Math.random()*1000)) );
+		String results=lastName+"_"+firstName+"_"+StringUtils.remove(formattedStudyDate, "/")+"_"+( (int) Math.round(Math.random()*1000));
+		return (  results.replaceAll("\\s+","") );
 	}
 	
 	/**
