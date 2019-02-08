@@ -41,7 +41,7 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
@@ -468,6 +468,8 @@ public class CD_Burner {
 		}
 		
 		String results=lastName+"_"+firstName+"_"+StringUtils.remove(formattedStudyDate, "/")+"_"+( (int) Math.round(Math.random()*1000));
+		results=StringUtils.stripAccents(results);
+		
 		return (  results.replaceAll("\\s+","") );
 	}
 	
