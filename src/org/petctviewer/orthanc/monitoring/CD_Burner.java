@@ -435,6 +435,8 @@ public class CD_Burner {
 		    		}else if(extension.equals("DON")) {
 		    			table_burning_history.setValueAt("Burning Done", rowNubmer, 5);
 		    			FileUtils.deleteDirectory(tempFolder);
+		    		}else if(extension.equals("STP")) {
+		    			table_burning_history.setValueAt("Paused", rowNubmer, 5);
 		    		}
 		    	}
 		    }
