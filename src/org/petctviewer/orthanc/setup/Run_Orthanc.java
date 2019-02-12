@@ -37,7 +37,7 @@ public class Run_Orthanc {
 	 private String resourceName;
 	 private String fileExecName;
 	 public String orthancJsonName="Orthanc.json";
-	 private String resourceLibPath="Orthanc_Standalone";
+	 private String resourceLibPath="Orthanc_Standalone/";
 	 private List<String> resourceLibName=new ArrayList<String>();
 	 private boolean temp;
 	 private ParametreConnexionHttp connexionHttp;
@@ -80,7 +80,7 @@ public class Run_Orthanc {
 	}
 	
 	public String copyOrthanc(String installPath) throws Exception {
-		String resourceNameJSON=resourceLibPath+File.separator+orthancJsonName;
+		String resourceNameJSON=resourceLibPath+orthancJsonName;
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		
 		//Si pas de destination on met dans le temp directory
@@ -92,9 +92,7 @@ public class Run_Orthanc {
 		else file=Paths.get(installPath);
 		
 		File FileExe=new File(file.toString()+File.separator+fileExecName);
-		System.out.println(FileExe);
 		File FileJSON=new File(file.toString()+File.separator+orthancJsonName);
-		System.out.println(FileJSON);
 		
 		InputStream in = ClassLoader.getSystemResourceAsStream(resourceName);
 		InputStream inJson = ClassLoader.getSystemResourceAsStream(resourceNameJSON);
@@ -111,7 +109,7 @@ public class Run_Orthanc {
 		//Add lib to get GDCM decoder
 		for (int i=0; i<resourceLibName.size(); i++) {
 			File FileLib=new File(file.toString()+File.separator+resourceLibName.get(i));
-			InputStream inLib = ClassLoader.getSystemResourceAsStream(resourceLibPath+File.separator+resourceLibName.get(i));
+			InputStream inLib = ClassLoader.getSystemResourceAsStream(resourceLibPath+resourceLibName.get(i));
 			OutputStream outLib = new FileOutputStream(FileLib);
 			IOUtils.copy(inLib, outLib);
 			outLib.close();
