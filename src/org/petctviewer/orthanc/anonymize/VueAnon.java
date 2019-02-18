@@ -39,6 +39,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -88,6 +89,7 @@ import org.json.simple.parser.JSONParser;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
 
+import ij.ImagePlus;
 import ij.plugin.PlugIn;
 
 import org.petctviewer.orthanc.*;
@@ -98,6 +100,7 @@ import org.petctviewer.orthanc.ctpimport.AnonymizeListener;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.*;
+import org.petctviewer.orthanc.reader.Read_Orthanc;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
 import org.petctviewer.orthanc.setup.Run_Orthanc;
 
@@ -231,6 +234,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	
 	//CustomListener
 	AnonymizeListener anonymizeListener;
+	
+	//
+	private boolean fijiEnvironement=false;
 	
 	public VueAnon() {
 		
@@ -1361,11 +1367,96 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		c.gridy = 0;
 		tablesPanel.add(jscp2,c);
 
+		JPanel panelTableauSeries=new JPanel(new BorderLayout());
 		JScrollPane jscp3 = new JScrollPane(tableauSeries);
 		jscp3.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		c.gridx = 2;
 		c.gridy = 0;
-		tablesPanel.add(jscp3,c);
+		panelTableauSeries.add(jscp3, BorderLayout.CENTER);
+		JPanel panelButton=new JPanel();
+		JButton btnReadSeries=new JButton("Open Images");
+		btnReadSeries.addActionListener(new ActionListener() {
+
+			@SuppressWarnings("unchecked")
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				int[] selectedListes=tableauSeries.getSelectedRows();
+				
+				if(selectedListes.length==0) {
+					JOptionPane.showMessageDialog(gui, "Select Series to read", "No series", JOptionPane.ERROR_MESSAGE);
+				}
+				List<String> ids=new ArrayList<String>();
+				ArrayList<ImagePlus> imagestacks=new ArrayList<ImagePlus>();
+				
+				boolean ct = false;
+				boolean pet = false;
+				
+				for( int line : selectedListes) {
+					ids.add((String) tableauSeries.getValueAt(line, 4));
+					if(tableauSeries.getValueAt(line, 1).equals("PT")) pet=true;
+					if(tableauSeries.getValueAt(line, 1).equals("CT")) ct=true;
+					
+				}
+				
+				boolean startViewer=(pet && ct && fijiEnvironement);
+				
+				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+					
+					@SuppressWarnings("rawtypes")
+					@Override
+					protected Void doInBackground() {
+						btnReadSeries.setText("Reading Series");
+						for(String id : ids) {
+							Read_Orthanc reader=new Read_Orthanc(connexionHttp);
+							ImagePlus ip=reader.readSerie(id);
+							imagestacks.add(ip);
+							
+						}
+						
+						if(startViewer) {
+							System.out.println("start viewer");
+							Class Run_Pet_Ct = null;
+							try {
+								Run_Pet_Ct = Class.forName("Run_Pet_Ct");
+							} catch (ClassNotFoundException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							try {
+								Constructor cs=Run_Pet_Ct.getDeclaredConstructor(ArrayList.class);
+								cs.newInstance(imagestacks);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} 
+							
+						}
+						
+						
+						
+						return null;
+					}
+
+					@Override
+					public void done(){
+						btnReadSeries.setText("Open Images");
+					
+					}
+				};
+				
+				worker.execute();
+				
+
+				
+				
+			}
+			
+			
+			
+		});
+		panelButton.add(btnReadSeries);
+		panelTableauSeries.add(panelButton, BorderLayout.EAST);
+		tablesPanel.add(panelTableauSeries,c);
 
 		mainPanel.add(tablesPanel);
 		mainPanel.add(toolbox);
@@ -2953,9 +3044,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 	@Override
 	public void run(String string) {
-		VueAnon anon=new VueAnon();
-		anon.setLocationRelativeTo(null);
-		anon.setVisible(true);
+		setLocationRelativeTo(null);
+		this.setVisible(true);
+		fijiEnvironement=true;
 	}
 
 

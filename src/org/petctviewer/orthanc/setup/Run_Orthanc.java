@@ -37,7 +37,7 @@ public class Run_Orthanc {
 	 private String resourceName;
 	 private String fileExecName;
 	 public String orthancJsonName="Orthanc.json";
-	 private String resourceLibPath="Orthanc_Standalone";
+	 private String resourceLibPath="Orthanc_Standalone/";
 	 private List<String> resourceLibName=new ArrayList<String>();
 	 private boolean temp;
 	 private ParametreConnexionHttp connexionHttp;
@@ -71,7 +71,6 @@ public class Run_Orthanc {
 		else if (System.getProperty("os.name").toLowerCase().startsWith("linux")){
 			resourceName="Orthanc_Standalone/Orthanc-1.5.1-ReleaseLinux";
 			fileExecName="Orthanc-1.5.1-ReleaseLinux";
-			resourceLibPath="Orthanc_Standalone/libOrthancWebViewer.so";
 			resourceLibName.add("libOrthancWebViewer.so");
 			resourceLibName.add("libOrthancTransfers.so");
 			
@@ -81,7 +80,7 @@ public class Run_Orthanc {
 	}
 	
 	public String copyOrthanc(String installPath) throws Exception {
-		String resourceNameJSON=resourceLibPath+File.separator+orthancJsonName;
+		String resourceNameJSON=resourceLibPath+orthancJsonName;
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		
 		//Si pas de destination on met dans le temp directory
@@ -93,7 +92,6 @@ public class Run_Orthanc {
 		else file=Paths.get(installPath);
 		
 		File FileExe=new File(file.toString()+File.separator+fileExecName);
-		System.out.println(FileExe);
 		File FileJSON=new File(file.toString()+File.separator+orthancJsonName);
 		
 		InputStream in = ClassLoader.getSystemResourceAsStream(resourceName);
@@ -111,7 +109,7 @@ public class Run_Orthanc {
 		//Add lib to get GDCM decoder
 		for (int i=0; i<resourceLibName.size(); i++) {
 			File FileLib=new File(file.toString()+File.separator+resourceLibName.get(i));
-			InputStream inLib = ClassLoader.getSystemResourceAsStream(resourceLibPath+File.separator+resourceLibName.get(i));
+			InputStream inLib = ClassLoader.getSystemResourceAsStream(resourceLibPath+resourceLibName.get(i));
 			OutputStream outLib = new FileOutputStream(FileLib);
 			IOUtils.copy(inLib, outLib);
 			outLib.close();
@@ -122,6 +120,8 @@ public class Run_Orthanc {
 		orthancJson=FileJSON;
 		
 	    startOrthanc();
+	    
+	    
 
         return resourceName;
   
@@ -175,7 +175,9 @@ public class Run_Orthanc {
 						 System.out.println(line);
 						 if (line.contains("Orthanc has started")) {
 							 isStarted=true;
-							 System.out.println("confirmation"); ;
+							 System.out.println("confirmation");
+							//SK A REVOIR
+							connexionHttp.testConnexion();
 						 }
 					 }
 					

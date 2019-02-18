@@ -6,9 +6,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JOptionPane;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -27,8 +30,29 @@ public class CTP {
 		this.username=username;
 		this.password=password;
 		this.serverAdress=serverAdress;
-		getAvailableStudies();
 		//String authentication = Base64.getEncoder().encodeToString(("httpLogin" + ":" + "httpPassword").getBytes());
+		
+	}
+	
+	public boolean checkLogin() {
+		JSONObject jsonPost=new JSONObject();
+		jsonPost.put("username", username);
+		jsonPost.put("password", password);
+		String answser=makePostConnection("/Rest_Api/check_login.php",jsonPost.toString());
+		System.out.println(answser);
+		JSONObject response = null;
+		try {
+			response=(JSONObject) parser.parse(answser);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(!response.get("login").equals("Allowed") ) {
+			JOptionPane.showMessageDialog(null, response.get("login").toString(), "Login Error",  JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		
+		return true;
 		
 	}
 	
@@ -42,7 +66,7 @@ public class CTP {
 			String answser=makePostConnection("/Rest_Api/get-studies.php",jsonPost.toString());
 			System.out.println(answser);
 			studies=(JSONArray) parser.parse(answser);
-		} catch (IOException | ParseException e) {
+		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -66,7 +90,7 @@ public class CTP {
 		try {
 			String answser=makePostConnection("/Rest_Api/get-visits.php",jsonPost.toString());
 			visits=(JSONArray) parser.parse(answser);
-		} catch (IOException | ParseException e) {
+		} catch ( ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -96,7 +120,7 @@ public class CTP {
 		try {
 			String answser=makePostConnection("/Rest_Api/get-possible-import.php", jsonPost.toString());
 			visits=(JSONArray) parser.parse(answser);
-		} catch (IOException | ParseException e) {
+		} catch ( ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -120,13 +144,16 @@ public class CTP {
 		System.out.println(jsonPost.toString());
 		
 		JSONObject visits = null;
+
+		String answser=makePostConnection("/Rest_Api/validate-upload.php", jsonPost.toString());
+		System.out.println(answser);
 		try {
-			String answser=makePostConnection("/Rest_Api/validate-upload.php", jsonPost.toString());
-			System.out.println(answser);
 			visits=(JSONObject) parser.parse(answser);
-		} catch (IOException | ParseException e) {
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 			
 		return (boolean) visits.get("recivedConfirmation");
 		
@@ -134,39 +161,42 @@ public class CTP {
 	}
 	
 	
-	private String makePostConnection(String apiUrl, String post) throws IOException {
+	private String makePostConnection(String apiUrl, String post) {
 		URL url = null;
-		try {
-		url = new URL(serverAdress+apiUrl);
-		} catch ( MalformedURLException ex) { }
-		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-		conn.setDoOutput(true);
-		conn.setRequestMethod("POST");
-		if((serverAdress != null && serverAdress.contains("https")) ){
-			try{
-				HttpsTrustModifier.Trust(conn);
-			}catch (Exception e){
-				throw new IOException("Cannot allow self-signed certificates");
-			}
-		}
-		if(this.authentication != null){
-			conn.setRequestProperty("Authorization", "Basic " + this.authentication);
-		}
-		OutputStream os = conn.getOutputStream();
-		os.write(post.getBytes());
-		os.flush();
-		conn.getResponseMessage();
-		
 		StringBuilder sb=new StringBuilder();
-		if (conn !=null) {
-			BufferedReader br = new BufferedReader(new InputStreamReader(
-			(conn.getInputStream())));
-			String output;
-			while ((output = br.readLine()) != null) {
-				sb.append(output);
+		try {
+			url = new URL(serverAdress+apiUrl);
+			
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setDoOutput(true);
+			conn.setRequestMethod("POST");
+			if((serverAdress != null && serverAdress.contains("https")) ){
+				try{
+					HttpsTrustModifier.Trust(conn);
+				}catch (Exception e){
+					
+				}
 			}
-			conn.disconnect();
-		}
+			if(this.authentication != null){
+				conn.setRequestProperty("Authorization", "Basic " + this.authentication);
+			}
+			OutputStream os = conn.getOutputStream();
+			os.write(post.getBytes());
+			os.flush();
+			conn.getResponseMessage();
+			
+			
+			if (conn !=null) {
+				BufferedReader br = new BufferedReader(new InputStreamReader(
+				(conn.getInputStream())));
+				String output;
+				while ((output = br.readLine()) != null) {
+					sb.append(output);
+				}
+				conn.disconnect();
+			}
+		} catch ( IOException ex) { };
+		
 		return sb.toString();
 	}
 

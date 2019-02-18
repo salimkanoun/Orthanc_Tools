@@ -19,6 +19,7 @@ package org.petctviewer.orthanc;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -43,7 +44,7 @@ import org.json.simple.parser.ParseException;
  */
 public class ParametreConnexionHttp {
 	
-	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/biplugins");
+	//private Preferences jprefer = Preferences.userRoot().node("<unnamed>/biplugins");
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	private String fullAddress;
 	private String authentication;
@@ -52,11 +53,12 @@ public class ParametreConnexionHttp {
 	
 	
 	public ParametreConnexionHttp()  {
-			int curDb = jprefer.getInt("current database", 0);
-			int typeDb = jprefer.getInt("db type" + curDb, 0);
+			//int curDb = jprefer.getInt("current database", 0);
+			//int typeDb = jprefer.getInt("db type" + curDb, 0);
 			String ip=null;
 			String port=null;
 			
+			/*
 			if(typeDb == 5){
 				
 				if(!jprefer.get("db path" + curDb, "none").equals("none") && !jprefer.get("db path" + curDb, "none").equals("")){
@@ -83,18 +85,14 @@ public class ParametreConnexionHttp {
 					authentication = Base64.getEncoder().encodeToString((jprefer.get("db user" + curDb, null) + ":" + jprefer.get("db pass" + curDb, null)).getBytes());
 				}
 				
+		}*/
+	
+		ip = jpreferPerso.get("ip", "http://localhost");
+		port = jpreferPerso.get("port", "8042");
+		this.fullAddress = ip + ":" + port;
+		if(jpreferPerso.get("username", null) != null && jpreferPerso.get("username", null) != null){
+			authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
 		}
-		else if (typeDb != 5 ){
-			ip = jpreferPerso.get("ip", "http://localhost");
-			port = jpreferPerso.get("port", "8042");
-			this.fullAddress = ip + ":" + port;
-			if(jpreferPerso.get("username", null) != null && jpreferPerso.get("username", null) != null){
-				authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
-			}
-			
-			
-		}
-	System.out.println(ip+port);
 		
 	}
 	
@@ -111,6 +109,34 @@ public class ParametreConnexionHttp {
 			try {
 				url = new URL(fullAddress+apiUrl);
 				conn = (HttpURLConnection) url.openConnection();
+				conn.setDoOutput(true);
+				conn.setRequestMethod("GET");
+				if((fullAddress != null && fullAddress.contains("https"))){
+						HttpsTrustModifier.Trust(conn);
+				}
+				if(authentication != null){
+					conn.setRequestProperty("Authorization", "Basic " + authentication);
+				}
+				conn.getResponseMessage();
+				
+			} catch (IOException | KeyManagementException | NoSuchAlgorithmException | KeyStoreException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		
+
+		return conn;
+	
+	}
+	
+public HttpURLConnection makeGetConnectionImage(String apiUrl) {
+		
+		HttpURLConnection conn=null;
+		URL url = null;
+			try {
+				url = new URL(fullAddress+apiUrl);
+				conn = (HttpURLConnection) url.openConnection();
+				conn.setRequestProperty("Accept", "image/png");
 				conn.setDoOutput(true);
 				conn.setRequestMethod("GET");
 				if((fullAddress != null && fullAddress.contains("https"))){
@@ -235,6 +261,18 @@ public class ParametreConnexionHttp {
 		return sb; 
 	}
 
+	public InputStream openImage(String apiUrl) {
+		HttpURLConnection conn = this.makeGetConnectionImage(apiUrl);
+
+		InputStream is=null;
+		
+		try {
+			is = conn.getInputStream();
+		} catch(IOException e) { e.printStackTrace();}
+
+		return is;
+	}
+	
 	public void makeDeleteConnection(String apiUrl) {
 		
 		URL url = null;
@@ -259,14 +297,6 @@ public class ParametreConnexionHttp {
 		}
 		
 	
-	}
-	
-	private int ordinalIndexOf(String str, String substr, int n) {
-		
-		int pos = str.indexOf(substr);
-		while (--n > 0 && pos != -1)
-			pos = str.indexOf(substr, pos + 1);
-		return pos;
 	}
 	
 	// Display Error message if connexion failed
@@ -295,6 +325,7 @@ public class ParametreConnexionHttp {
 	 */
 	private boolean isVersionAfter131() {
 		int test=versionCompare(orthancVersion, "1.3.1");
+		System.out.println("testVs1.3.1"+test);
 		if (test>0) return true; else return false;
 		
 	}
