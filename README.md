@@ -34,6 +34,8 @@ Features :
  - Orthanc JSON Editor :  
    - Edit all Orthanc settings in a comprehensive GUI and generate JSON settings file for Orthanc Server
    
+ - Read : Load and visualize DICOM (better to use with Fiji version for image interaction)
+   
  Contribution from http://petctviewer.org, free and open source PET/CT viewer based on Fiji/ImageJ
  
  GPL v.3 Licence
