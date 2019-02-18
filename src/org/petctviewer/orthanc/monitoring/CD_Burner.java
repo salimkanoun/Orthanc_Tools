@@ -468,9 +468,11 @@ public class CD_Burner {
 		}
 		
 		String results=lastName+"_"+firstName+"_"+StringUtils.remove(formattedStudyDate, "/")+"_"+( (int) Math.round(Math.random()*1000));
+		//Remove Accent and space to match requirement of burners
 		results=StringUtils.stripAccents(results);
+		results=StringUtils.deleteWhitespace(results);
 		
-		return (  results.replaceAll("\\s+","") );
+		return results;
 	}
 	
 	/**
