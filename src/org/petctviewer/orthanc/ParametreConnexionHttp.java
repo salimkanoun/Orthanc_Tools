@@ -44,7 +44,7 @@ import org.json.simple.parser.ParseException;
  */
 public class ParametreConnexionHttp {
 	
-	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/biplugins");
+	//private Preferences jprefer = Preferences.userRoot().node("<unnamed>/biplugins");
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	private String fullAddress;
 	private String authentication;
@@ -53,11 +53,12 @@ public class ParametreConnexionHttp {
 	
 	
 	public ParametreConnexionHttp()  {
-			int curDb = jprefer.getInt("current database", 0);
-			int typeDb = jprefer.getInt("db type" + curDb, 0);
+			//int curDb = jprefer.getInt("current database", 0);
+			//int typeDb = jprefer.getInt("db type" + curDb, 0);
 			String ip=null;
 			String port=null;
 			
+			/*
 			if(typeDb == 5){
 				
 				if(!jprefer.get("db path" + curDb, "none").equals("none") && !jprefer.get("db path" + curDb, "none").equals("")){
@@ -84,18 +85,14 @@ public class ParametreConnexionHttp {
 					authentication = Base64.getEncoder().encodeToString((jprefer.get("db user" + curDb, null) + ":" + jprefer.get("db pass" + curDb, null)).getBytes());
 				}
 				
+		}*/
+	
+		ip = jpreferPerso.get("ip", "http://localhost");
+		port = jpreferPerso.get("port", "8042");
+		this.fullAddress = ip + ":" + port;
+		if(jpreferPerso.get("username", null) != null && jpreferPerso.get("username", null) != null){
+			authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
 		}
-		else if (typeDb != 5 ){
-			ip = jpreferPerso.get("ip", "http://localhost");
-			port = jpreferPerso.get("port", "8042");
-			this.fullAddress = ip + ":" + port;
-			if(jpreferPerso.get("username", null) != null && jpreferPerso.get("username", null) != null){
-				authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
-			}
-			
-			
-		}
-	System.out.println(ip+port);
 		
 	}
 	
@@ -302,14 +299,6 @@ public HttpURLConnection makeGetConnectionImage(String apiUrl) {
 	
 	}
 	
-	private int ordinalIndexOf(String str, String substr, int n) {
-		
-		int pos = str.indexOf(substr);
-		while (--n > 0 && pos != -1)
-			pos = str.indexOf(substr, pos + 1);
-		return pos;
-	}
-	
 	// Display Error message if connexion failed
 	public Boolean testConnexion() {	
 		Boolean test=true;
@@ -336,6 +325,7 @@ public HttpURLConnection makeGetConnectionImage(String apiUrl) {
 	 */
 	private boolean isVersionAfter131() {
 		int test=versionCompare(orthancVersion, "1.3.1");
+		System.out.println("testVs1.3.1"+test);
 		if (test>0) return true; else return false;
 		
 	}
