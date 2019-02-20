@@ -471,6 +471,8 @@ public class CD_Burner {
 		//Remove Accent and space to match requirement of burners
 		results=StringUtils.stripAccents(results);
 		results=StringUtils.deleteWhitespace(results);
+		results=results.replaceAll("[^a-zA-Z0-9_]", ""); 
+		
 		
 		return results;
 	}
