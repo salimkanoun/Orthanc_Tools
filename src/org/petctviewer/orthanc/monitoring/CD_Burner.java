@@ -467,10 +467,11 @@ public class CD_Burner {
 			
 		}
 		
-		String results=lastName+"_"+firstName+"_"+StringUtils.remove(formattedStudyDate, "/")+"_"+( (int) Math.round(Math.random()*1000));
+		String results=lastName+"_"+firstName+"_"+formattedStudyDate+"_"+( (int) Math.round(Math.random()*1000));
 		//Remove Accent and space to match requirement of burners
 		results=StringUtils.stripAccents(results);
 		results=StringUtils.deleteWhitespace(results);
+		//Remove non alpha numeric character (except let _)
 		results=results.replaceAll("[^a-zA-Z0-9_]", ""); 
 		
 		
