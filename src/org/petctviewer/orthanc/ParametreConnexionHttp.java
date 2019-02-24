@@ -325,7 +325,6 @@ public HttpURLConnection makeGetConnectionImage(String apiUrl) {
 	 */
 	private boolean isVersionAfter131() {
 		int test=versionCompare(orthancVersion, "1.3.1");
-		System.out.println("testVs1.3.1"+test);
 		if (test>0) return true; else return false;
 		
 	}
