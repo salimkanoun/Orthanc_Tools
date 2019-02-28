@@ -64,7 +64,7 @@ public class Read_Orthanc {
 
 
 			stack.addSlice(metadata, ip);
-			
+			System.out.println((double) i+1/instanceIDList.size());
 			IJ.showProgress((double) i+1/instanceIDList.size());
 		}
 		ImagePlus imp=new ImagePlus();
