@@ -1405,16 +1405,17 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 					@SuppressWarnings("rawtypes")
 					@Override
 					protected Void doInBackground() {
-						btnReadSeries.setText("Reading Series");
-						for(String id : ids) {
+
+						for(int i=0; i<ids.size(); i++) {
+							btnReadSeries.setText("Reading Series "+(i+1)+"/"+ids.size());
+							pack();
 							Read_Orthanc reader=new Read_Orthanc(connexionHttp);
-							ImagePlus ip=reader.readSerie(id);
+							ImagePlus ip=reader.readSerie(ids.get(i));
 							imagestacks.add(ip);
 							
 						}
 						
 						if(startViewer) {
-							System.out.println("start viewer");
 							Class Run_Pet_Ct = null;
 							try {
 								Run_Pet_Ct = Class.forName("Run_Pet_Ct");

@@ -58,14 +58,12 @@ public class Read_Orthanc {
 			String metadata = "Compressed \n" + this.extractDicomInfo(instanceIDList.get(i).toString());
 			
 			if(i==0) {
-				
 				stack= new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
 			}
 
 
 			stack.addSlice(metadata, ip);
-			System.out.println((double) i+1/instanceIDList.size());
-			IJ.showProgress((double) i+1/instanceIDList.size());
+			IJ.showProgress((double) (i+1)/instanceIDList.size());
 		}
 		ImagePlus imp=new ImagePlus();
 		imp.setStack(stack);
