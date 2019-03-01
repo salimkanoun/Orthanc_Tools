@@ -45,7 +45,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
-import org.petctviewer.orthanc.anonymize.ConvertZipAction;
+import org.petctviewer.orthanc.export.ConvertZipAction;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTable;

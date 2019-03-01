@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package org.petctviewer.orthanc.anonymize;
+package org.petctviewer.orthanc.export;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,7 +43,6 @@ public class ExportFiles {
 	private int port;
 	private String login;
 	private String pwd;
-	private String result;
 
 	public ExportFiles(String option, String remotePath, String remoteFileName, String filePath, String serverAdress, int port, String login, String pwd){
 		switch (option) {
@@ -118,7 +117,4 @@ public class ExportFiles {
 		}
 	}
 	
-	public String getResult(){
-		return this.result;
-	}
 }

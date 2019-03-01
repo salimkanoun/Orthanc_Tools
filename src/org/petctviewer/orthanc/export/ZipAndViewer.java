@@ -15,11 +15,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package org.petctviewer.orthanc.anonymize;
+package org.petctviewer.orthanc.export;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -32,23 +31,19 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import com.github.stephenc.javaisotools.eltorito.impl.ElToritoConfig;
-import com.github.stephenc.javaisotools.iso9660.ConfigException;
 import com.github.stephenc.javaisotools.iso9660.ISO9660RootDirectory;
 import com.github.stephenc.javaisotools.iso9660.impl.CreateISO;
 import com.github.stephenc.javaisotools.iso9660.impl.ISO9660Config;
 import com.github.stephenc.javaisotools.iso9660.impl.ISOImageFileHandler;
 import com.github.stephenc.javaisotools.joliet.impl.JolietConfig;
 import com.github.stephenc.javaisotools.rockridge.impl.RockRidgeConfig;
-import com.github.stephenc.javaisotools.sabre.HandlerException;
 import com.github.stephenc.javaisotools.sabre.StreamHandler;
 
 public class ZipAndViewer {
-	File zipDicom;
-	File viewerPackage ;
-	Path folderTempImage;
-	Path folderTempViewer;
-	Path tempFolder;
-	File destination;
+	
+	private File zipDicom;
+	private File viewerPackage;
+	private File destination;
 	
 	public ZipAndViewer(File zipDicom, File destination, File viewerPackage) throws IOException {
 		this.zipDicom=zipDicom;
@@ -56,31 +51,25 @@ public class ZipAndViewer {
 		this.viewerPackage=viewerPackage;
 		
 	}
-	
-	public void unzip() {
-		try {
-			tempFolder = Files.createTempDirectory("ISO_");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		unzip(zipDicom, tempFolder);
-		unzip(viewerPackage, tempFolder);
-	}
-	
-	
-	public void ZipAndViewerToZip() throws IOException {
-		try {
-			destination.createNewFile();
-			ZipOutputStream outStream = new ZipOutputStream(new FileOutputStream(destination));
-			readZip(outStream , viewerPackage.toString());
-			readZip(outStream , zipDicom.toString());
-			outStream.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+
+	/**
+	 * Merge zip to a same ZIP destination (destination file)
+	 * @throws Exception 
+	 */
+	public void ZipAndViewerToZip() throws Exception {
+		destination.createNewFile();
+		ZipOutputStream outStream = new ZipOutputStream(new FileOutputStream(destination));
+		readZip(outStream , viewerPackage.toString());
+		readZip(outStream , zipDicom.toString());
+		outStream.close();
 		
 	}
 	
+	/**
+	 * Unzip a zip to a destination
+	 * @param zip
+	 * @param tempFolder
+	 */
 	private void unzip(File zip, Path tempFolder){
 		 try {
 		     byte[] buffer = new byte[1024];
@@ -125,14 +114,18 @@ public class ZipAndViewer {
 	     
 	}
 	
-	// Concatenation de ZIP
-	private void readZip(ZipOutputStream outStream, String targetFile) throws Exception {
-	    ZipInputStream inStream = new ZipInputStream(new FileInputStream(targetFile));
+	/**
+	 * put ZIP content to outputStream (to concatenate two zip to the same output stream)
+	 * @param outStream
+	 * @param inputZip
+	 * @throws Exception
+	 */
+	private void readZip(ZipOutputStream outStream, String inputZip) throws Exception {
+	    ZipInputStream inStream = new ZipInputStream(new FileInputStream(inputZip));
 	    byte[] buffer = new byte[1024];
 	    int len = 0;
 	    for (ZipEntry e; (e = inStream.getNextEntry()) != null;) {
 	        ZipEntry destEntry =  new ZipEntry (e.getName());
-	        
 	    	outStream.putNextEntry(destEntry);
 	        while ((len = inStream.read(buffer)) > 0) {
 	            outStream.write(buffer, 0, len);
@@ -140,19 +133,29 @@ public class ZipAndViewer {
 	    }
 	    inStream.close();
 	}
-	
-	
-	
-	public void generateIsoFile() {
+
+	/**
+	 * Generate the ISO file (in destination file) containing DICOM and Viewer
+	 * @throws Exception 
+	 */
+	public void generateIsoFile() throws Exception {
+		//Create Temp folder and unzip both Viewer and Dicom in it
+		Path tempFolder = null;
+		
+		tempFolder = Files.createTempDirectory("ISO_");
+
+		unzip(zipDicom, tempFolder);
+		unzip(viewerPackage, tempFolder);
+		
+		//Build ISO Image in destination
 		// from https://github.com/stephenc/java-iso-tools/blob/master/iso9660-writer/ISOtest.java
-		try {
+		
 		// Directory hierarchy, starting from the root
 		ISO9660RootDirectory.MOVED_DIRECTORIES_STORE_NAME = "rr_moved";
 		ISO9660RootDirectory root = new ISO9660RootDirectory();
 		
 		root.addContentsRecursively(tempFolder.toFile());
-		
-		
+				
 		// ISO9660 support
 		ISO9660Config iso9660Config = new ISO9660Config();
 		iso9660Config.allowASCII(false);
@@ -191,29 +194,24 @@ public class ZipAndViewer {
 		CreateISO iso = new CreateISO(streamHandler, root);
 		iso.process(iso9660Config, rrConfig, jolietConfig, elToritoConfig);
 		
-		} 
-		catch (HandlerException |FileNotFoundException |ConfigException e) {e.printStackTrace();}
-		
-		
 	}
-	
-	
-	
+
 	private static void recursiveDeleteOnExit(Path path) throws IOException {
-		  Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-		    @Override
-		    public FileVisitResult visitFile(Path file,
-		      BasicFileAttributes attrs) {
-		    	file.toFile().deleteOnExit();
-		      return FileVisitResult.CONTINUE;
-		    }
-		    @Override
-		    public FileVisitResult preVisitDirectory(Path dir,
-		      BasicFileAttributes attrs) {
-		    	dir.toFile().deleteOnExit();
-		      return FileVisitResult.CONTINUE;
-		    }
-		  });
-		}
+	  Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+	    @Override
+	    public FileVisitResult visitFile(Path file,
+	      BasicFileAttributes attrs) {
+	    	file.toFile().deleteOnExit();
+	      return FileVisitResult.CONTINUE;
+	    }
+	    @Override
+	    public FileVisitResult preVisitDirectory(Path dir,
+	      BasicFileAttributes attrs) {
+	    	dir.toFile().deleteOnExit();
+	      return FileVisitResult.CONTINUE;
+	    }
+	  });
+	  
+	}
 
 }

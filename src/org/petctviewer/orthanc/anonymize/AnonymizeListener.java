@@ -1,4 +1,4 @@
-package org.petctviewer.orthanc.ctpimport;
+package org.petctviewer.orthanc.anonymize;
 
 public interface AnonymizeListener {
 	

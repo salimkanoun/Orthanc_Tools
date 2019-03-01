@@ -207,11 +207,6 @@ public class Run_Orthanc {
 		}
        }
 
-
-		
-		
-		
-
 	}
 	
 	public boolean isCopyAvailable() {

@@ -1,4 +1,4 @@
-package org.petctviewer.orthanc.ctpimport;
+package org.petctviewer.orthanc.importdicom;
 
 import java.util.HashMap;
 

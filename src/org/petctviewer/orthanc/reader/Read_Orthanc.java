@@ -8,11 +8,11 @@ import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -22,46 +22,43 @@ import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 
-
+/**
+ * Read a DICOM serie and return it in an ImagePlus
+ * @author kanoun_s
+ *
+ */
 public class Read_Orthanc {
 	
-	JSONParser parser=new JSONParser();
-	ParametreConnexionHttp connexion;
+	private JsonParser parser=new JsonParser();
+	private ParametreConnexionHttp connexion;
 	
 	public Read_Orthanc(ParametreConnexionHttp connexion) {
 		this.connexion=connexion;
-		
 	}
 	
 	public ImagePlus readSerie(String uuid) {
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/series/"+uuid);
-		JSONObject seriesDetails = null;
-		try {
-			seriesDetails=(JSONObject)parser.parse(sb.toString());
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		JsonObject seriesDetails = null;
+		seriesDetails=(JsonObject)parser.parse(sb.toString());
 		ImageStack stack = null;
-		
-		JSONArray instanceIDList=(JSONArray) seriesDetails.get("Instances");
+		JsonArray instanceIDList=(JsonArray) seriesDetails.get("Instances");
 		boolean screenCapture=false;
+		
 		for(int i=0 ; i<instanceIDList.size(); i++) {
 			
 			if(i==0) {
-				StringBuilder sop=connexion.makeGetConnectionAndStringBuilder("/instances/"+instanceIDList.get(i)+"/metadata/SopClassUid");
+				StringBuilder sop=connexion.makeGetConnectionAndStringBuilder("/instances/"+instanceIDList.get(i).getAsString()+"/metadata/SopClassUid");
 				//If it is a screen capture change the boolean
 				if(sop.toString().startsWith("1.2.840.10008.5.1.4.1.1.7")) screenCapture=true;
 			}
 			
-			ImageProcessor ip=readCompressed(instanceIDList.get(i).toString(), screenCapture);
-			String metadata = "Compressed \n" + this.extractDicomInfo(instanceIDList.get(i).toString());
+			ImageProcessor ip=readCompressed(instanceIDList.get(i).getAsString(), screenCapture);
+			String metadata = "Compressed \n" + this.extractDicomInfo(instanceIDList.get(i).getAsString());
 			
 			if(i==0) {
 				stack= new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
 			}
-
-
+			
 			stack.addSlice(metadata, ip);
 			IJ.showProgress((double) (i+1)/instanceIDList.size());
 		}
@@ -76,7 +73,6 @@ public class Read_Orthanc {
 	private ImageProcessor readCompressed(String uuid, boolean SC ) {
 		ImageProcessor slice=null;
 		try {
-			
 			String uri=null;
 			if(SC) {
 				uri = "/instances/" + uuid +  "/preview";
@@ -99,15 +95,8 @@ public class Read_Orthanc {
 	
 	private String extractDicomInfo(String uuid) {
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/instances/" + uuid + "/tags");
-		
-		JSONObject tags=null;
-		try {
-			tags = (JSONObject) parser.parse(sb.toString());
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (tags == null || tags.isEmpty()) return "";
+		JsonObject tags = (JsonObject) parser.parse(sb.toString());
+		if (tags == null || tags.size()==0) return "";
 		String info = new String();
 		String type1;
 
@@ -118,11 +107,11 @@ public class Read_Orthanc {
 
 		Collections.sort(tagsIndex);
 		for (String tag : tagsIndex) {
-			JSONObject value = (JSONObject) tags.get(tag);
-			type1 = (String) value.get("Type");
+			JsonObject value = (JsonObject) tags.get(tag);
+			type1 = value.get("Type").getAsString();
 			if (type1.equals("String")) {
-				info += (tag + " " + (String) value.get("Name")
-					+ ": " + (String) value.get("Value") + "\n");
+				info += (tag + " " + value.get("Name").getAsString()
+					+ ": " + value.get("Value").getAsString() + "\n");
 			} else {
 				if( type1.equals("Sequence")) {
 					info = addSequence(info, value, tag);
@@ -134,17 +123,17 @@ public class Read_Orthanc {
 	
 	private int seqDepth = 0;
 	
-	private String addSequence(String info0, JSONObject value, Object tag) {
+	private String addSequence(String info0, JsonObject value, Object tag) {
 		String type2, info = info0;
-		JSONArray seq0;
-		JSONObject seqVal, vals;
-		seq0 = (JSONArray)value.get("Value");
-		if( seq0 == null || seq0.isEmpty()) {
+		JsonArray seq0;
+		JsonObject seqVal, vals;
+		seq0 = (JsonArray) value.get("Value");
+		if( seq0 == null || seq0.size()==0) {
 			return info;	// ignore empty sequences
 		}
-		info += tag + getIndent() + (String) value.get("Name") +"\n";
+		info += tag + getIndent() + value.get("Name").getAsString() +"\n";
 		seqDepth++;
-		seqVal = (JSONObject) seq0.get(0);
+		seqVal = (JsonObject) seq0.get(0);
 
 		ArrayList<String> tagsIndex = new ArrayList<String>();
 		for( Object tag0 : seqVal.keySet()) {
@@ -153,11 +142,11 @@ public class Read_Orthanc {
 		Collections.sort(tagsIndex);
 
 		for( Object tag1 : tagsIndex) {
-			vals = (JSONObject) seqVal.get(tag1);
-			type2 = (String) vals.get("Type");
+			vals = (JsonObject) seqVal.get((String) tag1);
+			type2 = vals.get("Type").getAsString();
 			if( type2.equals("String")) {
-				info += tag1 + getIndent() + (String) vals.get("Name")
-					+ ": " + (String) vals.get("Value")+ "\n";
+				info += tag1 + getIndent() + vals.get("Name").getAsString()
+					+ ": " + vals.get("Value").getAsString()+ "\n";
 			} else {
 				if(type2.equals("Sequence")) {
 					info = addSequence(info, vals, tag1);
@@ -193,7 +182,7 @@ public class Read_Orthanc {
 		img.getCalibration().pixelHeight = spacing[1];
 		img.getCalibration().setUnit("mm");
 		
-		img.setTitle(getDicomValue(meta, "0010,0010")+"-"+getDicomValue(meta, "0008,0022")+"-"+getDicomValue(meta, "0008,0103E"));
+		img.setTitle(getDicomValue(meta, "0010,0010")+"-"+getDicomValue(meta, "0008,0022")+"-"+getDicomValue(meta, "0008,103E"));
 	}
 	
 	private String getDicomValue( String meta, String key1) {

@@ -92,7 +92,9 @@ import org.petctviewer.orthanc.CTP.CTP_Gui;
 import org.petctviewer.orthanc.Jsonsettings.SettingsGUI;
 import org.petctviewer.orthanc.anonymize.Tags.Choice;
 import org.petctviewer.orthanc.anonymize.gui.AboutBoxFrame;
-import org.petctviewer.orthanc.ctpimport.AnonymizeListener;
+import org.petctviewer.orthanc.export.ConvertZipAction;
+import org.petctviewer.orthanc.export.ExportFiles;
+import org.petctviewer.orthanc.export.ZipAndViewer;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.modify.Modify;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
@@ -1256,80 +1258,71 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			public void actionPerformed(ActionEvent arg0) {
 				if (!zipContent.isEmpty()){
 					JFileChooser chooser = new JFileChooser();
-					chooser.setCurrentDirectory(new java.io.File(jprefer.get("zipLocation", System.getProperty("user.dir"))));
-					if (comboToolChooser.getSelectedItem().equals("Image with Viewer (iso)")) chooser.setSelectedFile(new File(zipShownContentList.get(0).replaceAll("/", "_")+"_image.iso")); 
-					else chooser.setSelectedFile(new File(dfZip.format(new Date()) + ".zip")); 
 					chooser.setDialogTitle("Export to...");
 					chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 					chooser.setAcceptAllFileFilterUsed(false);
-					
+					chooser.setCurrentDirectory(new File(jprefer.get("zipLocation", System.getProperty("user.dir"))));
+					if (comboToolChooser.getSelectedItem().equals("Image with Viewer (iso)")) {
+						chooser.setSelectedFile(new File(zipShownContentList.get(0).replaceAll("/", "_")+"_image.iso")); 
+					}
+					else chooser.setSelectedFile(new File(dfZip.format(new Date()) + ".zip")); 
+
 					if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
 						jprefer.put("zipLocation", chooser.getSelectedFile().toPath().toString());
-						ConvertZipAction convertzip=new ConvertZipAction(connexionHttp);
-						exportZip.setText("Generating Zip...");
-						exportZip.setEnabled(false);
-						addToZip.setEnabled(false);
-						removeFromZip.setEnabled(false);
-						comboToolChooser.setEnabled(false);
-						state.setText("Generating Zip...");
-							
+						
 							SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 							@Override
-							protected Void doInBackground() throws IOException {
+							protected Void doInBackground() throws Exception {
 								
-								if (comboToolChooser.getSelectedItem().equals("ZIP File") || comboToolChooser.getSelectedItem().equals("DICOMDIR Zip") ) {
-										convertzip.setConvertZipAction(chooser.getSelectedFile().getAbsolutePath().toString() , zipContent, false);
-										if (comboToolChooser.getSelectedItem().equals("ZIP File")) convertzip.generateZip(false);
-										if (comboToolChooser.getSelectedItem().equals("DICOMDIR Zip")) convertzip.generateZip(true);
-									
-									}
+								ConvertZipAction convertzip=new ConvertZipAction(connexionHttp);
+								exportZip.setText("Generating Zip...");
+								state.setText("Generating Zip...");
+								activateExport(false);
 								
-								else if ( (comboToolChooser.getSelectedItem().equals("Image with Viewer (zip)")) ) {
-									convertzip.setConvertZipAction("Viewer", zipContent, true);
-									convertzip.generateZip(true);
-									File tempImageZip=convertzip.getGeneratedZipFile();
+								if ( comboToolChooser.getSelectedItem().equals("ZIP File") || comboToolChooser.getSelectedItem().equals("DICOMDIR Zip") ) {	
+									convertzip.setConvertZipAction(chooser.getSelectedFile().getAbsolutePath().toString() , zipContent, false);
+									if (comboToolChooser.getSelectedItem().equals("ZIP File")) convertzip.generateZip(false);
+									if (comboToolChooser.getSelectedItem().equals("DICOMDIR Zip")) convertzip.generateZip(true);
+								//If include the viewer	
+								} else {
 									String viewerString=jpreferPerso.get("viewerDistribution", "empty");
 									
-									if (!viewerString.equals("empty") && new File(viewerString).exists()){
-										File packageViewer=new File(viewerString);
-										ZipAndViewer zip=new ZipAndViewer(tempImageZip, chooser.getSelectedFile(), packageViewer);
-										zip.ZipAndViewerToZip();
-										JOptionPane.showMessageDialog(gui,"Image and Viewer exported in "+viewerString.toString());
-									}
-									else {
+									if( viewerString.equals("empty") || ! new File(viewerString).exists() ) {
 										JOptionPane.showMessageDialog(gui,"Viewer not available, please download it in the setup tab");
+										throw new Exception("No Available Viewer");
 									}
-								}
-								
-								else if ( (comboToolChooser.getSelectedItem().equals("Image with Viewer (iso)"))) {
+									
 									convertzip.setConvertZipAction("Viewer", zipContent, true);
 									convertzip.generateZip(true);
 									File tempImageZip=convertzip.getGeneratedZipFile();
-									String distinationString=jpreferPerso.get("viewerDistribution", "empty");
-									if (!distinationString.equals("empty")){
-										File packageViewer=new File(distinationString);
-										ZipAndViewer zip=new ZipAndViewer(tempImageZip, chooser.getSelectedFile(), packageViewer);
-										zip.unzip();
+									File packageViewer=new File(viewerString);
+									ZipAndViewer zip=new ZipAndViewer(tempImageZip, chooser.getSelectedFile(), packageViewer);
+									
+									if( comboToolChooser.getSelectedItem().equals("Image with Viewer (zip)") ) {
+										zip.ZipAndViewerToZip();
+									}else if( comboToolChooser.getSelectedItem().equals("Image with Viewer (iso)") ) {
 										zip.generateIsoFile();
-										JOptionPane.showMessageDialog(gui,"Image and Viewer ISO generated at "+chooser.getSelectedFile().getAbsolutePath().toString());
+										
 									}
-									else {
-										JOptionPane.showMessageDialog(gui,"Viewer not available, please download it in the setup tab");
-									}
+								
 								}
 								return null;
 							}
 							
 							@Override
 							protected void done() {
-								state.setText("<html><font color='green'>The data have successfully been exported to zip</font></html>");
+								try {
+									this.get();
+									state.setText("<html><font color='green'>The data have successfully been exported to zip</font></html>");
+								} catch (Exception e) {
+									e.printStackTrace();
+									state.setText("<html><font color='red'>Zip Export Failure</font></html>");
+								}
+							
 								//Reactivate component after export
 								exportZip.setText("Export list");
-								exportZip.setEnabled(true);
-								addToZip.setEnabled(true);
-								removeFromZip.setEnabled(true);
-								comboToolChooser.setEnabled(true);
 								//empty exported list
+								activateExport(true);
 								zipShownContent.removeAllItems();
 								zipShownContentList.removeAll(zipShownContentList);
 								zipContent.removeAll(zipContent);	
@@ -1338,6 +1331,14 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 								pack();
 							}
 							
+							private void activateExport(boolean activate){
+								exportZip.setEnabled(activate);
+								addToZip.setEnabled(activate);
+								removeFromZip.setEnabled(activate);
+								comboToolChooser.setEnabled(activate);
+							}
+							
+							
 						};
 						worker.execute();
 						pack();
@@ -1345,7 +1346,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 					}	
 				}
 
-				
 			}
 		});
 		/////////////////////////////// ADDING COMPONENTS ////////////////
@@ -1405,8 +1405,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 					protected Void doInBackground() {
 
 						for(int i=0; i<ids.size(); i++) {
-							btnReadSeries.setText("Reading Series "+(i+1)+"/"+ids.size());
-							pack();
+							btnReadSeries.setText("Reading Series");
+							state.setText("<html><font color='red'>Reading Series "+(i+1)+"/"+ids.size()+"</font></html>");
 							Read_Orthanc reader=new Read_Orthanc(connexionHttp);
 							ImagePlus ip=reader.readSerie(ids.get(i));
 							imagestacks.add(ip);
@@ -1431,14 +1431,13 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 							
 						}
 						
-						
-						
 						return null;
 					}
 
 					@Override
 					public void done(){
 						btnReadSeries.setText("Open Images");
+						state.setText("<html><font color='green'>Reading done</font></html>");
 					
 					}
 				};

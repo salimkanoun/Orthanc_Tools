@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package org.petctviewer.orthanc.anonymize;
+package org.petctviewer.orthanc.export;
 
 
 import java.io.File;
@@ -35,7 +35,6 @@ import com.google.gson.JsonArray;
 
 public class ConvertZipAction{
 	
-	//private StringBuilder ids;
 	private ArrayList<String> zipContent;
 	private String zipDestination;
 	private File f;
@@ -88,8 +87,7 @@ public class ConvertZipAction{
 				if (connexion.getIfVersionAfter131()) {
 					//If new version of Orthanc extended api to get series name
 					url="/tools/create-media-extended";
-				}
-				else {
+				}else {
 					//old API without serie's name
 					url="/tools/create-media";
 				}					
@@ -106,9 +104,7 @@ public class ConvertZipAction{
 			is.close();
 			conn.disconnect();
 			
-		} 
-			
-
+		}
 
 	}
 

@@ -49,15 +49,13 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
-import ij.plugin.PlugIn;
-
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
-import org.petctviewer.orthanc.ctpimport.ImportListener;
 
-public class ImportDCM extends JFrame implements PlugIn{
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+public class ImportDCM extends JFrame {
+	
 	private static final long serialVersionUID = 1L;
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	private JLabel state;
@@ -65,18 +63,13 @@ public class ImportDCM extends JFrame implements PlugIn{
 	private JFrame gui;
 	private ArrayList<String> importAnswer=new ArrayList<String>();
 	private HashMap<String, HashMap<String,String> > importedstudy=new HashMap<String, HashMap<String,String> >();
-	private JSONParser parser=new JSONParser();
+	private JsonParser parser=new JsonParser();
 	
 	private ImportListener listener;
 
 	public ImportDCM(ParametreConnexionHttp connexion){
 		super("Import DICOM files");
-		if(connexion ==null) {
-			this.connexion=new ParametreConnexionHttp();
-		}else {
-			this.connexion=connexion;
-		}
-		
+		this.connexion=connexion;
 		this.gui=this;
 		JPanel mainPanel = new JPanel(new GridBagLayout());
 		JLabel labelPath = new JLabel("DICOM files path");
@@ -84,6 +77,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 		path.setMinimumSize(new Dimension(250, 27));
 		path.setMaximumSize(new Dimension(250, 27));
 		path.setEditable(false);
+		
 		JButton browse = new JButton("Browse");
 		browse.addActionListener(new ActionListener() {
 			@Override
@@ -174,7 +168,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 		this.listener=listener;
 	}
 
-	public void importFiles(Path path){
+	private void importFiles(Path path){
 		try {
 			Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 				int successCount = 0;
@@ -219,23 +213,23 @@ public class ImportDCM extends JFrame implements PlugIn{
 	public HashMap<String, HashMap<String, String>> getImportedStudy() {
 		
 		for (int i=0; i<importAnswer.size(); i++) {
-			try {
-				JSONObject importedInstance=(JSONObject) parser.parse(importAnswer.get(i));
-				String parentStudyID=(String) importedInstance.get("ParentStudy");
+				JsonObject importedInstance=(JsonObject) parser.parse(importAnswer.get(i));
+				String parentStudyID=importedInstance.get("ParentStudy").getAsString();
 				
 				//If new study Add it to the global Hashmap
 				if( ! importedstudy.containsKey(parentStudyID)) {
 					
 					StringBuilder studyQuery=connexion.makeGetConnectionAndStringBuilder("/studies/"+parentStudyID);
-					JSONObject parentStudy=(JSONObject)parser.parse(studyQuery.toString());
+					JsonObject parentStudy=(JsonObject)parser.parse(studyQuery.toString());
 					
 					//HashMap for a new Study imported
 					HashMap<String, String> newStudy=new HashMap<String,String>();
-					String studyDate=(String) ((JSONObject) (parentStudy.get("MainDicomTags"))).get("StudyDate");
-					String patientID=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientID");
-					String patientName=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientName");
-					String patientDOB=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientBirthDate");
-					String patientSex=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientSex");
+					String studyDate=((JsonObject) (parentStudy.get("MainDicomTags"))).get("StudyDate").getAsString();
+					String patientID=((JsonObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientID").getAsString();
+					String patientName=((JsonObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientName").getAsString();
+					String patientDOB=((JsonObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientBirthDate").getAsString();
+					String patientSex=((JsonObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientSex").getAsString();
+					
 					newStudy.put("studyDate", studyDate);
 					newStudy.put("patientID", patientID);
 					newStudy.put("patientName", patientName);
@@ -244,32 +238,10 @@ public class ImportDCM extends JFrame implements PlugIn{
 					importedstudy.put(parentStudyID, newStudy);
 				}
 				
-				
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 		
 		return importedstudy;
+
+	}
 	
-		
-	}
-
-
-
-	public static void main(String... args){
-		ImportDCM vue = new ImportDCM(null);
-		vue.setLocationRelativeTo(null);
-		vue.setVisible(true);
-		vue.pack();
-	}
-
-	@Override
-	public void run(String arg0) {
-		ImportDCM vue = new ImportDCM(null);
-		vue.setLocationRelativeTo(null);
-		vue.pack();
-		vue.setVisible(true);
-	}
 }

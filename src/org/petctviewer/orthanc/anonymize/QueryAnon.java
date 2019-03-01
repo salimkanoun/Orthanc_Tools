@@ -111,35 +111,42 @@ public class QueryAnon {
 		
 		if (!this.connexionHttp.getIfVersionAfter131()) {
 				tags.add(new Tags("0020,0052", Choice.KEEP)); // Frame of Reference UID
-				System.out.println("Old Version of Orthanc, Frame Of Reference UID not modified");
+				System.out.println("Old Version of Orthanc, Frame Of Reference UID not modified, Please upgrade your Orthanc Server");
 		}
 
 		this.privateTags = privateTags;
 	}
 
 	public void setQuery(){
+		
+		//SK NECESSITE GROSSE FACTORISATION !
+		//JsonObject query = new JsonObject();
+		
+		//JsonArray  = new JsonArray();
+		//JsonArray replace = new JsonArray();
+		
 		this.query = null;
 		StringBuilder replace = new StringBuilder();
 		replace.append("\"Replace\":{");
 		StringBuilder keep = new StringBuilder();
 		keep.append("\"Keep\":[");
+		
 		if(tags != null){
 			for(Tags t : tags){
 				if(t != null){
 					switch (t.getChoice()) {
-					case REPLACE:
-					{
-						replace.append("\"" + t.getCode() +"\",");
-					}
-					break;
-					case KEEP:
-						keep.append("\"" + t.getCode() +"\",");
+						case REPLACE:
+							replace.append("\"" + t.getCode() +"\",");
 						break;
-					default:
-						break;
-					}
+						case KEEP:
+							keep.append("\"" + t.getCode() +"\",");
+							break;
+						default:
+							break;
+						}
 				}
 			}
+			
 			// We remove the ',' at the end of the strings
 			if(replace.toString().charAt(replace.toString().length() - 1) == ','){
 				replace.deleteCharAt(replace.toString().length() - 1);
@@ -148,6 +155,8 @@ public class QueryAnon {
 			if(keep.toString().charAt(keep.toString().length() - 1) == ','){
 				keep.deleteCharAt(keep.toString().length() - 1);
 			}keep.append("]");
+			
+			
 			if(this.privateTags.equals(Choice.KEEP)){
 				this.query = "{" + replace.toString() + keep.toString() + ",\"KeepPrivateTags\": true" + ",\"Force\": true" + "}";
 			}else{
