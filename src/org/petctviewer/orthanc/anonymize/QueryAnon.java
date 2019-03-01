@@ -27,6 +27,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.ParametreConnexionHttp;
+import org.petctviewer.orthanc.anonymize.Tags.Choice;
 
 public class QueryAnon {
 

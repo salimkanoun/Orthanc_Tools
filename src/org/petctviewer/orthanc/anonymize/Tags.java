@@ -19,12 +19,18 @@ package org.petctviewer.orthanc.anonymize;
 
 public class Tags {
 
+	public enum Choice {
+		REPLACE,
+		KEEP,
+		CLEAR
+	}
+	
 	private String code;
-	private Choice choice;
+	public Choice choice;
 	
 	public Tags(String code, Choice choice){
+		this.choice=choice;
 		this.code = code;
-		this.choice = choice;
 	}
 
 	public String getCode() {
@@ -42,5 +48,6 @@ public class Tags {
 	public void setChoice(Choice choice) {
 		this.choice = choice;
 	}
+	
 	
 }
