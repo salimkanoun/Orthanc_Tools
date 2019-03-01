@@ -23,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,99 +30,86 @@ import java.util.Date;
 
 import org.petctviewer.orthanc.ParametreConnexionHttp;
 
+import com.google.gson.JsonArray;
+
 
 public class ConvertZipAction{
-	DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
-	private StringBuilder ids;
+	
+	//private StringBuilder ids;
 	private ArrayList<String> zipContent;
-	private String setupPath;
+	private String zipDestination;
 	private File f;
 	private ParametreConnexionHttp connexion;
 	private boolean temporary;
 	
-/**
- * Genere export d une liste d examen vers un ZIP	
- * @param connexion
- */
-public ConvertZipAction(ParametreConnexionHttp connexion){
-		//import de l'objet connexion http
+	/**
+	 * Send list of Orthanc IDs and generate a zip file	
+	 * @param connexion
+	 */
+	public ConvertZipAction(ParametreConnexionHttp connexion){
 		this.connexion=connexion;
 	}
 	
-	public void setConvertZipAction(String file, ArrayList<String> zipContent, boolean temporary){
-		this.setupPath = file;
+	public void setConvertZipAction(String fileDestination, ArrayList<String> zipContent, boolean temporary){
+		this.zipDestination = fileDestination;
 		this.zipContent = zipContent;
 		this.temporary = temporary;
 	}
 	
-	public void setConvertZipAction(String file, String zipContent, boolean temporary){
-		this.setupPath = file;
+	public void setConvertZipAction(String fileDestination, String zipContent, boolean temporary){
+		this.zipDestination = fileDestination;
 		this.zipContent = new ArrayList<String>(); 
 		this.zipContent.add(zipContent);
 		this.temporary = temporary;
 	}
 
-	public void generateZip(boolean dicomDir) throws IOException {
-		// storing the IDs in a stringbuilder
-		this.ids = new StringBuilder();
-		this.ids.append("[");
-		for(int i = 0; i < zipContent.size(); i++){
-			this.ids.append("\"" + zipContent.get(i) + "\",");
+	public void generateZip(boolean dicomDir) throws IOException  {
+		
+		JsonArray idArray=new JsonArray();
+		for(String id : zipContent) {
+			idArray.add(id);
 		}
-		ids.replace(ids.length()-1, ids.length(), "]");
-
-		// the absence of a setupPath or not, will define whether or not a jfilechooser will be used
+		//If temporary file create a temp zip file, else use defined path for zip export destination
 		if(temporary){
-			f = File.createTempFile(setupPath + File.separator + df.format(new Date()), ".zip");
+			DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
+			f = File.createTempFile(zipDestination + File.separator + df.format(new Date()), ".zip");
 			f.deleteOnExit();
 		}else{
-			f = new File(setupPath);
+			f = new File(zipDestination);
 		}
 		
 		if(!zipContent.isEmpty()){
-			InputStream is = null;
-			FileOutputStream fos = null;
-			HttpURLConnection conn = null;
-			try {
-				//URL API to define
-				String url = null;
-				// if hierachical structure
-				if (!dicomDir) {
-					url="/tools/create-archive" ;
-					conn=connexion.makePostConnection(url, ids.toString());
+			//URL API to define
+			String url = null;
+			// if hierachical structure else (dicomdir)
+			if (!dicomDir) {
+				url="/tools/create-archive" ;
+			}else  {
+				if (connexion.getIfVersionAfter131()) {
+					//If new version of Orthanc extended api to get series name
+					url="/tools/create-media-extended";
 				}
-				// if dicomDir
-				else  {
-					
-					if (connexion.getIfVersionAfter131()) {
-						//If new version of Orthanc extended api to get series name
-						url="/tools/create-media-extended";
-					}
-					else {
-						//old API without serie's name
-						url="/tools/create-media";
-					}
-					
-					conn=connexion.makePostConnection(url, ids.toString());
-					
-				}
-
-				is = conn.getInputStream();
-				fos = new FileOutputStream(f);
-				int bytesRead = -1;
-				byte[] buffer = new byte[1024];
-				while ((bytesRead = is.read(buffer)) != -1) {
-					fos.write(buffer, 0, bytesRead);
-				}
-				fos.close();
-				is.close();
-				conn.disconnect();
-				
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
+				else {
+					//old API without serie's name
+					url="/tools/create-media";
+				}					
 			}
+			HttpURLConnection conn=connexion.makePostConnection(url, idArray.toString());
+			InputStream is = conn.getInputStream();
+			FileOutputStream fos = new FileOutputStream(f);
+			int bytesRead = -1;
+			byte[] buffer = new byte[1024];
+			while ((bytesRead = is.read(buffer)) != -1) {
+				fos.write(buffer, 0, bytesRead);
+			}
+			fos.close();
+			is.close();
+			conn.disconnect();
 			
-		}
+		} 
+			
+
+
 	}
 
 	public String getGeneratedZipPath(){

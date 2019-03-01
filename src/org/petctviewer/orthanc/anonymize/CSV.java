@@ -30,8 +30,6 @@ import javax.swing.JFileChooser;
 public class CSV {
 
 	private StringBuilder content;
-	private DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
-	private Preferences jpreferAnon = Preferences.userRoot().node("<unnamed>/anonPlugin");
 	
 	public CSV(){
 		content = new StringBuilder();
@@ -95,7 +93,15 @@ public class CSV {
 		}
 	}
 	
+	/**
+	 * Open JFileChooser with the last CSV location and predified name for export
+	 * @return
+	 */
 	private File fileChooser(){
+		
+		Preferences jpreferAnon = Preferences.userRoot().node("<unnamed>/anonPlugin");
+		DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
+		
 		JFileChooser chooser = new JFileChooser();
 		chooser.setCurrentDirectory(new File(jpreferAnon.get("csvLocation", System.getProperty("user.dir"))));
 		chooser.setSelectedFile(new File(df.format(new Date()) + ".csv"));

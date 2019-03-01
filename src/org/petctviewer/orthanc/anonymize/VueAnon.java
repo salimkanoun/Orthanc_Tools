@@ -86,23 +86,22 @@ import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-
-import com.michaelbaranov.microba.calendar.DatePicker;
-
-import ij.ImagePlus;
-import ij.plugin.PlugIn;
-
-import org.petctviewer.orthanc.*;
+import org.petctviewer.orthanc.ParametreConnexionHttp;
 import org.petctviewer.orthanc.CTP.CTP;
 import org.petctviewer.orthanc.CTP.CTP_Gui;
 import org.petctviewer.orthanc.Jsonsettings.SettingsGUI;
 import org.petctviewer.orthanc.ctpimport.AnonymizeListener;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
-import org.petctviewer.orthanc.query.*;
+import org.petctviewer.orthanc.query.VueRest;
 import org.petctviewer.orthanc.reader.Read_Orthanc;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
 import org.petctviewer.orthanc.setup.Run_Orthanc;
+
+import com.michaelbaranov.microba.calendar.DatePicker;
+
+import ij.ImagePlus;
+import ij.plugin.PlugIn;
 
 
 public class VueAnon extends JFrame implements PlugIn, ActionListener{
@@ -263,7 +262,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	 */
 	public VueAnon(String orthancJsonName) {
 		super("Orthanc Tools");
-		connexionHttp= new ParametreConnexionHttp(true);
+		connexionHttp= new ParametreConnexionHttp("http://localhost:8043");
 		
 		try {
 			runOrthanc=new Run_Orthanc(connexionHttp);
@@ -1277,12 +1276,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 								
 								if (comboToolChooser.getSelectedItem().equals("ZIP File") || comboToolChooser.getSelectedItem().equals("DICOMDIR Zip") ) {
 										convertzip.setConvertZipAction(chooser.getSelectedFile().getAbsolutePath().toString() , zipContent, false);
-										try{
 										if (comboToolChooser.getSelectedItem().equals("ZIP File")) convertzip.generateZip(false);
 										if (comboToolChooser.getSelectedItem().equals("DICOMDIR Zip")) convertzip.generateZip(true);
-										}catch(IOException e){
-										e.printStackTrace();
-										}
 									
 									}
 								
@@ -1686,10 +1681,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-					boolean[] successful = {true};
-					String exception = "";
+					
 					@Override
-					protected Void doInBackground() {
+					protected Void doInBackground() throws IOException {
 						// Putting the export preferences in the anon plugin registry
 						if(remoteServer.getText() != null){
 							jprefer.put("remoteServer", remoteServer.getText());
@@ -1708,58 +1702,51 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 						if(remoteFilePath.getText() != null){
 							jprefer.put("remoteFilePath", remoteFilePath.getText());
 						}
+						
 						jprefer.put("exportType", exportType.getSelectedItem().toString());
 
-							exportBtn.setText("Exporting...");
-							exportBtn.setEnabled(false);
-							
-							try {
-								ConvertZipAction convertzip=new ConvertZipAction(connexionHttp);
-								convertzip.setConvertZipAction("tempZipOrthanc", modeleExportStudies.getOrthancIds(), true);
-								convertzip.generateZip(false);
-								String zipPath = convertzip.getGeneratedZipPath();
-								String zipName = convertzip.getGeneratedZipName();
-								remoteFileName = new StringBuilder();
-								
-								//removing the temporary file default name value
-								remoteFileName.append(zipName.substring(0,14));
-								remoteFileName.append(zipName.substring(zipName.length() - 4));
-								ExportFiles export = new ExportFiles(jprefer.get("exportType", ExportFiles.OPTION_FTP), 
-										jprefer.get("remoteFilePath", "/"), remoteFileName.toString(), zipPath, jprefer.get("remoteServer", ""), 
-										jprefer.getInt("remotePort", 21), jprefer.get("servUsername", ""), jprefer.get("servPassword", ""));
-								export.export();
-								if(export.getResult() != null){
-									successful[0] = false;
-									exception = export.getResult();
-								}
-							} catch (FileNotFoundException e){
-								successful[0] = false;
-								stateExports.setText("<html><font color='red'>The data export failed (the zip was not created)</font></html>");
-							} catch (IOException e) {
-								successful[0] = false;
-								exception = e.getMessage();								
-							} 
+						exportBtn.setText("Exporting...");
+						exportBtn.setEnabled(false);
+						
+						
+						ConvertZipAction convertzip=new ConvertZipAction(connexionHttp);
+						convertzip.setConvertZipAction("tempZipOrthanc", modeleExportStudies.getOrthancIds(), true);
+						convertzip.generateZip(false);
+						String zipPath = convertzip.getGeneratedZipPath();
+						String zipName = convertzip.getGeneratedZipName();
+						remoteFileName = new StringBuilder();
+						
+						//removing the temporary file default name value
+						remoteFileName.append(zipName.substring(0,14));
+						remoteFileName.append(zipName.substring(zipName.length() - 4));
+						ExportFiles export = new ExportFiles(jprefer.get("exportType", ExportFiles.OPTION_FTP), 
+								jprefer.get("remoteFilePath", "/"), remoteFileName.toString(), zipPath, jprefer.get("remoteServer", ""), 
+								jprefer.getInt("remotePort", 21), jprefer.get("servUsername", ""), jprefer.get("servPassword", ""));
+						export.export();
+						
+						
 						return null;
 					}
 
 					@Override
 					public void done(){
-						if(successful[0]){
+						try {
+							get();
 							stateExports.setText("<html><font color='green'>The data has been successfully been exported</font></html>");
-						}else{
-							if(!stateExports.getText().contains("The zip was not created")){
-								stateExports.setText("<html><font color='red'>The data export failed (" + exception + ") </font></html>");	
-							}
+						} catch (Exception e) {
+							stateExports.setText("<html><font color='red'>The data export failed</font></html>");
+							e.printStackTrace();
 						}
 						exportBtn.setText("Remote server");
 						exportBtn.setEnabled(true);
 					}
 				};
-				if(!modeleExportStudies.getOrthancIds().isEmpty()){
-					stateExports.setText("Exporting...");
-					worker.execute();
-				}
+				
+			if(!modeleExportStudies.getOrthancIds().isEmpty()){
+				stateExports.setText("Exporting...");
+				worker.execute();
 			}
+		}
 		});
 
 		exportBtn.setToolTipText("Fill the remote server parameters in the setup tab before attempting an export.");
@@ -1989,13 +1976,11 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 			exportToZip = new JButton("Zip");
 			exportToZip.addActionListener(new ActionListener() {
-				boolean confirm = true;
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 						@Override
-						protected Void doInBackground() {
-							confirm = true;
+						protected Void doInBackground() throws IOException {
 							stateExports.setText("Converting to Zip...");
 							exportToZip.setText("Converting to Zip...");
 							exportToZip.setEnabled(false);
@@ -2007,32 +1992,27 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 							chooser.setDialogTitle("Export zip to...");
 							chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 							chooser.setAcceptAllFileFilterUsed(false);
-							if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+							if (chooser.showSaveDialog(gui) == JFileChooser.APPROVE_OPTION) {
 								file = chooser.getSelectedFile();
-							}else{
-								confirm = false;
-							}
-							if(confirm){
-								try{
-									ConvertZipAction convertzip=new ConvertZipAction(connexionHttp);
-									convertzip.setConvertZipAction(file.getAbsolutePath().toString(), modeleExportStudies.getOrthancIds(), false);
-									convertzip.generateZip(false);
-								}catch(IOException e){
-									e.printStackTrace();
-								}
+								ConvertZipAction convertzip=new ConvertZipAction(connexionHttp);
+								convertzip.setConvertZipAction(file.getAbsolutePath().toString(), modeleExportStudies.getOrthancIds(), false);
+								convertzip.generateZip(false);
 							}
 							return null;
 						}
 
 						@Override
 						public void done(){
-							if(confirm){
+							try {
+								get();
 								stateExports.setText("<html><font color='green'>The data has been successfully been converted to zip</font></html>");
-							}else{
-								stateExports.setText("");
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
 							}
 							exportToZip.setText("Zip");
 							exportToZip.setEnabled(true);
+
 						}
 					};
 					if(!modeleExportStudies.getOrthancIds().isEmpty()){
@@ -2499,9 +2479,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				AboutBoxFrame ab = new AboutBoxFrame();
-				ab.pack();
-				ab.setLocationRelativeTo(gui);
+				AboutBoxFrame ab = new AboutBoxFrame(gui);
 				ab.setVisible(true);
 			}
 		});

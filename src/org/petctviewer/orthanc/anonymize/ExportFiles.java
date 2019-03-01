@@ -72,7 +72,7 @@ public class ExportFiles {
 		this.pwd = pwd;
 	}
 
-	public void export(){
+	public void export() throws IOException{
 		FileInputStream fis = null;
 		try{
 			File localFile = new File(this.filePath);
@@ -109,9 +109,6 @@ public class ExportFiles {
 			default:
 				break;
 			}
-		}catch(IOException e){
-			// Getting the exception message, that we will give to VueAnon with getResult
-			this.result = e.getMessage();
 		}finally{
 			try {
 				fis.close();

@@ -25,17 +25,19 @@ import java.awt.Insets;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
-public class AboutBoxFrame extends JFrame{
+public class AboutBoxFrame extends JDialog{
 
 	private static final long serialVersionUID = 1L;
 
-	public AboutBoxFrame(){
-		super("About us");
+	public AboutBoxFrame(JFrame gui){
+		super(gui, "About us");
+		
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		JPanel labelPanel = new JPanel();
 		labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.PAGE_AXIS));
@@ -122,11 +124,8 @@ public class AboutBoxFrame extends JFrame{
 		
 		this.getContentPane().add(mainPanel);
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		pack();
+		setLocationRelativeTo(gui);
 	}
 	
-	public static void main(String[] args0){
-		AboutBoxFrame vue = new AboutBoxFrame();
-		vue.setVisible(true);
-		vue.pack();
-	}
 }

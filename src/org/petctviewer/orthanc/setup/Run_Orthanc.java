@@ -121,8 +121,6 @@ public class Run_Orthanc {
 		
 	    startOrthanc();
 	    
-	    
-
         return resourceName;
   
     }

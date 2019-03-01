@@ -18,15 +18,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 package org.petctviewer.orthanc;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.prefs.Preferences;
 
@@ -44,7 +40,6 @@ import org.json.simple.parser.ParseException;
  */
 public class ParametreConnexionHttp {
 	
-	//private Preferences jprefer = Preferences.userRoot().node("<unnamed>/biplugins");
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	private String fullAddress;
 	private String authentication;
@@ -53,42 +48,8 @@ public class ParametreConnexionHttp {
 	
 	
 	public ParametreConnexionHttp()  {
-			//int curDb = jprefer.getInt("current database", 0);
-			//int typeDb = jprefer.getInt("db type" + curDb, 0);
-			String ip=null;
-			String port=null;
-			
-			/*
-			if(typeDb == 5){
-				
-				if(!jprefer.get("db path" + curDb, "none").equals("none") && !jprefer.get("db path" + curDb, "none").equals("")){
-					String pathBrut = jprefer.get("db path" + curDb, "none") + "/";
-					if (pathBrut.contains("http://")) {
-						int index = ordinalIndexOf(pathBrut, "/", 3);
-						this.fullAddress = pathBrut.substring(0, index);
-					}
-					else {
-						this.fullAddress = "http://"+ pathBrut;
-					}
-					
-				}
-				else{
-					//Si le path string non defini on utilise le port par defaut et l'adresse du champ AET
-					String address = jprefer.get("ODBC" + curDb, "localhost");
-					ip="http://";
-					ip +=address.substring((address.indexOf("@")+1), address.indexOf(":") );
-					ip +=":8042";
-					this.fullAddress =ip;
-				}
-				
-				if(jprefer.get("db user" + curDb, null) != null && jprefer.get("db pass" + curDb, null) != null){
-					authentication = Base64.getEncoder().encodeToString((jprefer.get("db user" + curDb, null) + ":" + jprefer.get("db pass" + curDb, null)).getBytes());
-				}
-				
-		}*/
-	
-		ip = jpreferPerso.get("ip", "http://localhost");
-		port = jpreferPerso.get("port", "8042");
+		String ip = jpreferPerso.get("ip", "http://localhost");
+		String port = jpreferPerso.get("port", "8042");
 		this.fullAddress = ip + ":" + port;
 		if(jpreferPerso.get("username", null) != null && jpreferPerso.get("username", null) != null){
 			authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
@@ -96,72 +57,66 @@ public class ParametreConnexionHttp {
 		
 	}
 	
-	public ParametreConnexionHttp(boolean CTP)  {
-		this.fullAddress = "http://localhost:8043";
+	public ParametreConnexionHttp(String fullAddress)  {
+		this.fullAddress = fullAddress;
 		
 	}
 	
 	
-	public HttpURLConnection makeGetConnection(String apiUrl) {
+	private HttpURLConnection makeGetConnection(String apiUrl) {
 		
 		HttpURLConnection conn=null;
-		URL url = null;
-			try {
-				url = new URL(fullAddress+apiUrl);
-				conn = (HttpURLConnection) url.openConnection();
-				conn.setDoOutput(true);
-				conn.setRequestMethod("GET");
-				if((fullAddress != null && fullAddress.contains("https"))){
-						HttpsTrustModifier.Trust(conn);
-				}
-				if(authentication != null){
-					conn.setRequestProperty("Authorization", "Basic " + authentication);
-				}
-				conn.getResponseMessage();
-				
-			} catch (IOException | KeyManagementException | NoSuchAlgorithmException | KeyStoreException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+		try {
+			URL url = new URL(fullAddress+apiUrl);
+			conn = (HttpURLConnection) url.openConnection();
+			conn.setDoOutput(true);
+			conn.setRequestMethod("GET");
+			if((fullAddress != null && fullAddress.contains("https"))){
+					HttpsTrustModifier.Trust(conn);
 			}
-		
+			if(authentication != null){
+				conn.setRequestProperty("Authorization", "Basic " + authentication);
+			}
+			conn.getResponseMessage();
+			
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 
 		return conn;
 	
 	}
 	
-public HttpURLConnection makeGetConnectionImage(String apiUrl) {
+	private HttpURLConnection makeGetConnectionImage(String apiUrl) {
 		
 		HttpURLConnection conn=null;
-		URL url = null;
-			try {
-				url = new URL(fullAddress+apiUrl);
-				conn = (HttpURLConnection) url.openConnection();
-				conn.setRequestProperty("Accept", "image/png");
-				conn.setDoOutput(true);
-				conn.setRequestMethod("GET");
-				if((fullAddress != null && fullAddress.contains("https"))){
-						HttpsTrustModifier.Trust(conn);
-				}
-				if(authentication != null){
-					conn.setRequestProperty("Authorization", "Basic " + authentication);
-				}
-				conn.getResponseMessage();
-				
-			} catch (IOException | KeyManagementException | NoSuchAlgorithmException | KeyStoreException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+		try {
+			URL url = new URL(fullAddress+apiUrl);
+			conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestProperty("Accept", "image/png");
+			conn.setDoOutput(true);
+			conn.setRequestMethod("GET");
+			if((fullAddress != null && fullAddress.contains("https"))){
+					HttpsTrustModifier.Trust(conn);
 			}
+			if(authentication != null){
+				conn.setRequestProperty("Authorization", "Basic " + authentication);
+			}
+			conn.getResponseMessage();
+			
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 		
-
 		return conn;
 	
 	}
 
 	public StringBuilder makeGetConnectionAndStringBuilder(String apiUrl) {
-		HttpURLConnection conn = null;
+		
 		StringBuilder sb = new StringBuilder() ;
 		try {
-			conn = makeGetConnection(apiUrl);
+			HttpURLConnection conn = makeGetConnection(apiUrl);
 			if (conn !=null) {
 				BufferedReader br = new BufferedReader(new InputStreamReader(
 				(conn.getInputStream())));
@@ -171,23 +126,18 @@ public HttpURLConnection makeGetConnectionImage(String apiUrl) {
 				}
 				conn.disconnect();
 			}
-			
-			
-		} catch (IOException | NullPointerException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
 		return sb;
 	}
-	
-	
-	
+
 	public HttpURLConnection makePostConnection(String apiUrl, String post) {
-		URL url = null;
+
 		HttpURLConnection conn = null ;
 		try {
-			url = new URL(fullAddress+apiUrl);
+			URL url = new URL(fullAddress+apiUrl);
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setDoOutput(true);
 			conn.setRequestMethod("POST");
@@ -201,19 +151,19 @@ public HttpURLConnection makeGetConnectionImage(String apiUrl) {
 			os.write(post.getBytes());
 			os.flush();
 			conn.getResponseMessage();
-		} catch ( KeyManagementException | NoSuchAlgorithmException | KeyStoreException | IOException ex) { 
-			
+		} catch ( Exception e) { 
+			e.printStackTrace();
 		}
+		
 		return conn;
 	}
 
 	public HttpURLConnection sendDicom(String apiUrl, byte[] post) {
 		
-		URL url = null;
 		HttpURLConnection conn =null;
 		
 		try {
-			url=new URL(fullAddress+apiUrl);
+			URL url=new URL(fullAddress+apiUrl);
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setDoOutput(true);
 			conn.setRequestMethod("POST");
@@ -230,7 +180,7 @@ public HttpURLConnection makeGetConnectionImage(String apiUrl) {
 			os.write(post);
 			os.flush();
 			conn.getResponseMessage();
-		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException | IOException e1) {
+		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
@@ -240,11 +190,10 @@ public HttpURLConnection makeGetConnectionImage(String apiUrl) {
 		
 	public StringBuilder makePostConnectionAndStringBuilder(String apiUrl, String post) {
 		
-		HttpURLConnection conn = makePostConnection(apiUrl, post);
-		BufferedReader br;
 		StringBuilder sb =new StringBuilder();
 		try {
-			br = new BufferedReader(new InputStreamReader(
+			HttpURLConnection conn = makePostConnection(apiUrl, post);
+			BufferedReader br = new BufferedReader(new InputStreamReader(
 					(conn.getInputStream())));
 			// We get the study ID at the end
 			String output;
@@ -254,32 +203,29 @@ public HttpURLConnection makeGetConnectionImage(String apiUrl) {
 			conn.disconnect();
 			conn.getResponseMessage();
 			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return sb; 
 	}
 
 	public InputStream openImage(String apiUrl) {
-		HttpURLConnection conn = this.makeGetConnectionImage(apiUrl);
-
-		InputStream is=null;
 		
+		InputStream is=null;
 		try {
+			HttpURLConnection conn = this.makeGetConnectionImage(apiUrl);
 			is = conn.getInputStream();
-		} catch(IOException e) { e.printStackTrace();}
+		} catch(Exception e) { 
+			e.printStackTrace();
+		}
 
 		return is;
 	}
 	
 	public void makeDeleteConnection(String apiUrl) {
-		
-		URL url = null;
-		HttpURLConnection conn = null;
 		try {
-			url=new URL(fullAddress+apiUrl);
-			conn = (HttpURLConnection) url.openConnection();
+			URL url=new URL(fullAddress+apiUrl);
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setDoOutput(true);
 			conn.setRequestMethod("DELETE");
 			if((fullAddress != null && fullAddress.contains("https")) ){		
@@ -291,8 +237,7 @@ public HttpURLConnection makeGetConnectionImage(String apiUrl) {
 			
 			conn.getResponseMessage();
 			conn.disconnect();
-		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException | IOException e1) {
-			// TODO Auto-generated catch block
+		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
 		
@@ -303,12 +248,12 @@ public HttpURLConnection makeGetConnectionImage(String apiUrl) {
 	public Boolean testConnexion() {	
 		Boolean test=true;
 		try {
-		makeGetConnection("/system");
-		StringBuilder sb= makeGetConnectionAndStringBuilder("/system");
-		JSONParser parser=new JSONParser();
-		JSONObject systemJson=(JSONObject) parser.parse(sb.toString());
-		orthancVersion=(String) systemJson.get("Version");
-		versionHigher131=isVersionAfter131();
+			makeGetConnection("/system");
+			StringBuilder sb= makeGetConnectionAndStringBuilder("/system");
+			JSONParser parser=new JSONParser();
+			JSONObject systemJson=(JSONObject) parser.parse(sb.toString());
+			orthancVersion=(String) systemJson.get("Version");
+			versionHigher131=isVersionAfter131();
 		} catch (ParseException e) {
 			JOptionPane.showMessageDialog(null,
 				    "Can't connect to Orthanc");

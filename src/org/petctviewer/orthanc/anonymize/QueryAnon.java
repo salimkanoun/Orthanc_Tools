@@ -35,7 +35,6 @@ public class QueryAnon {
 	private ArrayList<Tags> tags = new ArrayList<Tags>();
 	private Choice privateTags;
 	private String query;
-	private String serieUID;
 	private String newUID;
 	private String newPatientUID;
 	private String newPatientName;
@@ -154,11 +153,6 @@ public class QueryAnon {
 				this.query = "{" + replace.toString() + keep.toString() + ",\"Force\": true" + "}";
 			}
 		}
-	}
-
-	public void deleteSerie() throws IOException{
-		HttpURLConnection conn=connexionHttp.makeGetConnection("/series" + "/" + this.serieUID +"/delete");
-		conn.disconnect();
 	}
 
 	/**

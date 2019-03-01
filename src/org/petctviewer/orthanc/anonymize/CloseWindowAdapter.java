@@ -29,12 +29,12 @@ import org.petctviewer.orthanc.setup.Run_Orthanc;
 
 public class CloseWindowAdapter extends WindowAdapter{
 
-	JFrame frame;
+	private JFrame frame;
 	private ArrayList<String> zipContent;
 	private ArrayList<String> oldOrthancUIDs;
 	private ArrayList<Study> listeExport;
-	Monitoring_GUI monitoring;
-	Run_Orthanc runOrthanc;
+	private Monitoring_GUI monitoring;
+	private Run_Orthanc runOrthanc;
 
 	public CloseWindowAdapter(JFrame frame, ArrayList<String> zipContent, 
 			ArrayList<String> oldOrthancUIDs, ArrayList<Study> listeExport, Monitoring_GUI monitoring, Run_Orthanc runOrthanc){

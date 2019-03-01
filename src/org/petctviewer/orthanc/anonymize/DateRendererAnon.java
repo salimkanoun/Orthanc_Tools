@@ -21,11 +21,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import javax.swing.table.DefaultTableCellRenderer;
 
-/**
- *
- * @author Anousone Vongsalat
- */
-
 public class DateRendererAnon extends DefaultTableCellRenderer{
 	private static final long serialVersionUID = 1L;
 	DateFormat formatter = new SimpleDateFormat("MM-dd-yyyy");
