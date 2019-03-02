@@ -17,28 +17,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.anonymize.Tags.Choice;
 import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
-public class QueryAnon {
+public class AnonRequest {
 
-	//private static final int NBTAGS = 40	;
-	private JSONParser parser=new JSONParser();
 	private ArrayList<Tags> tags = new ArrayList<Tags>();
 	private boolean keepPrivateTags;
-	private String query;
 	private String newUID;
 	private String newPatientUID;
 	private String newPatientName;
@@ -46,7 +37,7 @@ public class QueryAnon {
 	
 	private ParametreConnexionHttp connexionHttp;
 
-	public QueryAnon(ParametreConnexionHttp connexionHttp, Choice bodyChar, Choice dates, Choice birthdate, 
+	public AnonRequest(ParametreConnexionHttp connexionHttp, Choice bodyChar, Choice dates, Choice birthdate, 
 			Choice privateTags, Choice secondaryCapture, Choice descriptionStudySerie, 
 			String newPatientName, String newPatientID, String newDescription) {
 
@@ -97,10 +88,6 @@ public class QueryAnon {
 		//Replace for study description
 		if(descriptionStudySerie.equals(Choice.KEEP)){
 			tags.add(new Tags("0008,1030", Choice.REPLACE, newDescription));
-			//SK A TESTER PEUT ETRE BUG SI STUDY DESCRIPTION LAISSEE VIDE
-			//if( newDescription == null ||newDescription.equals("")){
-			//	tags.add(new Tags("0008,1030", Choice.KEEP));
-			//}
 		}else if (descriptionStudySerie.equals(Choice.CLEAR)){
 			tags.add(new Tags("0008,1030", Choice.CLEAR,null));
 		}
@@ -131,7 +118,24 @@ public class QueryAnon {
 		}
 	}
 
-	private void setQuery(){
+	
+
+	/**
+	 * Send the Anonymization request (only study level) and get the new anonymized study
+	 * @param level
+	 * @param id
+	 * @throws IOException
+	 */
+	public void sendQuery(String id) {
+		String query=buildQuery();		
+		StringBuilder sb=connexionHttp.makePostConnectionAndStringBuilder("/studies/" + id +"/anonymize", query);
+		JsonParser parser =new JsonParser();
+		JsonObject answer=(JsonObject) parser.parse(sb.toString());
+		newUID=answer.get("ID").getAsString();
+		newPatientUID=answer.get("PatientID").getAsString();
+	}
+	
+	private String buildQuery(){
 		
 		JsonObject query = new JsonObject();
 		JsonObject replace = new JsonObject();
@@ -150,43 +154,7 @@ public class QueryAnon {
 		query.add("Replace", replace);
 		query.add("Keep", keep);
 		
-		this.query=query.toString();
-		
-	}
-
-	/**
-	 * Send the Anonymization request
-	 * @param level
-	 * @param id
-	 * @throws IOException
-	 */
-	public void sendQuery(String id) throws IOException{
-		setQuery();
-		//SK REFACTORISER AVEC STRINGBUILDER
-		HttpURLConnection conn=connexionHttp.makePostConnection("/studies/" + id +"/anonymize", this.query);
-		BufferedReader br = new BufferedReader(new InputStreamReader(
-				(conn.getInputStream())));
-		
-		// We get the study ID at the end
-		StringBuilder sb = new StringBuilder();
-		String output;
-		while ((output = br.readLine()) != null) {
-			sb.append(output);
-		}
-		conn.disconnect();
-		
-		JSONObject response = null;
-		try {
-			response = (JSONObject) parser.parse(sb.toString());
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		String newStudyID=(String) response.get("ID");
-		String newPatientID=(String) response.get("PatientID");
-
-		this.newUID=newStudyID;
-		this.newPatientUID=newPatientID;
+		return query.toString();
 		
 	}
 	

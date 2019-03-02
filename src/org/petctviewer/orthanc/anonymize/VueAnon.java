@@ -2923,8 +2923,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 							for(String uid : modeleAnonStudies.getOldOrthancUIDsWithID(patientID)){
 								String newDesc = modeleAnonStudies.getNewDesc(uid);
-								QueryAnon quAnon;
-								quAnon = new QueryAnon(connexionHttp, bodyCharChoice, datesChoice, bdChoice, ptChoice, scChoice, descChoice, newName, newID, newDesc);
+								AnonRequest quAnon;
+								quAnon = new AnonRequest(connexionHttp, bodyCharChoice, datesChoice, bdChoice, ptChoice, scChoice, descChoice, newName, newID, newDesc);
 								state.setText("<html>Anonymization state - " + (i+1) + "/" + modeleAnonStudies.getStudies().size() + 
 										" <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
 								quAnon.sendQuery(uid);

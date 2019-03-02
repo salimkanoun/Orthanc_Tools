@@ -28,7 +28,6 @@ import javax.swing.table.AbstractTableModel;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.petctviewer.orthanc.*;
 import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 public class TableDataExportStudies extends AbstractTableModel{

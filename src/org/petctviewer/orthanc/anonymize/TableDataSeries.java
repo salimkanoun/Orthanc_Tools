@@ -26,7 +26,6 @@ import javax.swing.table.AbstractTableModel;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import org.petctviewer.orthanc.*;
 import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 public class TableDataSeries extends AbstractTableModel{

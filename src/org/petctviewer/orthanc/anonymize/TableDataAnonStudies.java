@@ -28,7 +28,6 @@ import java.util.HashMap;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.petctviewer.orthanc.*;
 import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 import javax.swing.table.AbstractTableModel;

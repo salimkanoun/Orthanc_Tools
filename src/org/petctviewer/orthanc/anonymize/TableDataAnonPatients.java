@@ -22,10 +22,9 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 
-import org.petctviewer.orthanc.*;
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
-
 import javax.swing.table.AbstractTableModel;
+
+import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 public class TableDataAnonPatients extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
