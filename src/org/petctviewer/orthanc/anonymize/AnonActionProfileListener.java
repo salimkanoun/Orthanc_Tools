@@ -28,158 +28,88 @@ import javax.swing.JRadioButton;
 public class AnonActionProfileListener extends AbstractAction{
 
 	private static final long serialVersionUID = 1L;
-	private JComboBox<Object> anonProfiles;
+	private JComboBox<String> anonProfiles;
 	private JLabel profileLabel;
-	private JRadioButton radioBodyCharac1;
-	private JRadioButton radioBodyCharac2;
-	private JRadioButton radioDates1;
-	private JRadioButton radioDates2;
-	private JRadioButton radioBd2;
-	private JRadioButton radioBd1;
-	private JRadioButton radioPt1;
-	private JRadioButton radioPt2;
-	private JRadioButton radioSc1;
-	private JRadioButton radioSc2;
-	private JRadioButton radioDesc1;
-	private JRadioButton radioDesc2;
+	private JRadioButton[] settingsBodyCharButtons;
+	private JRadioButton[] settingDatesButtons;
+	private JRadioButton[] settingsBirthDateButtons;
+	private JRadioButton[] settingsPrivateTagButtons; 
+	private JRadioButton[] settingsSecondaryCaptureButtons;
+	private JRadioButton[] settingsStudySerieDescriptionButtons;
 	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
 
-	public AnonActionProfileListener(JComboBox<Object> anonProfiles, JLabel profileLabel, JRadioButton radioBodyCharac1, 
-			JRadioButton radioBodyCharac2, JRadioButton radioDates1, JRadioButton radioDates2, JRadioButton radioBd2, 
-			JRadioButton radioBd1, JRadioButton radioPt1, JRadioButton radioPt2,
-			JRadioButton radioSc1, JRadioButton radioSc2, JRadioButton radioDesc1, JRadioButton radioDesc2){
+	public AnonActionProfileListener(JComboBox<String> anonProfiles, JLabel profileLabel, 
+			JRadioButton[] settingsBodyCharButtons,
+			JRadioButton[] settingDatesButtons,
+			JRadioButton[] settingsBirthDateButtons,
+			JRadioButton[] settingsPrivateTagButtons, 
+			JRadioButton[] settingsSecondaryCaptureButtons,
+			JRadioButton[] settingsStudySerieDescriptionButtons){
+		
 		this.profileLabel = profileLabel;
 		this.anonProfiles = anonProfiles;
-		this.radioBodyCharac1 = radioBodyCharac1;
-		this.radioBodyCharac2 = radioBodyCharac2;
-		this.radioDates1 = radioDates1;
-		this.radioDates2 = radioDates2;
-		this.radioBd2 = radioBd2;
-		this.radioBd1 = radioBd1;
-		this.radioPt1 = radioPt1;
-		this.radioPt2 = radioPt2;
-		this.radioSc1 = radioSc1;
-		this.radioSc2 = radioSc2;
-		this.radioDesc1 = radioDesc1;
-		this.radioDesc2 = radioDesc2;
+		this.settingsBodyCharButtons = settingsBodyCharButtons;
+		this.settingDatesButtons = settingDatesButtons;
+		this.settingsBirthDateButtons = settingsBirthDateButtons;
+		this.settingsPrivateTagButtons = settingsPrivateTagButtons;
+		this.settingsSecondaryCaptureButtons = settingsSecondaryCaptureButtons;
+		this.settingsStudySerieDescriptionButtons = settingsStudySerieDescriptionButtons;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		//If predefined Default or full clearing profile unactivate buttons and set predifined settings
 		if(anonProfiles.getSelectedItem().equals("Default") || anonProfiles.getSelectedItem().equals("Full clearing")){
-			radioBodyCharac1.setEnabled(false);
-			radioBodyCharac2.setEnabled(false);
-			radioDates1.setEnabled(false);
-			radioDates2.setEnabled(false);
-			radioBd1.setEnabled(false);
-			radioBd2.setEnabled(false);
-			radioPt1.setEnabled(false);
-			radioPt2.setEnabled(false);
-			radioSc1.setEnabled(false);
-			radioSc2.setEnabled(false);
-			radioDesc1.setEnabled(false);
-			radioDesc2.setEnabled(false);
-			
+			changeEnableRadioButtons(false);
 			if(anonProfiles.getSelectedItem().equals("Default")){
-				this.profileLabel.setText("Default profile");
-				radioBodyCharac1.setSelected(true);
-				radioDates1.setSelected(true);
-				radioBd2.setSelected(true);
-				radioPt2.setSelected(true);
-				radioSc2.setSelected(true);
-				radioDesc1.setSelected(true);
+				profileLabel.setText("Default profile");
+				settingsBodyCharButtons[0].setSelected(true);
+				settingDatesButtons[0].setSelected(true);
+				settingsBirthDateButtons[1].setSelected(true);
+				settingsPrivateTagButtons[1].setSelected(true);
+				settingsSecondaryCaptureButtons[1].setSelected(true);
+				settingsStudySerieDescriptionButtons[0].setSelected(true);
 			}else{
-				this.profileLabel.setText("Full clearing profile");
-				radioBodyCharac2.setSelected(true);
-				radioDates2.setSelected(true);
-				radioBd2.setSelected(true);
-				radioPt2.setSelected(true);
-				radioSc2.setSelected(true);
-				radioDesc2.setSelected(true);
-			}	
+				profileLabel.setText("Full clearing profile");
+				settingsBodyCharButtons[1].setSelected(true);
+				settingDatesButtons[1].setSelected(true);
+				settingsBirthDateButtons[1].setSelected(true);
+				settingsPrivateTagButtons[1].setSelected(true);
+				settingsSecondaryCaptureButtons[1].setSelected(true);
+				settingsStudySerieDescriptionButtons[1].setSelected(true);
+			}
+		//If Custom Profile	
 		}else{
-			this.profileLabel.setText("Custom profile");
-			radioBodyCharac1.setEnabled(true);
-			radioBodyCharac2.setEnabled(true);
-			radioDates1.setEnabled(true);
-			radioDates2.setEnabled(true);
-			radioBd2.setEnabled(true);
-			radioBd1.setEnabled(true);
-			radioPt1.setEnabled(true);
-			radioPt2.setEnabled(true);
-			radioSc1.setEnabled(true);
-			radioSc2.setEnabled(true);
-			radioDesc1.setEnabled(true);
-			radioDesc2.setEnabled(true);
-			
+			changeEnableRadioButtons(true);
+			profileLabel.setText("Custom profile");
+			//Get activated button value from the registery
 			int bodyCharacReg = jprefer.getInt("bodyCharac", 0);
 			int datesReg = jprefer.getInt("Dates", 0);
 			int bdReg = jprefer.getInt("BD", 0);
 			int ptReg = jprefer.getInt("PT", 0);
 			int scReg = jprefer.getInt("SC", 0);
 			int descReg = jprefer.getInt("DESC", 0);
+			//Select the buttons accordically
+			settingsBodyCharButtons[bodyCharacReg].setSelected(true);
+			settingDatesButtons[datesReg].setSelected(true);
+			settingsBirthDateButtons[bdReg].setSelected(true);
+			settingsPrivateTagButtons[ptReg].setSelected(true);
+			settingsSecondaryCaptureButtons[scReg].setSelected(true);
+			settingsStudySerieDescriptionButtons[descReg].setSelected(true);
 			
-			switch (bodyCharacReg) {
-			case 0:
-				radioBodyCharac1.setSelected(true);
-				break;
-			case 1:
-				radioBodyCharac2.setSelected(true);
-				break;
-			default:
-				break;
-			}
-			switch (datesReg) {
-			case 0:
-				radioDates1.setSelected(true);
-				break;
-			case 1:
-				radioDates2.setSelected(true);
-				break;
-			default:
-				break;
-			}
-			switch (bdReg) {
-			case 0:
-				radioBd1.setSelected(true);
-				break;
-			case 1:
-				radioBd2.setSelected(true);
-				break;
-			default:
-				break;
-			}
-			switch (ptReg) {
-			case 0:
-				radioPt1.setSelected(true);
-				break;
-			case 1:
-				radioPt2.setSelected(true);
-				break;
-			default:
-				break;
-			}
-			switch (scReg) {
-			case 0:
-				radioSc1.setSelected(true);
-				break;
-			case 1:
-				radioSc2.setSelected(true);
-				break;
-			default:
-				break;
-			}
-			switch (descReg) {
-			case 0:
-				radioDesc1.setSelected(true);
-				break;
-			case 1:
-				radioDesc2.setSelected(true);
-				break;
-			default:
-				break;
-			}
 		}
 	}
+	
+	private void changeEnableRadioButtons(boolean enable) {
+		for(int i=0 ; i<2; i++) {
+			settingsBodyCharButtons[i].setEnabled(enable);
+			settingDatesButtons[i].setEnabled(enable);
+			settingsBirthDateButtons[i].setEnabled(enable);
+			settingsPrivateTagButtons[i].setEnabled(enable); 
+			settingsSecondaryCaptureButtons[i].setEnabled(enable);
+			settingsStudySerieDescriptionButtons[i].setEnabled(enable);
+		}
+	}
+	
 }
 

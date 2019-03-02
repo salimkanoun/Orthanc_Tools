@@ -26,6 +26,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+/**
+ * Build and perform anonymize request
+ *
+ */
 public class AnonRequest {
 
 	private ArrayList<Tags> tags = new ArrayList<Tags>();
@@ -34,7 +38,6 @@ public class AnonRequest {
 	private String newPatientUID;
 	private String newPatientName;
 	private String newPatientID;
-	
 	private ParametreConnexionHttp connexionHttp;
 
 	public AnonRequest(ParametreConnexionHttp connexionHttp, Choice bodyChar, Choice dates, Choice birthdate, 
@@ -117,8 +120,6 @@ public class AnonRequest {
 			this.keepPrivateTags=false;
 		}
 	}
-
-	
 
 	/**
 	 * Send the Anonymization request (only study level) and get the new anonymized study

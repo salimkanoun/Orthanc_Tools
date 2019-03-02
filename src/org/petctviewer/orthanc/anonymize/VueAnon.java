@@ -197,19 +197,14 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	Monitoring_GUI monitoring;
 	
 	// Tab Setup (p4)
-	private JComboBox<Object> anonProfiles;
-	private Choice bodyCharChoice;
-	private Choice datesChoice;
-	private Choice bdChoice;
-	private Choice ptChoice;
-	private Choice scChoice;
-	private Choice descChoice;
-	private JRadioButton[] bodyCharList = new JRadioButton[2];
-	private JRadioButton[] datesList = new JRadioButton[2];
-	private JRadioButton[] bdList = new JRadioButton[2];
-	private JRadioButton[] ptList = new JRadioButton[2];
-	private JRadioButton[] scList = new JRadioButton[2];
-	private JRadioButton[] descList = new JRadioButton[2];
+	private JComboBox<String> anonProfiles;
+	//RadioButton for each group in Array 0 for Keep, 1 for Clear
+	private JRadioButton[] settingsBodyCharButtons = new JRadioButton[2];
+	private JRadioButton[] settingDatesButtons = new JRadioButton[2];
+	private JRadioButton[] settingsBirthDateButtons = new JRadioButton[2];
+	private JRadioButton[] settingsPrivateTagButtons = new JRadioButton[2];
+	private JRadioButton[] settingsSecondaryCaptureButtons = new JRadioButton[2];
+	private JRadioButton[] settingsStudySerieDescriptionButtons = new JRadioButton[2];
 	private JTextField centerCode;
 	private JTextField remoteServer;
 	private JTextField remotePort;
@@ -275,7 +270,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			runOrthanc.copyOrthanc(null);
 			runOrthanc.startOrthanc();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -1417,14 +1411,12 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 							try {
 								Run_Pet_Ct = Class.forName("Run_Pet_Ct");
 							} catch (ClassNotFoundException e1) {
-								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
 							try {
 								Constructor cs=Run_Pet_Ct.getDeclaredConstructor(ArrayList.class);
 								cs.newInstance(imagestacks);
 							} catch (Exception e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
 							} 
 							
@@ -2008,7 +2000,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 								get();
 								stateExports.setText("<html><font color='green'>The data has been successfully been converted to zip</font></html>");
 							} catch (Exception e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 							exportToZip.setText("Zip");
@@ -2126,13 +2117,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		////////////////////////////////// PANEL 3 : SETUP ////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		this.bodyCharChoice = Choice.KEEP;
-		this.datesChoice = Choice.KEEP;
-		this.bdChoice = Choice.REPLACE;
-		this.ptChoice = Choice.CLEAR;
-		this.scChoice = Choice.CLEAR;
-		this.descChoice = Choice.CLEAR;
-
 		JPanel mainPanelSetup = new JPanel();
 		mainPanelSetup.setLayout(new BorderLayout());
 
@@ -2161,7 +2145,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 		gbSetup.gridx = 0;
 		gbSetup.gridy = 1;
-		anonProfiles = new JComboBox<Object>(new String[]{"Default", "Full clearing", "Custom"});
+		anonProfiles = new JComboBox<String>(new String[]{"Default", "Full clearing", "Custom"});
 		anonProfiles.setPreferredSize(new Dimension(100,27));
 		JLabel anonProfilesLabel = new JLabel("Anonymization profile");
 		anonProfilesLabel.setBorder(new EmptyBorder(0, 0, 0, 20));
@@ -2197,8 +2181,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 		JRadioButton radioBodyCharac1 = new JRadioButton();
 		JRadioButton radioBodyCharac2 = new JRadioButton();
-		this.bodyCharList[0] = radioBodyCharac1;
-		this.bodyCharList[1] = radioBodyCharac2;
+		this.settingsBodyCharButtons[0] = radioBodyCharac1;
+		this.settingsBodyCharButtons[1] = radioBodyCharac2;
 		bgBodyCharac.add(radioBodyCharac1);
 		gbSetup.gridx = 1;
 		tabSetup.add(radioBodyCharac1, gbSetup);
@@ -2213,8 +2197,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		ButtonGroup bgDates = new ButtonGroup();
 		JRadioButton radioDates1 = new JRadioButton();
 		JRadioButton radioDates2 = new JRadioButton();
-		this.datesList[0] = radioDates1;
-		this.datesList[1] = radioDates2;
+		this.settingDatesButtons[0] = radioDates1;
+		this.settingDatesButtons[1] = radioDates2;
 		bgDates.add(radioDates1);
 		gbSetup.gridx = 1;
 		tabSetup.add(radioDates1, gbSetup);
@@ -2229,8 +2213,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		ButtonGroup bgBd = new ButtonGroup();
 		JRadioButton radioBd1 = new JRadioButton();
 		JRadioButton radioBd2 = new JRadioButton();
-		this.bdList[0] = radioBd1;
-		this.bdList[1] = radioBd2;
+		this.settingsBirthDateButtons[0] = radioBd1;
+		this.settingsBirthDateButtons[1] = radioBd2;
 		bgBd.add(radioBd1);
 		gbSetup.gridx = 1;
 		tabSetup.add(radioBd1, gbSetup);
@@ -2245,8 +2229,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		ButtonGroup bgPt = new ButtonGroup();
 		JRadioButton radioPt1 = new JRadioButton();
 		JRadioButton radioPt2 = new JRadioButton();
-		this.ptList[0] = radioPt1;
-		this.ptList[1] = radioPt2;
+		this.settingsPrivateTagButtons[0] = radioPt1;
+		this.settingsPrivateTagButtons[1] = radioPt2;
 		bgPt.add(radioPt1);
 		gbSetup.gridx = 1;
 		tabSetup.add(radioPt1, gbSetup);
@@ -2261,8 +2245,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		ButtonGroup bgSc = new ButtonGroup();
 		JRadioButton radioSc1 = new JRadioButton();
 		JRadioButton radioSc2 = new JRadioButton();
-		this.scList[0] = radioSc1;
-		this.scList[1] = radioSc2;
+		this.settingsSecondaryCaptureButtons[0] = radioSc1;
+		this.settingsSecondaryCaptureButtons[1] = radioSc2;
 		bgSc.add(radioSc1);
 		gbSetup.gridx = 1;
 		tabSetup.add(radioSc1, gbSetup);
@@ -2277,21 +2261,19 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		ButtonGroup bgDesc = new ButtonGroup();
 		JRadioButton radioDesc1 = new JRadioButton();
 		JRadioButton radioDesc2 = new JRadioButton();
-		this.descList[0] = radioDesc1;
-		this.descList[1] = radioDesc2;
+		this.settingsStudySerieDescriptionButtons[0] = radioDesc1;
+		this.settingsStudySerieDescriptionButtons[1] = radioDesc2;
 		bgDesc.add(radioDesc1);
 		gbSetup.gridx = 1;
 		tabSetup.add(radioDesc1, gbSetup);
 		bgDesc.add(radioDesc2);
 		gbSetup.gridx = 2;
 		tabSetup.add(radioDesc2, gbSetup);
-		
-		
 
 		anonProfiles.addActionListener(
-				new AnonActionProfileListener(anonProfiles, profileLabel, radioBodyCharac1, 
-						radioBodyCharac2, radioDates1, radioDates2, radioBd2, 
-						radioBd1, radioPt1, radioPt2, radioSc1, radioSc2, radioDesc1, radioDesc2));
+				new AnonActionProfileListener(anonProfiles, profileLabel, settingsBodyCharButtons,settingDatesButtons,
+						settingsBirthDateButtons,settingsPrivateTagButtons, settingsSecondaryCaptureButtons,
+						settingsStudySerieDescriptionButtons));
 
 		anonProfiles.setSelectedItem(jprefer.get("profileAnon", "Default"));
 
@@ -2520,50 +2502,60 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				//////////// Filling the user preferences ////////////
+				//////////// Filling the user preferences In Registery ////////////
 				if(anonProfiles.getSelectedItem().equals("Custom")){
 					for(int i = 0; i < 2; i++){
-						if(bodyCharList[i].isSelected()){
+						
+						if(settingsBodyCharButtons[i].isSelected()){
 							if(jprefer.getInt("bodyCharac", 0) != i){
 								jprefer.putInt("bodyCharac", i);
 							}
-						}	
-					}
-					for(int i = 0; i < 2; i++){
-						if(datesList[i].isSelected()){
+						}
+						
+						if(settingDatesButtons[i].isSelected()){
 							if(jprefer.getInt("Dates", 0) != i){
 								jprefer.putInt("Dates", i);
 							}
 						}
-					}
-					for(int i = 0; i < 2; i++){
-						if(bdList[i].isSelected()){
+						
+						if(settingsBirthDateButtons[i].isSelected()){
 							if(jprefer.getInt("BD", 0) != i){
 								jprefer.putInt("BD", i);
 							}
 						}
-					}
-					for(int i = 0; i < 2; i++){
-						if(ptList[i].isSelected()){
+						
+						if(settingsPrivateTagButtons[i].isSelected()){
 							if(jprefer.getInt("PT", 0) != i){
 								jprefer.putInt("PT", i);
 							}
 						}
-					}
-					for(int i = 0; i < 2; i++){
-						if(scList[i].isSelected()){
+						
+						if(settingsPrivateTagButtons[i].isSelected()){
+							if(jprefer.getInt("PT", 0) != i){
+								jprefer.putInt("PT", i);
+							}
+						}
+						
+						if(settingsPrivateTagButtons[i].isSelected()){
+							if(jprefer.getInt("PT", 0) != i){
+								jprefer.putInt("PT", i);
+							}
+						}
+						
+						if(settingsSecondaryCaptureButtons[i].isSelected()){
 							if(jprefer.getInt("SC", 0) != i){
 								jprefer.putInt("SC", i);
 							}
 						}
-					}
-					for(int i = 0; i < 2; i++){
-						if(descList[i].isSelected()){
+						
+						if(settingsStudySerieDescriptionButtons[i].isSelected()){
 							if(jprefer.getInt("DESC", 0) != i){
 								jprefer.putInt("DESC", i);
 							}
 						}
+						
 					}
+					
 				}
 				jprefer.put("profileAnon", anonProfiles.getSelectedItem().toString());
 				jprefer.put("centerCode", centerCode.getText());
@@ -2771,88 +2763,27 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			int dialogResult=JOptionPane.YES_OPTION;
 			@Override
 			protected Void doInBackground() {
-				//////////// Filling the user preferences ////////////
-				if(anonProfiles.getSelectedItem().equals("Custom")){
-					for(int i = 0; i < 2; i++){
-						if(bodyCharList[i].isSelected()){
-							if(jprefer.getInt("bodyCharac", 0) != i){
-								jprefer.putInt("bodyCharac", i);
-							}
-						}	
-					}
-					for(int i = 0; i < 2; i++){
-						if(datesList[i].isSelected()){
-							if(jprefer.getInt("Dates", 0) != i){
-								jprefer.putInt("Dates", i);
-							}
-						}
-					}
-					for(int i = 0; i < 2; i++){
-						if(bdList[i].isSelected()){
-							if(jprefer.getInt("BD", 0) != i){
-								jprefer.putInt("BD", i);
-							}
-						}
-					}
-					for(int i = 0; i < 2; i++){
-						if(ptList[i].isSelected()){
-							if(jprefer.getInt("PT", 0) != i){
-								jprefer.putInt("PT", i);
-							}
-						}
-					}
-					for(int i = 0; i < 2; i++){
-						if(scList[i].isSelected()){
-							if(jprefer.getInt("SC", 0) != i){
-								jprefer.putInt("SC", i);
-							}
-						}
-					}
-					for(int i = 0; i < 2; i++){
-						if(descList[i].isSelected()){
-							if(jprefer.getInt("DESC", 0) != i){
-								jprefer.putInt("DESC", i);
-							}
-						}
-					}
-				}
-
-				jprefer.put("profileAnon", anonProfiles.getSelectedItem().toString());
 
 				//Disable the anons button during anonymization
 				enableAnonButton(false);
 
 				anonBtn.setText("Anonymizing");
-				// SETTING UP THE CHOICES
-				for(int i = 0; i < 2; i++){
-					if(i == 0){
-						if(bodyCharList[i].isSelected())
-							bodyCharChoice = Choice.KEEP;
-						if(datesList[i].isSelected())
-							datesChoice = Choice.KEEP;
-						if(bdList[i].isSelected())
-							bdChoice = Choice.KEEP;
-						if(ptList[i].isSelected())
-							ptChoice = Choice.KEEP;
-						if(scList[i].isSelected())
-							scChoice = Choice.KEEP;
-						if(descList[i].isSelected())
-							descChoice = Choice.KEEP;
-					}else{
-						if(bodyCharList[i].isSelected())
-							bodyCharChoice = Choice.CLEAR;
-						if(datesList[i].isSelected())
-							datesChoice = Choice.CLEAR;
-						if(bdList[i].isSelected())
-							bdChoice = Choice.REPLACE;
-						if(ptList[i].isSelected())
-							ptChoice = Choice.CLEAR;
-						if(scList[i].isSelected())
-							scChoice = Choice.CLEAR;
-						if(descList[i].isSelected())
-							descChoice = Choice.CLEAR;					
-					}
-				}
+				
+				Choice bodyCharChoice=Choice.CLEAR,
+						datesChoice=Choice.CLEAR,
+						bdChoice=Choice.CLEAR,
+						ptChoice=Choice.CLEAR,
+						scChoice=Choice.CLEAR,
+						descChoice =Choice.CLEAR;
+				
+				// Change Choice to Keep if position 0 is selected
+				if(settingsBodyCharButtons[0].isSelected()) bodyCharChoice = Choice.KEEP;
+				if(settingDatesButtons[0].isSelected()) datesChoice = Choice.KEEP;
+				if(settingsBirthDateButtons[0].isSelected()) bdChoice = Choice.KEEP;
+				if(settingsPrivateTagButtons[0].isSelected()) ptChoice = Choice.KEEP;
+				if(settingsSecondaryCaptureButtons[0].isSelected()) scChoice = Choice.KEEP;
+				if(settingsStudySerieDescriptionButtons[0].isSelected()) descChoice = Choice.KEEP;			
+			
 
 				int i = 0;
 				int j = 0;
@@ -2938,7 +2869,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 							j++;
 						}
 						
-						if(scList[1].isSelected()){
+						if(settingsSecondaryCaptureButtons[1].isSelected()){
 							modeleAnonStudies.removeScAndSr();
 						}
 						
@@ -3027,11 +2958,5 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.setVisible(true);
 		fijiEnvironement=true;
 	}
-
-
-
-
-		
-		
 	
 }
