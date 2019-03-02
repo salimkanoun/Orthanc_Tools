@@ -78,7 +78,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
 import org.apache.commons.io.FileUtils;
@@ -664,9 +663,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.tableauSeries.setPreferredScrollableViewportSize(new Dimension(530,267));
 		this.tableauSeries.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
-		TableColumn serieDescCol = tableauSeries.getColumnModel().getColumn(0);
-		serieDescCol.setCellEditor(new DialogCellEditor());
-
 		List<RowSorter.SortKey> sortKeysSeries = new ArrayList<>();
 		sortKeysSeries.add(new RowSorter.SortKey(1, SortOrder.ASCENDING));
 		sortKeysSeries.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
@@ -1033,11 +1029,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		anonStudiesTable.getColumnModel().getColumn(3).setMaxWidth(0);
 		anonStudiesTable.setPreferredScrollableViewportSize(new Dimension(430,130));
 		anonStudiesTable.setDefaultRenderer(Date.class, new DateRendererAnon());
-		
-		
-
-		TableColumn studyDescCol = anonStudiesTable.getColumnModel().getColumn(0);
-		studyDescCol.setCellEditor(new DialogCellEditor());
 
 		displayAnonTool = new JButton("Anonymize");
 		displayAnonTool.addActionListener(new ActionListener() {
@@ -1677,30 +1668,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 					
 					@Override
 					protected Void doInBackground() throws IOException {
-						// Putting the export preferences in the anon plugin registry
-						if(remoteServer.getText() != null){
-							jprefer.put("remoteServer", remoteServer.getText());
-						}
-						
-						if(remotePort.getText() != null){
-							jprefer.put("remotePort", remotePort.getText());
-						}
-						
-						if(servUsername.getText() != null){
-							jprefer.put("servUsername", servUsername.getText());
-						}
-						if(new String(servPassword.getPassword()) != null){
-							jprefer.put("servPassword", new String(servPassword.getPassword()));
-						}
-						if(remoteFilePath.getText() != null){
-							jprefer.put("remoteFilePath", remoteFilePath.getText());
-						}
-						
-						jprefer.put("exportType", exportType.getSelectedItem().toString());
-
 						exportBtn.setText("Exporting...");
 						exportBtn.setEnabled(false);
-						
 						
 						ExportZip convertzip=new ExportZip(connexionHttp);
 						convertzip.setConvertZipAction("tempZipOrthanc", modeleExportStudies.getOrthancIds(), true);

@@ -84,9 +84,6 @@ public class TableDataSeries extends AbstractTableModel{
 	}
 
 	public boolean isCellEditable(int row, int col){
-		//if(col == 0){
-		//	return true; 
-		//}
 		return false;
 	}
 

@@ -19,7 +19,6 @@ package org.petctviewer.orthanc.anonymize;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.swing.JTable;
@@ -39,25 +38,18 @@ public class TableAnonPatientsMouseListener extends MouseAdapter {
 
 	@Override
 	public void mouseClicked(MouseEvent event) {
-		
-		try {
-			if(this.modele.getRowCount() != 0){
-				// We clear the details
-				this.modeleAnonStudies.clear();
-				
-				String patientName = this.tableau.getValueAt(this.tableau.getSelectedRow(), 0).toString();
-				String patientID = this.tableau.getValueAt(this.tableau.getSelectedRow(), 1).toString();
-				ArrayList<String> selectedUIDs = this.modele.getPatient(this.tableau.getSelectedRow()).getSelectedStudyUID();
-				
-				this.modeleAnonStudies.addStudies(patientName, patientID, selectedUIDs);
-				
-			}
-		} catch (IOException e1) {
-			e1.printStackTrace();
-
-		} catch (Exception e1) {
-			//ignore
+		if(this.modele.getRowCount() != 0){
+			// We clear the details
+			this.modeleAnonStudies.clear();
+			
+			String patientName = this.tableau.getValueAt(this.tableau.getSelectedRow(), 0).toString();
+			String patientID = this.tableau.getValueAt(this.tableau.getSelectedRow(), 1).toString();
+			ArrayList<String> selectedUIDs = this.modele.getPatient(this.tableau.getSelectedRow()).getSelectedStudyUID();
+			
+			this.modeleAnonStudies.addStudies(patientName, patientID, selectedUIDs);
+			
 		}
+
 	}
 
 }

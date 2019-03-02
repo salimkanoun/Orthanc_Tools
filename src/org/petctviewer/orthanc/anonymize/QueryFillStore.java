@@ -202,7 +202,7 @@ public class QueryFillStore {
 		return jsonResponses;
 	}
 	
-	public String[] getStudyDescriptionAndUID(String orthancUID) throws IOException{
+	public String[] getStudyDescriptionAndUID(String orthancUID) {
 		this.url="/studies/" + orthancUID;
 		String[] studyDescriptionAndUID=new String[3];
 		try {

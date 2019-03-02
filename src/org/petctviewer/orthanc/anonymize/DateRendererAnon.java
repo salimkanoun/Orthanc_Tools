@@ -21,9 +21,13 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import javax.swing.table.DefaultTableCellRenderer;
 
+/**
+ * Format Date in MM-dd-YYYY format in tables
+ */
+
 public class DateRendererAnon extends DefaultTableCellRenderer{
 	private static final long serialVersionUID = 1L;
-	DateFormat formatter = new SimpleDateFormat("MM-dd-yyyy");
+	private DateFormat formatter = new SimpleDateFormat("MM-dd-yyyy");
 
 	public DateRendererAnon() {
 		super();

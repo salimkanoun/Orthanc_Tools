@@ -237,16 +237,17 @@ public class TableDataAnonStudies extends AbstractTableModel{
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
-	public void addStudies(String patientName, String patientID, ArrayList<String> listeUIDs) throws IOException, ParseException{
+	public void addStudies(String patientName, String patientID, ArrayList<String> listeUIDs) {
 		DateFormat parser = new SimpleDateFormat("yyyyMMdd");
 		QueryFillStore query = new QueryFillStore(connexionHttp);
 		for(String uid : listeUIDs){
-			Date studyDate;
+			Date studyDate = null;
 			String[] separatedResponse=query.getStudyDescriptionAndUID(uid);
 			try{
-			studyDate = parser.parse(separatedResponse[2]);
-			}catch(ParseException e){
 				studyDate=parser.parse("19000101");
+				studyDate=parser.parse(separatedResponse[2]);
+			}catch(ParseException e){
+				e.printStackTrace();
 			}
 			
 			// We insert dummy dates and accession numbers which won't be useful for the anonymization

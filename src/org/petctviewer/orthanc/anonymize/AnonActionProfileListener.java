@@ -25,6 +25,10 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JRadioButton;
 
+/**
+ * Listener when Anonymization profile (combobox)is changed, 
+ * Set predifined profile or load custom profile
+ */
 public class AnonActionProfileListener extends AbstractAction{
 
 	private static final long serialVersionUID = 1L;
