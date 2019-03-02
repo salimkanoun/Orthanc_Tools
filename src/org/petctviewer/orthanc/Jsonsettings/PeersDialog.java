@@ -38,19 +38,6 @@ public class PeersDialog extends JDialog {
 	private DefaultTableModel model;
 
 	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			PeersDialog dialog = new PeersDialog(new Json_Settings());
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
 	 * Create the dialog.
 	 */
 	public PeersDialog(Json_Settings settings) {

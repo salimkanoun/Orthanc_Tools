@@ -29,12 +29,15 @@ import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.anonymize.Tags.Choice;
 import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 public class QueryAnon {
 
 	//private static final int NBTAGS = 40	;
 	private JSONParser parser=new JSONParser();
 	private ArrayList<Tags> tags = new ArrayList<Tags>();
-	private Choice privateTags;
+	private boolean keepPrivateTags;
 	private String query;
 	private String newUID;
 	private String newPatientUID;
@@ -44,125 +47,111 @@ public class QueryAnon {
 	private ParametreConnexionHttp connexionHttp;
 
 	public QueryAnon(ParametreConnexionHttp connexionHttp, Choice bodyChar, Choice dates, Choice birthdate, 
-			Choice privateTags, Choice secondaryCapture, Choice descriptionSerie, 
-			String newPatientName, String newPatientID, String newDescription) throws IOException{
+			Choice privateTags, Choice secondaryCapture, Choice descriptionStudySerie, 
+			String newPatientName, String newPatientID, String newDescription) {
 
 		this.connexionHttp=connexionHttp;
 		this.newPatientName = newPatientName;
 		this.newPatientID = newPatientID;
 
-		// DATE
-		tags.add(new Tags("0008,0022",dates)); // Acquisition Date
-		tags.add(new Tags("0008,002A",dates)); // Acquisition DateTime
-		tags.add(new Tags("0008,0032",dates)); // Acquisition Time
-		tags.add(new Tags("0038,0020",dates)); // Admitting Date
-		tags.add(new Tags("0038,0021",dates)); // Admitting Time
-		tags.add(new Tags("0008,0035",dates)); // Curve Time
-		tags.add(new Tags("0008,0025",dates)); // Curve Date
-		tags.add(new Tags("0008,0023",dates)); // Content Date
-		tags.add(new Tags("0008,0033",dates)); // Content Time
-		tags.add(new Tags("0008,0024",dates)); // Overlay Date
-		tags.add(new Tags("0008,0034",dates)); // Overlay Time
-		tags.add(new Tags("0040,0244",dates)); // ...Start Date
-		tags.add(new Tags("0040,0245",dates)); // ...Start Time
-		tags.add(new Tags("0008,0021",dates)); // Series Date
-		tags.add(new Tags("0008,0031",dates)); // Series Time
-		tags.add(new Tags("0008,0020",dates)); // Study Date
-		tags.add(new Tags("0008,0030",dates)); // Study Time
-		tags.add(new Tags("0010,21D0",dates)); // Last menstrual date
-		tags.add(new Tags("0008,0201",dates)); // Timezone offset from UTC
-		tags.add(new Tags("0040,0002",dates)); // Scheduled procedure step start date
-		tags.add(new Tags("0040,0003",dates)); // Scheduled procedure step start time
-		tags.add(new Tags("0040,0004",dates)); // Scheduled procedure step end date
-		tags.add(new Tags("0040,0005",dates)); // Scheduled procedure step end time
-		// Body characteristics
-		tags.add(new Tags("0010,2160",bodyChar)); // Patient's ethnic group
-		tags.add(new Tags("0010,21A0",bodyChar)); // Patient's smoking status
-		tags.add(new Tags("0010,0040",bodyChar)); // Patient's sex
-		tags.add(new Tags("0010,2203",bodyChar)); // Patient's sex neutered
-		tags.add(new Tags("0010,1010",bodyChar)); // Patient's age
-		tags.add(new Tags("0010,21C0",bodyChar)); // Patient's pregnancy status
-		tags.add(new Tags("0010,1020", bodyChar)); // Patient's size
-		tags.add(new Tags("0010,1030", bodyChar)); // Patient's weight
+		// Add date related tags with defined choice (keep or clear)
+		tags.add(new Tags("0008,0022",dates,null)); // Acquisition Date
+		tags.add(new Tags("0008,002A",dates,null)); // Acquisition DateTime
+		tags.add(new Tags("0008,0032",dates,null)); // Acquisition Time
+		tags.add(new Tags("0038,0020",dates,null)); // Admitting Date
+		tags.add(new Tags("0038,0021",dates,null)); // Admitting Time
+		tags.add(new Tags("0008,0035",dates,null)); // Curve Time
+		tags.add(new Tags("0008,0025",dates,null)); // Curve Date
+		tags.add(new Tags("0008,0023",dates,null)); // Content Date
+		tags.add(new Tags("0008,0033",dates,null)); // Content Time
+		tags.add(new Tags("0008,0024",dates,null)); // Overlay Date
+		tags.add(new Tags("0008,0034",dates,null)); // Overlay Time
+		tags.add(new Tags("0040,0244",dates,null)); // ...Start Date
+		tags.add(new Tags("0040,0245",dates,null)); // ...Start Time
+		tags.add(new Tags("0008,0021",dates,null)); // Series Date
+		tags.add(new Tags("0008,0031",dates,null)); // Series Time
+		tags.add(new Tags("0008,0020",dates,null)); // Study Date
+		tags.add(new Tags("0008,0030",dates,null)); // Study Time
+		tags.add(new Tags("0010,21D0",dates,null)); // Last menstrual date
+		tags.add(new Tags("0008,0201",dates,null)); // Timezone offset from UTC
+		tags.add(new Tags("0040,0002",dates,null)); // Scheduled procedure step start date
+		tags.add(new Tags("0040,0003",dates,null)); // Scheduled procedure step start time
+		tags.add(new Tags("0040,0004",dates,null)); // Scheduled procedure step end date
+		tags.add(new Tags("0040,0005",dates,null)); // Scheduled procedure step end time
+		// same for Body characteristics
+		tags.add(new Tags("0010,2160",bodyChar,null)); // Patient's ethnic group
+		tags.add(new Tags("0010,21A0",bodyChar,null)); // Patient's smoking status
+		tags.add(new Tags("0010,0040",bodyChar,null)); // Patient's sex
+		tags.add(new Tags("0010,2203",bodyChar,null)); // Patient's sex neutered
+		tags.add(new Tags("0010,1010",bodyChar,null)); // Patient's age
+		tags.add(new Tags("0010,21C0",bodyChar,null)); // Patient's pregnancy status
+		tags.add(new Tags("0010,1020",bodyChar,null)); // Patient's size
+		tags.add(new Tags("0010,1030",bodyChar,null)); // Patient's weight
 		// Other tags
-		tags.add(new Tags("0008,0050\":\"petctviewer.org", Choice.REPLACE)); // Accession N
-		tags.add(new Tags("0010,0020\":\"" + this.newPatientID, Choice.REPLACE)); // Patient ID
-		tags.add(new Tags("0010,0010\":\"" + this.newPatientName, Choice.REPLACE)); //Patient's name
-		tags.add(new Tags("0008,103E", descriptionSerie)); // Serie's description /!\ IL FAUT DONNER LE CHOIX DE MODIFY
-		if(descriptionSerie.equals(Choice.KEEP)){
-			tags.add(new Tags("0008,1030\":\"" + newDescription, Choice.REPLACE));
-			if( newDescription == null ||newDescription.equals("")){
-				tags.add(new Tags("0008,1030", Choice.KEEP));
-			}
-		}else{
-			tags.add(new Tags("0008,1030", Choice.CLEAR));
+		tags.add(new Tags("0008,0050", Choice.REPLACE, "petctviewer.org")); // Accession Number hardcoded to our website
+		tags.add(new Tags("0010,0020", Choice.REPLACE, newPatientID)); // Patient ID
+		tags.add(new Tags("0010,0010", Choice.REPLACE, newPatientName)); //Patient's name
+		tags.add(new Tags("0008,103E", descriptionStudySerie, null)); // Serie's description
+		
+		//For simplicity Study and Series descriptions are linked. So A keep value is meaning a 
+		//Replace for study description
+		if(descriptionStudySerie.equals(Choice.KEEP)){
+			tags.add(new Tags("0008,1030", Choice.REPLACE, newDescription));
+			//SK A TESTER PEUT ETRE BUG SI STUDY DESCRIPTION LAISSEE VIDE
+			//if( newDescription == null ||newDescription.equals("")){
+			//	tags.add(new Tags("0008,1030", Choice.KEEP));
+			//}
+		}else if (descriptionStudySerie.equals(Choice.CLEAR)){
+			tags.add(new Tags("0008,1030", Choice.CLEAR,null));
 		}
+		
+		//BirthDate
 		if(birthdate.equals(Choice.REPLACE)){
-			tags.add(new Tags("0010,0030\":\"19000101", birthdate)); // Patient's birth date
-		}else{
-			tags.add(new Tags("0010,0030", birthdate)); // Patient's birth date
+			tags.add(new Tags("0010,0030", birthdate, "19000101")); // Patient's birth date
+		}else if (birthdate.equals(Choice.KEEP)){
+			tags.add(new Tags("0010,0030", birthdate,null)); // Patient's birth date
 		}
-		// Private tags
-		tags.add(new Tags("7053,1000", Choice.KEEP)); // Philips
-		tags.add(new Tags("7053,1009", Choice.KEEP)); // Philips
-		tags.add(new Tags("0009,103b", Choice.KEEP)); // GE
-		tags.add(new Tags("0009,100d", Choice.KEEP)); // GE
-		tags.add(new Tags("0011,1012", Choice.KEEP));
+		
+		// Keep some Private tags usefull for PET/CT or Scintigraphy
+		tags.add(new Tags("7053,1000", Choice.KEEP,null)); // Philips
+		tags.add(new Tags("7053,1009", Choice.KEEP,null)); // Philips
+		tags.add(new Tags("0009,103b", Choice.KEEP,null)); // GE
+		tags.add(new Tags("0009,100d", Choice.KEEP,null)); // GE
+		tags.add(new Tags("0011,1012", Choice.KEEP,null));
 		
 		if (!this.connexionHttp.getIfVersionAfter131()) {
-				tags.add(new Tags("0020,0052", Choice.KEEP)); // Frame of Reference UID
+				tags.add(new Tags("0020,0052", Choice.KEEP, null)); // Frame of Reference UID
 				System.out.println("Old Version of Orthanc, Frame Of Reference UID not modified, Please upgrade your Orthanc Server");
 		}
 
-		this.privateTags = privateTags;
+		if(privateTags==Choice.KEEP) {
+			this.keepPrivateTags=true;
+		}else if(privateTags==Choice.CLEAR) {
+			this.keepPrivateTags=false;
+		}
 	}
 
-	public void setQuery(){
+	private void setQuery(){
 		
-		//SK NECESSITE GROSSE FACTORISATION !
-		//JsonObject query = new JsonObject();
+		JsonObject query = new JsonObject();
+		JsonObject replace = new JsonObject();
+		JsonArray keep = new JsonArray();
 		
-		//JsonArray  = new JsonArray();
-		//JsonArray replace = new JsonArray();
-		
-		this.query = null;
-		StringBuilder replace = new StringBuilder();
-		replace.append("\"Replace\":{");
-		StringBuilder keep = new StringBuilder();
-		keep.append("\"Keep\":[");
-		
-		if(tags != null){
-			for(Tags t : tags){
-				if(t != null){
-					switch (t.getChoice()) {
-						case REPLACE:
-							replace.append("\"" + t.getCode() +"\",");
-						break;
-						case KEEP:
-							keep.append("\"" + t.getCode() +"\",");
-							break;
-						default:
-							break;
-						}
-				}
-			}
-			
-			// We remove the ',' at the end of the strings
-			if(replace.toString().charAt(replace.toString().length() - 1) == ','){
-				replace.deleteCharAt(replace.toString().length() - 1);
-			}
-			replace.append("},");
-			if(keep.toString().charAt(keep.toString().length() - 1) == ','){
-				keep.deleteCharAt(keep.toString().length() - 1);
-			}keep.append("]");
-			
-			
-			if(this.privateTags.equals(Choice.KEEP)){
-				this.query = "{" + replace.toString() + keep.toString() + ",\"KeepPrivateTags\": true" + ",\"Force\": true" + "}";
-			}else{
-				this.query = "{" + replace.toString() + keep.toString() + ",\"Force\": true" + "}";
+		for(Tags tag : tags){
+			if(tag.getChoice()==Choice.KEEP) {
+				keep.add(tag.getCode());
+			}else if(tag.getChoice()==Choice.REPLACE) {
+				replace.addProperty(tag.getCode(), tag.getReplaceValue());
 			}
 		}
+
+		query.addProperty("KeepPrivateTags", keepPrivateTags);
+		query.addProperty("Force", true);
+		query.add("Replace", replace);
+		query.add("Keep", keep);
+		
+		this.query=query.toString();
+		
 	}
 
 	/**
@@ -171,9 +160,10 @@ public class QueryAnon {
 	 * @param id
 	 * @throws IOException
 	 */
-	public void sendQuery(String level, String id) throws IOException{
-		this.setQuery();
-		HttpURLConnection conn=connexionHttp.makePostConnection("/"+level + "/" + id +"/anonymize", this.query);
+	public void sendQuery(String id) throws IOException{
+		setQuery();
+		//SK REFACTORISER AVEC STRINGBUILDER
+		HttpURLConnection conn=connexionHttp.makePostConnection("/studies/" + id +"/anonymize", this.query);
 		BufferedReader br = new BufferedReader(new InputStreamReader(
 				(conn.getInputStream())));
 		
@@ -200,18 +190,25 @@ public class QueryAnon {
 		
 	}
 	
-	/* 
-	 * This method gets the currently anonymized study's new patient ID
+	/**
+	 * Getters of new anonymized dicom
+	 * 
 	 */
+	
 	public String getNewPatientUID(){
 		return this.newPatientUID;
 	}
-	
-	/* 
-	 * This method gets the currently anonymized study's new ID
-	 */
+
 	public String getNewUID(){
 		return this.newUID;
+	}
+	
+	public String getNewPatientName(){
+		return this.newPatientName;
+	}
+	
+	public String getNewNewPatientID(){
+		return this.newPatientID;
 	}
 
 }

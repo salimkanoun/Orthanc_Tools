@@ -26,28 +26,25 @@ public class Tags {
 	}
 	
 	private String code;
-	public Choice choice;
+	private Choice choice;
+	private String replaceValue;
 	
-	public Tags(String code, Choice choice){
+	public Tags(String code, Choice choice, String replaceValue){
 		this.choice=choice;
 		this.code = code;
+		this.replaceValue=replaceValue;
 	}
 
 	public String getCode() {
 		return code;
 	}
-
-	public void setCode(String code) {
-		this.code = code;
-	}
-
+	
 	public Choice getChoice() {
 		return choice;
 	}
-
-	public void setChoice(Choice choice) {
-		this.choice = choice;
-	}
 	
+	public String getReplaceValue() {
+		return replaceValue;
+	}
 	
 }

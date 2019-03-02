@@ -33,19 +33,6 @@ import java.awt.event.ActionEvent;
 @SuppressWarnings("serial")
 public class DicomDialog extends JDialog {
 	private JTable table;
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			DicomDialog dialog = new DicomDialog(new Json_Settings());
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setAlwaysOnTop(true);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 	/**
 	 * Create the dialog.

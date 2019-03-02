@@ -36,19 +36,6 @@ public class FolderDialog extends JDialog {
 	private JTable table;
 
 	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			FolderDialog dialog = new FolderDialog(false, new Json_Settings());
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
 	 * Create the dialog.
 	 */
 	public FolderDialog(boolean lua, Json_Settings settings) {

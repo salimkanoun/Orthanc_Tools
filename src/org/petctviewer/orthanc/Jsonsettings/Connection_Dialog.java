@@ -1,6 +1,4 @@
 package org.petctviewer.orthanc.Jsonsettings;
-import java.awt.EventQueue;
-
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -19,23 +17,6 @@ public class Connection_Dialog extends JDialog {
 	private String address;
 	private String login;
 	private String password;
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					Connection_Dialog dialog = new Connection_Dialog();
-					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-					dialog.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
 
 	/**
 	 * Create the dialog.
@@ -99,13 +80,17 @@ public class Connection_Dialog extends JDialog {
 		panel_2.add(lblEnterCorrectSettings);
 
 	}
-protected String getAddress(){
-	return address;
+	
+	protected String getAddress(){
+		return address;
 	}
-protected String getLogin(){
-	return login;
+	
+	protected String getLogin(){
+		return login;
 	}
-protected String getPassword(){
-	return password;
+	
+	protected String getPassword(){
+		return password;
 	}
+	
 }

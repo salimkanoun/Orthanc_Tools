@@ -45,10 +45,7 @@ import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 
 public class SettingsGUI extends JFrame {
-	
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 7041807507652097056L;
 	private JTextField txtOrthanc;
 	private JTextField textfield_Http_Port;
@@ -1133,14 +1130,6 @@ public class SettingsGUI extends JFrame {
 	});
 	}
 
-	public static void main(String[] args)  {
-			SettingsGUI gui=new SettingsGUI();
-			//On met la fenetre au centre de l ecran
-			gui.pack();
-			gui.setLocationRelativeTo(null);
-			gui.updateGUI();
-			gui.setVisible(true);
-		}
 	
 	
 	public void updateGUI() {
@@ -1209,6 +1198,16 @@ public class SettingsGUI extends JFrame {
 		synchronousCMove.setSelected(settings.SynchronousCMove);
 		concurrentJobs.setValue(settings.ConcurrentJobs);
 		
+	}
+	
+
+	public static void main(String[] args)  {
+			SettingsGUI gui=new SettingsGUI();
+			//On met la fenetre au centre de l ecran
+			gui.pack();
+			gui.setLocationRelativeTo(null);
+			gui.updateGUI();
+			gui.setVisible(true);
 	}
 
 }

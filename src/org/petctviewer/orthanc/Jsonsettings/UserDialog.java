@@ -35,19 +35,6 @@ public class UserDialog extends JDialog {
 	private DefaultTableModel model;
 
 	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			UserDialog dialog = new UserDialog(new Json_Settings());
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
 	 * Create the dialog.
 	 */
 	@SuppressWarnings("unchecked")

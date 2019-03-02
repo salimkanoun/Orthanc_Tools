@@ -39,19 +39,6 @@ public class Dictionary_Dialog extends JDialog {
 	private DefaultTableModel model;
 
 	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			Dictionary_Dialog dialog = new Dictionary_Dialog(new Json_Settings());
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
 	 * Create the dialog.
 	 */
 	public Dictionary_Dialog(Json_Settings settings) {
