@@ -20,7 +20,7 @@ package org.petctviewer.orthanc.anonymize;
 import javax.swing.JTable;
 import javax.swing.SwingWorker;
 
-import org.petctviewer.orthanc.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 public class DeleteActionExport{
 

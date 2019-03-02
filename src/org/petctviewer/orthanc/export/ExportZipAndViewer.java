@@ -39,13 +39,13 @@ import com.github.stephenc.javaisotools.joliet.impl.JolietConfig;
 import com.github.stephenc.javaisotools.rockridge.impl.RockRidgeConfig;
 import com.github.stephenc.javaisotools.sabre.StreamHandler;
 
-public class ZipAndViewer {
+public class ExportZipAndViewer {
 	
 	private File zipDicom;
 	private File viewerPackage;
 	private File destination;
 	
-	public ZipAndViewer(File zipDicom, File destination, File viewerPackage) throws IOException {
+	public ExportZipAndViewer(File zipDicom, File destination, File viewerPackage) throws IOException {
 		this.zipDicom=zipDicom;
 		this.destination=destination;
 		this.viewerPackage=viewerPackage;

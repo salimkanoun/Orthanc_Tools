@@ -86,21 +86,21 @@ import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.petctviewer.orthanc.ParametreConnexionHttp;
-import org.petctviewer.orthanc.CTP.CTP;
-import org.petctviewer.orthanc.CTP.CTP_Gui;
 import org.petctviewer.orthanc.Jsonsettings.SettingsGUI;
+import org.petctviewer.orthanc.OTP.CTP;
+import org.petctviewer.orthanc.OTP.CTP_Gui;
 import org.petctviewer.orthanc.anonymize.Tags.Choice;
 import org.petctviewer.orthanc.anonymize.gui.AboutBoxFrame;
-import org.petctviewer.orthanc.export.ConvertZipAction;
-import org.petctviewer.orthanc.export.ExportFiles;
-import org.petctviewer.orthanc.export.ZipAndViewer;
+import org.petctviewer.orthanc.export.ExportZip;
+import org.petctviewer.orthanc.export.SendFilesToRemote;
+import org.petctviewer.orthanc.export.ExportZipAndViewer;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.modify.Modify;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.VueRest;
 import org.petctviewer.orthanc.reader.Read_Orthanc;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
+import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 import org.petctviewer.orthanc.setup.Run_Orthanc;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
@@ -273,6 +273,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			runOrthanc=new Run_Orthanc(connexionHttp);
 			runOrthanc.orthancJsonName=orthancJsonName;
 			runOrthanc.copyOrthanc(null);
+			runOrthanc.startOrthanc();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -417,9 +418,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 					@Override
 					public void run() {
-						ImportDCM importFrame=new ImportDCM(connexionHttp);
-						importFrame.pack();
-						importFrame.setLocationRelativeTo(gui);
+						ImportDCM importFrame=new ImportDCM(connexionHttp,gui);
 						importFrame.setVisible(true);
 					}
 					
@@ -1274,7 +1273,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 							@Override
 							protected Void doInBackground() throws Exception {
 								
-								ConvertZipAction convertzip=new ConvertZipAction(connexionHttp);
+								ExportZip convertzip=new ExportZip(connexionHttp);
 								exportZip.setText("Generating Zip...");
 								state.setText("Generating Zip...");
 								activateExport(false);
@@ -1296,7 +1295,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 									convertzip.generateZip(true);
 									File tempImageZip=convertzip.getGeneratedZipFile();
 									File packageViewer=new File(viewerString);
-									ZipAndViewer zip=new ZipAndViewer(tempImageZip, chooser.getSelectedFile(), packageViewer);
+									ExportZipAndViewer zip=new ExportZipAndViewer(tempImageZip, chooser.getSelectedFile(), packageViewer);
 									
 									if( comboToolChooser.getSelectedItem().equals("Image with Viewer (zip)") ) {
 										zip.ZipAndViewerToZip();
@@ -1711,7 +1710,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 						exportBtn.setEnabled(false);
 						
 						
-						ConvertZipAction convertzip=new ConvertZipAction(connexionHttp);
+						ExportZip convertzip=new ExportZip(connexionHttp);
 						convertzip.setConvertZipAction("tempZipOrthanc", modeleExportStudies.getOrthancIds(), true);
 						convertzip.generateZip(false);
 						String zipPath = convertzip.getGeneratedZipPath();
@@ -1721,7 +1720,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 						//removing the temporary file default name value
 						remoteFileName.append(zipName.substring(0,14));
 						remoteFileName.append(zipName.substring(zipName.length() - 4));
-						ExportFiles export = new ExportFiles(jprefer.get("exportType", ExportFiles.OPTION_FTP), 
+						SendFilesToRemote export = new SendFilesToRemote(jprefer.get("exportType", SendFilesToRemote.OPTION_FTP), 
 								jprefer.get("remoteFilePath", "/"), remoteFileName.toString(), zipPath, jprefer.get("remoteServer", ""), 
 								jprefer.getInt("remotePort", 21), jprefer.get("servUsername", ""), jprefer.get("servPassword", ""));
 						export.export();
@@ -1996,7 +1995,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 							chooser.setAcceptAllFileFilterUsed(false);
 							if (chooser.showSaveDialog(gui) == JFileChooser.APPROVE_OPTION) {
 								file = chooser.getSelectedFile();
-								ConvertZipAction convertzip=new ConvertZipAction(connexionHttp);
+								ExportZip convertzip=new ExportZip(connexionHttp);
 								convertzip.setConvertZipAction(file.getAbsolutePath().toString(), modeleExportStudies.getOrthancIds(), false);
 								convertzip.generateZip(false);
 							}

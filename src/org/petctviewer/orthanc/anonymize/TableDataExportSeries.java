@@ -31,6 +31,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import org.petctviewer.orthanc.*;
+import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 public class TableDataExportSeries extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;

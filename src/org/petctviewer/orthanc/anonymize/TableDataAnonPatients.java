@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.petctviewer.orthanc.*;
+import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 import javax.swing.table.AbstractTableModel;
 

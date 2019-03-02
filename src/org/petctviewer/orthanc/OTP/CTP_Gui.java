@@ -1,4 +1,4 @@
-package org.petctviewer.orthanc.CTP;
+package org.petctviewer.orthanc.OTP;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

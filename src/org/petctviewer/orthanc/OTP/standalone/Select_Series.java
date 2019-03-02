@@ -1,4 +1,4 @@
-package org.petctviewer.orthanc.ctpimport;
+package org.petctviewer.orthanc.OTP.standalone;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -11,32 +11,15 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 
-import org.petctviewer.orthanc.ParametreConnexionHttp;
 import org.petctviewer.orthanc.anonymize.TableDataSeries;
+import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 public class Select_Series extends JDialog {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
-	private final JPanel contentPanel = new JPanel();
-	protected JTable tableSeries;
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			Select_Series dialog = new Select_Series(new ParametreConnexionHttp(), null);
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 	/**
 	 * Create the dialog.
@@ -46,13 +29,14 @@ public class Select_Series extends JDialog {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		tableSeriesModel.addSerie(studyUID);
 		tableSeriesModel.detectAllSecondaryCaptures();
-		tableSeries = new JTable(tableSeriesModel);
+		JTable tableSeries = new JTable(tableSeriesModel);
 		tableSeries.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		tableSeries.getColumnModel().getColumn(3).setMinWidth(0);;
 		tableSeries.getColumnModel().getColumn(4).setMinWidth(0);
 		tableSeries.getColumnModel().getColumn(3).setMaxWidth(0);
 		tableSeries.getColumnModel().getColumn(4).setMaxWidth(0);
 		getContentPane().setLayout(new BorderLayout());
+		JPanel contentPanel = new JPanel();
 		contentPanel.setLayout(new FlowLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);

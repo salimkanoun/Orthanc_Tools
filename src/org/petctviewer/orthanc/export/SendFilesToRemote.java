@@ -29,7 +29,7 @@ import org.apache.commons.vfs2.impl.StandardFileSystemManager;
 import com.github.sardine.Sardine;
 import com.github.sardine.SardineFactory;
 
-public class ExportFiles {
+public class SendFilesToRemote {
 
 	public static final String OPTION_FTP = "FTP";
 	public static final String OPTION_SFTP = "SFTP";
@@ -44,7 +44,7 @@ public class ExportFiles {
 	private String login;
 	private String pwd;
 
-	public ExportFiles(String option, String remotePath, String remoteFileName, String filePath, String serverAdress, int port, String login, String pwd){
+	public SendFilesToRemote(String option, String remotePath, String remoteFileName, String filePath, String serverAdress, int port, String login, String pwd){
 		switch (option) {
 		case OPTION_FTP:
 			chosenOption = OPTION_FTP;

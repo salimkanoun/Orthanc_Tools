@@ -1,4 +1,4 @@
-package org.petctviewer.orthanc.CTP;
+package org.petctviewer.orthanc.OTP;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,7 +15,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.petctviewer.orthanc.HttpsTrustModifier;
+import org.petctviewer.orthanc.setup.HttpsTrustModifier;
 
 public class CTP {
 	private String username;

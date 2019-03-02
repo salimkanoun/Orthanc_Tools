@@ -46,8 +46,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
-import org.petctviewer.orthanc.ParametreConnexionHttp;
 import org.petctviewer.orthanc.query.Rest;
+import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+
 import javax.swing.ListSelectionModel;
 
 @SuppressWarnings("serial")

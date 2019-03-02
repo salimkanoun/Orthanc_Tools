@@ -41,7 +41,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
-import org.petctviewer.orthanc.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 
 public class SettingsGUI extends JFrame {

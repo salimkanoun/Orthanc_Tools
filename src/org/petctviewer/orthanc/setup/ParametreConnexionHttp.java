@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package org.petctviewer.orthanc;
+package org.petctviewer.orthanc.setup;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -295,7 +295,7 @@ public class ParametreConnexionHttp {
 	 *         The result is a positive integer if str1 is _numerically_ greater than str2. 
 	 *         The result is zero if the strings are _numerically_ equal.
 	 */
-	public static int versionCompare(String str1, String str2) {
+	private static int versionCompare(String str1, String str2) {
 	    String[] vals1 = str1.split("\\.");
 	    String[] vals2 = str2.split("\\.");
 	    int i = 0;

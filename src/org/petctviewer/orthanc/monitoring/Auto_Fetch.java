@@ -11,8 +11,8 @@ import javax.swing.JLabel;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.petctviewer.orthanc.ParametreConnexionHttp;
 import org.petctviewer.orthanc.query.Rest;
+import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 public class Auto_Fetch {
 	

@@ -20,7 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  **/
 
-package org.petctviewer.orthanc;
+package org.petctviewer.orthanc.setup;
 
 import java.net.*;
 import javax.net.ssl.*;

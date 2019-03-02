@@ -67,7 +67,7 @@ import javax.swing.text.DefaultCaret;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.petctviewer.orthanc.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
 

@@ -11,7 +11,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.petctviewer.orthanc.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 public class Tag_Monitoring {
 	

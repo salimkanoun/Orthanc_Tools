@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 
-import org.petctviewer.orthanc.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;

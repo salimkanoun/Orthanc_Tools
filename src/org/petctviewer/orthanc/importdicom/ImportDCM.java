@@ -42,6 +42,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -49,26 +50,26 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
-import org.petctviewer.orthanc.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-public class ImportDCM extends JFrame {
+public class ImportDCM extends JDialog {
 	
 	private static final long serialVersionUID = 1L;
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	private JLabel state;
 	private ParametreConnexionHttp connexion;
-	private JFrame gui;
+	private JDialog gui;
 	private ArrayList<String> importAnswer=new ArrayList<String>();
 	private HashMap<String, HashMap<String,String> > importedstudy=new HashMap<String, HashMap<String,String> >();
 	private JsonParser parser=new JsonParser();
 	
 	private ImportListener listener;
 
-	public ImportDCM(ParametreConnexionHttp connexion){
-		super("Import DICOM files");
+	public ImportDCM(ParametreConnexionHttp connexion, JFrame parentJframe){
+		this.setTitle("Import DICOM files");
 		this.connexion=connexion;
 		this.gui=this;
 		JPanel mainPanel = new JPanel(new GridBagLayout());
@@ -160,6 +161,8 @@ public class ImportDCM extends JFrame {
 		Image image = new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage();
 		this.setIconImage(image);
 		this.getContentPane().add(mainPanel);
+		pack();
+		setLocationRelativeTo(parentJframe);
 		
 		
 	}

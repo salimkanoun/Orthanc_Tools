@@ -28,12 +28,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import org.petctviewer.orthanc.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 import com.google.gson.JsonArray;
 
 
-public class ConvertZipAction{
+public class ExportZip{
 	
 	private ArrayList<String> zipContent;
 	private String zipDestination;
@@ -45,7 +45,7 @@ public class ConvertZipAction{
 	 * Send list of Orthanc IDs and generate a zip file	
 	 * @param connexion
 	 */
-	public ConvertZipAction(ParametreConnexionHttp connexion){
+	public ExportZip(ParametreConnexionHttp connexion){
 		this.connexion=connexion;
 	}
 	

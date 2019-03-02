@@ -29,7 +29,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.SwingWorker;
 
-import org.petctviewer.orthanc.*;
+import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 public class DeleteActionMainPanel extends AbstractAction{
 

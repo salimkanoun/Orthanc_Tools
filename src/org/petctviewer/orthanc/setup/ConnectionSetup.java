@@ -20,6 +20,7 @@ package org.petctviewer.orthanc.setup;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -28,6 +29,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
 import java.util.prefs.Preferences;
 
 import javax.swing.ImageIcon;
@@ -47,7 +50,6 @@ public class ConnectionSetup extends JDialog {
 	
 	private static final long serialVersionUID = 1L;
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
-	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
 	private JDialog gui=this;
 	public boolean ok=false;
 
@@ -164,6 +166,7 @@ public class ConnectionSetup extends JDialog {
 				if(runOrthancLocal.getText()=="Run Temporary Orthanc") {
 					try {
 						orthanc.copyOrthanc(null);
+						orthanc.startOrthanc();
 						dispose();
 					} catch (Exception e1) {
 						// TODO Auto-generated catch block
@@ -188,19 +191,20 @@ public class ConnectionSetup extends JDialog {
 					if (!copy) {
 						JOptionPane.showMessageDialog(gui, "Set folder installation", "Orthanc Install", JOptionPane.WARNING_MESSAGE);
 						JFileChooser chooser = new JFileChooser();
-						chooser.setCurrentDirectory(new File(jprefer.get("OrthancLocalPath", ".")));
+						chooser.setCurrentDirectory(new File(jpreferPerso.get("OrthancLocalPath", ".")));
 						chooser.setDialogTitle("Install Orthanc in...");
 						chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 						if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-							String install = chooser.getSelectedFile().getAbsolutePath();
+							String path = chooser.getSelectedFile().getAbsolutePath();
 							try {
-								orthanc.copyOrthanc(install);
-								jprefer.put("OrthancLocalPath", install);
+								orthanc.copyOrthanc(path);
+								jpreferPerso.put("OrthancLocalPath", path);
 							} catch (Exception e1) {
-								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
 						}
+					}else {
+						orthanc.startOrthanc();
 					}
 					
 				dispose();
@@ -234,11 +238,11 @@ public class ConnectionSetup extends JDialog {
 		pack();
 	}
 	
-	public void openWebPage(String url){
+	private void openWebPage(String url){
 		try {         
-			java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
+			Desktop.getDesktop().browse(URI.create(url));
 		}
-		catch (java.io.IOException e) {
+		catch (IOException e) {
 		}
 	}
 }

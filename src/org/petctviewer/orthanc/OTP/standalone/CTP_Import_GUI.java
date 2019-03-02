@@ -1,4 +1,4 @@
-package org.petctviewer.orthanc.ctpimport;
+package org.petctviewer.orthanc.OTP.standalone;
 
 import java.awt.MouseInfo;
 import java.awt.event.ActionEvent;
@@ -25,15 +25,10 @@ import org.petctviewer.orthanc.importdicom.ImportListener;
 
 public class CTP_Import_GUI extends VueAnon implements ImportListener, AnonymizeListener {
 	
-	
+	//SK DEFINITION DES PEERS A TENTER EN API
 	private static final long serialVersionUID = 1L;
 	private ImportDCM importFrame;
 	CTP_Import_GUI importGUI=this;
-	
-	public static void main(String[] args) {
-		new CTP_Import_GUI();
-
-	}
 	
 	public CTP_Import_GUI() {
 		super("OrthancCTP.json");
@@ -60,10 +55,9 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				importFrame=new ImportDCM(importGUI.connexionHttp);
+				importFrame=new ImportDCM(importGUI.connexionHttp, gui);
 				importFrame.setImportListener(importGUI);
-				importFrame.pack();
-				importFrame.setLocationRelativeTo(importGUI);
+				importFrame.setModal(true);
 				importFrame.setVisible(true);
 				
 			}
@@ -128,11 +122,7 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 		this.setLocationRelativeTo(null);
 		this.setVisible(true);
 		//Run the import app
-		importFrame=new ImportDCM(importGUI.connexionHttp);
-		importFrame.setImportListener(this);
-		importFrame.pack();
-		importFrame.setLocationRelativeTo(this);
-		importFrame.setVisible(true);
+		importCTP.doClick();
 		
 	}
 

@@ -44,8 +44,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.petctviewer.orthanc.ParametreConnexionHttp;
-import org.petctviewer.orthanc.export.ConvertZipAction;
+import org.petctviewer.orthanc.export.ExportZip;
+import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -129,7 +129,7 @@ public class CD_Burner {
 	 */
 	public void makeCD(List<String> newStableStudyID) {
 		for (int i=0; i<newStableStudyID.size(); i++) {
-			ConvertZipAction zipDownloader=new ConvertZipAction(connexion);
+			ExportZip zipDownloader=new ExportZip(connexion);
 			Path file;
 			try {
 				//Store the Row number where we are going to display progress
