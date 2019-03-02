@@ -90,6 +90,7 @@ import org.petctviewer.orthanc.OTP.CTP;
 import org.petctviewer.orthanc.OTP.CTP_Gui;
 import org.petctviewer.orthanc.anonymize.Tags.Choice;
 import org.petctviewer.orthanc.anonymize.gui.AboutBoxFrame;
+import org.petctviewer.orthanc.anonymize.gui.DateRendererAnon;
 import org.petctviewer.orthanc.export.ExportZip;
 import org.petctviewer.orthanc.export.SendFilesToRemote;
 import org.petctviewer.orthanc.export.ExportZipAndViewer;
