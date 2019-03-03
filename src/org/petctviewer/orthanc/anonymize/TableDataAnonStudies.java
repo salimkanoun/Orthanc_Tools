@@ -239,10 +239,9 @@ public class TableDataAnonStudies extends AbstractTableModel{
 	 */
 	public void addStudies(String patientName, String patientID, ArrayList<String> listeUIDs) {
 		DateFormat parser = new SimpleDateFormat("yyyyMMdd");
-		QueryFillStore query = new QueryFillStore(connexionHttp);
 		for(String uid : listeUIDs){
 			Date studyDate = null;
-			String[] separatedResponse=query.getStudyDescriptionAndUID(uid);
+			String[] separatedResponse=getStudyDescriptionAndUID(uid);
 			try{
 				studyDate=parser.parse("19000101");
 				studyDate=parser.parse(separatedResponse[2]);
@@ -268,6 +267,31 @@ public class TableDataAnonStudies extends AbstractTableModel{
 				}
 			}
 		}
+	}
+	
+	private String[] getStudyDescriptionAndUID(String orthancUID) {
+		String[] studyDescriptionAndUID=new String[3];
+		try {
+			//SK Utiliser les contains key pour le parsing COMME DANS CET EXEMPLE
+			StringBuilder answer=this.connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + orthancUID);
+			JSONParser parser=new JSONParser();
+			JSONObject responseJson=(JSONObject) parser.parse(answer.toString());
+			JSONObject responsemaintag=(JSONObject) responseJson.get("MainDicomTags");
+			
+			String studyDescription;
+			String studyDate;
+			String studyInstanceUID;
+			
+			if (responsemaintag.containsKey("StudyDescription")) studyDescription =responsemaintag.get("StudyDescription").toString(); else studyDescription="";
+			if (responsemaintag.containsKey("StudyDate")) studyDate=responsemaintag.get("StudyDate").toString(); else studyDate="";
+			if (responsemaintag.containsKey("StudyInstanceUID")) studyInstanceUID=responsemaintag.get("StudyInstanceUID").toString(); else studyInstanceUID="";
+			
+			studyDescriptionAndUID[0]=studyDescription;
+			studyDescriptionAndUID[1]=studyInstanceUID;
+			studyDescriptionAndUID[2]=studyDate;
+		} catch ( org.json.simple.parser.ParseException e) {e.printStackTrace();}
+		
+		return studyDescriptionAndUID;
 	}
 
 	/*

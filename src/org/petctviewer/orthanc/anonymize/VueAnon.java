@@ -120,9 +120,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	public JFrame gui;
 	private JSONParser parser=new JSONParser();
 	
-	//QueryFillStore
-	protected QueryFillStore query ;
-	
 	//Objet de connexion aux restFul API, prend les settings des registery et etabli les connexion a la demande
 	public ParametreConnexionHttp connexionHttp;
 	protected JPanel tablesPanel, mainPanel, topPanel, anonBtnPanelTop;
@@ -810,7 +807,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 							state.setText("<html>Storing data <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
 							storeBtn.setEnabled(false);
 							pack();
-							query = new QueryFillStore(connexionHttp);
 							success=connexionHttp.sendToAet(listeAET.getSelectedItem().toString(), zipContent);
 							return null;
 						}

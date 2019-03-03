@@ -36,12 +36,7 @@ public class QueryFillStore {
 	private String input;
 	private ArrayList<String> ids = new ArrayList<String>();
 	private JSONParser parser = new JSONParser();
-	ParametreConnexionHttp connexion;
-
-	public QueryFillStore(ParametreConnexionHttp connexion){
-		this.connexion=connexion;
-		this.url="/tools/find";
-	}
+	private ParametreConnexionHttp connexion;
 	
 	public QueryFillStore(ParametreConnexionHttp connexion, String level, String inputType, String input, 
 			String date, String studyDesc) {
@@ -119,10 +114,6 @@ public class QueryFillStore {
 		
 	}
 
-	public String getQuery(){
-		return this.query;
-	}
-
 	private String sendQuery(String action){
 		StringBuilder sb = new StringBuilder();
 		
@@ -192,36 +183,6 @@ public class QueryFillStore {
 		}
 		return jsonResponses;
 	}
-	
-	public String[] getStudyDescriptionAndUID(String orthancUID) {
-		this.url="/studies/" + orthancUID;
-		String[] studyDescriptionAndUID=new String[3];
-		try {
-			//SK Utiliser les contains key pour le parsing COMME DANS CET EXEMPLE
-			JSONObject responseJson=(JSONObject) parser.parse(this.sendQuery("get"));
-			JSONObject responsemaintag=(JSONObject) responseJson.get("MainDicomTags");
-			
-			String studyDescription;
-			String studyDate;
-			String studyInstanceUID;
-			
-			if (responsemaintag.containsKey("StudyDescription")) studyDescription =responsemaintag.get("StudyDescription").toString(); else studyDescription="";
-			if (responsemaintag.containsKey("StudyDate")) studyDate=responsemaintag.get("StudyDate").toString(); else studyDate="";
-			if (responsemaintag.containsKey("StudyInstanceUID")) studyInstanceUID=responsemaintag.get("StudyInstanceUID").toString(); else studyInstanceUID="";
-			
-			studyDescriptionAndUID[0]=studyDescription;
-			studyDescriptionAndUID[1]=studyInstanceUID;
-			studyDescriptionAndUID[2]=studyDate;
-		} catch (ParseException e) {e.printStackTrace();}
-		
-		return studyDescriptionAndUID;
-	}
-
-	
-
-	
-
-	
 
 	
 }
