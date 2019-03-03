@@ -28,11 +28,11 @@ public class TableStudiesMouseListener extends MouseAdapter {
 	
 	private JFrame frame;
 	private JTable tableau;
-	private TableDataStudies modele;
-	private TableDataSeries modeleSeries;
+	private TableStudiesModel modele;
+	private TableSeriesModel modeleSeries;
 
-	public TableStudiesMouseListener(JFrame frame, JTable tableau, TableDataStudies modele,
-			TableDataSeries modeleSeries, ListSelectionModel listSelection) {
+	public TableStudiesMouseListener(JFrame frame, JTable tableau, TableStudiesModel modele,
+			TableSeriesModel modeleSeries, ListSelectionModel listSelection) {
 		this.frame = frame;
 		this.tableau = tableau;
 		this.modele = modele;

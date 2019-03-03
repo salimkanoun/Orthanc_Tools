@@ -36,9 +36,9 @@ public class DeleteActionMainPanel extends AbstractAction{
 	private static final long serialVersionUID = 1L;
 	private String url;
 	private String level;
-	private TableDataSeries modeleSeries;
-	private TableDataStudies modeleStudies;
-	private TableDataPatientsAnon modelePatients;
+	private TableSeriesModel modeleSeries;
+	private TableStudiesModel modeleStudies;
+	private TablePatientsModel modelePatients;
 	private JTable tableauSeries;
 	private JTable tableauStudies;
 	private JTable tableauPatients;
@@ -61,8 +61,8 @@ public class DeleteActionMainPanel extends AbstractAction{
 	 * @param frame
 	 * @param searchBtn
 	 */
-	public DeleteActionMainPanel(ParametreConnexionHttp connexion, String level, TableDataStudies modeleStudies, JTable tableauStudies, TableDataSeries modeleSeries, 
-			JTable tableauSeries, TableDataPatientsAnon modelePatients, JTable tableauPatients, JLabel state, JFrame frame, JButton searchBtn){
+	public DeleteActionMainPanel(ParametreConnexionHttp connexion, String level, TableStudiesModel modeleStudies, JTable tableauStudies, TableSeriesModel modeleSeries, 
+			JTable tableauSeries, TablePatientsModel modelePatients, JTable tableauPatients, JLabel state, JFrame frame, JButton searchBtn){
 		this.connexion=connexion;
 		this.level = level;
 		this.modelePatients = modelePatients;

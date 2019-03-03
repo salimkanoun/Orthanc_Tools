@@ -26,11 +26,11 @@ import javax.swing.JTable;
 public class TableAnonPatientsMouseListener extends MouseAdapter {
 
 	private JTable tableau;
-	private TableDataAnonPatients modele;
-	private TableDataAnonStudies modeleAnonStudies;
+	private TableAnonPatientsModel modele;
+	private TableAnonStudiesModel modeleAnonStudies;
 
-	public TableAnonPatientsMouseListener(JTable tableau, TableDataAnonPatients modele, 
-			TableDataAnonStudies modeleAnonStudies) {
+	public TableAnonPatientsMouseListener(JTable tableau, TableAnonPatientsModel modele, 
+			TableAnonStudiesModel modeleAnonStudies) {
 		this.tableau = tableau;
 		this.modele = modele;
 		this.modeleAnonStudies = modeleAnonStudies;

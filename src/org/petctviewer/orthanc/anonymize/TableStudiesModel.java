@@ -32,7 +32,7 @@ import org.json.simple.JSONObject;
 import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 
-public class TableDataStudies extends AbstractTableModel{
+public class TableStudiesModel extends AbstractTableModel{
 
 	private static final long serialVersionUID = 1L;
 	private String[] entetes = {"Study date", "Study description", "Accession number", "ID"};
@@ -41,7 +41,7 @@ public class TableDataStudies extends AbstractTableModel{
 	private ArrayList<String> ids = new ArrayList<String>();
 	private ParametreConnexionHttp connexionHttp;
 
-	public TableDataStudies(ParametreConnexionHttp connexionHttp){
+	public TableStudiesModel(ParametreConnexionHttp connexionHttp){
 		super();
 		//Recupere les settings
 		this.connexionHttp=connexionHttp;

@@ -128,14 +128,14 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	private JTable tableauPatients;
 	private JTable tableauStudies;
 	private JTable tableauSeries;
-	private TableDataPatientsAnon modelePatients;
-	private TableDataStudies modeleStudies;
-	private TableDataSeries modeleSeries;
-	protected TableDataAnonPatients modeleAnonPatients = new TableDataAnonPatients();
-	protected TableDataAnonStudies modeleAnonStudies;
-	private TableRowSorter<TableDataPatientsAnon> sorterPatients;
-	private TableRowSorter<TableDataStudies> sorterStudies;
-	private TableRowSorter<TableDataSeries> sorterSeries;
+	private TablePatientsModel modelePatients;
+	private TableStudiesModel modeleStudies;
+	private TableSeriesModel modeleSeries;
+	protected TableAnonPatientsModel modeleAnonPatients = new TableAnonPatientsModel();
+	protected TableAnonStudiesModel modeleAnonStudies;
+	private TableRowSorter<TablePatientsModel> sorterPatients;
+	private TableRowSorter<TableStudiesModel> sorterStudies;
+	private TableRowSorter<TableSeriesModel> sorterSeries;
 
 	// Orthanc toolbox (p1)
 	protected JTable anonPatientTable;
@@ -184,15 +184,15 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	protected JComboBox<String> listeAETExport;
 	private JTable tableauExportStudies;
 	private JTable tableauExportSeries;
-	private TableDataExportStudies modeleExportStudies;
-	private TableDataExportSeries modeleExportSeries;
-	private TableRowSorter<TableDataExportStudies> sorterExportStudies;
-	private TableRowSorter<TableDataExportSeries> sorterExportSeries;
+	private TableExportStudiesModel modeleExportStudies;
+	private TableExportSeriesModel modeleExportSeries;
+	private TableRowSorter<TableExportStudiesModel> sorterExportStudies;
+	private TableRowSorter<TableExportSeriesModel> sorterExportSeries;
 	private StringBuilder remoteFileName;
 	
 
 	//Monitoring (p3)
-	Monitoring_GUI monitoring;
+	private Monitoring_GUI monitoring;
 	
 	// Tab Setup (p4)
 	private JComboBox<String> anonProfiles;
@@ -224,13 +224,13 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	
 	//Run Orthanc
-	Run_Orthanc runOrthanc;
+	private Run_Orthanc runOrthanc;
 	
 	// Last Table focus
 	private JTable lastTableFocus;
 	
 	//CustomListener
-	AnonymizeListener anonymizeListener;
+	private AnonymizeListener anonymizeListener;
 	
 	//
 	private boolean fijiEnvironement=false;
@@ -280,12 +280,12 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		
 		gui=this;
 		//On set les objets necessaires
-		modelePatients = new TableDataPatientsAnon(connexionHttp);
-		modeleExportSeries = new TableDataExportSeries(connexionHttp, this, stateExports);
-		modeleSeries = new TableDataSeries(connexionHttp);
-		modeleExportStudies = new TableDataExportStudies(connexionHttp);
-		modeleAnonStudies = new TableDataAnonStudies(connexionHttp);
-		modeleStudies = new TableDataStudies(connexionHttp);
+		modelePatients = new TablePatientsModel(connexionHttp);
+		modeleExportSeries = new TableExportSeriesModel(connexionHttp, this, stateExports);
+		modeleSeries = new TableSeriesModel(connexionHttp);
+		modeleExportStudies = new TableExportStudiesModel(connexionHttp);
+		modeleAnonStudies = new TableAnonStudiesModel(connexionHttp);
+		modeleStudies = new TableStudiesModel(connexionHttp);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////// PANEL 1 : ANONYMIZATION ////////////////////////////////////////////////////
@@ -433,9 +433,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.tableauPatients = new JTable(modelePatients);
 		this.tableauStudies = new JTable(modeleStudies);
 		this.tableauSeries = new JTable(modeleSeries);
-		this.sorterPatients = new TableRowSorter<TableDataPatientsAnon>(modelePatients);
-		this.sorterStudies = new TableRowSorter<TableDataStudies>(modeleStudies);
-		this.sorterSeries = new TableRowSorter<TableDataSeries>(modeleSeries);
+		this.sorterPatients = new TableRowSorter<TablePatientsModel>(modelePatients);
+		this.sorterStudies = new TableRowSorter<TableStudiesModel>(modeleStudies);
+		this.sorterSeries = new TableRowSorter<TableSeriesModel>(modeleSeries);
 		this.sorterPatients.setSortsOnUpdates(true);
 		this.sorterStudies.setSortsOnUpdates(true);
 		this.sorterSeries.setSortsOnUpdates(true);
@@ -1446,8 +1446,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 		JPanel mainPanelExport = new JPanel(new BorderLayout());
 		JPanel tableExportPanel = new JPanel(new FlowLayout());
-		this.sorterExportStudies = new TableRowSorter<TableDataExportStudies>(modeleExportStudies);
-		this.sorterExportSeries = new TableRowSorter<TableDataExportSeries>(modeleExportSeries);		
+		this.sorterExportStudies = new TableRowSorter<TableExportStudiesModel>(modeleExportStudies);
+		this.sorterExportSeries = new TableRowSorter<TableExportSeriesModel>(modeleExportSeries);		
 
 		this.tableauExportStudies = new JTable(modeleExportStudies);
 		this.tableauExportStudies.getTableHeader().setReorderingAllowed(false);

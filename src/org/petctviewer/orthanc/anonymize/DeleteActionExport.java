@@ -26,9 +26,9 @@ public class DeleteActionExport{
 
 	private String url;
 	private JTable tableauExportStudies;
-	private TableDataExportStudies modeleExportStudies;
+	private TableExportStudiesModel modeleExportStudies;
 	private JTable tableauExportSeries;
-	private TableDataExportSeries modeleExportSeries;
+	private TableExportSeriesModel modeleExportSeries;
 	private ParametreConnexionHttp connexion;
 	/**
 	 * Gere le delete de l'export tab
@@ -36,13 +36,13 @@ public class DeleteActionExport{
 	 * @param tableauExportStudies
 	 * @param modeleExportStudies
 	 */
-	public DeleteActionExport(ParametreConnexionHttp connexion,JTable tableauExportStudies, TableDataExportStudies modeleExportStudies){
+	public DeleteActionExport(ParametreConnexionHttp connexion,JTable tableauExportStudies, TableExportStudiesModel modeleExportStudies){
 		this.connexion=connexion;
 		this.tableauExportStudies = tableauExportStudies;
 		this.modeleExportStudies = modeleExportStudies;
 	}
 
-	public DeleteActionExport(ParametreConnexionHttp connexion, JTable tableauExportSeries, TableDataExportSeries modeleExportSeries){
+	public DeleteActionExport(ParametreConnexionHttp connexion, JTable tableauExportSeries, TableExportSeriesModel modeleExportSeries){
 		this.connexion=connexion;
 		this.tableauExportSeries = tableauExportSeries;
 		this.modeleExportSeries = modeleExportSeries;

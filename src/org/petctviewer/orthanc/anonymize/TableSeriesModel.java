@@ -17,12 +17,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
 
 import org.json.simple.JSONArray;
@@ -30,26 +28,20 @@ import org.json.simple.JSONObject;
 
 import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
-public class TableDataExportSeries extends AbstractTableModel{
+public class TableSeriesModel extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Serie description*", "Modality", "Instances", "Secondary capture", "ID", "Serie Number"};
+	private String[] entetes = {"Serie description", "Modality", "Instances", "Secondary capture", "ID", "Serie Num"};
 	private ArrayList<Serie> series = new ArrayList<Serie>();
 	private ArrayList<String> instancesWithSecondaryCapture = new ArrayList<String>();
-	private String studyID = "";
 	private String url;
-	private JFrame frame;
-	private JLabel stateExport;
 	private ParametreConnexionHttp connexionHttp;
 
-	public TableDataExportSeries(ParametreConnexionHttp connexionHttp, JFrame frame, JLabel stateExport){
+	public TableSeriesModel(ParametreConnexionHttp connexionHttp){
 		super();
-		
-		//On set les settings de connexion
+		//Recupere les settings
 		this.connexionHttp=connexionHttp;
 		
-		this.frame = frame;
-		this.stateExport = stateExport;
 	}
 
 	@Override
@@ -87,102 +79,54 @@ public class TableDataExportSeries extends AbstractTableModel{
 		}
 	}
 
-	public boolean isCellEditable(int row, int col){
-		if(col == 0){
-			return true; 
-		}
-		return false;
-	}
-	
-	public void setValueAt(Object value, int row, int col) {
-		String uid = this.getValueAt(row, 4).toString();
-		String oldDesc ;
-		if (this.getValueAt(row, 0)==null) oldDesc=""; else oldDesc=this.getValueAt(row, 0).toString();
-		
-		if(!oldDesc.equals(value.toString()) && col == 0){
-			series.get(row).setSerieDescription(value.toString());
-			fireTableCellUpdated(row, col);
-		}
-		SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-			boolean success=true;
-			@Override
-			protected Void doInBackground() {
-				url="/series/" + uid + "/modify";
-				stateExport.setText("<html>Modifying a serie description <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
-				frame.pack();
-				StringBuilder sb =connexionHttp.makePostConnectionAndStringBuilder(url, ("{\"Replace\":{\"SeriesDescription\":\"" + value.toString() + "\"}}"));
-				if(sb!=null) {
-					connexionHttp.makeDeleteConnection("/series/" + uid );
-				}else {
-					success=false;
-				}
-				return null;
-			}
-			@Override
-			protected void done(){
-				if(success) {
-					clear();
-					addSerie(studyID);
-					stateExport.setText("<html><font color='green'>The description has been changed.</font></html>");
-					frame.pack();	
-				}else {
-					stateExport.setText("<html><font color='red'>Error during Dicom Edition</font></html>");
-				}
-				
-			}
-		};
-		if(!oldDesc.equals(value.toString()) && col == 0){
-			worker.execute();
-		}
-	}
-
-	
 	public Serie getSerie(int rowIndex){
 		return this.series.get(rowIndex);
 	}
 
+	public boolean isCellEditable(int row, int col){
+		return false;
+	}
+
 	public boolean checkSopClassUid(String instanceUid) {
-		if(instanceUid != null){
-			url="/instances/" + instanceUid + "/metadata/SopClassUid";
-			StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder(url);
+		this.url="/instances/" + instanceUid + "/metadata/SopClassUid";
+		StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder(url);
+		
+		ArrayList<String> sopClassUIDs = new ArrayList<String>();
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7.1");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7.2");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7.3");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7.4");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.11");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.22");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.33");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.40");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.50");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.59");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.65");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.67");
 
-			ArrayList<String> sopClassUIDs = new ArrayList<String>();
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7.1");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7.2");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7.3");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7.4");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.11");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.22");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.33");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.40");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.50");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.59");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.65");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.67");
-
-			if(sopClassUIDs.contains(sb.toString())){
-				this.instancesWithSecondaryCapture.add(instanceUid);
-				return true;
-			}
-			return false;
+		if(sopClassUIDs.contains(sb.toString())){
+			this.instancesWithSecondaryCapture.add(instanceUid);
+			return true;
 		}
 		return false;
 	}
 
-	public void removeAllSecondaryCaptures() {
-		ArrayList<Serie> seriesToRemove = new ArrayList<Serie>();
+	public void detectAllSecondaryCaptures() {
+		for(Serie s : series){
+			s.setSecondaryCapture(this.checkSopClassUid(s.getInstance()));
+			this.fireTableCellUpdated(this.series.indexOf(s), 3);
+		}
+	}
+
+	public void removeAllSecondaryCaptures() throws IOException{
+		this.detectAllSecondaryCaptures();
 		for(Serie s : series){
 			if(s.isSecondaryCapture()){
-				url="/series/" + s.getId();
-				boolean success=connexionHttp.makeDeleteConnection(url);
-				if(success) {
-					seriesToRemove.add(s);
+				this.url="/series/" + s.getId();
+				connexionHttp.makeDeleteConnection(url);
 				}
-			}
-		}
-		for(Serie s : seriesToRemove){
-			removeSerie(series.indexOf(s));
 		}
 	}
 
@@ -191,13 +135,8 @@ public class TableDataExportSeries extends AbstractTableModel{
 		fireTableRowsDeleted(rowIndex, rowIndex);
 	}
 
-	public ArrayList<Serie> getSeries(){
-		return this.series;
-	}
-	
 	public void addSerie(String studyID) {
-		this.studyID = studyID;
-		
+		//this.studyID = studyID;
 		QueryFillStore querySeries = new QueryFillStore(connexionHttp,"series", null, studyID, null, null);
 		List<JSONObject> jsonResponsesPatient=querySeries.getJsonResponse();
 		
@@ -227,7 +166,7 @@ public class TableDataExportSeries extends AbstractTableModel{
 			}
 			
 			if (mainDicomTag.containsKey("Modality")) {
-				modality[i]=((String) mainDicomTag.get("SeriesDescription"));
+				modality[i]=((String) mainDicomTag.get("Modality"));
 			} else {
 				modality[i]="";
 			}
@@ -238,10 +177,10 @@ public class TableDataExportSeries extends AbstractTableModel{
 			
 			study[i]=  (String) jsonResponsesPatient.get(i).get("ParentStudy");
 		}
-
+		
 		//checkSopClass will be set on click
 		for(int i = 0; i < id.length; i++){
-			Serie s = new Serie(description[i], modality[i], nbInstances[i], id[i], study[i], instance[i],serieNumber[i], this.checkSopClassUid(instance[i]));
+			Serie s = new Serie(description[i], modality[i], nbInstances[i], id[i], study[i], instance[i],serieNumber[i], false);
 			if(instancesWithSecondaryCapture.contains(instance[i])){
 				s = new Serie(description[i], modality[i], nbInstances[i], id[i], study[i], instance[i],serieNumber[i], true);
 			}
@@ -263,5 +202,5 @@ public class TableDataExportSeries extends AbstractTableModel{
 			}
 		}
 	}
-
+	
 }

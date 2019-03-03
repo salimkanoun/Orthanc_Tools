@@ -17,6 +17,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
+/**
+ * Store Choice for each Tag for anonymization query construction
+ *
+ */
+
 public class Tags {
 
 	public enum Choice {

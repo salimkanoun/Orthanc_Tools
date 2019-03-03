@@ -32,7 +32,7 @@ import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 import javax.swing.table.AbstractTableModel;
 
-public class TableDataAnonStudies extends AbstractTableModel{
+public class TableAnonStudiesModel extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
 
 	private String[] entetes = {"Study description*", "Study date", "Old UID", "Patient id"};
@@ -45,7 +45,7 @@ public class TableDataAnonStudies extends AbstractTableModel{
 	private String url;
 	private ParametreConnexionHttp connexionHttp;
 
-	public TableDataAnonStudies(ParametreConnexionHttp connexionHttp){
+	public TableAnonStudiesModel(ParametreConnexionHttp connexionHttp){
 		super();
 		this.connexionHttp=connexionHttp;
 	}

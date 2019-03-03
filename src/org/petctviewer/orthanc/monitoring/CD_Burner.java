@@ -129,7 +129,6 @@ public class CD_Burner {
 	 */
 	public void makeCD(List<String> newStableStudyID) {
 		for (int i=0; i<newStableStudyID.size(); i++) {
-			ExportZip zipDownloader=new ExportZip(connexion);
 			Path file;
 			try {
 				//Store the Row number where we are going to display progress
@@ -154,10 +153,11 @@ public class CD_Burner {
 				datenow=new Date();
 				file = Files.createTempFile("CD_"+dateFormat.format(datenow) , ".zip");
 				file.toFile().deleteOnExit();
-				zipDownloader.setConvertZipAction(file.toString(), newStableStudyID.get(i), true);
 				
 				table_burning_history.setValueAt("Retriving DICOMs", rownumber, 5);
 				
+				ExportZip zipDownloader=new ExportZip(connexion);
+				zipDownloader.setConvertZipAction(file.toString(), newStableStudyID.get(i), true);
 				//generate ZIP of DICOMs
 				zipDownloader.generateZip(true);
 				File zip=zipDownloader.getGeneratedZipFile();

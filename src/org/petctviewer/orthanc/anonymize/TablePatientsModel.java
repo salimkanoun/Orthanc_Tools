@@ -31,7 +31,7 @@ import org.json.simple.JSONObject;
 
 import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
-public class TableDataPatientsAnon extends AbstractTableModel{
+public class TablePatientsModel extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
 
 	private String[] entetes = {"Patient Name", "Patient ID", "ID", "Birthdate", "Sex"};
@@ -39,7 +39,7 @@ public class TableDataPatientsAnon extends AbstractTableModel{
 	private final Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, String.class, Date.class, String.class};
 	private ParametreConnexionHttp connexionHttp;
 
-	public TableDataPatientsAnon(ParametreConnexionHttp connexionHttp){
+	public TablePatientsModel(ParametreConnexionHttp connexionHttp){
 		super();
 		//Set des settings
 		this.connexionHttp=connexionHttp;

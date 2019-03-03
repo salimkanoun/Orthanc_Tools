@@ -11,7 +11,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 
-import org.petctviewer.orthanc.anonymize.TableDataSeries;
+import org.petctviewer.orthanc.anonymize.TableSeriesModel;
 import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
 import java.awt.event.ActionListener;
@@ -25,7 +25,7 @@ public class Select_Series extends JDialog {
 	 * Create the dialog.
 	 */
 	public Select_Series(ParametreConnexionHttp connexionHttp, String studyUID) {
-		TableDataSeries tableSeriesModel=new TableDataSeries(connexionHttp);
+		TableSeriesModel tableSeriesModel=new TableSeriesModel(connexionHttp);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		tableSeriesModel.addSerie(studyUID);
 		tableSeriesModel.detectAllSecondaryCaptures();

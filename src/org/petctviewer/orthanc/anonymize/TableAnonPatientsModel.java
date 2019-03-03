@@ -26,13 +26,13 @@ import javax.swing.table.AbstractTableModel;
 
 import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
 
-public class TableDataAnonPatients extends AbstractTableModel{
+public class TableAnonPatientsModel extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
 
 	private String[] entetes = {"Old name", "Old ID", "Old UID", "New name*", "New ID*", "New UID", "birthdate", "Sex"};
 	private ArrayList<PatientAnon> patients = new ArrayList<PatientAnon>();
 
-	public TableDataAnonPatients(){
+	public TableAnonPatientsModel(){
 		super();
 	}
 
