@@ -213,6 +213,10 @@ public class ImportDCM extends JDialog {
 		
 	}
 	
+	/**
+	 * Return Hashmap describing imported studies
+	 * @return
+	 */
 	public HashMap<String, HashMap<String, String>> getImportedStudy() {
 		
 		for (int i=0; i<importAnswer.size(); i++) {

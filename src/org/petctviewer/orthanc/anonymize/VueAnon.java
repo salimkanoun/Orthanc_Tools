@@ -117,7 +117,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	private JLabel state = new JLabel();
 	private DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
 	private DateFormat dfZip = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
-	public JFrame gui;
+	public JFrame gui=this;
 	private JSONParser parser=new JSONParser();
 	
 	//Objet de connexion aux restFul API, prend les settings des registery et etabli les connexion a la demande
@@ -269,15 +269,11 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		}
 		
 		connexionHttp= new OrthancRestApis("http://localhost:8043");
-		
-		
 		buildGui();
 		
 	}
 
 	public void buildGui(){
-		
-		gui=this;
 		//On set les objets necessaires
 		modelePatients = new TablePatientsModel(connexionHttp);
 		modeleExportSeries = new TableExportSeriesModel(connexionHttp, this, stateExports);
@@ -382,37 +378,30 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				}
 			}
 		});
+		
 		JButton queryRetrieveBtn = new JButton("Queries/Retrieve");
 		queryRetrieveBtn.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
 				SwingUtilities.invokeLater(new Runnable () {
-
 					@Override
 					public void run() {
 						VueRest.main();
 					}
-					
 				});
-
 			}
 		});
 		
 		JButton queryImportBtn = new JButton("Import");
 		queryImportBtn.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				SwingUtilities.invokeLater(new Runnable () {
-
 					@Override
 					public void run() {
 						ImportDCM importFrame=new ImportDCM(connexionHttp,gui);
 						importFrame.setVisible(true);
-					}
-					
+					}	
 				});
 			}
 		});
@@ -443,28 +432,25 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		FocusListener tableFocus=new FocusListener() {
 			Color background= tableauSeries.getSelectionBackground();
 			@Override
-				public void focusGained(FocusEvent e) {
-					//memorise le dernier focus de table
-					JTable source= (JTable) e.getSource();
-					lastTableFocus=source;
-					//Tracking Visuel de la selection
-					if (source==tableauStudies){
-						tableauPatients.setSelectionBackground(Color.LIGHT_GRAY);
-						tableauStudies.setSelectionBackground(background);
-					}
-					else if (source==tableauPatients){
-						tableauStudies.setSelectionBackground(background);
-						tableauPatients.setSelectionBackground(background);
-					}
-					else if (source==tableauSeries){
-						tableauStudies.setSelectionBackground(Color.LIGHT_GRAY);
-						tableauPatients.setSelectionBackground(Color.LIGHT_GRAY);
-					}
-					
-					
-					
-					
+			public void focusGained(FocusEvent e) {
+				//memorise le dernier focus de table
+				JTable source= (JTable) e.getSource();
+				lastTableFocus=source;
+				//Tracking Visuel de la selection
+				if (source==tableauStudies){
+					tableauPatients.setSelectionBackground(Color.LIGHT_GRAY);
+					tableauStudies.setSelectionBackground(background);
 				}
+				else if (source==tableauPatients){
+					tableauStudies.setSelectionBackground(background);
+					tableauPatients.setSelectionBackground(background);
+				}
+				else if (source==tableauSeries){
+					tableauStudies.setSelectionBackground(Color.LIGHT_GRAY);
+					tableauPatients.setSelectionBackground(Color.LIGHT_GRAY);
+				}
+
+			}
 
 			@Override
 			public void focusLost(FocusEvent e) {
@@ -477,14 +463,10 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 							tableauStudies.setSelectionBackground(Color.lightGray);
 					}
 				}
-				
-				
-				
 			}
 		};
 		
-		//Ajout des listener focus tableau
-		
+		//Add Focus listener to tables
 		this.tableauPatients.addFocusListener(tableFocus);
 		this.tableauStudies.addFocusListener(tableFocus);
 		this.tableauSeries.addFocusListener(tableFocus);
@@ -520,8 +502,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		sorterPatients.setSortKeys(sortKeysPatients);
 		sorterPatients.sort();
 		this.tableauPatients.setRowSorter(sorterPatients);
-				
-		
 
 		JMenuItem menuItemModifyPatients = new JMenuItem("Show tags/ Modify");
 		menuItemModifyPatients.addActionListener(new ActionListener() {
@@ -672,31 +652,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		popMenuSeries.add(menuItemDeleteAllSop);
 		popMenuSeries.addSeparator();
 		popMenuSeries.add(menuItemDeleteSeries);
-		popMenuSeries.addPopupMenuListener(new PopupMenuListener() {
-
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        int rowAtPoint = tableauSeries.rowAtPoint(SwingUtilities.convertPoint(popMenuSeries, new Point(0, 0), tableauSeries));
-                        if (rowAtPoint > -1) {
-                        	tableauSeries.setRowSelectionInterval(rowAtPoint, rowAtPoint);
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {
-
-            }
-
-			@Override
-			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
-				
-			}
-        });
+		addPopUpMenuListener(popMenuSeries, tableauSeries);
 		
 		this.tableauSeries.setComponentPopupMenu(popMenuSeries);
 
@@ -1463,6 +1419,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			}
 		});
 		popMenuExportStudies.add(menuItemEmptyList);
+		addPopUpMenuListener(popMenuExportStudies, tableauExportStudies);
 
 		sorterExportStudies.setSortKeys(sortKeysStudies);
 		sorterExportStudies.sort();
@@ -1628,6 +1585,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		exportBtn.setToolTipText("Fill the remote server parameters in the setup tab before attempting an export.");
 
 		csvReport = new JButton("CSV Report");
+		//SK MAUVAIS ENDROIT POUR CE CODE A ECAPSULER AVEC OBJET CSV
 		csvReport.addActionListener(new ActionListener() {
 
 			@Override
@@ -2227,8 +2185,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.exportType.setPreferredSize(new Dimension(140,20));
 		eastExport.add(this.exportType, gbSetup);
 
-
-		
 		//add CTP Panel
 		JLabel address=new JLabel("CTP Address");
 		addressFieldCTP=new JTextField();
@@ -2313,8 +2269,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		});
 		
 		JButton jsonEditor = new JButton("Edit Orthanc config");
-		
-		
 		jsonEditor.addActionListener(new ActionListener() {
 
 			@Override
