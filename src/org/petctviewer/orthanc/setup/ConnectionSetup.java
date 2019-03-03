@@ -53,7 +53,7 @@ public class ConnectionSetup extends JDialog {
 	private JDialog gui=this;
 	public boolean ok=false;
 
-	public ConnectionSetup(Run_Orthanc orthanc){
+	public ConnectionSetup(Run_Orthanc orthanc, OrthancRestApis http){
 		this.setTitle("Setup");
 		this.setModal(true);
 		this.setResizable(true);
@@ -173,7 +173,7 @@ public class ConnectionSetup extends JDialog {
 						e1.printStackTrace();
 					}
 				}else {
-					orthanc.stopOrthanc();
+					orthanc.stopOrthanc(http);
 					dispose();
 				}
 			}

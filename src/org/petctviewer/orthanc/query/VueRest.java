@@ -67,6 +67,7 @@ import javax.swing.text.DefaultCaret;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.petctviewer.orthanc.anonymize.gui.DateRenderer;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
@@ -89,7 +90,7 @@ public class VueRest extends JFrame implements PlugIn{
 	
 	private static final long serialVersionUID = 1L;
 	// Instancie la classe rest qui fournit les services de connexion et input
-	private Rest rest =new Rest(new OrthancRestApis());
+	private Rest rest =new Rest(new OrthancRestApis(null));
 	
 	private JTabbedPane tabbedPane;
 	private TableDataPatient modele = new TableDataPatient(rest); // model for the main JTable (tableau)
@@ -1059,7 +1060,7 @@ public class VueRest extends JFrame implements PlugIn{
 		// Initially, the default button is ajouter, but we add a changelistener
 		// on the tab so that the default button changes accordingly
 		this.getRootPane().setDefaultButton(ajouter);
-		tabbedPane.addChangeListener(new ChangeButtonListener(this, ajouter, filter));
+		tabbedPane.addChangeListener(new ChangeTabListener(this, ajouter, filter));
 
 		Image image = new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage();
 		this.setIconImage(image);

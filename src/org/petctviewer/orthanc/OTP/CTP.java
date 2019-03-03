@@ -21,15 +21,12 @@ public class CTP {
 	private String username;
 	private String password;
 	private String serverAdress;
-	private String authentication=null;
 	private JSONParser parser=new JSONParser();
 	
 	public CTP(String username, String password, String serverAdress) {
 		this.username=username;
 		this.password=password;
 		this.serverAdress=serverAdress;
-		//String authentication = Base64.getEncoder().encodeToString(("httpLogin" + ":" + "httpPassword").getBytes());
-		
 	}
 	
 	public boolean checkLogin() {
@@ -174,9 +171,6 @@ public class CTP {
 				}catch (Exception e){
 					
 				}
-			}
-			if(this.authentication != null){
-				conn.setRequestProperty("Authorization", "Basic " + this.authentication);
 			}
 			OutputStream os = conn.getOutputStream();
 			os.write(post.getBytes());

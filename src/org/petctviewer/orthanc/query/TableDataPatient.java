@@ -17,15 +17,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.query;
 
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
 
-public class TableDataPatient extends AbstractTableModel{
+public class TableDataPatient extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
 	private String[] entetes = {"Patient name", "Patient ID", "Study date", "Study description", "Accession number", "Study UID"};
@@ -54,25 +53,7 @@ public class TableDataPatient extends AbstractTableModel{
 	public Class<?> getColumnClass(int column){
 		return columnClasses[column];
 	}
-
-	public Object getValueAt(int rowIndex, int columnIndex){
-		switch(columnIndex){
-		case 0:
-			return patients.get(rowIndex).getPatientName();
-		case 1:
-			return patients.get(rowIndex).getPatientID();
-		case 3:
-			return patients.get(rowIndex).getStudyDescription();
-		case 2:
-			return patients.get(rowIndex).getStudyDate();
-		case 4:
-			return patients.get(rowIndex).getAccessionNumber();
-		case 5:
-			return patients.get(rowIndex).getStudyInstanceUID();
-		default:
-			return null; //Ne devrait jamais arriver
-		}
-	}
+	
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */

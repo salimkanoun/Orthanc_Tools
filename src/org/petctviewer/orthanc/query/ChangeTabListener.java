@@ -24,24 +24,25 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 
-public class ChangeButtonListener implements ChangeListener{
-	
-		private JFrame frame;
-		private JButton ajouter;
-		private JButton filter;
-		public ChangeButtonListener(JFrame frame, JButton ajouter, JButton filter){
-			this.frame = frame;
-			this.ajouter = ajouter;
-			this.filter = filter;
-		}
+public class ChangeTabListener implements ChangeListener{
 
-		public void stateChanged(ChangeEvent changeEvent){
-			JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
-			int index = sourceTabbedPane.getSelectedIndex();
-			if(sourceTabbedPane.getTitleAt(index).equals("History")){
-				frame.getRootPane().setDefaultButton(filter);
-			}else{
-				frame.getRootPane().setDefaultButton(ajouter);
+	private JFrame frame;
+	private JButton ajouter;
+	private JButton filter;
+	
+	public ChangeTabListener(JFrame frame, JButton ajouter, JButton filter){
+		this.frame = frame;
+		this.ajouter = ajouter;
+		this.filter = filter;
+	}
+
+	public void stateChanged(ChangeEvent changeEvent){
+		JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
+		int index = sourceTabbedPane.getSelectedIndex();
+		if(sourceTabbedPane.getTitleAt(index).equals("History")){
+			frame.getRootPane().setDefaultButton(filter);
+		}else{
+			frame.getRootPane().setDefaultButton(ajouter);
 		}
 	}
 }

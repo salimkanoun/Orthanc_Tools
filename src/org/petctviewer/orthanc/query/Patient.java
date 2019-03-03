@@ -18,7 +18,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.query;
 
-import java.text.ParseException;
 import java.util.Date;
 
 
@@ -32,7 +31,7 @@ public class Patient {
 	private String modality;
 	
 	public Patient(String patientName, String patientID, Date studyDate,
-			String studyDescription, String accessionNumber, String studyInstanceUID, String modality) throws ParseException {
+			String studyDescription, String accessionNumber, String studyInstanceUID, String modality) {
 		super();
 
 		this.patientName = patientName;

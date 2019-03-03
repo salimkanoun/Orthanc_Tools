@@ -29,10 +29,6 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -50,23 +46,25 @@ public class OrthancRestApis {
 	private String authentication;
 	private String orthancVersion;
 	private boolean versionHigher131;
+	private boolean connected;
 	private String localAETName;
 	private JsonParser jsonParser=new JsonParser();
 	private JsonParser parser=new JsonParser();
 	
 	
-	public OrthancRestApis()  {
-		String ip = jpreferPerso.get("ip", "http://localhost");
-		String port = jpreferPerso.get("port", "8042");
-		this.fullAddress = ip + ":" + port;
-		if(jpreferPerso.get("username", null) != null && jpreferPerso.get("username", null) != null){
-			authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
-		}
-		
-	}
-	
 	public OrthancRestApis(String fullAddress)  {
-		this.fullAddress = fullAddress;
+		if(fullAddress==null) {
+			String ip = jpreferPerso.get("ip", "http://localhost");
+			String port = jpreferPerso.get("port", "8042");
+			this.fullAddress = ip + ":" + port;
+			if(jpreferPerso.get("username", null) != null && jpreferPerso.get("username", null) != null){
+				authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
+			}
+			
+		}else {
+			this.fullAddress = fullAddress;
+		}
+		getSystemInformationsAndTest();
 	}
 	
 	
@@ -248,25 +246,22 @@ public class OrthancRestApis {
 	
 	}
 	
-	// Display Error message if connexion failed
-	public Boolean testConnexion() {	
-		Boolean test=true;
+	public void getSystemInformationsAndTest() {
 		
-		try {
-			StringBuilder sb= makeGetConnectionAndStringBuilder("/system");
-			JSONParser parser=new JSONParser();
-			JSONObject systemJson=(JSONObject) parser.parse(sb.toString());
-			orthancVersion=(String) systemJson.get("Version");
-			localAETName=(String) systemJson.get("DicomAet");
+		StringBuilder sb= makeGetConnectionAndStringBuilder("/system");
+		if(sb!=null) {
+			JsonParser parser=new JsonParser();
+			JsonObject systemJson=(JsonObject) parser.parse(sb.toString());
+			orthancVersion=systemJson.get("Version").getAsString();
+			localAETName=systemJson.get("DicomAet").getAsString();
 			versionHigher131=isVersionAfter131();
-		} catch (ParseException e) {
-			JOptionPane.showMessageDialog(null,
-				    "Can't connect to Orthanc");
-			test=false;
-			e.printStackTrace();
+			connected=true;	
+		}else{ 
+			connected=false;
 		}
-	
-		return test;
+		
+		
+		
 	}
 	
 	/**
@@ -332,21 +327,22 @@ public class OrthancRestApis {
 	 */
 	public String[] getAET() {
 		StringBuilder answers=makeGetConnectionAndStringBuilder("/modalities");
-		JsonArray aetsAnswer = (JsonArray) jsonParser.parse(answers.toString());
-		
-		// Prepare the string Array that will contains available AETs
-		String[] aets= new String[aetsAnswer.size()];
-		
-		for(int i=0; i<aetsAnswer.size(); i++){
-			aets[i]=aetsAnswer.get(i).getAsString();
+		String[] aets= {"None"};
+		if(answers !=null) {
+			JsonArray aetsAnswer = (JsonArray) jsonParser.parse(answers.toString());
+			
+			// Prepare the string Array that will contains available AETs
+			aets= new String[aetsAnswer.size()];
+			
+			for(int i=0; i<aetsAnswer.size(); i++){
+				aets[i]=aetsAnswer.get(i).getAsString();
+			}
+			
 		}
-
 		return aets;
 	}
 	
-	//SK A REVOIR PROBABLEMENT POPULER AUTOMATIQUEMENT LES DATA DE SYSTEM
 	public String getLocalAET() {
-		testConnexion();
 		return this.localAETName;
 	}
 	
@@ -356,15 +352,16 @@ public class OrthancRestApis {
 	 */
 	public String[] getPeers() {
 		StringBuilder answers=makeGetConnectionAndStringBuilder("/peers");
-		JsonArray peersAnswer = (JsonArray) jsonParser.parse(answers.toString());
-		
-		// Prepare the string Array that will contains available Peers
-		String[] peers= new String[peersAnswer.size()];
-		
-		for(int i=0; i<peersAnswer.size(); i++){
-			peers[i]=peersAnswer.get(i).getAsString();
+		String[] peers= {"None"};
+		if(answers !=null) {
+			JsonArray peersAnswer = (JsonArray) jsonParser.parse(answers.toString());
+			// Prepare the string Array that will contains available Peers
+			peers= new String[peersAnswer.size()];
+			
+			for(int i=0; i<peersAnswer.size(); i++){
+				peers[i]=peersAnswer.get(i).getAsString();
+			}
 		}
-
 		return peers;
 	}
 	
@@ -407,6 +404,10 @@ public class OrthancRestApis {
 		}else {
 			return false;
 		}
+	}
+	
+	public boolean isConnected() {
+		return connected;
 	}
 	
 	

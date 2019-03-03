@@ -39,10 +39,8 @@ public class Run_Orthanc {
 	 private String resourceLibPath="Orthanc_Standalone/";
 	 private List<String> resourceLibName=new ArrayList<String>();
 	 private boolean temp;
-	 private OrthancRestApis connexionHttp;
 	
-	public Run_Orthanc(OrthancRestApis connexionHttp) {
-		this.connexionHttp=connexionHttp;
+	public Run_Orthanc() {
 		//SK AJOUTER ORTHANC TRANSFERS
 		if(System.getProperty("os.name").toLowerCase().startsWith("win")) {
 			if (System.getProperty("os.arch").contains("86")){
@@ -71,7 +69,7 @@ public class Run_Orthanc {
 	 * @return
 	 * @throws Exception
 	 */
-	public String copyOrthanc(String installPath) throws Exception {
+	public void copyOrthanc(String installPath) throws Exception {
 		String resourceNameJSON=resourceLibPath+orthancJsonName;
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		
@@ -108,8 +106,6 @@ public class Run_Orthanc {
 		}
 		orthancExe=FileExe;
 		orthancJson=FileJSON;
-	   
-        return resourceName;
   
     }
 	
@@ -136,7 +132,6 @@ public class Run_Orthanc {
 						    try {
 								Files.setPosixFilePermissions(orthancExe.toPath(), perms);
 							} catch (IOException e1) {
-								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
 				 	}
@@ -161,7 +156,6 @@ public class Run_Orthanc {
 							 System.out.println(line);
 							 if (line.contains("Orthanc has started")) {
 								 isStarted=true;
-								 connexionHttp.testConnexion();
 							 }
 						 }
 					
@@ -200,10 +194,12 @@ public class Run_Orthanc {
 		return false;
 	}
 	
-	public void stopOrthanc() {
+	public void stopOrthanc(OrthancRestApis connexionHttp) {
+		
+		if(connexionHttp==null || !connexionHttp.isConnected()) {
+			return;
+		}
 		System.out.println("Stoping Orthanc");
-		
-		
 		//Destroy the process
 		try {
 			//Ask Orthanc to shutdown

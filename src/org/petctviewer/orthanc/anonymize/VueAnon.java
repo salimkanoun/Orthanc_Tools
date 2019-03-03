@@ -91,7 +91,7 @@ import org.petctviewer.orthanc.OTP.CTP;
 import org.petctviewer.orthanc.OTP.CTP_Gui;
 import org.petctviewer.orthanc.anonymize.Tags.Choice;
 import org.petctviewer.orthanc.anonymize.gui.AboutBoxFrame;
-import org.petctviewer.orthanc.anonymize.gui.DateRendererAnon;
+import org.petctviewer.orthanc.anonymize.gui.DateRenderer;
 import org.petctviewer.orthanc.export.ExportZip;
 import org.petctviewer.orthanc.export.SendFilesToRemote;
 import org.petctviewer.orthanc.export.ExportZipAndViewer;
@@ -231,22 +231,20 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	
 	//CustomListener
 	private AnonymizeListener anonymizeListener;
-	
-	//
+
 	private boolean fijiEnvironement=false;
 	
 	public VueAnon() {
-		
 		super("Orthanc Tools");
-		connexionHttp= new OrthancRestApis();
-		runOrthanc=new Run_Orthanc(connexionHttp);
+		connexionHttp= new OrthancRestApis(null);
+		runOrthanc=new Run_Orthanc();
 		//Until we reach the Orthanc Server we give the setup panel
 		int check=0;
-		while (!connexionHttp.testConnexion() && check<3) {
+		while (!connexionHttp.isConnected() && check<3) {
 				if (check>0) JOptionPane.showMessageDialog(null, "Settings Attempt " + (check+1) +"/3", "Attempt", JOptionPane.INFORMATION_MESSAGE);
-				ConnectionSetup setup = new ConnectionSetup(runOrthanc);
+				ConnectionSetup setup = new ConnectionSetup(runOrthanc, null);
 				setup.setVisible(true);
-				connexionHttp=new OrthancRestApis();
+				connexionHttp=new OrthancRestApis(null);
 				check++;
 				if(check ==3) JOptionPane.showMessageDialog(null, "Programme is starting without connexion (no services)", "Failure", JOptionPane.ERROR_MESSAGE);
 		}
@@ -260,16 +258,17 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	 */
 	public VueAnon(String orthancJsonName) {
 		super("Orthanc Tools");
-		connexionHttp= new OrthancRestApis("http://localhost:8043");
 		
 		try {
-			runOrthanc=new Run_Orthanc(connexionHttp);
+			runOrthanc=new Run_Orthanc();
 			runOrthanc.orthancJsonName=orthancJsonName;
 			runOrthanc.copyOrthanc(null);
 			runOrthanc.startOrthanc();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		connexionHttp= new OrthancRestApis("http://localhost:8043");
 		
 		
 		buildGui();
@@ -510,7 +509,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.tableauPatients.getColumnModel().getColumn(4).setResizable(false);
 		this.tableauPatients.setPreferredScrollableViewportSize(new Dimension(290,267));
 
-		this.tableauPatients.setDefaultRenderer(Date.class, new DateRendererAnon());
+		this.tableauPatients.setDefaultRenderer(Date.class, new DateRenderer());
 		this.tableauPatients.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		this.tableauPatients.addMouseListener(new TablePatientsMouseListener(
 				this, this.tableauPatients, this.modelePatients, this.modeleStudies, this.modeleSeries, 
@@ -540,31 +539,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		popMenuPatients.addSeparator();
 		popMenuPatients.add(menuItemDeletePatients);
 		//Selectionne la ligne avant affichage du popupMenu
-		popMenuPatients.addPopupMenuListener(new PopupMenuListener() {
-
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        int rowAtPoint = tableauPatients.rowAtPoint(SwingUtilities.convertPoint(popMenuPatients, new Point(0, 0), tableauPatients));
-                        if (rowAtPoint > -1) {
-                        	tableauPatients.setRowSelectionInterval(rowAtPoint, rowAtPoint);
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {
-            }
-
-			@Override
-			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
-			}
-        });
-		
-		this.tableauPatients.setComponentPopupMenu(popMenuPatients);
+		addPopUpMenuListener(popMenuPatients,tableauPatients);
+		tableauPatients.setComponentPopupMenu(popMenuPatients);
 
 		////////////////////////// STUDIES ///////////////////////////////
 
@@ -591,7 +567,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		sorterStudies.setSortKeys(sortKeysStudies);
 		sorterStudies.sort();
 		this.tableauStudies.setRowSorter(sorterStudies);
-		this.tableauStudies.setDefaultRenderer(Date.class, new DateRendererAnon());
+		this.tableauStudies.setDefaultRenderer(Date.class, new DateRenderer());
 		
 		JMenuItem menuItemModifyStudy = new JMenuItem("Show tags / Modify");
 		menuItemModifyStudy.addActionListener(new ActionListener() {
@@ -609,34 +585,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		popMenuStudies.add(menuItemModifyStudy);
 		popMenuStudies.addSeparator();
 		popMenuStudies.add(menuItemDeleteStudy);
-		popMenuStudies.addPopupMenuListener(new PopupMenuListener() {
-
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        int rowAtPoint = tableauStudies.rowAtPoint(SwingUtilities.convertPoint(popMenuStudies, new Point(0, 0), tableauStudies));
-                        if (rowAtPoint > -1) {
-                        	tableauStudies.setRowSelectionInterval(rowAtPoint, rowAtPoint);
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {
-
-            }
-
-			@Override
-			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
-				
-			}
-        });
-		
-		
-		this.tableauStudies.setComponentPopupMenu(popMenuStudies);
+		addPopUpMenuListener(popMenuStudies,tableauStudies);
+		tableauStudies.setComponentPopupMenu(popMenuStudies);
 
 		////////////////////////// SERIES ///////////////////////////////
 
@@ -1022,7 +972,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		anonStudiesTable.getColumnModel().getColumn(3).setMinWidth(0);
 		anonStudiesTable.getColumnModel().getColumn(3).setMaxWidth(0);
 		anonStudiesTable.setPreferredScrollableViewportSize(new Dimension(430,130));
-		anonStudiesTable.setDefaultRenderer(Date.class, new DateRendererAnon());
+		anonStudiesTable.setDefaultRenderer(Date.class, new DateRenderer());
 
 		displayAnonTool = new JButton("Anonymize");
 		displayAnonTool.addActionListener(new ActionListener() {
@@ -1419,14 +1369,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				};
 				
 				worker.execute();
-				
 
-				
-				
 			}
-			
-			
-			
+
 		});
 		panelButton.add(btnReadSeries);
 		panelTableauSeries.add(panelButton, BorderLayout.EAST);
@@ -1471,7 +1416,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.tableauExportStudies.getColumnModel().getColumn(5).setResizable(false);
 		this.tableauExportStudies.setPreferredScrollableViewportSize(new Dimension(700,267));
 
-		this.tableauExportStudies.setDefaultRenderer(Date.class, new DateRendererAnon());
+		this.tableauExportStudies.setDefaultRenderer(Date.class, new DateRenderer());
 
 		JPopupMenu popMenuExportStudies = new JPopupMenu();
 		this.tableauExportStudies.setComponentPopupMenu(popMenuExportStudies);
@@ -1522,28 +1467,17 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		sorterExportStudies.setSortKeys(sortKeysStudies);
 		sorterExportStudies.sort();
 		this.tableauExportStudies.setRowSorter(sorterExportStudies);
-
+		tableauExportStudies.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		
 		this.tableauExportStudies.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent event) {
-				// selects the row at which point the mouse is clicked
-				Point point = event.getPoint();
-				int currentRow = tableauExportStudies.rowAtPoint(point);
-				tableauExportStudies.setRowSelectionInterval(currentRow, currentRow);
-				// We clear the details
-				modeleExportSeries.clear();
-				try {
-					if(modeleExportStudies.getRowCount() != 0){
-						String studyID = (String)tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(), 5);
-						modeleExportSeries.addSerie(studyID);
-					}
-				}catch (RuntimeException e1){
-					//Ignore
-				} catch (Exception e1) {
-					e1.printStackTrace();
-				}
+				if(tableauExportStudies.getSelectedRow() != -1){
+					modeleExportSeries.clear();
+					String studyID = (String)tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(), 5);
+					modeleExportSeries.addSerie(studyID);
+				}	
 			}
-
 		});
 
 		this.tableauExportSeries = new JTable(modeleExportSeries);
@@ -1564,18 +1498,10 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.tableauExportSeries.getColumnModel().getColumn(4).setMaxWidth(0);
 		this.tableauExportSeries.getColumnModel().getColumn(4).setResizable(false);
 		this.tableauExportSeries.setPreferredScrollableViewportSize(new Dimension(460,267));
+		
+		tableauExportSeries.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-		this.tableauExportSeries.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent event) {
-				// selects the row at which point the mouse is clicked
-				Point point = event.getPoint();
-				int currentRow = tableauExportSeries.rowAtPoint(point);
-				tableauExportSeries.setRowSelectionInterval(currentRow, currentRow);
-			}
-		});
-
-		this.tableauExportSeries.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
+		tableauExportSeries.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
 			private static final long serialVersionUID = 1L;
 
 			@Override
@@ -1598,6 +1524,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		});
 
 		JPopupMenu popMenuExportSeries = new JPopupMenu();
+		addPopUpMenuListener(popMenuExportSeries , tableauExportSeries);
 		this.tableauExportSeries.setComponentPopupMenu(popMenuExportSeries);
 
 		JMenuItem menuItemExportSeriesDelete = new JMenuItem("Delete this serie");
@@ -2375,10 +2302,10 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				ConnectionSetup setup = new ConnectionSetup(runOrthanc);
+				ConnectionSetup setup = new ConnectionSetup(runOrthanc, connexionHttp);
 				setup.setLocationRelativeTo(gui);
 				setup.setVisible(true);
-				connexionHttp=new OrthancRestApis();
+				connexionHttp=new OrthancRestApis(null);
 				if (setup.ok)JOptionPane.showMessageDialog(null,"Restart to take account");
 				
 			}
@@ -2899,6 +2826,32 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	
 	public void setAnonymizeListener(AnonymizeListener anonymizeListener) {
 		this.anonymizeListener=anonymizeListener;
+	}
+	
+	private void addPopUpMenuListener(JPopupMenu popupMenu , JTable table) {
+		popupMenu.addPopupMenuListener(new PopupMenuListener() {
+
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        int rowAtPoint = table.rowAtPoint(SwingUtilities.convertPoint(popupMenu, new Point(0, 0), table));
+                        if (rowAtPoint > -1) {
+                        	table.setRowSelectionInterval(rowAtPoint, rowAtPoint);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+            }
+
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
+			}
+        });
 	}
 	
 	// LAUNCHERS

@@ -95,22 +95,6 @@ public class Monitoring_GUI extends JFrame {
 	 */
 	private JTable table;
 	private JTable table_burning_history;
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					Monitoring_GUI frame = new Monitoring_GUI(new OrthancRestApis());
-					frame.pack();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
 
 	/**
 	 * Create the frame.

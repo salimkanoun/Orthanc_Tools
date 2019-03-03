@@ -25,11 +25,11 @@ import javax.swing.table.DefaultTableCellRenderer;
  * Format Date in MM-dd-YYYY format in tables
  */
 
-public class DateRendererAnon extends DefaultTableCellRenderer{
+public class DateRenderer extends DefaultTableCellRenderer{
 	private static final long serialVersionUID = 1L;
 	private DateFormat formatter = new SimpleDateFormat("MM-dd-yyyy");
 
-	public DateRendererAnon() {
+	public DateRenderer() {
 		super();
 	}      
 

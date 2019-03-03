@@ -52,20 +52,6 @@ public class CTP_Gui extends JDialog {
 	private boolean ok=false;
 
 	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			CTP_Gui dialog = new CTP_Gui(null);
-			dialog.pack();
-			dialog.setVisible(true);
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
 	 * Create the dialog.
 	 */
 	public CTP_Gui(String CTPAddress) {

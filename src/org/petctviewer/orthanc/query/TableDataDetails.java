@@ -18,12 +18,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.query;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
 
-public class TableDataDetails extends AbstractTableModel{
+public class TableDataDetails extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
 	private String[] entetes = {"Series name", "Modality", "Serie n�"};
@@ -48,19 +47,6 @@ public class TableDataDetails extends AbstractTableModel{
 
 	public String getColumnName(int columnIndex){
 		return entetes[columnIndex];
-	}
-
-	public Object getValueAt(int rowIndex, int columnIndex){
-		switch(columnIndex){
-		case 0:
-			return details.get(rowIndex).getSeriesDescription();
-		case 1:
-			return details.get(rowIndex).getModality();
-		case 2:
-			return details.get(rowIndex).getSeriesNumber();
-		default:
-			return null; // Should never happen
-		}
 	}
 
 	/*
@@ -96,15 +82,6 @@ public class TableDataDetails extends AbstractTableModel{
 	}
 
 	/*
-	 * This method gets every available AETs and put them in an Object[]
-	 */
-	public String[] getAETs(){
-		String[] listeAETs = null;
-		listeAETs = rest.getAets();
-		return listeAETs;
-	}
-
-	/*
 	 * This method clears the details list
 	 */
 	public void clear(){
@@ -122,10 +99,9 @@ public class TableDataDetails extends AbstractTableModel{
 	/*
 	 * This method retrieves the needed result
 	 */
-	public void retrieve(String queryID, int answer, String retrieveAET) throws IOException{
+	public void retrieve(String queryID, int answer, String retrieveAET) {
 		rest.retrieve(queryID, answer, retrieveAET);
 	}
-
 
 	/*
 	 * This method clears the queries IDs list

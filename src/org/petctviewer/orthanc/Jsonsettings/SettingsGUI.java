@@ -75,7 +75,7 @@ public class SettingsGUI extends JFrame {
 	synchronousCMove, overwriteInstances;
 	private JComboBox<String> comboBox_Encoding, storageAccessOnFind ;
 	
-	private OrthancRestApis connexion=new OrthancRestApis();
+	private OrthancRestApis connexion=new OrthancRestApis(null);
 
 	private Json_Settings settings=new Json_Settings();
 	
@@ -1125,7 +1125,7 @@ public class SettingsGUI extends JFrame {
 	Bouttons_Bouttons.add(btnRestartOrthancServer);
 	btnRestartOrthancServer.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent arg0) {
-			if (connexion.testConnexion()) connexion.restartOrthanc();
+			if (connexion.isConnected()) connexion.restartOrthanc();
 		}
 	});
 	}

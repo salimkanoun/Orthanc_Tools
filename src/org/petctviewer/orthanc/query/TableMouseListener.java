@@ -20,7 +20,6 @@ package org.petctviewer.orthanc.query;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -83,12 +82,10 @@ public class TableMouseListener extends MouseAdapter {
 
 				this.modeleDetails.addDetails(patientName, patientID, studyDate, studyDescription, accessionNumber, studyInstanceUID, queryAET.getSelectedItem().toString());
 			}
-		} catch (IOException e1) {
-			e1.printStackTrace();
-
 		} catch (Exception e1) {
-			//ignore
+			e1.printStackTrace();
 		}
+
 	}
 	
 	@Override
