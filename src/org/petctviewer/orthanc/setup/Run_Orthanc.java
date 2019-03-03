@@ -202,17 +202,19 @@ public class Run_Orthanc {
 	
 	public void stopOrthanc() {
 		System.out.println("Stoping Orthanc");
-		//Ask Orthanc to shutdown
-		connexionHttp.makePostConnection("/tools/shutdown", "");
+		
+		
 		//Destroy the process
 		try {
+			//Ask Orthanc to shutdown
+			connexionHttp.makePostConnection("/tools/shutdown", "");
 			while (process.isAlive()) {
 				Thread.sleep(1000);
 			}
 			process.destroy();
 			orthancThread.interrupt();
 			isStarted=false;
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		

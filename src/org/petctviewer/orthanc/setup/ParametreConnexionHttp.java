@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.prefs.Preferences;
 
@@ -31,6 +32,10 @@ import javax.swing.JOptionPane;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 /**
  * Permet de recuperer l'adresse du serveur Orthanc a partir des settings de BIdatabase ou des settings defini dans le settings panel des Orthanc Plugin
@@ -45,6 +50,8 @@ public class ParametreConnexionHttp {
 	private String authentication;
 	private String orthancVersion;
 	private boolean versionHigher131;
+	private JsonParser jsonParser=new JsonParser();
+	private JsonParser parser=new JsonParser();
 	
 	
 	public ParametreConnexionHttp()  {
@@ -63,25 +70,21 @@ public class ParametreConnexionHttp {
 	}
 	
 	
-	private HttpURLConnection makeGetConnection(String apiUrl) {
+	private HttpURLConnection makeGetConnection(String apiUrl) throws Exception {
 		
 		HttpURLConnection conn=null;
-		try {
-			URL url = new URL(fullAddress+apiUrl);
-			conn = (HttpURLConnection) url.openConnection();
-			conn.setDoOutput(true);
-			conn.setRequestMethod("GET");
-			if((fullAddress != null && fullAddress.contains("https"))){
-					HttpsTrustModifier.Trust(conn);
-			}
-			if(authentication != null){
-				conn.setRequestProperty("Authorization", "Basic " + authentication);
-			}
-			conn.getResponseMessage();
-			
-		} catch (Exception e1) {
-			e1.printStackTrace();
+		URL url = new URL(fullAddress+apiUrl);
+		conn = (HttpURLConnection) url.openConnection();
+		conn.setDoOutput(true);
+		conn.setRequestMethod("GET");
+		if((fullAddress != null && fullAddress.contains("https"))){
+				HttpsTrustModifier.Trust(conn);
 		}
+		if(authentication != null){
+			conn.setRequestProperty("Authorization", "Basic " + authentication);
+		}
+		conn.getResponseMessage();
+
 
 		return conn;
 	
@@ -114,8 +117,9 @@ public class ParametreConnexionHttp {
 
 	public StringBuilder makeGetConnectionAndStringBuilder(String apiUrl) {
 		
-		StringBuilder sb = new StringBuilder() ;
+		StringBuilder sb = null ;
 		try {
+			sb = new StringBuilder();
 			HttpURLConnection conn = makeGetConnection(apiUrl);
 			if (conn !=null) {
 				BufferedReader br = new BufferedReader(new InputStreamReader(
@@ -128,15 +132,15 @@ public class ParametreConnexionHttp {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			return null;
 		}
 		
 		return sb;
 	}
 
-	public HttpURLConnection makePostConnection(String apiUrl, String post) {
+	public HttpURLConnection makePostConnection(String apiUrl, String post) throws Exception {
 
 		HttpURLConnection conn = null ;
-		try {
 			URL url = new URL(fullAddress+apiUrl);
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setDoOutput(true);
@@ -151,9 +155,6 @@ public class ParametreConnexionHttp {
 			os.write(post.getBytes());
 			os.flush();
 			conn.getResponseMessage();
-		} catch ( Exception e) { 
-			e.printStackTrace();
-		}
 		
 		return conn;
 	}
@@ -190,8 +191,9 @@ public class ParametreConnexionHttp {
 		
 	public StringBuilder makePostConnectionAndStringBuilder(String apiUrl, String post) {
 		
-		StringBuilder sb =new StringBuilder();
+		StringBuilder sb =null;
 		try {
+			sb=new StringBuilder();
 			HttpURLConnection conn = makePostConnection(apiUrl, post);
 			BufferedReader br = new BufferedReader(new InputStreamReader(
 					(conn.getInputStream())));
@@ -205,6 +207,7 @@ public class ParametreConnexionHttp {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+			return null;
 		}
 		return sb; 
 	}
@@ -222,7 +225,7 @@ public class ParametreConnexionHttp {
 		return is;
 	}
 	
-	public void makeDeleteConnection(String apiUrl) {
+	public boolean makeDeleteConnection(String apiUrl) {
 		try {
 			URL url=new URL(fullAddress+apiUrl);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -239,8 +242,9 @@ public class ParametreConnexionHttp {
 			conn.disconnect();
 		} catch (Exception e1) {
 			e1.printStackTrace();
+			return false;
 		}
-		
+		return true;
 	
 	}
 	
@@ -248,7 +252,6 @@ public class ParametreConnexionHttp {
 	public Boolean testConnexion() {	
 		Boolean test=true;
 		try {
-			makeGetConnection("/system");
 			StringBuilder sb= makeGetConnectionAndStringBuilder("/system");
 			JSONParser parser=new JSONParser();
 			JSONObject systemJson=(JSONObject) parser.parse(sb.toString());
@@ -319,6 +322,83 @@ public class ParametreConnexionHttp {
 			JOptionPane.showMessageDialog(null,"Server Sucessfully restarted");
 		}
 
+	}
+	
+	/**
+	 * Retrun available AETs in Orthanc in Array
+	 * @return
+	 */
+	public String[] getAET() {
+		StringBuilder answers=makeGetConnectionAndStringBuilder("/modalities");
+		JsonArray aetsAnswer = (JsonArray) jsonParser.parse(answers.toString());
+		
+		// Prepare the string Array that will contains available AETs
+		String[] aets= new String[aetsAnswer.size()];
+		
+		for(int i=0; i<aetsAnswer.size(); i++){
+			aets[i]=aetsAnswer.get(i).getAsString();
+		}
+
+		return aets;
+	}
+	
+	/**
+	 * Return available Peers in Orthanc in Array
+	 * @return
+	 */
+	public String[] getPeers() {
+		StringBuilder answers=makeGetConnectionAndStringBuilder("/peers");
+		JsonArray peersAnswer = (JsonArray) jsonParser.parse(answers.toString());
+		
+		// Prepare the string Array that will contains available Peers
+		String[] peers= new String[peersAnswer.size()];
+		
+		for(int i=0; i<peersAnswer.size(); i++){
+			peers[i]=peersAnswer.get(i).getAsString();
+		}
+
+		return peers;
+	}
+	
+	
+	//SK A TESTER
+	public boolean sendToAet(String aet, ArrayList<String> idList) {
+
+		JsonArray ids=new JsonArray();
+		for(int i = 0; i < idList.size(); i++){
+			ids.add(idList.get(i));
+		}
+		StringBuilder sb=makePostConnectionAndStringBuilder("/modalities/" + aet + "/store", ids.toString());
+		//SK A TESTER DANS UN VRAI RESEAU POUR VOIR SI IL Y A UNE REPONSE
+		System.out.println(sb);
+		if(sb!=null) {
+			return true;
+		}else {
+			return false;
+		}
+		
+	}
+	
+	/**
+	 * Send Orthanc ressources IDs to Peer, return true if transfert success
+	 * @param peer
+	 * @param idList
+	 * @return
+	 */
+	public boolean sendToPeer(String peer, ArrayList<String> idList) {
+		JsonArray ids=new JsonArray();
+		for(int i = 0; i < idList.size(); i++){
+			ids.add(idList.get(i));
+		}
+		StringBuilder sb=makePostConnectionAndStringBuilder("/peers/" + peer + "/store", ids.toString());
+		
+		JsonObject answer=(JsonObject) parser.parse(sb.toString());
+		int failed=answer.get("FailedInstancesCount").getAsInt();
+		if(failed==0) {
+			return true;
+		}else {
+			return false;
+		}
 	}
 	
 	

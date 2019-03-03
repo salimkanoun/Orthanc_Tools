@@ -234,7 +234,7 @@ public class CD_Burner {
 				//On efface la study de Orthanc
 				if (deleteStudies) connexion.makeDeleteConnection("/studies/"+newStableStudyID.get(i));
 				
-			} catch (IOException | org.json.simple.parser.ParseException | ParseException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			

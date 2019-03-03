@@ -17,7 +17,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +35,6 @@ public class QueryFillStore {
 	private String level;
 	private String input;
 	private ArrayList<String> ids = new ArrayList<String>();
-	private String toolboxListContent;
 	private JSONParser parser = new JSONParser();
 	ParametreConnexionHttp connexion;
 
@@ -130,10 +128,7 @@ public class QueryFillStore {
 		
 		if(action.equals("storeIDs") && this.url.toString().contains("tools/find")){
 			sb=connexion.makePostConnectionAndStringBuilder(url, this.query);
-		}else if(action.equals("store")){
-			sb=connexion.makePostConnectionAndStringBuilder(url, this.toolboxListContent);
-		}
-		else {
+		} else {
 			sb=connexion.makeGetConnectionAndStringBuilder(this.url);
 		}
 		return sb.toString();
@@ -181,10 +176,6 @@ public class QueryFillStore {
 			
 		}
 	}
-
-	public ArrayList<String> getIDs(){
-		return this.ids;
-	}
 	
 	// Renvoie les responses JSON par niveau de query
 	public List<JSONObject> getJsonResponse() {
@@ -226,62 +217,11 @@ public class QueryFillStore {
 		return studyDescriptionAndUID;
 	}
 
-	public Object[] getAET() {
-		this.url="/modalities";
-		
-		// We split the server response in a tab
-		ArrayList<String> indexes = new ArrayList<String>();
-		
-		try {
-			JSONArray aet = (JSONArray) parser.parse(this.sendQuery("get"));
-			for (int i=0 ; i<aet.size(); i++){
-				indexes.add(aet.get(i).toString());
-			}
-		} catch (ParseException e) {e.printStackTrace();}
-		
-		// We convert the ArrayList to an Object[]
-		return indexes.toArray();
-	}
 	
-	public void store(String aet, ArrayList<String> idList) throws IOException{
-		StringBuilder ids = new StringBuilder();
-		ids.append("[");
-		for(int i = 0; i < idList.size(); i++){
-			ids.append("\"" + idList.get(i) + "\",");
-		}
-		ids.replace(ids.length()-1, ids.length(), "]");
-		this.toolboxListContent = ids.toString();
-		this.url="/modalities/" + aet + "/store";
-		this.sendQuery("store");
-	}
-	
-	public Object[] getPeers() {
-		this.url="/peers";
-		
-		// We split the server response in a tab
-		ArrayList<String> indexes = new ArrayList<String>();
 
-		try {
-			JSONArray peers = (JSONArray) parser.parse(this.sendQuery("get"));
-			for (int i=0 ; i<peers.size(); i++){
-				indexes.add(peers.get(i).toString());
-			}
-		} catch (ParseException e) {e.printStackTrace();}
-		
-		// We convert the ArrayList to an Object[]
-		return indexes.toArray();
-	}
 	
-	public void sendPeer(String peer, ArrayList<String> idList) throws IOException{
-		StringBuilder ids = new StringBuilder();
-		ids.append("[");
-		for(int i = 0; i < idList.size(); i++){
-			ids.append("\"" + idList.get(i) + "\",");
-		}
-		ids.replace(ids.length()-1, ids.length(), "]");
-		this.toolboxListContent = ids.toString();
-		this.url="/peers/" + peer + "/store";
-		this.sendQuery("store");
-	}
+
+	
+
 	
 }

@@ -172,5 +172,10 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 		openCloseAnonTool(true);
 		
 	}
+	
+	public static void main(String[] args) {
+		CTP_Import_GUI ctpImport=new CTP_Import_GUI();
+		ctpImport.setVisible(true);
+	}
 
 }

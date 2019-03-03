@@ -17,8 +17,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,23 +104,31 @@ public class TableDataExportSeries extends AbstractTableModel{
 			fireTableCellUpdated(row, col);
 		}
 		SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-
+			boolean success=true;
 			@Override
 			protected Void doInBackground() {
 				url="/series/" + uid + "/modify";
 				stateExport.setText("<html>Modifying a serie description <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
-				HttpURLConnection conn =connexionHttp.makePostConnection(url, ("{\"Replace\":{\"SeriesDescription\":\"" + value.toString() + "\"}}"));
-				connexionHttp.makeDeleteConnection("/series/" + uid );
 				frame.pack();
-				conn.disconnect();
+				StringBuilder sb =connexionHttp.makePostConnectionAndStringBuilder(url, ("{\"Replace\":{\"SeriesDescription\":\"" + value.toString() + "\"}}"));
+				if(sb!=null) {
+					connexionHttp.makeDeleteConnection("/series/" + uid );
+				}else {
+					success=false;
+				}
 				return null;
 			}
 			@Override
 			protected void done(){
-				clear();
-				addSerie(studyID);
-				stateExport.setText("<html><font color='green'>The description has been changed.</font></html>");
-				frame.pack();
+				if(success) {
+					clear();
+					addSerie(studyID);
+					stateExport.setText("<html><font color='green'>The description has been changed.</font></html>");
+					frame.pack();	
+				}else {
+					stateExport.setText("<html><font color='red'>Error during Dicom Edition</font></html>");
+				}
+				
 			}
 		};
 		if(!oldDesc.equals(value.toString()) && col == 0){
@@ -164,13 +170,15 @@ public class TableDataExportSeries extends AbstractTableModel{
 		return false;
 	}
 
-	public void removeAllSecondaryCaptures() throws IOException{
+	public void removeAllSecondaryCaptures() {
 		ArrayList<Serie> seriesToRemove = new ArrayList<Serie>();
 		for(Serie s : series){
 			if(s.isSecondaryCapture()){
 				url="/series/" + s.getId();
-				connexionHttp.makeDeleteConnection(url);
-				seriesToRemove.add(s);
+				boolean success=connexionHttp.makeDeleteConnection(url);
+				if(success) {
+					seriesToRemove.add(s);
+				}
 			}
 		}
 		for(Serie s : seriesToRemove){

@@ -51,6 +51,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -124,8 +125,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	
 	//Objet de connexion aux restFul API, prend les settings des registery et etabli les connexion a la demande
 	public ParametreConnexionHttp connexionHttp;
-	
-	
 	protected JPanel tablesPanel, mainPanel, topPanel, anonBtnPanelTop;
 	
 	// Tables (p1)
@@ -169,7 +168,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	private ArrayList<String> manageShownContentList = new ArrayList<String>();
 	private ArrayList<String> zipShownContentList = new ArrayList<String>();
 	private JPanel oToolRight, oToolRightManage;
-	private JComboBox<Object> listeAET;
+	private JComboBox<String> listeAET;
 	private JComboBox<String> comboToolChooser;
 	private JPopupMenu popMenuPatients = new JPopupMenu();
 	private JPopupMenu popMenuStudies = new JPopupMenu();
@@ -183,7 +182,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	// Tab Export (p2)
 	private JLabel stateExports = new JLabel("");
 	protected JButton peerExport,csvReport, exportToZip, exportBtn, dicomStoreExport;
-	protected JComboBox<Object> listePeers, listeAETExport ;
+	protected JComboBox<String> listePeers ;
+
+	protected JComboBox<String> listeAETExport;
 	private JTable tableauExportStudies;
 	private JTable tableauExportSeries;
 	private TableDataExportStudies modeleExportStudies;
@@ -215,7 +216,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	
 	//CTP
 	protected JTextField addressFieldCTP;
-	protected JComboBox<Object> listePeersCTP ;
+	protected JComboBox<String> listePeersCTP ;
 	protected JButton exportCTP;
 	private String CTPUsername;
 	private String CTPPassword;
@@ -792,53 +793,49 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 		JPanel storeTool = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JButton storeBtn = new JButton("Store list");
-		try {
-			query = new QueryFillStore(connexionHttp);
-			listeAET = new JComboBox<Object>(query.getAET());
+		
+		listeAET = new JComboBox<String>();
+		listeAET.setPreferredSize(new Dimension(297, 27));
+		storeTool.add(listeAET);
+		storeBtn.addActionListener(new ActionListener() {
 
-			listeAET.setPreferredSize(new Dimension(297, 27));
-			storeTool.add(listeAET);
-			storeBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(!zipContent.isEmpty()){
+					
+					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+						boolean success;
+						@Override
+						protected Void doInBackground()  {
+							state.setText("<html>Storing data <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
+							storeBtn.setEnabled(false);
+							pack();
+							query = new QueryFillStore(connexionHttp);
+							success=connexionHttp.sendToAet(listeAET.getSelectedItem().toString(), zipContent);
+							return null;
+						}
 
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					if(!zipContent.isEmpty()){
-						state.setText("<html>Storing data <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
-						storeBtn.setEnabled(false);
-						pack();
-						SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-
-							@Override
-							protected Void doInBackground() throws Exception {
-								try {
-									query.store(listeAET.getSelectedItem().toString(), zipContent);
-									
-									
-								} catch (IOException e1) {
-									e1.printStackTrace();
-								}
-								return null;
-							}
-
-							@Override
-							protected void done(){
+						@Override
+						protected void done(){
+							if(success) {
 								state.setText("<html><font color='green'>The data have successfully been stored.</font></html>");
 								zipShownContent.removeAllItems();
 								zipShownContentList.removeAll(zipShownContentList);
 								zipContent.removeAll(zipContent);
-								storeBtn.setEnabled(true);
-								pack();
+							}else {
+								state.setText("<html><font color='red'>DICOM Send Failed</font></html>");
+								
 							}
-						};
-						worker.execute();
-					}
+							storeBtn.setEnabled(true);
+							pack();
+						}
+					};
+					worker.execute();
 				}
-			});
-			storeTool.add(storeBtn);
-		} catch (NullPointerException e){
-			JOptionPane.showMessageDialog(gui, "You should set an AET before using this app (some functions may not work).",
-					"No AET found", JOptionPane.INFORMATION_MESSAGE);
-		}
+			}
+		});
+		storeTool.add(storeBtn);
+
 		JPanel comboBoxBtn = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		comboBoxBtn.add(zipShownContent);
 		
@@ -1627,16 +1624,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		menuItemExportSeriesDeleteAllSc.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-					boolean[] studyExist = {true};
-					modeleExportSeries.removeAllSecondaryCaptures();
-
-					if(modeleExportSeries.getSeries().isEmpty()){
-						modeleExportStudies.removeStudy(tableauExportStudies.convertRowIndexToModel(tableauExportStudies.getSelectedRow()));
-						studyExist[0] = false;
-					}
-				} catch (IOException e1) {
-					e1.printStackTrace();
+				modeleExportSeries.removeAllSecondaryCaptures();
+				if(modeleExportSeries.getSeries().isEmpty()){
+					modeleExportStudies.removeStudy(tableauExportStudies.convertRowIndexToModel(tableauExportStudies.getSelectedRow()));
 				}
 			}
 		});
@@ -1668,7 +1658,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 					
 					@Override
-					protected Void doInBackground() throws IOException {
+					protected Void doInBackground() throws Exception {
 						exportBtn.setText("Exporting...");
 						exportBtn.setEnabled(false);
 						
@@ -1851,22 +1841,17 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				
 					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 						
-						boolean sendOk=false;
+						boolean sendOk;
 						boolean validateOk=false;
 						
 						@SuppressWarnings("unchecked")
 						@Override
 						protected Void doInBackground() {
 							//Send DICOM to CTP selected Peer
-							try {
-								stateExports.setText("<html><font color= 'green'> Step 1/3 Sending to CTP Peer :"+listePeers.getSelectedItem().toString()+ "</font></html>");
-								exportCTP.setEnabled(false);
-								query.sendPeer(listePeersCTP.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
-								sendOk=true;
-							} catch (IOException e1) {
-								stateExports.setText("<html><font color= 'red'>The upload was not received (" + e1.getMessage() + ") </font></html>");
-							}
-							//If send sucessfully, validation of Upload
+							stateExports.setText("<html><font color= 'green'> Step 1/3 Sending to CTP Peer :"+listePeers.getSelectedItem().toString()+ "</font></html>");
+							exportCTP.setEnabled(false);
+							sendOk=connexionHttp.sendToPeer(listePeersCTP.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
+							
 							if (sendOk) {
 								stateExports.setText("<html><font color= 'green'>Step 2/3 : Validating upload</font></html>");
 								//Create CTP object to manage CTP communication
@@ -1902,14 +1887,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 									// empty the export table
 									modeleExportStudies.clear();
 									modeleExportSeries.clear();
-									
 								}
-								else {
-								return null;
-								}
-							}
-							else {
-								return null;
 							}
 							
 							return null;
@@ -1934,16 +1912,13 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				}
 			});
 
-		
-			QueryFillStore query = new QueryFillStore(connexionHttp);
-
 			exportToZip = new JButton("Zip");
 			exportToZip.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 						@Override
-						protected Void doInBackground() throws IOException {
+						protected Void doInBackground() throws Exception {
 							stateExports.setText("Converting to Zip...");
 							exportToZip.setText("Converting to Zip...");
 							exportToZip.setEnabled(false);
@@ -1984,27 +1959,31 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			});
 
 
-			listeAETExport = new JComboBox<Object>(query.getAET());
+			listeAETExport = new JComboBox<String>();
+			//Fill Aets combobox with values from Orthanc
+			this.refreshAets();
 			dicomStoreExport = new JButton("Store");
 			dicomStoreExport.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+						boolean storeSuccess;
 						@Override
 						protected Void doInBackground() {
-							try {
-								dicomStoreExport.setEnabled(false);
-								dicomStoreExport.setText("Storing...");
-								query.store(listeAETExport.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
-							} catch (IOException e1) {
-								stateExports.setText("<html><font color= 'red'>The request was not received (" + e1.getMessage() + ") </font></html>");
-							}
+							dicomStoreExport.setEnabled(false);
+							dicomStoreExport.setText("Storing...");
+							storeSuccess=connexionHttp.sendToAet(listeAETExport.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
 							return null;
 						}
 
 						@Override
 						protected void done(){
-							stateExports.setText("<html><font color= 'green'>The request was successfully received</font></html>");
+							if(storeSuccess) {
+								stateExports.setText("<html><font color= 'green'>The request was successfully received</font></html>");
+							}else {
+								stateExports.setText("<html><font color= 'red'>The request was not received</font></html>");
+							}
+							
 							dicomStoreExport.setText("Store");
 							dicomStoreExport.setEnabled(true);
 						}
@@ -2016,31 +1995,29 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				}
 			});
 
-			listePeers = new JComboBox<Object>(query.getPeers());
+			listePeers = new JComboBox<String>();
 			peerExport = new JButton("OrthancPeer");
 			peerExport.addActionListener(new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+						boolean sendok;
 						@Override
 						protected Void doInBackground() {
 							peerExport.setEnabled(false);
 							peerExport.setText("Sending...");
-							boolean sendok=true;
-							try {
-								query.sendPeer(listePeers.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
-							} catch (IOException e1) {
-								sendok=false;
-								stateExports.setText("<html><font color= 'red'>The upload was not received (" + e1.getMessage() + ") </font></html>");
-							}
-							if (sendok) stateExports.setText("<html><font color= 'green'>The upload was successfully received</font></html>");
-							
+							sendok=connexionHttp.sendToPeer(listePeers.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
 							return null;
 						}
 
 						@Override
 						protected void done(){
+							if(sendok) {
+								stateExports.setText("<html><font color= 'green'>The upload was successfully received</font></html>");
+							}else {
+								stateExports.setText("<html><font color= 'red'>The upload was not received </font></html>");
+							}
 							peerExport.setText("OrthancPeer");
 							peerExport.setEnabled(true);
 						}
@@ -2336,7 +2313,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		addressFieldCTP.setPreferredSize(new Dimension(300,20));
 		addressFieldCTP.setText(jprefer.get("CTPAddress", "http://"));
 		JLabel peerLabel=new JLabel("CTP Peer");
-		listePeersCTP = new JComboBox<Object>(query.getPeers());
+		listePeersCTP = new JComboBox<String>();
+		this.refreshPeers();
 		listePeersCTP.insertItemAt("Choose", 0);
 		if(jprefer.getInt("CTPPeer", 0) <= listePeersCTP.getItemCount()-1) listePeersCTP.setSelectedIndex(jprefer.getInt("CTPPeer", 0));
 		else listePeersCTP.setSelectedIndex(0);
@@ -2908,6 +2886,20 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		removeFromAnonList.setEnabled(enable);
 		importCTP.setEnabled(enable);
 	}
+	
+	public void refreshAets() {
+		String[] aets=connexionHttp.getAET();
+		listeAET.setModel(new DefaultComboBoxModel<String>(aets)) ;
+		listeAETExport.setModel(new DefaultComboBoxModel<String>(aets));
+	}
+	
+	public void refreshPeers() {
+		String[] peers=connexionHttp.getPeers();
+		listePeersCTP.setModel(new DefaultComboBoxModel<String>(peers)) ;
+		listePeers.setModel(new DefaultComboBoxModel<String>(peers));
+	}
+	
+	
 	
 	public void setAnonymizeListener(AnonymizeListener anonymizeListener) {
 		this.anonymizeListener=anonymizeListener;

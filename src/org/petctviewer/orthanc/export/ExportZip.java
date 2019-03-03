@@ -20,7 +20,6 @@ package org.petctviewer.orthanc.export;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.text.DateFormat;
@@ -62,7 +61,7 @@ public class ExportZip{
 		this.temporary = temporary;
 	}
 
-	public void generateZip(boolean dicomDir) throws IOException  {
+	public void generateZip(boolean dicomDir) throws Exception  {
 		
 		JsonArray idArray=new JsonArray();
 		for(String id : zipContent) {
