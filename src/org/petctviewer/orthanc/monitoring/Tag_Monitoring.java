@@ -11,18 +11,18 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class Tag_Monitoring {
 	
 	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
-	private ParametreConnexionHttp parametre;
+	private OrthancRestApis parametre;
 	private String level;
 	private JSONParser parser=new JSONParser();
 	private Timer timer;
 	JTextArea textAreaConsole;
 	
-	public Tag_Monitoring(ParametreConnexionHttp parametre, String level, JTextArea textAreaConsole) {
+	public Tag_Monitoring(OrthancRestApis parametre, String level, JTextArea textAreaConsole) {
 		this.parametre=parametre;
 		this.level=level;
 		this.textAreaConsole=textAreaConsole;

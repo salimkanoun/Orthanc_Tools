@@ -18,22 +18,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.query;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class Rest {
 
-	private ParametreConnexionHttp connexion;
+	private OrthancRestApis connexion;
 	private JSONObject contentJson=new JSONObject();
 	private JSONParser parser = new JSONParser();
 
-	public Rest(ParametreConnexionHttp connexion){
+	public Rest(OrthancRestApis connexion){
 		this.connexion=connexion;
 	}
 
@@ -272,40 +269,7 @@ public class Rest {
 	public void retrieve(String queryID, int answer, String retrieveAET) {
 		connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve/", retrieveAET);
 	}
-
-	/*
-	 * This method is similar to getQueryAnswerIndexes, 
-	 * except it gives every available AETs instead of queries's answer's indexes.
-	 */
-	public Object[] getAET() throws IOException{
-		
-		ArrayList<String> indexes=new ArrayList<String>();
-		try {
-			JSONArray contentArray=(JSONArray) parser.parse(connexion.makeGetConnectionAndStringBuilder("/modalities/").toString());
-			for (int i=0; i<contentArray.size(); i++) {
-				indexes.add((String) contentArray.get(i));
-			}
-		} catch (ParseException | NullPointerException e) {
-			e.printStackTrace();
-		}
-		
-		return indexes.toArray();
-	}
-
-	/*
-	 * This method is similar to getAET, 
-	 * except it gives local DICOM AET.
-	 */
-	public Object[] getLocalAET() throws IOException{
-		try {
-			contentJson=(JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/system/").toString());
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		ArrayList<String> indexes = new ArrayList<String>();
-		indexes.add((String) contentJson.get("DicomAet"));
-		return indexes.toArray();
-	}
+	
 
 	private String setQuery(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber) {
 		String query = "{ \"Level\" : \"" + level + "\", \"Query\" : "
@@ -318,6 +282,14 @@ public class Rest {
 				+ "}";
 		System.out.println(query);
 		return query;
+	}
+	
+	public String[] getAets() {
+		return connexion.getAET();
+	}
+	
+	public String getLocalAet() {
+		return connexion.getLocalAET();
 	}
 
 }

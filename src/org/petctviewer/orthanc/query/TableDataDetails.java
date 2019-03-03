@@ -26,7 +26,7 @@ import javax.swing.table.AbstractTableModel;
 public class TableDataDetails extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Series name", "Modality", "Serie n°"};
+	private String[] entetes = {"Series name", "Modality", "Serie nï¿½"};
 	private String idURL;
 	private ArrayList<Details> details = new ArrayList<Details>();
 	private ArrayList<String> listIndexes = null;
@@ -98,13 +98,9 @@ public class TableDataDetails extends AbstractTableModel{
 	/*
 	 * This method gets every available AETs and put them in an Object[]
 	 */
-	public Object[] getAETs(){
-		Object[] listeAETs = null;
-		try {
-			listeAETs = rest.getAET();
-		} catch (IOException e) {
-			// Ignore
-		}
+	public String[] getAETs(){
+		String[] listeAETs = null;
+		listeAETs = rest.getAets();
 		return listeAETs;
 	}
 
@@ -138,12 +134,5 @@ public class TableDataDetails extends AbstractTableModel{
 		if(this.listIndexes != null){
 			this.listIndexes.removeAll(listIndexes);
 		}
-	}
-
-	/*
-	 * This method returns a String[] that contains every dicomAETs
-	 */
-	public Object[] getDicomAETs() throws IOException{
-		return rest.getLocalAET();
 	}
 }

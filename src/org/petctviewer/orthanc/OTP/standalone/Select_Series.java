@@ -12,7 +12,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 
 import org.petctviewer.orthanc.anonymize.TableSeriesModel;
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -24,7 +24,7 @@ public class Select_Series extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public Select_Series(ParametreConnexionHttp connexionHttp, String studyUID) {
+	public Select_Series(OrthancRestApis connexionHttp, String studyUID) {
 		TableSeriesModel tableSeriesModel=new TableSeriesModel(connexionHttp);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		tableSeriesModel.addSerie(studyUID);

@@ -29,7 +29,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.SwingWorker;
 
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class DeleteActionMainPanel extends AbstractAction{
 
@@ -45,7 +45,7 @@ public class DeleteActionMainPanel extends AbstractAction{
 	private JLabel state;
 	private JFrame frame;
 	private JButton searchBtn;
-	ParametreConnexionHttp connexion;
+	OrthancRestApis connexion;
 	
 	/**
 	 * Gere le delete du main panel
@@ -61,7 +61,7 @@ public class DeleteActionMainPanel extends AbstractAction{
 	 * @param frame
 	 * @param searchBtn
 	 */
-	public DeleteActionMainPanel(ParametreConnexionHttp connexion, String level, TableStudiesModel modeleStudies, JTable tableauStudies, TableSeriesModel modeleSeries, 
+	public DeleteActionMainPanel(OrthancRestApis connexion, String level, TableStudiesModel modeleStudies, JTable tableauStudies, TableSeriesModel modeleSeries, 
 			JTable tableauSeries, TablePatientsModel modelePatients, JTable tableauPatients, JLabel state, JFrame frame, JButton searchBtn){
 		this.connexion=connexion;
 		this.level = level;

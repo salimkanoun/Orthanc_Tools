@@ -20,7 +20,7 @@ package org.petctviewer.orthanc.anonymize;
 import javax.swing.JTable;
 import javax.swing.SwingWorker;
 
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class DeleteActionExport{
 
@@ -29,20 +29,20 @@ public class DeleteActionExport{
 	private TableExportStudiesModel modeleExportStudies;
 	private JTable tableauExportSeries;
 	private TableExportSeriesModel modeleExportSeries;
-	private ParametreConnexionHttp connexion;
+	private OrthancRestApis connexion;
 	/**
 	 * Gere le delete de l'export tab
 	 * @param connexion
 	 * @param tableauExportStudies
 	 * @param modeleExportStudies
 	 */
-	public DeleteActionExport(ParametreConnexionHttp connexion,JTable tableauExportStudies, TableExportStudiesModel modeleExportStudies){
+	public DeleteActionExport(OrthancRestApis connexion,JTable tableauExportStudies, TableExportStudiesModel modeleExportStudies){
 		this.connexion=connexion;
 		this.tableauExportStudies = tableauExportStudies;
 		this.modeleExportStudies = modeleExportStudies;
 	}
 
-	public DeleteActionExport(ParametreConnexionHttp connexion, JTable tableauExportSeries, TableExportSeriesModel modeleExportSeries){
+	public DeleteActionExport(OrthancRestApis connexion, JTable tableauExportSeries, TableExportSeriesModel modeleExportSeries){
 		this.connexion=connexion;
 		this.tableauExportSeries = tableauExportSeries;
 		this.modeleExportSeries = modeleExportSeries;

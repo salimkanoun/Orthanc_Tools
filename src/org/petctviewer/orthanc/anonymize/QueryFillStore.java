@@ -25,7 +25,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 
 public class QueryFillStore {
@@ -36,9 +36,9 @@ public class QueryFillStore {
 	private String input;
 	private ArrayList<String> ids = new ArrayList<String>();
 	private JSONParser parser = new JSONParser();
-	private ParametreConnexionHttp connexion;
+	private OrthancRestApis connexion;
 	
-	public QueryFillStore(ParametreConnexionHttp connexion, String level, String inputType, String input, 
+	public QueryFillStore(OrthancRestApis connexion, String level, String inputType, String input, 
 			String date, String studyDesc) {
 		
 		this.connexion=connexion;

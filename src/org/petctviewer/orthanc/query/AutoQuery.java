@@ -44,8 +44,8 @@ import org.apache.commons.lang3.StringUtils;
 public class AutoQuery  {
 
 	protected Rest api;
-	protected Object[] aet=new String[] {""};
-	protected Object[] aetRetrieve=new String[] {""};
+	protected String[] availableAets;
+	protected String aetRetrieve;
 	private Preferences jPrefer;
 	
 	protected long fONCE_PER_DAY=1000*60*60*24;
@@ -59,12 +59,10 @@ public class AutoQuery  {
 	
 	public AutoQuery(Rest rest) {
 		api=rest;
-		try {
-			aet=api.getAET();
-			aetRetrieve=api.getLocalAET();
-		} catch (IOException | NullPointerException e) {
-			e.printStackTrace();
-		}
+
+		availableAets=api.getAets();
+		aetRetrieve=api.getLocalAet();
+
 		//Get Jprefer Value
 		jPrefer = Preferences.userNodeForPackage(AutoQuery.class);
 		jPrefer = jPrefer.node("AutoQuery");

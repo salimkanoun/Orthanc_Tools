@@ -29,7 +29,7 @@ import javax.swing.table.AbstractTableModel;
 
 import org.json.simple.JSONObject;
 
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class TablePatientsModel extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
@@ -37,9 +37,9 @@ public class TablePatientsModel extends AbstractTableModel{
 	private String[] entetes = {"Patient Name", "Patient ID", "ID", "Birthdate", "Sex"};
 	private ArrayList<PatientAnon> patients = new ArrayList<PatientAnon>();
 	private final Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, String.class, Date.class, String.class};
-	private ParametreConnexionHttp connexionHttp;
+	private OrthancRestApis connexionHttp;
 
-	public TablePatientsModel(ParametreConnexionHttp connexionHttp){
+	public TablePatientsModel(OrthancRestApis connexionHttp){
 		super();
 		//Set des settings
 		this.connexionHttp=connexionHttp;

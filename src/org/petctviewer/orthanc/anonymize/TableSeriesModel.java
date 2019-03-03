@@ -26,7 +26,7 @@ import javax.swing.table.AbstractTableModel;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class TableSeriesModel extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
@@ -35,9 +35,9 @@ public class TableSeriesModel extends AbstractTableModel{
 	private ArrayList<Serie> series = new ArrayList<Serie>();
 	private ArrayList<String> instancesWithSecondaryCapture = new ArrayList<String>();
 	private String url;
-	private ParametreConnexionHttp connexionHttp;
+	private OrthancRestApis connexionHttp;
 
-	public TableSeriesModel(ParametreConnexionHttp connexionHttp){
+	public TableSeriesModel(OrthancRestApis connexionHttp){
 		super();
 		//Recupere les settings
 		this.connexionHttp=connexionHttp;

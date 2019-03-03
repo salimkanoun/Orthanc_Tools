@@ -43,18 +43,19 @@ import com.google.gson.JsonParser;
  * @author kanoun_s
  *
  */
-public class ParametreConnexionHttp {
+public class OrthancRestApis {
 	
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	private String fullAddress;
 	private String authentication;
 	private String orthancVersion;
 	private boolean versionHigher131;
+	private String localAETName;
 	private JsonParser jsonParser=new JsonParser();
 	private JsonParser parser=new JsonParser();
 	
 	
-	public ParametreConnexionHttp()  {
+	public OrthancRestApis()  {
 		String ip = jpreferPerso.get("ip", "http://localhost");
 		String port = jpreferPerso.get("port", "8042");
 		this.fullAddress = ip + ":" + port;
@@ -64,9 +65,8 @@ public class ParametreConnexionHttp {
 		
 	}
 	
-	public ParametreConnexionHttp(String fullAddress)  {
+	public OrthancRestApis(String fullAddress)  {
 		this.fullAddress = fullAddress;
-		
 	}
 	
 	
@@ -251,11 +251,13 @@ public class ParametreConnexionHttp {
 	// Display Error message if connexion failed
 	public Boolean testConnexion() {	
 		Boolean test=true;
+		
 		try {
 			StringBuilder sb= makeGetConnectionAndStringBuilder("/system");
 			JSONParser parser=new JSONParser();
 			JSONObject systemJson=(JSONObject) parser.parse(sb.toString());
 			orthancVersion=(String) systemJson.get("Version");
+			localAETName=(String) systemJson.get("DicomAet");
 			versionHigher131=isVersionAfter131();
 		} catch (ParseException e) {
 			JOptionPane.showMessageDialog(null,
@@ -340,6 +342,12 @@ public class ParametreConnexionHttp {
 		}
 
 		return aets;
+	}
+	
+	//SK A REVOIR PROBABLEMENT POPULER AUTOMATIQUEMENT LES DATA DE SYSTEM
+	public String getLocalAET() {
+		testConnexion();
+		return this.localAETName;
 	}
 	
 	/**

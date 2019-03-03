@@ -45,7 +45,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.petctviewer.orthanc.export.ExportZip;
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -65,12 +65,12 @@ public class CD_Burner {
 	private Path folder;
 	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 	private Date datenow;
-	private ParametreConnexionHttp connexion;
+	private OrthancRestApis connexion;
 	private Timer timer;
 	private JSONParser parser=new JSONParser();
 	private HashMap<String, Object[]> burningStatus=new HashMap<String, Object[]>();
 	
-	public CD_Burner (ParametreConnexionHttp connexion, JTable table_burning_history) {
+	public CD_Burner (OrthancRestApis connexion, JTable table_burning_history) {
 		this.connexion=connexion;
 		this.table_burning_history=table_burning_history;
 		setCDPreference();

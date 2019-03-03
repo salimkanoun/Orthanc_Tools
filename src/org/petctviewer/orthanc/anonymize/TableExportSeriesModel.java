@@ -28,7 +28,7 @@ import javax.swing.table.AbstractTableModel;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class TableExportSeriesModel extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
@@ -40,9 +40,9 @@ public class TableExportSeriesModel extends AbstractTableModel{
 	private String url;
 	private JFrame frame;
 	private JLabel stateExport;
-	private ParametreConnexionHttp connexionHttp;
+	private OrthancRestApis connexionHttp;
 
-	public TableExportSeriesModel(ParametreConnexionHttp connexionHttp, JFrame frame, JLabel stateExport){
+	public TableExportSeriesModel(OrthancRestApis connexionHttp, JFrame frame, JLabel stateExport){
 		super();
 		//On set les settings de connexion
 		this.connexionHttp=connexionHttp;

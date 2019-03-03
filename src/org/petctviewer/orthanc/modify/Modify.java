@@ -27,7 +27,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class Modify {
 	
@@ -35,10 +35,10 @@ public class Modify {
 	private String levelUrl;
 	private String id;
 	private JSONArray seriesInstancesID;
-	private ParametreConnexionHttp connexion;
+	private OrthancRestApis connexion;
 	private JSONParser parser=new JSONParser();
 	
-	public Modify(String level, String id, JFrame guiParent, ParametreConnexionHttp connexion, JLabel state){
+	public Modify(String level, String id, JFrame guiParent, OrthancRestApis connexion, JLabel state){
 		this.connexion= connexion;
 		gui = new Modify_Gui(this, guiParent, state);
 		this.id=id;

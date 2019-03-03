@@ -41,7 +41,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 
 public class SettingsGUI extends JFrame {
@@ -75,7 +75,7 @@ public class SettingsGUI extends JFrame {
 	synchronousCMove, overwriteInstances;
 	private JComboBox<String> comboBox_Encoding, storageAccessOnFind ;
 	
-	private ParametreConnexionHttp connexion=new ParametreConnexionHttp();
+	private OrthancRestApis connexion=new OrthancRestApis();
 
 	private Json_Settings settings=new Json_Settings();
 	

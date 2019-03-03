@@ -47,7 +47,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
 import org.petctviewer.orthanc.query.Rest;
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import javax.swing.ListSelectionModel;
 
@@ -88,7 +88,7 @@ public class Monitoring_GUI extends JFrame {
 	Preferences jPrefer;
 	
 	// parametre http
-	private ParametreConnexionHttp parametre;
+	private OrthancRestApis parametre;
 	
 	/**
 	 * @wbp.nonvisual location=-24,419
@@ -102,7 +102,7 @@ public class Monitoring_GUI extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Monitoring_GUI frame = new Monitoring_GUI(new ParametreConnexionHttp());
+					Monitoring_GUI frame = new Monitoring_GUI(new OrthancRestApis());
 					frame.pack();
 					frame.setVisible(true);
 				} catch (Exception e) {
@@ -115,7 +115,7 @@ public class Monitoring_GUI extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public Monitoring_GUI(ParametreConnexionHttp parametre) {
+	public Monitoring_GUI(OrthancRestApis parametre) {
 		jPrefer = Preferences.userNodeForPackage(Burner_Settings.class);
 		jPrefer = jPrefer.node("CDburner");
 		this.parametre=parametre;
@@ -646,18 +646,11 @@ public class Monitoring_GUI extends JFrame {
 	
 	private void setAET() {
 		Rest restApi=new Rest(parametre);
-		try {
-			Object[] aets=restApi.getAET();
-			for (int i=0; i<aets.length ; i++) {
-				comboBoxAET_AutoFetch.addItem((String) aets[i]);
-				
-			}
+		String[] aets=restApi.getAets();
+		for (int i=0; i<aets.length ; i++) {
+			comboBoxAET_AutoFetch.addItem((String) aets[i]);
 			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-		
 	}
 	/**
 	 * Stops all monitoring services (for exit call)

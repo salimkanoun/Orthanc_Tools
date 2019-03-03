@@ -101,7 +101,7 @@ import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.VueRest;
 import org.petctviewer.orthanc.reader.Read_Orthanc;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 import org.petctviewer.orthanc.setup.Run_Orthanc;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
@@ -121,7 +121,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	private JSONParser parser=new JSONParser();
 	
 	//Objet de connexion aux restFul API, prend les settings des registery et etabli les connexion a la demande
-	public ParametreConnexionHttp connexionHttp;
+	public OrthancRestApis connexionHttp;
 	protected JPanel tablesPanel, mainPanel, topPanel, anonBtnPanelTop;
 	
 	// Tables (p1)
@@ -238,7 +238,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	public VueAnon() {
 		
 		super("Orthanc Tools");
-		connexionHttp= new ParametreConnexionHttp();
+		connexionHttp= new OrthancRestApis();
 		runOrthanc=new Run_Orthanc(connexionHttp);
 		//Until we reach the Orthanc Server we give the setup panel
 		int check=0;
@@ -246,7 +246,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				if (check>0) JOptionPane.showMessageDialog(null, "Settings Attempt " + (check+1) +"/3", "Attempt", JOptionPane.INFORMATION_MESSAGE);
 				ConnectionSetup setup = new ConnectionSetup(runOrthanc);
 				setup.setVisible(true);
-				connexionHttp=new ParametreConnexionHttp();
+				connexionHttp=new OrthancRestApis();
 				check++;
 				if(check ==3) JOptionPane.showMessageDialog(null, "Programme is starting without connexion (no services)", "Failure", JOptionPane.ERROR_MESSAGE);
 		}
@@ -260,7 +260,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	 */
 	public VueAnon(String orthancJsonName) {
 		super("Orthanc Tools");
-		connexionHttp= new ParametreConnexionHttp("http://localhost:8043");
+		connexionHttp= new OrthancRestApis("http://localhost:8043");
 		
 		try {
 			runOrthanc=new Run_Orthanc(connexionHttp);
@@ -2378,7 +2378,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				ConnectionSetup setup = new ConnectionSetup(runOrthanc);
 				setup.setLocationRelativeTo(gui);
 				setup.setVisible(true);
-				connexionHttp=new ParametreConnexionHttp();
+				connexionHttp=new OrthancRestApis();
 				if (setup.ok)JOptionPane.showMessageDialog(null,"Restart to take account");
 				
 			}

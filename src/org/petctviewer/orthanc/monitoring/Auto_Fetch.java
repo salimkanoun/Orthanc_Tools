@@ -12,11 +12,11 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.query.Rest;
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class Auto_Fetch {
 	
-	private ParametreConnexionHttp connexion;
+	private OrthancRestApis connexion;
 	private String level, studyDate, modality, studyDescription, queryAet , retrieveAet;
 	private JSONParser parser=new JSONParser();
 	private Rest restApi;
@@ -25,7 +25,7 @@ public class Auto_Fetch {
 	//sert a etre arrete via methode
 	private Timer timer;
 	
-	public Auto_Fetch(ParametreConnexionHttp connexion, String level, String studyDate, String modality, String studyDescription, String queryAet, JLabel status) {
+	public Auto_Fetch(OrthancRestApis connexion, String level, String studyDate, String modality, String studyDescription, String queryAet, JLabel status) {
 		this.connexion=connexion;
 		restApi=new Rest(connexion);
 		this.level=level;
@@ -33,13 +33,7 @@ public class Auto_Fetch {
 		this.studyDescription=studyDescription;
 		this.queryAet=queryAet;
 		this.modality=modality;
-		try {
-			Object[] localAET = restApi.getLocalAET();
-			retrieveAet=localAET[0].toString();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		retrieveAet= restApi.getLocalAet();
 		this.status=status;
 		
 	}

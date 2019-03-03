@@ -40,12 +40,12 @@ public class FilterAction extends AbstractAction {
 	private TableDataDetails modeleDetailsH;
 	private DatePicker from;
 	private DatePicker to;
-	private JComboBox<Object> queryAET;
+	private JComboBox<String> queryAET;
 	private String name;
 	private String id;
 
 	public FilterAction(JLabel state, JPanel checkboxes, TableDataPatient modeleH, TableDataDetails modeleDetailsH, 
-			DatePicker from, DatePicker to, JComboBox<Object> queryAET) {
+			DatePicker from, DatePicker to, JComboBox<String> queryAET) {
 		super("Filter");
 		this.state = state;
 		this.checkboxes = checkboxes;

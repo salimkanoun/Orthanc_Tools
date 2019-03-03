@@ -50,7 +50,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -60,7 +60,7 @@ public class ImportDCM extends JDialog {
 	private static final long serialVersionUID = 1L;
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	private JLabel state;
-	private ParametreConnexionHttp connexion;
+	private OrthancRestApis connexion;
 	private JDialog gui;
 	private ArrayList<String> importAnswer=new ArrayList<String>();
 	private HashMap<String, HashMap<String,String> > importedstudy=new HashMap<String, HashMap<String,String> >();
@@ -68,7 +68,7 @@ public class ImportDCM extends JDialog {
 	
 	private ImportListener listener;
 
-	public ImportDCM(ParametreConnexionHttp connexion, JFrame parentJframe){
+	public ImportDCM(OrthancRestApis connexion, JFrame parentJframe){
 		this.setTitle("Import DICOM files");
 		this.connexion=connexion;
 		this.gui=this;

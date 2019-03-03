@@ -28,7 +28,7 @@ import java.util.HashMap;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -43,9 +43,9 @@ public class TableAnonStudiesModel extends AbstractTableModel{
 	private ArrayList<String> listeNewOrthancUIDs = new ArrayList<String>();
 	private HashMap<String, String> newDescriptions = new HashMap<String, String>();
 	private String url;
-	private ParametreConnexionHttp connexionHttp;
+	private OrthancRestApis connexionHttp;
 
-	public TableAnonStudiesModel(ParametreConnexionHttp connexionHttp){
+	public TableAnonStudiesModel(OrthancRestApis connexionHttp){
 		super();
 		this.connexionHttp=connexionHttp;
 	}

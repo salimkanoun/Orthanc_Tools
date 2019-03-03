@@ -39,9 +39,9 @@ public class Run_Orthanc {
 	 private String resourceLibPath="Orthanc_Standalone/";
 	 private List<String> resourceLibName=new ArrayList<String>();
 	 private boolean temp;
-	 private ParametreConnexionHttp connexionHttp;
+	 private OrthancRestApis connexionHttp;
 	
-	public Run_Orthanc(ParametreConnexionHttp connexionHttp) {
+	public Run_Orthanc(OrthancRestApis connexionHttp) {
 		this.connexionHttp=connexionHttp;
 		//SK AJOUTER ORTHANC TRANSFERS
 		if(System.getProperty("os.name").toLowerCase().startsWith("win")) {

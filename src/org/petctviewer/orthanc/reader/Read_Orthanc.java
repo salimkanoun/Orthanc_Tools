@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -30,9 +30,9 @@ import ij.process.ShortProcessor;
 public class Read_Orthanc {
 	
 	private JsonParser parser=new JsonParser();
-	private ParametreConnexionHttp connexion;
+	private OrthancRestApis connexion;
 	
-	public Read_Orthanc(ParametreConnexionHttp connexion) {
+	public Read_Orthanc(OrthancRestApis connexion) {
 		this.connexion=connexion;
 	}
 	

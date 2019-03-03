@@ -24,7 +24,7 @@ import java.util.Date;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class TableAnonPatientsModel extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
@@ -120,7 +120,7 @@ public class TableAnonPatientsModel extends AbstractTableModel{
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
-	public void addPatient(ParametreConnexionHttp connexion, String patientName, String patientID, Date birthdate, String sex, ArrayList<String> selectedStudies) throws IOException, ParseException{
+	public void addPatient(OrthancRestApis connexion, String patientName, String patientID, Date birthdate, String sex, ArrayList<String> selectedStudies) throws IOException, ParseException{
 		PatientAnon p = new PatientAnon(patientName, patientID, "", birthdate, sex, selectedStudies);
 		if(!this.patients.contains(p)){
 			this.patients.add(p);

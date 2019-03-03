@@ -67,7 +67,7 @@ import javax.swing.text.DefaultCaret;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
 
@@ -89,7 +89,7 @@ public class VueRest extends JFrame implements PlugIn{
 	
 	private static final long serialVersionUID = 1L;
 	// Instancie la classe rest qui fournit les services de connexion et input
-	private Rest rest =new Rest(new ParametreConnexionHttp());
+	private Rest rest =new Rest(new OrthancRestApis());
 	
 	private JTabbedPane tabbedPane;
 	private TableDataPatient modele = new TableDataPatient(rest); // model for the main JTable (tableau)
@@ -106,8 +106,8 @@ public class VueRest extends JFrame implements PlugIn{
 	 * The following components will be used to filter the tables, or make new searches
 	 */
 	private JComboBox<String> searchingParam; // indexes the "main" searching parameter (name, id, accession number)
-	private JComboBox<Object> queryAET; // indexes every AETs available that the user can query from
-	private JComboBox<Object> retrieveAET; // indexes every AETs available that the user can retrieve instances to
+	private JComboBox<String> queryAET; // indexes every AETs available that the user can query from
+	private JComboBox<String> retrieveAET; // indexes every AETs available that the user can retrieve instances to
 	private JLabel state; // allows the user to know the state of the retrieve query 
 	private JTextField userInput; // associated with searchingParam to get the input
 	private JTextField userInputFirstName = new JTextField("*"); //First Name input in case of Name search
@@ -120,8 +120,8 @@ public class VueRest extends JFrame implements PlugIn{
 	private JButton retrieve;
 	
 	// Tab History
-	private JComboBox<Object> queryAETH; // indexes every AETs available that the user can get patient from (usually PACS)
-	private JComboBox<Object> retrieveAETH; // indexes every AETs available that the user can retrieve instances to
+	private JComboBox<String> queryAETH; // indexes every AETs available that the user can get patient from (usually PACS)
+	private JComboBox<String> retrieveAETH; // indexes every AETs available that the user can retrieve instances to
 	private JLabel stateH; // allows the user to know the state of the retrieve query
 	private JPanel checkboxesH;
 	private JCheckBox crH,ctH,cmrH,nmH,ptH,usH,xaH,mgH;  
@@ -164,6 +164,9 @@ public class VueRest extends JFrame implements PlugIn{
 	private Timer timer;
 	private Timer timerDaily;
 	
+	//Aets
+	String[] listRetrieveAET;
+	String[] distantAets;
 	
     
 	public VueRest() {
@@ -172,7 +175,8 @@ public class VueRest extends JFrame implements PlugIn{
 		this.setResizable(true);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.addWindowListener(new WindowAdapter() {
-
+			
+		
 	    @Override
 	    public void windowClosing(WindowEvent e) {
 	    	if (working==true) {
@@ -189,6 +193,9 @@ public class VueRest extends JFrame implements PlugIn{
 	    	}
 	    }});
 		
+		//SK TEMPORAIRE //AET
+		listRetrieveAET = ArrayUtils.addAll(new String[] {rest.getLocalAet()}, rest.getAets());
+		distantAets=rest.getAets();
 
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -299,20 +306,11 @@ public class VueRest extends JFrame implements PlugIn{
 		checkboxes.add(pt); checkboxes.add(us);
 		checkboxes.add(xa); checkboxes.add(mg);
 
-		Object[] tabAETs = {""};
-
-		// Creating the queryAET comboBox
-		try{
-			tabAETs = modele.getAETs();
-			
-		}catch(IOException | NullPointerException e1){
-			e1.printStackTrace();
-		}
-
-		queryAET = new JComboBox<Object>(tabAETs);
+		
+		queryAET = new JComboBox<String>(distantAets);
 		queryAET.setBorder(new EmptyBorder(0, 30, 0, 0));
-		if(tabAETs.length > 0){
-			if(jpreferPerso.getInt("SearchAET", 99) < tabAETs.length){
+		if(distantAets.length > 0){
+			if(jpreferPerso.getInt("SearchAET", 99) < distantAets.length){
 				queryAET.setSelectedIndex(jpreferPerso.getInt("SearchAET", 99));
 			}else{
 				queryAET.setSelectedIndex(0);	
@@ -354,19 +352,13 @@ public class VueRest extends JFrame implements PlugIn{
 			
 		});
 		searchingParam.setSelectedIndex(jpreferPerso.getInt("InputParameter", 0));
-		
-		retrieveAET = new JComboBox<Object>(new Object[]{""});
 
 		// Creating the "search" button (ajouter)
 		JButton ajouter = new JButton(new SearchAction(this));
-		try {
-			Object[] listRetrieveAET = ArrayUtils.addAll(modeleDetails.getDicomAETs(), tabAETs);
-			retrieveAET = new JComboBox<Object>(listRetrieveAET);
-		} catch (IOException e3) {
-			e3.printStackTrace();
-		} catch (NullPointerException e){
-			//Ignore
-		}
+
+		
+		retrieveAET = new JComboBox<String>(listRetrieveAET);
+
 
 		// Creating the datepickers
 		JPanel dates = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -506,20 +498,11 @@ public class VueRest extends JFrame implements PlugIn{
 		toH.setBorder(new EmptyBorder(0, 5, 0 ,0));
 		toH.setToolTipText("Date format : MM-dd-yyyy");
 
-		Object[] tabAETsH = {""};
-		try {
-			tabAETsH = modeleH.getAETs();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		} catch (NullPointerException e){
-			//Ignore
-		}
-
-		queryAETH = new JComboBox<Object>(tabAETsH);
+		queryAETH = new JComboBox<String>(distantAets);
 		queryAETH.setMinimumSize(new Dimension(200,20));
 		queryAETH.setMaximumSize(new Dimension(200,20));
-		if(tabAETsH.length > 0){
-			if(jpreferPerso.getInt("HistoryAET", 0) < tabAETsH.length){
+		if(distantAets.length > 0){
+			if(jpreferPerso.getInt("HistoryAET", 0) < distantAets.length){
 				queryAETH.setSelectedIndex(jpreferPerso.getInt("HistoryAET", 0));
 			}else{
 				queryAETH.setSelectedIndex(0);
@@ -543,17 +526,7 @@ public class VueRest extends JFrame implements PlugIn{
 			}
 		});
 
-		Object[] listRetrieveAETH = {""};
-
-		try {
-				listRetrieveAETH = ArrayUtils.addAll(modeleDetailsH.getDicomAETs(), tabAETsH);
-		} catch (IOException e3) {
-			e3.printStackTrace();
-		} catch (NullPointerException e){
-			//Ignore
-		}
-
-		retrieveAETH = new JComboBox<Object>(listRetrieveAETH);
+		retrieveAETH = new JComboBox<String>(listRetrieveAET);
 
 		datesH.add(new JLabel("From"));
 		datesH.add(fromH);
@@ -820,10 +793,7 @@ public class VueRest extends JFrame implements PlugIn{
 		
 		JPanel Panel_Top = new JPanel();
 		
-		comboBox = new JComboBox<String>();
-		for (int i=0; i<autoQuery.aet.length;i++) {
-			comboBox.addItem(autoQuery.aet[i].toString());
-		}
+		comboBox = new JComboBox<String>(distantAets);
 		if ((jpreferPerso.getInt("retrieveSelection", 0) <= comboBox.getItemCount()) && (comboBox.getItemCount() !=0) ) comboBox.setSelectedIndex(jpreferPerso.getInt("retrieveSelection", 0));
 		
 		comboBox.addItemListener(new ItemListener() {
@@ -842,10 +812,8 @@ public class VueRest extends JFrame implements PlugIn{
 		
 		JPanel panel_Bottom = new JPanel();
 		
-		Aet_Retrieve = new JComboBox<String>();
-		for (int i=0; i<autoQuery.aetRetrieve.length;i++) {
-			Aet_Retrieve.addItem(autoQuery.aetRetrieve[i].toString());
-		}
+		Aet_Retrieve = new JComboBox<String>(listRetrieveAET);
+
 		panel_Bottom.add(Aet_Retrieve);
 		
 		
@@ -1217,10 +1185,10 @@ public class VueRest extends JFrame implements PlugIn{
 		private JTable tableauDetails;
 		private TableDataDetails modeleDetails;
 		private JLabel state;
-		private JComboBox<Object> retrieveAET;
+		private JComboBox<String> retrieveAET;
 
 		public RetrieveAction(ArrayList<Integer> rowsModelsIndexes, JTable tableauDetails, 
-				TableDataDetails modeleDetails, JLabel state, JComboBox<Object> retrieveAET){
+				TableDataDetails modeleDetails, JLabel state, JComboBox<String> retrieveAET){
 			super("Retrieve");
 			this.rowsModelsIndexes = rowsModelsIndexes;
 			this.tableauDetails = tableauDetails;

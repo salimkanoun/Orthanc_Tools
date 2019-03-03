@@ -29,7 +29,7 @@ import javax.swing.table.AbstractTableModel;
 
 import org.json.simple.JSONObject;
 
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 
 public class TableStudiesModel extends AbstractTableModel{
@@ -39,9 +39,9 @@ public class TableStudiesModel extends AbstractTableModel{
 	private final Class<?>[] columnClasses = new Class<?>[] {Date.class, String.class, String.class, String.class};
 	private ArrayList<Study> studies = new ArrayList<Study>();
 	private ArrayList<String> ids = new ArrayList<String>();
-	private ParametreConnexionHttp connexionHttp;
+	private OrthancRestApis connexionHttp;
 
-	public TableStudiesModel(ParametreConnexionHttp connexionHttp){
+	public TableStudiesModel(OrthancRestApis connexionHttp){
 		super();
 		//Recupere les settings
 		this.connexionHttp=connexionHttp;

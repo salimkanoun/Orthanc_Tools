@@ -23,7 +23,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class Orthanc_Monitoring {
 	
@@ -41,9 +41,9 @@ public class Orthanc_Monitoring {
 	protected List<String> newSerieID = new ArrayList<String>();
 	
 	//Connxion API
-	ParametreConnexionHttp connexion;
+	OrthancRestApis connexion;
 
-	public Orthanc_Monitoring(ParametreConnexionHttp connexion) {
+	public Orthanc_Monitoring(OrthancRestApis connexion) {
 		this.connexion=connexion;
 		
 	}

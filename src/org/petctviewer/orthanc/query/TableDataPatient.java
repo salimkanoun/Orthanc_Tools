@@ -106,15 +106,6 @@ public class TableDataPatient extends AbstractTableModel{
 	}
 
 	/*
-	 * This method gets every available AETs and put them in an Object[]
-	 */
-	public Object[] getAETs() throws IOException{
-		Object[] listeAETs = null;
-		listeAETs = rest.getAET();
-		return listeAETs;
-	}
-
-	/*
 	 * This method clears the patients list
 	 */
 	public void clear(){

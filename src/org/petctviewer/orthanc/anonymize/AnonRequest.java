@@ -20,7 +20,7 @@ package org.petctviewer.orthanc.anonymize;
 import java.util.ArrayList;
 
 import org.petctviewer.orthanc.anonymize.Tags.Choice;
-import org.petctviewer.orthanc.setup.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -38,9 +38,9 @@ public class AnonRequest {
 	private String newPatientUID;
 	private String newPatientName;
 	private String newPatientID;
-	private ParametreConnexionHttp connexionHttp;
+	private OrthancRestApis connexionHttp;
 
-	public AnonRequest(ParametreConnexionHttp connexionHttp, Choice bodyChar, Choice dates, Choice birthdate, 
+	public AnonRequest(OrthancRestApis connexionHttp, Choice bodyChar, Choice dates, Choice birthdate, 
 			Choice privateTags, Choice secondaryCapture, Choice descriptionStudySerie, 
 			String newPatientName, String newPatientID, String newDescription) {
 

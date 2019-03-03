@@ -37,11 +37,11 @@ public class TableMouseListener extends MouseAdapter {
 	private TableDataPatient modele;
 	private TableDataDetails modeleDetails;
 	private ListSelectionModel listSelection;
-	private JComboBox<Object> queryAET;
+	private JComboBox<String> queryAET;
 	private JLabel state;
 
 	public TableMouseListener(JTable tableau, TableDataPatient modele, 
-			TableDataDetails modeleDetails, JComboBox<Object> queryAET, 
+			TableDataDetails modeleDetails, JComboBox<String> queryAET, 
 			ListSelectionModel listSelection, JLabel state) {
 		this.tableau = tableau;
 		this.modele = modele;
