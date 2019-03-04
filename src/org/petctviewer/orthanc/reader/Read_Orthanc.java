@@ -3,6 +3,7 @@ package org.petctviewer.orthanc.reader;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Scanner;
 
@@ -21,6 +22,7 @@ import ij.measure.Calibration;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
+import ij.util.DicomTools;
 
 /**
  * Read a DICOM serie and return it in an ImagePlus
@@ -62,11 +64,19 @@ public class Read_Orthanc {
 			stack.addSlice(metadata, ip);
 			IJ.showProgress((double) (i+1)/instanceIDList.size());
 		}
+		
+		
 		ImagePlus imp=new ImagePlus();
 		imp.setStack(stack);
-		updateCalibration(imp);
-		imp.show();
-		return imp;
+		
+		ImageStack stackSorted=this.sortStack(imp);
+		imp.close();
+		ImagePlus imp2=new ImagePlus();
+		imp2.setStack(stackSorted);
+		updateCalibration(imp2);
+		imp2.setProperty("Info", imp2.getStack().getSliceLabel(1));
+		
+		return imp2;
 		
 	}
 
@@ -236,6 +246,46 @@ public class Read_Orthanc {
 		}
 		
 		return ret1;
+	}
+	
+	/**
+	 * Sort stack according to ImageNumber
+	 * In uparseable ImageNumber or non labelled image in stack, return the orignal stack without change
+	 * @param imp : Original Image plus
+	 * @return ImageStack : New ordered stack image by ImageNumber
+	 */
+	private ImageStack sortStack(ImagePlus imp) {
+		
+		ImageStack stack2 = new ImageStack(imp.getWidth(), imp.getHeight(), imp.getStack().getColorModel());
+		
+		HashMap<Integer,Integer> sliceMap=new HashMap<Integer,Integer>();
+		
+		for(int i=1; i<=imp.getImageStackSize(); i++) {
+			
+			try {
+				imp.setSlice(i);
+				String imageNumber=DicomTools.getTag(imp, "0020,0013").trim();
+				sliceMap.put(Integer.parseInt(imageNumber), i);	
+			
+			}catch(Exception e1){
+				//If parse error of slice number return the original stack
+				return imp.getStack();
+			}
+		}
+		
+		//Check that the number of parsed image number is matching the number of slice
+		if(sliceMap.size() ==imp.getStackSize()) {
+			for(int i=1; i<=imp.getStackSize(); i++){
+				int sliceToadd=sliceMap.get(i);
+				stack2.addSlice(imp.getStack().getSliceLabel(sliceToadd),imp.getStack().getProcessor(sliceToadd));	
+			}
+		//Else return original stack	
+		}else {
+			return imp.getStack();
+		}
+		
+		
+		return stack2;
 	}
 
 }

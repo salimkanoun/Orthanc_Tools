@@ -1301,6 +1301,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 							state.setText("<html><font color='red'>Reading Series "+(i+1)+"/"+ids.size()+"</font></html>");
 							Read_Orthanc reader=new Read_Orthanc(connexionHttp);
 							ImagePlus ip=reader.readSerie(ids.get(i));
+							ip.show();
 							imagestacks.add(ip);
 							
 						}
