@@ -251,7 +251,7 @@ public class AutoQuery  {
 	 * @throws IOException
 	 * @throws ParseException 
 	 */
-	protected void getContent(String[] results, ArrayList<Patient> patientArray) throws IOException, ParseException {
+	protected void getContent(String[] results, ArrayList<PatientsDetails> patientArray, String aet) throws IOException, ParseException {
 		DateFormat parser = new SimpleDateFormat("yyyyMMdd");
 		
 		for (int i=0; i<Integer.parseInt(results[1]); i++) {
@@ -263,7 +263,7 @@ public class AutoQuery  {
 			String modality = (String)api.getValue(api.getIndexContent(results[0],i), "ModalitiesInStudy");
 			String studyUID = (String)api.getValue(api.getIndexContent(results[0],i), "StudyInstanceUID");
 			
-			Patient patient=new Patient(name, id, date, studyDesc, accNumber, studyUID, modality);
+			PatientsDetails patient=new PatientsDetails(name, id, date, studyDesc, accNumber, studyUID, modality, aet);
 			patientArray.add(patient);
 		}
 		

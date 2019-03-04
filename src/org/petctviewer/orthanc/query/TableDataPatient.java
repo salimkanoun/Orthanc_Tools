@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 package org.petctviewer.orthanc.query;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,22 +28,15 @@ import javax.swing.table.DefaultTableModel;
 public class TableDataPatient extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Patient name", "Patient ID", "Study date", "Study description", "Accession number", "Study UID"};
-	private final Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, Date.class, String.class, String.class, String.class};
-	private ArrayList<Patient> patients = new ArrayList<Patient>();
+	private String[] entetes = {"Patient name", "Patient ID", "Study date", "Study description", "Accession number", "Study UID", "aet"};
+	private Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, Date.class, String.class, String.class, String.class, String.class};
+	private ArrayList<PatientsDetails> patients;
 	private Rest rest;
 
+
 	public TableDataPatient(Rest rest){
-		super();
+		super(0,7);
 		this.rest = rest;
-	}
-
-	public int getRowCount(){
-		return patients.size();
-	}
-
-	public int getColumnCount(){
-		return entetes.length;
 	}
 
 	public String getColumnName(int columnIndex){
@@ -58,42 +52,49 @@ public class TableDataPatient extends DefaultTableModel{
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
 	public void addPatient(String patientName, String patientID, String studyDate, String modality, 
-			String studyDescription, String accessionNumber, String aet) throws Exception{
-		DateFormat parser = new SimpleDateFormat("yyyyMMdd");
-		int i;
-		String[] queryIDandSize = rest.getQueryAnswerIndexes("Study", patientName, patientID, studyDate, modality, studyDescription, accessionNumber, aet);
+			String studyDescription, String accessionNumber, String aet) {
 		
-		Patient p;
-		for(i = 0; i < Integer.parseInt(queryIDandSize[1]); i++){
+		String[] queryIDandSize = rest.getQueryAnswerIndexes("Study", patientName, patientID, studyDate, modality, studyDescription, accessionNumber, aet);
+		DateFormat dateParser = new SimpleDateFormat("yyyyMMdd");
+		patients = new ArrayList<PatientsDetails>();
+		for(int i = 0; i < Integer.parseInt(queryIDandSize[1]); i++){
 			String name = (String)rest.getValue(rest.getIndexContent(queryIDandSize[0],i), "PatientName").toString();
 			String id = (String)rest.getValue(rest.getIndexContent(queryIDandSize[0],i), "PatientID");
 			String number = (String)rest.getValue(rest.getIndexContent(queryIDandSize[0],i), "AccessionNumber").toString();
-			Date date = parser.parse((String)rest.getValue(rest.getIndexContent(queryIDandSize[0],i), "StudyDate"));
+			Date date=null;
+			try {
+				date = dateParser.parse((String)rest.getValue(rest.getIndexContent(queryIDandSize[0],i), "StudyDate"));
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
 			String desc = (String)rest.getValue(rest.getIndexContent(queryIDandSize[0],i), "StudyDescription").toString();
 			String studyUID = (String)rest.getValue(rest.getIndexContent(queryIDandSize[0],i), "StudyInstanceUID").toString();
 			String modalityResult=(String)rest.getValue(rest.getIndexContent(queryIDandSize[0],i), "Modality").toString();
-			p = new Patient(name, id, date, desc, number, studyUID,modalityResult);
-			if(!patients.contains(p)){
-				patients.add(p);
-				fireTableRowsInserted(patients.size() - 1, patients.size() - 1);
-			}
+			//Create Patient object with these data and add it in the list
+			PatientsDetails patient = new PatientsDetails(name, id, date, desc, number, studyUID,modalityResult, aet);
+			patients.add(patient);
+				
 		}
+		updateTable();
 
 	}
-
-	public void removePatient(int rowIndex){
-		this.patients.remove(rowIndex);
-		fireTableRowsDeleted(rowIndex, rowIndex);
+	
+	public void updateTable() {
+		//Erase Table
+		this.setRowCount(0);
+		//Insert new patients
+		for (PatientsDetails patient : patients) {
+			this.addRow(new Object[] {patient.getPatientName(), patient.getPatientID(), 
+					patient.getStudyDate(), patient.getStudyDescription(), patient.getAccessionNumber(), patient.getStudyInstanceUID(), patient.getSourceAet()});
+			
+		}
 	}
 
 	/*
 	 * This method clears the patients list
 	 */
 	public void clear(){
-		if(this.getRowCount() !=0){
-			for(int i = this.getRowCount(); i > 0; i--){
-				this.removePatient(i-1);
-			}
-		}
+		setRowCount(0);
 	}
+	
 }

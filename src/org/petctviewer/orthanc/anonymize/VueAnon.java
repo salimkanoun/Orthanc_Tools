@@ -131,7 +131,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	private TablePatientsModel modelePatients;
 	private TableStudiesModel modeleStudies;
 	private TableSeriesModel modeleSeries;
-	protected TableAnonPatientsModel modeleAnonPatients = new TableAnonPatientsModel();
+	protected TableAnonPatientsModel modeleAnonPatients;
 	protected TableAnonStudiesModel modeleAnonStudies;
 	private TableRowSorter<TablePatientsModel> sorterPatients;
 	private TableRowSorter<TableStudiesModel> sorterStudies;
@@ -276,11 +276,14 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	public void buildGui(){
 		//On set les objets necessaires
 		modelePatients = new TablePatientsModel(connexionHttp);
-		modeleExportSeries = new TableExportSeriesModel(connexionHttp, this, stateExports);
+		modeleStudies = new TableStudiesModel(connexionHttp);
 		modeleSeries = new TableSeriesModel(connexionHttp);
 		modeleExportStudies = new TableExportStudiesModel(connexionHttp);
+		modeleExportSeries = new TableExportSeriesModel(connexionHttp, this, stateExports);
 		modeleAnonStudies = new TableAnonStudiesModel(connexionHttp);
-		modeleStudies = new TableStudiesModel(connexionHttp);
+		modeleAnonPatients = new TableAnonPatientsModel();
+		
+		
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////// PANEL 1 : ANONYMIZATION ////////////////////////////////////////////////////

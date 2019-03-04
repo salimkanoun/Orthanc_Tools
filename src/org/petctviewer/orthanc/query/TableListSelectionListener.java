@@ -46,7 +46,7 @@ public class TableListSelectionListener implements ListSelectionListener{
 					rowsModelsIndexes.add(tableauDetails.convertRowIndexToModel(selectedRows[i]));
 				}
 			}catch(Exception e1){
-				// ignore
+				e1.printStackTrace();
 			}
 		}
 	}

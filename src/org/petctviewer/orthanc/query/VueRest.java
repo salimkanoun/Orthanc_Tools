@@ -93,14 +93,14 @@ public class VueRest extends JFrame implements PlugIn{
 	private Rest rest =new Rest(new OrthancRestApis(null));
 	
 	private JTabbedPane tabbedPane;
-	private TableDataPatient modele = new TableDataPatient(rest); // model for the main JTable (tableau)
-	private TableDataDetails modeleDetails = new TableDataDetails(rest); // model for the details JTable (tableauDetails) in the main tab
-	private TableDataPatient modeleH = new TableDataPatient(rest); // model for the history JTable (tab History)
-	private TableDataDetails modeleDetailsH = new TableDataDetails(rest); // model for the details JTable (tableauDetails) in the history tab
-	private JTable tableau; // displayed table in the main tab
-	private JTable tableauDetails; // displayed table containing the details in the main tab
-	private JTable tableauH; // displayed table in the history tab
-	private JTable tableauDetailsH; // displayed table containing the details in the history tab
+	private TableDataPatient modeleTablePatients = new TableDataPatient(rest); // model for the main JTable (tableau)
+	private TableDataSeries modeleTableSeries = new TableDataSeries(rest); // model for the details JTable (tableauDetails) in the main tab
+	private TableDataPatient modeleTablePatientHistory = new TableDataPatient(rest); // model for the history JTable (tab History)
+	private TableDataSeries modeleTableSeriesHistory = new TableDataSeries(rest); // model for the details JTable (tableauDetails) in the history tab
+	private JTable tablePatients; // displayed table in the main tab
+	private JTable tableSeries; // displayed table containing the details in the main tab
+	private JTable tablePatientsHistory; // displayed table in the history tab
+	private JTable tableSeriesHistory; // displayed table containing the details in the history tab
 	private JPopupMenu popMenu = new JPopupMenu(); // popMenu that will pop when the user right-clicks on a row
 	
 	/*
@@ -117,7 +117,7 @@ public class VueRest extends JFrame implements PlugIn{
 	private JTextField description; // allows to search for a particular description
 	private DatePicker from, to; // allow to make a research in a user defined time frame
 	private TableRowSorter<TableDataPatient> sorter; // used to filter and sort the rows for the main JTable
-	private TableRowSorter<TableDataDetails> sorterDetails; // used to filter and sort the rows for the details JTable
+	private TableRowSorter<TableDataSeries> sorterDetails; // used to filter and sort the rows for the details JTable
 	private JButton retrieve;
 	
 	// Tab History
@@ -128,7 +128,7 @@ public class VueRest extends JFrame implements PlugIn{
 	private JCheckBox crH,ctH,cmrH,nmH,ptH,usH,xaH,mgH;  
 	private DatePicker fromH, toH; // allow to make a research in a user defined time frame
 	private TableRowSorter<TableDataPatient> sorterH; // used to sort the rows for the main JTable
-	private TableRowSorter<TableDataDetails> sorterDetailsH; // used to filter and sort the rows for the details JTable
+	private TableRowSorter<TableDataSeries> sorterDetailsH; // used to filter and sort the rows for the details JTable
 	private JButton retrieveH;
 	
 	// Tab Setup
@@ -203,8 +203,8 @@ public class VueRest extends JFrame implements PlugIn{
 		//////////////////////////     TAB 1 : QUERIES/RETRIEVE ///////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		this.sorter = new TableRowSorter<TableDataPatient>(modele);
-		this.sorterDetails = new TableRowSorter<TableDataDetails>(modeleDetails);
+		this.sorter = new TableRowSorter<TableDataPatient>(modeleTablePatients);
+		this.sorterDetails = new TableRowSorter<TableDataSeries>(modeleTableSeries);
 		this.sorter.setSortsOnUpdates(true);
 		JPanel mainPanel = new JPanel(new GridBagLayout());
 		JPanel north = new JPanel(new GridLayout(1,2));
@@ -214,29 +214,29 @@ public class VueRest extends JFrame implements PlugIn{
 		JPanel southD = new JPanel(new FlowLayout());
 
 		// Creating the main JTable containing the patients (the left one)
-		tableau = new JTable(modele);
-		tableau.setRowSorter(sorter);
-		tableau.getTableHeader().setReorderingAllowed(false);
+		tablePatients = new JTable(modeleTablePatients);
+		tablePatients.setRowSorter(sorter);
+		tablePatients.getTableHeader().setReorderingAllowed(false);
 
 		// We configure the columns
-		tableau.getColumnModel().getColumn(0).setMinWidth(170);
-		tableau.getColumnModel().getColumn(0).setMaxWidth(170);
-		tableau.getColumnModel().getColumn(0).setResizable(false);
-		tableau.getColumnModel().getColumn(1).setMinWidth(140);
-		tableau.getColumnModel().getColumn(1).setMaxWidth(140);
-		tableau.getColumnModel().getColumn(1).setResizable(false);
-		tableau.getColumnModel().getColumn(2).setMinWidth(95);
-		tableau.getColumnModel().getColumn(2).setMaxWidth(95);
-		tableau.getColumnModel().getColumn(2).setResizable(false);
-		tableau.getColumnModel().getColumn(3).setMinWidth(130);
-		tableau.getColumnModel().getColumn(3).setResizable(false);
-		tableau.getColumnModel().getColumn(4).setMinWidth(120);
-		tableau.getColumnModel().getColumn(4).setMaxWidth(120);
-		tableau.getColumnModel().getColumn(4).setResizable(false);
-		tableau.getColumnModel().getColumn(5).setMinWidth(0);
-		tableau.getColumnModel().getColumn(5).setMaxWidth(0);
-		tableau.getColumnModel().getColumn(5).setResizable(false);
-		tableau.setPreferredScrollableViewportSize(new Dimension(655,400));
+		tablePatients.getColumnModel().getColumn(0).setMinWidth(170);
+		tablePatients.getColumnModel().getColumn(0).setMaxWidth(170);
+		tablePatients.getColumnModel().getColumn(0).setResizable(false);
+		tablePatients.getColumnModel().getColumn(1).setMinWidth(140);
+		tablePatients.getColumnModel().getColumn(1).setMaxWidth(140);
+		tablePatients.getColumnModel().getColumn(1).setResizable(false);
+		tablePatients.getColumnModel().getColumn(2).setMinWidth(95);
+		tablePatients.getColumnModel().getColumn(2).setMaxWidth(95);
+		tablePatients.getColumnModel().getColumn(2).setResizable(false);
+		tablePatients.getColumnModel().getColumn(3).setMinWidth(130);
+		tablePatients.getColumnModel().getColumn(3).setResizable(false);
+		tablePatients.getColumnModel().getColumn(4).setMinWidth(120);
+		tablePatients.getColumnModel().getColumn(4).setMaxWidth(120);
+		tablePatients.getColumnModel().getColumn(4).setResizable(false);
+		tablePatients.getColumnModel().getColumn(5).setMinWidth(0);
+		tablePatients.getColumnModel().getColumn(5).setMaxWidth(0);
+		tablePatients.getColumnModel().getColumn(5).setResizable(false);
+		tablePatients.setPreferredScrollableViewportSize(new Dimension(655,400));
 
 		// We sort the array this way by default :
 		// first, alphabetically by name, then by date.
@@ -250,26 +250,26 @@ public class VueRest extends JFrame implements PlugIn{
 		JMenuItem menuItemDisplayH = new JMenuItem("Display history");
 		menuItemDisplayH.addActionListener(new displayHistoryAction());
 		popMenu.add(menuItemDisplayH);
-		tableau.setComponentPopupMenu(popMenu);
-		tableau.addMouseListener(new TableMouseListener(tableau, modele, modeleDetails, queryAET, tableau.getSelectionModel(), state));
+		tablePatients.setComponentPopupMenu(popMenu);
+		tablePatients.addMouseListener(new TablePatientMouseListener(tablePatients, modeleTablePatients, modeleTableSeries, state));
 
-		tableau.setRowSorter(sorter);
-		tableau.setDefaultRenderer(Date.class, new DateRenderer());
+		tablePatients.setRowSorter(sorter);
+		tablePatients.setDefaultRenderer(Date.class, new DateRenderer());
 
 		// Creating tableauDetails which will contain the patients's details
-		tableauDetails = new JTable(modeleDetails);
-		tableauDetails.getTableHeader().setReorderingAllowed(false);
+		tableSeries = new JTable(modeleTableSeries);
+		tableSeries.getTableHeader().setReorderingAllowed(false);
 
 		// We configure the columns
-		tableauDetails.getColumnModel().getColumn(0).setMinWidth(200);
-		tableauDetails.getColumnModel().getColumn(0).setResizable(false);
-		tableauDetails.getColumnModel().getColumn(1).setMinWidth(100);
-		tableauDetails.getColumnModel().getColumn(1).setMaxWidth(100);
-		tableauDetails.getColumnModel().getColumn(1).setResizable(false);
-		tableauDetails.getColumnModel().getColumn(2).setMaxWidth(100);
-		tableauDetails.getColumnModel().getColumn(2).setResizable(false);
-		tableauDetails.setPreferredScrollableViewportSize(new Dimension(400,400));
-		tableauDetails.addMouseListener(new MouseAdapter() {
+		tableSeries.getColumnModel().getColumn(0).setMinWidth(200);
+		tableSeries.getColumnModel().getColumn(0).setResizable(false);
+		tableSeries.getColumnModel().getColumn(1).setMinWidth(100);
+		tableSeries.getColumnModel().getColumn(1).setMaxWidth(100);
+		tableSeries.getColumnModel().getColumn(1).setResizable(false);
+		tableSeries.getColumnModel().getColumn(2).setMaxWidth(100);
+		tableSeries.getColumnModel().getColumn(2).setResizable(false);
+		tableSeries.setPreferredScrollableViewportSize(new Dimension(400,400));
+		tableSeries.addMouseListener(new MouseAdapter() {
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
@@ -289,7 +289,7 @@ public class VueRest extends JFrame implements PlugIn{
 		sorterDetails.setSortKeys(sortKeysDetails);
 		sorterDetails.setSortsOnUpdates(true);
 		sorterDetails.sort();
-		tableauDetails.setRowSorter(sorterDetails);
+		tableSeries.setRowSorter(sorterDetails);
 
 		// Creating the modalities checkboxes
 		JPanel filtersPanel = new JPanel(new FlowLayout());
@@ -317,13 +317,6 @@ public class VueRest extends JFrame implements PlugIn{
 				queryAET.setSelectedIndex(0);	
 			}
 		}
-		queryAET.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent event) {
-				modele.clear();
-				modeleDetails.clear();
-			}
-		});
 
 		// Creating the text inputs
 		JPanel textInput = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -381,18 +374,18 @@ public class VueRest extends JFrame implements PlugIn{
 		// Building the components for the southern part of the window : the AETs combobox, the Search and Filter buttons
 		this.state = new JLabel();
 		southD.add(retrieveAET);
-		retrieve = new JButton(new RetrieveAction(rowsModelsIndexes, tableauDetails, modeleDetails, state, retrieveAET));
+		retrieve = new JButton(new RetrieveAction(rowsModelsIndexes, tableSeries, modeleTableSeries, state, retrieveAET));
 		southD.add(retrieve);
 		southD.add(state);
 		south.add(southD);
 
 		// Setting the mouse listener on tableau
-		tableau.addMouseListener(new TableMouseListener(tableau, modele, modeleDetails, queryAET, tableau.getSelectionModel(), state));
+		tablePatients.addMouseListener(new TablePatientMouseListener(tablePatients, modeleTablePatients, modeleTableSeries, state));
 
 		// Setting the rowSelection that will allow for retrieves on specific series
-		ListSelectionModel rowSelectionModel = tableauDetails.getSelectionModel();
+		ListSelectionModel rowSelectionModel = tableSeries.getSelectionModel();
 		rowSelectionModel.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		rowSelectionModel.addListSelectionListener(new TableListSelectionListener(rowsModelsIndexes, tableauDetails));
+		rowSelectionModel.addListSelectionListener(new TableListSelectionListener(rowsModelsIndexes, tableSeries));
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////		
 		////////////////////////////////// END OF TAB 1 : QUERIES/RETRIEVE ////////////////////////////////////
@@ -404,37 +397,37 @@ public class VueRest extends JFrame implements PlugIn{
 		//////////////////////////     TAB 2 : HISTORY ////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		sorterH = new TableRowSorter<TableDataPatient>(modeleH);
+		sorterH = new TableRowSorter<TableDataPatient>(modeleTablePatientHistory);
 		sorterH.setSortsOnUpdates(true);
-		sorterDetailsH = new TableRowSorter<TableDataDetails>(modeleDetailsH);
+		sorterDetailsH = new TableRowSorter<TableDataSeries>(modeleTableSeriesHistory);
 
 		JPanel mainPanelH = new JPanel(new GridBagLayout());
 		JPanel northH = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		tableauH = new JTable(modeleH);
+		tablePatientsHistory = new JTable(modeleTablePatientHistory);
 
-		tableauH.setRowSorter(sorterH);
-		tableauH.getTableHeader().setReorderingAllowed(false);
+		tablePatientsHistory.setRowSorter(sorterH);
+		tablePatientsHistory.getTableHeader().setReorderingAllowed(false);
 
 		// We configure the columns
-		tableauH.getColumnModel().getColumn(0).setMinWidth(170);
-		tableauH.getColumnModel().getColumn(0).setMaxWidth(170);
-		tableauH.getColumnModel().getColumn(0).setResizable(false);
-		tableauH.getColumnModel().getColumn(1).setMinWidth(140);
-		tableauH.getColumnModel().getColumn(1).setMaxWidth(140);
-		tableauH.getColumnModel().getColumn(1).setResizable(false);
-		tableauH.getColumnModel().getColumn(2).setMinWidth(95);
-		tableauH.getColumnModel().getColumn(2).setMaxWidth(95);
-		tableauH.getColumnModel().getColumn(2).setResizable(false);
-		tableauH.getColumnModel().getColumn(3).setMinWidth(130);
-		tableauH.getColumnModel().getColumn(3).setResizable(false);
-		tableauH.getColumnModel().getColumn(4).setMinWidth(120);
-		tableauH.getColumnModel().getColumn(4).setMaxWidth(120);
-		tableauH.getColumnModel().getColumn(4).setResizable(false);
-		tableauH.getColumnModel().getColumn(5).setMinWidth(0);
-		tableauH.getColumnModel().getColumn(5).setMaxWidth(0);
-		tableauH.getColumnModel().getColumn(5).setResizable(false);
+		tablePatientsHistory.getColumnModel().getColumn(0).setMinWidth(170);
+		tablePatientsHistory.getColumnModel().getColumn(0).setMaxWidth(170);
+		tablePatientsHistory.getColumnModel().getColumn(0).setResizable(false);
+		tablePatientsHistory.getColumnModel().getColumn(1).setMinWidth(140);
+		tablePatientsHistory.getColumnModel().getColumn(1).setMaxWidth(140);
+		tablePatientsHistory.getColumnModel().getColumn(1).setResizable(false);
+		tablePatientsHistory.getColumnModel().getColumn(2).setMinWidth(95);
+		tablePatientsHistory.getColumnModel().getColumn(2).setMaxWidth(95);
+		tablePatientsHistory.getColumnModel().getColumn(2).setResizable(false);
+		tablePatientsHistory.getColumnModel().getColumn(3).setMinWidth(130);
+		tablePatientsHistory.getColumnModel().getColumn(3).setResizable(false);
+		tablePatientsHistory.getColumnModel().getColumn(4).setMinWidth(120);
+		tablePatientsHistory.getColumnModel().getColumn(4).setMaxWidth(120);
+		tablePatientsHistory.getColumnModel().getColumn(4).setResizable(false);
+		tablePatientsHistory.getColumnModel().getColumn(5).setMinWidth(0);
+		tablePatientsHistory.getColumnModel().getColumn(5).setMaxWidth(0);
+		tablePatientsHistory.getColumnModel().getColumn(5).setResizable(false);
 		// 655 400
-		tableauH.setPreferredScrollableViewportSize(new Dimension(655,400));
+		tablePatientsHistory.setPreferredScrollableViewportSize(new Dimension(655,400));
 
 		// We sort the array this way by default :
 		// first, alphabetically by name, then by modality and finally, by description.
@@ -442,30 +435,30 @@ public class VueRest extends JFrame implements PlugIn{
 		sorterH.sort();
 
 		// Setting the table's sorter and renderer
-		tableauH.setRowSorter(sorterH);
-		tableauH.setDefaultRenderer(Date.class, new DateRenderer());
+		tablePatientsHistory.setRowSorter(sorterH);
+		tablePatientsHistory.setDefaultRenderer(Date.class, new DateRenderer());
 
 
 		// Creating tableauDetailsH which will contain the patients's details
-		tableauDetailsH = new JTable(modeleDetailsH);		
-		tableauDetailsH.getTableHeader().setReorderingAllowed(false);
+		tableSeriesHistory = new JTable(modeleTableSeriesHistory);		
+		tableSeriesHistory.getTableHeader().setReorderingAllowed(false);
 
 		// We configure the columns
-		tableauDetailsH.getColumnModel().getColumn(0).setMinWidth(200);
-		tableauDetailsH.getColumnModel().getColumn(0).setResizable(false);
-		tableauDetailsH.getColumnModel().getColumn(1).setMinWidth(100);
-		tableauDetailsH.getColumnModel().getColumn(1).setMaxWidth(100);
-		tableauDetailsH.getColumnModel().getColumn(1).setResizable(false);
-		tableauDetailsH.getColumnModel().getColumn(2).setMinWidth(100);
-		tableauDetailsH.getColumnModel().getColumn(2).setMaxWidth(100);
-		tableauDetailsH.getColumnModel().getColumn(2).setResizable(false);
-		tableauDetailsH.setPreferredScrollableViewportSize(new Dimension(400,400));
+		tableSeriesHistory.getColumnModel().getColumn(0).setMinWidth(200);
+		tableSeriesHistory.getColumnModel().getColumn(0).setResizable(false);
+		tableSeriesHistory.getColumnModel().getColumn(1).setMinWidth(100);
+		tableSeriesHistory.getColumnModel().getColumn(1).setMaxWidth(100);
+		tableSeriesHistory.getColumnModel().getColumn(1).setResizable(false);
+		tableSeriesHistory.getColumnModel().getColumn(2).setMinWidth(100);
+		tableSeriesHistory.getColumnModel().getColumn(2).setMaxWidth(100);
+		tableSeriesHistory.getColumnModel().getColumn(2).setResizable(false);
+		tableSeriesHistory.setPreferredScrollableViewportSize(new Dimension(400,400));
 
 		//Setting the sorter for tableauDetailsH
 		sorterDetailsH.setSortsOnUpdates(true);
 		sorterDetailsH.setSortKeys(sortKeysDetails);
 		sorterDetailsH.sort();
-		tableauDetailsH.setRowSorter(sorterDetailsH);
+		tableSeriesHistory.setRowSorter(sorterDetailsH);
 
 
 		// Creating the modalities checkboxes
@@ -512,14 +505,14 @@ public class VueRest extends JFrame implements PlugIn{
 		queryAETH.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent event) {
-				if(tableau.getRowCount() != 0){
-					String patientName = (String)tableau.getValueAt(tableau.getSelectedRow(), 0);
-					String patientID = (String)tableau.getValueAt(tableau.getSelectedRow(), 1);
+				if(tablePatients.getRowCount() != 0){
+					String patientName = (String)tablePatients.getValueAt(tablePatients.getSelectedRow(), 0);
+					String patientID = (String)tablePatients.getValueAt(tablePatients.getSelectedRow(), 1);
 					// We clear the table completely before any queries
-					modeleH.clear();
-					modeleDetailsH.clear();
+					modeleTablePatientHistory.clear();
+					modeleTableSeriesHistory.clear();
 					try {
-						modeleH.addPatient(patientName, patientID, "*", "*", "*", "*", queryAETH.getSelectedItem().toString());
+						modeleTablePatientHistory.addPatient(patientName, patientID, "*", "*", "*", "*", queryAETH.getSelectedItem().toString());
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -539,22 +532,22 @@ public class VueRest extends JFrame implements PlugIn{
 		northGH.add(queryAETH);
 		northGH.add(datesH);
 		JButton filter = new JButton("Filter");
-		filter.addActionListener(new FilterAction(stateH, checkboxesH, modeleH, modeleDetailsH, fromH, toH, queryAETH));
+		filter.addActionListener(new FilterAction(stateH, checkboxesH, modeleTablePatientHistory, modeleTableSeriesHistory, fromH, toH, queryAETH));
 
 		//Creating the southern panel
 		JPanel southH = new JPanel(new FlowLayout());
 		stateH = new JLabel();
 		stateH.setText(null);
 		southH.add(this.retrieveAETH);
-		retrieveH = new JButton(new RetrieveAction(rowsModelsIndexesH, tableauDetailsH, modeleDetailsH, stateH, retrieveAETH));
+		retrieveH = new JButton(new RetrieveAction(rowsModelsIndexesH, tableSeriesHistory, modeleTableSeriesHistory, stateH, retrieveAETH));
 		southH.add(retrieveH);
 		southH.add(this.stateH);
-		tableauH.addMouseListener(new TableMouseListener(tableauH, modeleH, modeleDetailsH, queryAETH, tableauH.getSelectionModel(), stateH));		
+		tablePatientsHistory.addMouseListener(new TablePatientMouseListener(tablePatientsHistory, modeleTablePatientHistory, modeleTableSeriesHistory, stateH));		
 
 		// Setting the rowSelection that will allow for retrieves
-		ListSelectionModel rowSelectionModelH = tableauDetailsH.getSelectionModel();
+		ListSelectionModel rowSelectionModelH = tableSeriesHistory.getSelectionModel();
 		rowSelectionModelH.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		rowSelectionModelH.addListSelectionListener(new TableListSelectionListener(rowsModelsIndexesH, tableauDetailsH));
+		rowSelectionModelH.addListSelectionListener(new TableListSelectionListener(rowsModelsIndexesH, tableSeriesHistory));
 
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////		
@@ -613,7 +606,7 @@ public class VueRest extends JFrame implements PlugIn{
 					@Override
 					protected Void doInBackground()  {	
 							working=true;
-							ArrayList<Patient> patientArray =new ArrayList<Patient>();
+							ArrayList<PatientsDetails> patientArray =new ArrayList<PatientsDetails>();
 							for (int i=0; i<table.getRowCount(); i++) {
 								info.setText("Query "+(i+1)+"/"+(table.getRowCount()));
 								try {		
@@ -623,7 +616,7 @@ public class VueRest extends JFrame implements PlugIn{
 										
 										//On recupe les infos toutes les studies 
 										if (results!=null) {
-											autoQuery.getContent(results, patientArray);
+											autoQuery.getContent(results, patientArray, comboBox.getSelectedItem().toString());
 											
 										}
 										
@@ -989,9 +982,9 @@ public class VueRest extends JFrame implements PlugIn{
 		north.add(filtersPanel);
 
 		GridBagConstraints c = new GridBagConstraints();
-		JScrollPane jscp = new JScrollPane(tableau);
+		JScrollPane jscp = new JScrollPane(tablePatients);
 		jscp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		jscp.setPreferredSize(new Dimension((int)tableau.getPreferredSize().getWidth() + 20 , (int)tableau.getPreferredSize().getHeight()));
+		jscp.setPreferredSize(new Dimension((int)tablePatients.getPreferredSize().getWidth() + 20 , (int)tablePatients.getPreferredSize().getHeight()));
 		c.gridx = 0;
 		c.gridy = 0;
 		c.weightx = 1;
@@ -1002,7 +995,7 @@ public class VueRest extends JFrame implements PlugIn{
 		c.gridx = 1;
 		c.gridy = 0;
 		c.fill = GridBagConstraints.BOTH;
-		mainPanel.add(new JScrollPane(tableauDetails),c);
+		mainPanel.add(new JScrollPane(tableSeries),c);
 
 		// Creating and adding the JPanels to the contentPane
 		JPanel p1 = new JPanel();
@@ -1018,9 +1011,9 @@ public class VueRest extends JFrame implements PlugIn{
 		northH.add(filter);
 
 		GridBagConstraints cH = new GridBagConstraints();
-		JScrollPane jscpH = new JScrollPane(tableauH);
+		JScrollPane jscpH = new JScrollPane(tablePatientsHistory);
 		jscpH.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		jscpH.setPreferredSize(new Dimension((int)tableauH.getPreferredSize().getWidth() + 20 , (int)tableauH.getPreferredSize().getHeight()));
+		jscpH.setPreferredSize(new Dimension((int)tablePatientsHistory.getPreferredSize().getWidth() + 20 , (int)tablePatientsHistory.getPreferredSize().getHeight()));
 		cH.gridx = 0;
 		cH.gridy = 0;
 		cH.weightx = 1;
@@ -1033,7 +1026,7 @@ public class VueRest extends JFrame implements PlugIn{
 		cH.weightx = 1;
 		cH.weighty = 1;
 		cH.fill = GridBagConstraints.BOTH;
-		mainPanelH.add(new JScrollPane(tableauDetailsH),c);
+		mainPanelH.add(new JScrollPane(tableSeriesHistory),c);
 		mainPanelH.setBackground(Color.DARK_GRAY);
 
 		// Adding components to p2
@@ -1109,10 +1102,10 @@ public class VueRest extends JFrame implements PlugIn{
 				}
 			}
 			// We clear the tables completely before any queries
-			modele.clear();
-			modeleH.clear();
-			modeleDetails.clear();
-			modeleDetailsH.clear();
+			modeleTablePatients.clear();
+			modeleTablePatientHistory.clear();
+			modeleTableSeries.clear();
+			modeleTableSeriesHistory.clear();
 
 			// We make the query, based on the user's input
 			try {
@@ -1133,21 +1126,21 @@ public class VueRest extends JFrame implements PlugIn{
 						date=df.format(from.getDate().getTime())+"-"+df.format(to.getDate().getTime());
 					}
 					
-					modele.addPatient(inputString.toUpperCase(), "*", date , 
+					modeleTablePatients.addPatient(inputString.toUpperCase(), "*", date , 
 					modalities.toString(), description.getText(),"*", queryAET.getSelectedItem().toString());
 				}
 				// Query with the patient's ID
 				else if(searchingParam.getSelectedItem().equals("Patient ID")){
-					 modele.addPatient("*", userInput.getText(), 
+					 modeleTablePatients.addPatient("*", userInput.getText(), 
 					 df.format(from.getDate().getTime())+"-"+df.format(to.getDate().getTime()), 
 					 modalities.toString(), description.getText(),"*", queryAET.getSelectedItem().toString());
 				}else{
 					// Query with the patient's accession number
-					modele.addPatient("*", "*", df.format(from.getDate().getTime())+"-"+df.format(to.getDate().getTime()), 
+					modeleTablePatients.addPatient("*", "*", df.format(from.getDate().getTime())+"-"+df.format(to.getDate().getTime()), 
 							modalities.toString(), description.getText(),userInput.getText(), queryAET.getSelectedItem().toString());
 				}
 			} catch (Exception e1) {
-				// ignore
+				e1.printStackTrace();
 			}
 		}
 	}
@@ -1163,13 +1156,13 @@ public class VueRest extends JFrame implements PlugIn{
 		@Override
 		public void actionPerformed(ActionEvent event) {
 			state.setText(null);
-			String patientName = (String)tableau.getValueAt(tableau.getSelectedRow(), 0);
-			String patientID = (String)tableau.getValueAt(tableau.getSelectedRow(), 1);
+			String patientName = (String)tablePatients.getValueAt(tablePatients.getSelectedRow(), 0);
+			String patientID = (String)tablePatients.getValueAt(tablePatients.getSelectedRow(), 1);
 			// We clear the table completely before any queries
-			modeleH.clear();
-			modeleDetailsH.clear();
+			modeleTablePatientHistory.clear();
+			modeleTableSeriesHistory.clear();
 			try {
-				modeleH.addPatient(patientName, patientID, "*", "*", "*", "*", queryAETH.getSelectedItem().toString());
+				modeleTablePatientHistory.addPatient(patientName, patientID, "*", "*", "*", "*", queryAETH.getSelectedItem().toString());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -1184,12 +1177,12 @@ public class VueRest extends JFrame implements PlugIn{
 		private static final long serialVersionUID = 1L;
 		private ArrayList<Integer> rowsModelsIndexes;
 		private JTable tableauDetails;
-		private TableDataDetails modeleDetails;
+		private TableDataSeries modeleDetails;
 		private JLabel state;
 		private JComboBox<String> retrieveAET;
 
 		public RetrieveAction(ArrayList<Integer> rowsModelsIndexes, JTable tableauDetails, 
-				TableDataDetails modeleDetails, JLabel state, JComboBox<String> retrieveAET){
+				TableDataSeries modeleDetails, JLabel state, JComboBox<String> retrieveAET){
 			super("Retrieve");
 			this.rowsModelsIndexes = rowsModelsIndexes;
 			this.tableauDetails = tableauDetails;
@@ -1213,26 +1206,26 @@ public class VueRest extends JFrame implements PlugIn{
 							// If whole studies/study were/was selected
 							DateFormat df = new SimpleDateFormat("yyyyMMdd");
 							int numPatient=0;
-							for(Integer row : tableau.getSelectedRows()){
+							for(Integer row : tablePatients.getSelectedRows()){
 								numPatient++;
 								modeleDetails.clear();
-								Date date = (Date)tableau.getValueAt(row, 2);
-								String patientName = (String)tableau.getValueAt(row, 0);
-								String patientID = (String)tableau.getValueAt(row, 1);
+								Date date = (Date)tablePatients.getValueAt(row, 2);
+								String patientName = (String)tablePatients.getValueAt(row, 0);
+								String patientID = (String)tablePatients.getValueAt(row, 1);
 								String studyDate = df.format(date); 
-								String studyDescription = (String)tableau.getValueAt(row, 3);
-								String accessionNumber = (String)tableau.getValueAt(row, 4);
-								String studyInstanceUID = (String)tableau.getValueAt(row, 5);
+								String studyDescription = (String)tablePatients.getValueAt(row, 3);
+								String accessionNumber = (String)tablePatients.getValueAt(row, 4);
+								String studyInstanceUID = (String)tablePatients.getValueAt(row, 5);
 
 								modeleDetails.addDetails(patientName, patientID, studyDate, studyDescription, accessionNumber, studyInstanceUID, queryAET.getSelectedItem().toString());
 								for(int i = 0; i < tableauDetails.getRowCount(); i++){
-									state.setText("<html>Patient " + (numPatient) + "/" + tableau.getSelectedColumnCount() + " - Retrieve state  " + (i+1) + "/" + tableauDetails.getRowCount() + 
+									state.setText("<html>Patient " + (numPatient) + "/" + tablePatients.getSelectedColumnCount() + " - Retrieve state  " + (i+1) + "/" + tableauDetails.getRowCount() + 
 											" <font color='red'> (Do not touch any buttons or any tables while the retrieve is not done)</font></html>");
 									modeleDetails.retrieve(modeleDetails.getQueryID(i), i, 
 											retrieveAET.getSelectedItem().toString());
 								}
 							}
-							tableau.setRowSelectionInterval(0,0);
+							tablePatients.setRowSelectionInterval(0,0);
 						}else{
 							// If only series were selected
 							int i = 0;
@@ -1285,7 +1278,7 @@ public class VueRest extends JFrame implements PlugIn{
 	 * AutoQuery :Appelle la dialog d'affichage des resultat et recup�re les resultat valid�s pour l'injecter dans la table de la main frame
 	 * @param patientArray
 	 */
-	private void showResultTable(ArrayList<Patient> patientArray) {
+	private void showResultTable(ArrayList<PatientsDetails> patientArray) {
 		AutoQueryResultTableDialog resultDialog=new AutoQueryResultTableDialog(patientArray);
 		resultDialog.setModal(true);
 		resultDialog.populateTable();

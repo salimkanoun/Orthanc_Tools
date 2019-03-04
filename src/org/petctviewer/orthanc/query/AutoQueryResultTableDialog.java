@@ -45,7 +45,7 @@ public class AutoQueryResultTableDialog extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
 	private JTable table;
-	private ArrayList<Patient> patientList;
+	private ArrayList<PatientsDetails> patientList;
 	boolean validate;
 
 	/**
@@ -53,7 +53,7 @@ public class AutoQueryResultTableDialog extends JDialog {
 	 */
 	public static void main(String[] args) {
 		try {
-			AutoQueryResultTableDialog dialog = new AutoQueryResultTableDialog(new ArrayList<Patient> ());
+			AutoQueryResultTableDialog dialog = new AutoQueryResultTableDialog(new ArrayList<PatientsDetails> ());
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.setSize(dialog.getPreferredSize());
 			dialog.setVisible(true);
@@ -65,7 +65,7 @@ public class AutoQueryResultTableDialog extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public AutoQueryResultTableDialog(ArrayList<Patient> patientList) {
+	public AutoQueryResultTableDialog(ArrayList<PatientsDetails> patientList) {
 		this.patientList= patientList;
 		
 		getContentPane().setLayout(new BorderLayout());

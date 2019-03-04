@@ -24,29 +24,22 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 
-public class TableMouseListener extends MouseAdapter {
+public class TablePatientMouseListener extends MouseAdapter {
 
-	private JTable tableau;
-	private TableDataPatient modele;
-	private TableDataDetails modeleDetails;
-	private ListSelectionModel listSelection;
-	private JComboBox<String> queryAET;
+	private JTable tableauPatients;
+	private TableDataPatient modelePatients;
+	private TableDataSeries modeleSeries;
 	private JLabel state;
 
-	public TableMouseListener(JTable tableau, TableDataPatient modele, 
-			TableDataDetails modeleDetails, JComboBox<String> queryAET, 
-			ListSelectionModel listSelection, JLabel state) {
-		this.tableau = tableau;
-		this.modele = modele;
-		this.modeleDetails = modeleDetails;
-		this.queryAET = queryAET;
-		this.listSelection = listSelection;
+	public TablePatientMouseListener(JTable tableau, TableDataPatient modele, 
+			TableDataSeries modeleDetails, JLabel state) {
+		this.tableauPatients = tableau;
+		this.modelePatients = modele;
+		this.modeleSeries = modeleDetails;
 		this.state = state;
 	}
 
@@ -56,8 +49,8 @@ public class TableMouseListener extends MouseAdapter {
 		if(!event.isControlDown()){
 			// selects the row at which point the mouse is clicked
 			Point point = event.getPoint();
-			int currentRow = tableau.rowAtPoint(point);
-			tableau.setRowSelectionInterval(currentRow, currentRow);
+			int currentRow = tableauPatients.rowAtPoint(point);
+			tableauPatients.setRowSelectionInterval(currentRow, currentRow);
 		}
 		DateFormat df = new SimpleDateFormat("yyyyMMdd");
 
@@ -67,32 +60,33 @@ public class TableMouseListener extends MouseAdapter {
 		}
 
 		// We clear the details
-		this.modeleDetails.clearQueriesIDs();
-		this.modeleDetails.clear();
+		this.modeleSeries.clearQueriesIDs();
+		this.modeleSeries.clear();
 
 		try {
-			if(this.modele.getRowCount() != 0){
-				Date date = (Date)this.tableau.getValueAt(this.tableau.getSelectedRow(), 2);
-				String patientName = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 0);
-				String patientID = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 1);
+			if(this.modelePatients.getRowCount() != 0){
+				Date date = (Date)this.tableauPatients.getValueAt(this.tableauPatients.getSelectedRow(), 2);
+				String patientName = (String)this.tableauPatients.getValueAt(this.tableauPatients.getSelectedRow(), 0);
+				String patientID = (String)this.tableauPatients.getValueAt(this.tableauPatients.getSelectedRow(), 1);
 				String studyDate = df.format(date); 
-				String studyDescription = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 3);
-				String accessionNumber = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 4);
-				String studyInstanceUID = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 5);
+				String studyDescription = (String)this.tableauPatients.getValueAt(this.tableauPatients.getSelectedRow(), 3);
+				String accessionNumber = (String)this.tableauPatients.getValueAt(this.tableauPatients.getSelectedRow(), 4);
+				String studyInstanceUID = (String)this.tableauPatients.getValueAt(this.tableauPatients.getSelectedRow(), 5);
+				String aet = (String)this.tableauPatients.getValueAt(this.tableauPatients.getSelectedRow(), 6);
 
-				this.modeleDetails.addDetails(patientName, patientID, studyDate, studyDescription, accessionNumber, studyInstanceUID, queryAET.getSelectedItem().toString());
+				this.modeleSeries.addDetails(patientName, patientID, studyDate, studyDescription, accessionNumber, studyInstanceUID, 
+						aet);
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-
 	}
 	
 	@Override
 	public void mouseClicked(MouseEvent event) {
 		if (event.isControlDown() && SwingUtilities.isLeftMouseButton(event) && event.getClickCount() == 1) {
-            int row = tableau.rowAtPoint(event.getPoint());
-            listSelection.addSelectionInterval(row, row);
+            int row = tableauPatients.rowAtPoint(event.getPoint());
+            tableauPatients.addRowSelectionInterval(row, row);
         }
 	}
 }

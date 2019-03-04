@@ -22,31 +22,31 @@ import java.util.ArrayList;
 
 import javax.swing.table.DefaultTableModel;
 
-public class TableDataDetails extends DefaultTableModel{
+public class TableDataSeries extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Series name", "Modality", "Serie n�"};
+	private String[] entetes = {"Series Desc", "Modality", "Serie num"};
+	private Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, String.class};
+	
 	private String idURL;
-	private ArrayList<Details> details = new ArrayList<Details>();
+	private ArrayList<SeriesDetails> series ;
 	private ArrayList<String> listIndexes = null;
 	private Rest rest;
 	
 
-	public TableDataDetails(Rest rest){
-		super();
+	public TableDataSeries(Rest rest){
+		super(0,3);
 		this.rest=rest;
 	}
 
-	public int getRowCount(){
-		return details.size();
-	}
-
-	public int getColumnCount(){
-		return entetes.length;
-	}
-
+	@Override
 	public String getColumnName(int columnIndex){
 		return entetes[columnIndex];
+	}
+	
+	@Override
+	public Class<?> getColumnClass(int column){
+		return columnClasses[column];
 	}
 
 	/*
@@ -57,39 +57,40 @@ public class TableDataDetails extends DefaultTableModel{
 		this.listIndexes = new ArrayList<String>();
 		this.idURL = rest.getSeriesDescriptionID(studyInstanceUID, aet);
 		String[][] studyDescriptionAndModality = rest.getSeriesDescriptionValues(idURL);
-		
-		Details d;
+		series = new ArrayList<SeriesDetails>();
+		SeriesDetails d;
 		if(studyDescriptionAndModality[0].length != 0){
 			if(studyInstanceUID == null){
 				throw new Exception("This study doesn't have an instance UID !");
 			}
 			for(int i = 0; i < studyDescriptionAndModality[0].length; i++){
-				d = new Details(studyDescriptionAndModality[0][i], studyDescriptionAndModality[1][i], studyInstanceUID, studyDescriptionAndModality[2][i]);
-				if(!details.contains(d)){
-					details.add(d);
-					// Whenever we add details, we store the query ID, in order to use it for the retrieve queries
-					this.listIndexes.add(this.idURL);
-					fireTableRowsInserted(details.size() - 1, details.size() - 1);
-				}
+				d = new SeriesDetails(studyDescriptionAndModality[0][i], studyDescriptionAndModality[1][i], studyInstanceUID, studyDescriptionAndModality[2][i]);
+				series.add(d);
+				// Whenever we add details, we store the query ID, in order to use it for the retrieve queries
+				this.listIndexes.add(this.idURL);
+				//fireTableRowsInserted(details.size() - 1, details.size() - 1);
+				
 			}
+			updateTable();
 		}
 
 	}
-
-	public void removeDetails(int rowIndex){
-		this.details.remove(rowIndex);
-		fireTableRowsDeleted(rowIndex, rowIndex);
+	
+	private void updateTable() {
+		//Empty Table
+		setRowCount(0);
+		//Fill with Series
+		for(SeriesDetails serie : series) {
+			this.addRow(new String[] {serie.getSeriesDescription(), serie.getModality(), serie.getSeriesNumber()});
+		}
 	}
 
+	
 	/*
 	 * This method clears the details list
 	 */
 	public void clear(){
-		if(this.getRowCount() !=0){
-			for(int i = this.getRowCount(); i > 0; i--){
-				this.removeDetails(i-1);
-			}
-		}
+		setRowCount(0);
 	}
 
 	public String getQueryID(int index){

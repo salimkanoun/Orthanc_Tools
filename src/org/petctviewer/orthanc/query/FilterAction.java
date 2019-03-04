@@ -19,7 +19,6 @@ package org.petctviewer.orthanc.query;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
@@ -37,14 +36,14 @@ public class FilterAction extends AbstractAction {
 	private JLabel state;
 	private JPanel checkboxes;
 	private TableDataPatient modeleH;
-	private TableDataDetails modeleDetailsH;
+	private TableDataSeries modeleDetailsH;
 	private DatePicker from;
 	private DatePicker to;
 	private JComboBox<String> queryAET;
 	private String name;
 	private String id;
 
-	public FilterAction(JLabel state, JPanel checkboxes, TableDataPatient modeleH, TableDataDetails modeleDetailsH, 
+	public FilterAction(JLabel state, JPanel checkboxes, TableDataPatient modeleH, TableDataSeries modeleDetailsH, 
 			DatePicker from, DatePicker to, JComboBox<String> queryAET) {
 		super("Filter");
 		this.state = state;
@@ -101,18 +100,13 @@ public class FilterAction extends AbstractAction {
 		modeleDetailsH.clear();
 
 		// We make the query, based on the user's input
-		try {
-			if(modalities.toString().length() == 0){
-				modalities.append("*");
-			}
-			modeleH.addPatient(this.name, this.id, df.format(from.getDate().getTime())+"-"+df.format(to.getDate().getTime()), 
-					modalities.toString(), "*", "*", queryAET.getSelectedItem().toString());
+		
 
-		} catch (IOException e1) {
-			e1.printStackTrace();
-
-		} catch (Exception e1) {
-			// Ignore
+		if(modalities.toString().length() == 0){
+			modalities.append("*");
 		}
+		modeleH.addPatient(this.name, this.id, df.format(from.getDate().getTime())+"-"+df.format(to.getDate().getTime()), 
+				modalities.toString(), "*", "*", queryAET.getSelectedItem().toString());
+
 	}
 }
