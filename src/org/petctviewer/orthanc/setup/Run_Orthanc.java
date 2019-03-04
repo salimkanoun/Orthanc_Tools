@@ -167,15 +167,14 @@ public class Run_Orthanc {
         });
         
         orthancThread.start();
-//
-//        
-//       if(!isStarted) {
-//    	   try {
-//    		   Thread.sleep(2000);
-//    	   } catch (InterruptedException e) {
-//    		   e.printStackTrace();
-//    	   }
-//       }
+        
+       if(!isStarted) {
+    	   try {
+    		   Thread.sleep(2000);
+    	   } catch (InterruptedException e) {
+    		   e.printStackTrace();
+    	   }
+       }
 
 	}
 	
