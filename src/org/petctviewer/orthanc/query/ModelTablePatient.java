@@ -25,7 +25,7 @@ import java.util.Date;
 
 import javax.swing.table.DefaultTableModel;
 
-public class TableDataPatient extends DefaultTableModel{
+public class ModelTablePatient extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
 	private String[] entetes = {"Patient name", "Patient ID", "Study date", "Study description", "Accession number", "Study UID", "aet"};
@@ -34,7 +34,7 @@ public class TableDataPatient extends DefaultTableModel{
 	private Rest rest;
 
 
-	public TableDataPatient(Rest rest){
+	public ModelTablePatient(Rest rest){
 		super(0,7);
 		this.rest = rest;
 	}

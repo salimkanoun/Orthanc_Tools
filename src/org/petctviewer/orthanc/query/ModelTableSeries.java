@@ -22,7 +22,7 @@ import java.util.ArrayList;
 
 import javax.swing.table.DefaultTableModel;
 
-public class TableDataSeries extends DefaultTableModel{
+public class ModelTableSeries extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
 	private String[] entetes = {"Series Desc", "Modality", "Serie num"};
@@ -34,7 +34,7 @@ public class TableDataSeries extends DefaultTableModel{
 	private Rest rest;
 	
 
-	public TableDataSeries(Rest rest){
+	public ModelTableSeries(Rest rest){
 		super(0,3);
 		this.rest=rest;
 	}

@@ -93,10 +93,10 @@ public class VueRest extends JFrame implements PlugIn{
 	private Rest rest =new Rest(new OrthancRestApis(null));
 	
 	private JTabbedPane tabbedPane;
-	private TableDataPatient modeleTablePatients = new TableDataPatient(rest); // model for the main JTable (tableau)
-	private TableDataSeries modeleTableSeries = new TableDataSeries(rest); // model for the details JTable (tableauDetails) in the main tab
-	private TableDataPatient modeleTablePatientHistory = new TableDataPatient(rest); // model for the history JTable (tab History)
-	private TableDataSeries modeleTableSeriesHistory = new TableDataSeries(rest); // model for the details JTable (tableauDetails) in the history tab
+	private ModelTablePatient modeleTablePatients = new ModelTablePatient(rest); // model for the main JTable (tableau)
+	private ModelTableSeries modeleTableSeries = new ModelTableSeries(rest); // model for the details JTable (tableauDetails) in the main tab
+	private ModelTablePatient modeleTablePatientHistory = new ModelTablePatient(rest); // model for the history JTable (tab History)
+	private ModelTableSeries modeleTableSeriesHistory = new ModelTableSeries(rest); // model for the details JTable (tableauDetails) in the history tab
 	private JTable tablePatients; // displayed table in the main tab
 	private JTable tableSeries; // displayed table containing the details in the main tab
 	private JTable tablePatientsHistory; // displayed table in the history tab
@@ -116,8 +116,8 @@ public class VueRest extends JFrame implements PlugIn{
 	private JCheckBox cr,ct,cmr,nm,pt,us,xa,mg; // the chosen modalities 
 	private JTextField description; // allows to search for a particular description
 	private DatePicker from, to; // allow to make a research in a user defined time frame
-	private TableRowSorter<TableDataPatient> sorter; // used to filter and sort the rows for the main JTable
-	private TableRowSorter<TableDataSeries> sorterDetails; // used to filter and sort the rows for the details JTable
+	private TableRowSorter<ModelTablePatient> sorter; // used to filter and sort the rows for the main JTable
+	private TableRowSorter<ModelTableSeries> sorterDetails; // used to filter and sort the rows for the details JTable
 	private JButton retrieve;
 	
 	// Tab History
@@ -127,8 +127,8 @@ public class VueRest extends JFrame implements PlugIn{
 	private JPanel checkboxesH;
 	private JCheckBox crH,ctH,cmrH,nmH,ptH,usH,xaH,mgH;  
 	private DatePicker fromH, toH; // allow to make a research in a user defined time frame
-	private TableRowSorter<TableDataPatient> sorterH; // used to sort the rows for the main JTable
-	private TableRowSorter<TableDataSeries> sorterDetailsH; // used to filter and sort the rows for the details JTable
+	private TableRowSorter<ModelTablePatient> sorterH; // used to sort the rows for the main JTable
+	private TableRowSorter<ModelTableSeries> sorterDetailsH; // used to filter and sort the rows for the details JTable
 	private JButton retrieveH;
 	
 	// Tab Setup
@@ -203,8 +203,8 @@ public class VueRest extends JFrame implements PlugIn{
 		//////////////////////////     TAB 1 : QUERIES/RETRIEVE ///////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		this.sorter = new TableRowSorter<TableDataPatient>(modeleTablePatients);
-		this.sorterDetails = new TableRowSorter<TableDataSeries>(modeleTableSeries);
+		this.sorter = new TableRowSorter<ModelTablePatient>(modeleTablePatients);
+		this.sorterDetails = new TableRowSorter<ModelTableSeries>(modeleTableSeries);
 		this.sorter.setSortsOnUpdates(true);
 		JPanel mainPanel = new JPanel(new GridBagLayout());
 		JPanel north = new JPanel(new GridLayout(1,2));
@@ -397,9 +397,9 @@ public class VueRest extends JFrame implements PlugIn{
 		//////////////////////////     TAB 2 : HISTORY ////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		sorterH = new TableRowSorter<TableDataPatient>(modeleTablePatientHistory);
+		sorterH = new TableRowSorter<ModelTablePatient>(modeleTablePatientHistory);
 		sorterH.setSortsOnUpdates(true);
-		sorterDetailsH = new TableRowSorter<TableDataSeries>(modeleTableSeriesHistory);
+		sorterDetailsH = new TableRowSorter<ModelTableSeries>(modeleTableSeriesHistory);
 
 		JPanel mainPanelH = new JPanel(new GridBagLayout());
 		JPanel northH = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -1177,12 +1177,12 @@ public class VueRest extends JFrame implements PlugIn{
 		private static final long serialVersionUID = 1L;
 		private ArrayList<Integer> rowsModelsIndexes;
 		private JTable tableauDetails;
-		private TableDataSeries modeleDetails;
+		private ModelTableSeries modeleDetails;
 		private JLabel state;
 		private JComboBox<String> retrieveAET;
 
 		public RetrieveAction(ArrayList<Integer> rowsModelsIndexes, JTable tableauDetails, 
-				TableDataSeries modeleDetails, JLabel state, JComboBox<String> retrieveAET){
+				ModelTableSeries modeleDetails, JLabel state, JComboBox<String> retrieveAET){
 			super("Retrieve");
 			this.rowsModelsIndexes = rowsModelsIndexes;
 			this.tableauDetails = tableauDetails;

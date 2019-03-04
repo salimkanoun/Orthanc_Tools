@@ -35,15 +35,15 @@ public class FilterAction extends AbstractAction {
 
 	private JLabel state;
 	private JPanel checkboxes;
-	private TableDataPatient modeleH;
-	private TableDataSeries modeleDetailsH;
+	private ModelTablePatient modeleH;
+	private ModelTableSeries modeleDetailsH;
 	private DatePicker from;
 	private DatePicker to;
 	private JComboBox<String> queryAET;
 	private String name;
 	private String id;
 
-	public FilterAction(JLabel state, JPanel checkboxes, TableDataPatient modeleH, TableDataSeries modeleDetailsH, 
+	public FilterAction(JLabel state, JPanel checkboxes, ModelTablePatient modeleH, ModelTableSeries modeleDetailsH, 
 			DatePicker from, DatePicker to, JComboBox<String> queryAET) {
 		super("Filter");
 		this.state = state;

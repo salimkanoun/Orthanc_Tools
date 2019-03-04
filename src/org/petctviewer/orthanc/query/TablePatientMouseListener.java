@@ -31,12 +31,12 @@ import javax.swing.SwingUtilities;
 public class TablePatientMouseListener extends MouseAdapter {
 
 	private JTable tableauPatients;
-	private TableDataPatient modelePatients;
-	private TableDataSeries modeleSeries;
+	private ModelTablePatient modelePatients;
+	private ModelTableSeries modeleSeries;
 	private JLabel state;
 
-	public TablePatientMouseListener(JTable tableau, TableDataPatient modele, 
-			TableDataSeries modeleDetails, JLabel state) {
+	public TablePatientMouseListener(JTable tableau, ModelTablePatient modele, 
+			ModelTableSeries modeleDetails, JLabel state) {
 		this.tableauPatients = tableau;
 		this.modelePatients = modele;
 		this.modeleSeries = modeleDetails;
