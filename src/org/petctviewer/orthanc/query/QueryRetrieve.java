@@ -15,7 +15,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
 package org.petctviewer.orthanc.query;
 
 import java.text.DateFormat;
@@ -37,11 +36,19 @@ public class QueryRetrieve {
 		this.connexion=connexion;
 	}
 
-	/*
-	 * This method gets the answer's indexes to an Orthanc query, as an Object[].
-	 * An Object[] should be instantiated to store the values inside it.
+	/**
+	 * Query Study level and return result in a array of studydetails
+	 * @param level
+	 * @param name
+	 * @param id
+	 * @param studyDate
+	 * @param modality
+	 * @param studyDescription
+	 * @param accessionNumber
+	 * @param aet
+	 * @return StudyDetails[]
 	 */
-	public StudyDetails[] getPatientsResults(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber, String aet) {
+	public StudyDetails[] getStudiesResults(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber, String aet) {
 		// We call getQueryID to generate a query ID
 		String idQuery =  this.queryStudies(level, name, id, studyDate, modality, studyDescription, accessionNumber, aet);
 		
@@ -81,7 +88,6 @@ public class QueryRetrieve {
 
 	/*
 	 * This method returns all the series's data of a queries ID result in a SeriesDetails array
-	 *
 	 */
 	public SerieDetails[] getSeriesAnswers(String studyInstanceUID, String aet) {
 		
@@ -93,7 +99,7 @@ public class QueryRetrieve {
 		JsonArray answersID=(JsonArray) parserJson.parse(sb.toString());
 		
 		if(answersID.size() == 0){
-		 return null;
+			return null;
 		}
 		
 		seriesDetails = new SerieDetails[answersID.size()];
@@ -127,8 +133,7 @@ public class QueryRetrieve {
 			}
 			
 			seriesDetails[i]= new SerieDetails(seriesDescriptions,modality, studyInstanceUID, number,aet, idQuery, i );
-			
-			
+
 		}
 			
 		return seriesDetails;
@@ -194,18 +199,7 @@ public class QueryRetrieve {
 	 */
 	private String queryStudies(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber, String aet) {
 		// We build the query
-		String query =buildQuery(level, name, id, studyDate, modality, studyDescription, accessionNumber);
-		String ID = null;
-		//Send the query to Orthanc and get it's ID to fetch answers
-		StringBuilder response=connexion.makePostConnectionAndStringBuilder("/modalities/" + aet + "/query/", query);
-		JsonObject answer = (JsonObject) parserJson.parse(response.toString());
-		ID=answer.get("ID").getAsString();
 		
-		return ID;
-	}
-	
-
-	private String buildQuery(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber) {
 		JsonObject query = new JsonObject();
 		query.addProperty("Level", level);
 		
@@ -219,7 +213,13 @@ public class QueryRetrieve {
 		
 		query.add("Query", queryDetails);
 		
-		return query.toString();
+		String ID = null;
+		//Send the query to Orthanc and get it's ID to fetch answers
+		StringBuilder response=connexion.makePostConnectionAndStringBuilder("/modalities/" + aet + "/query/", query.toString());
+		JsonObject answer = (JsonObject) parserJson.parse(response.toString());
+		ID=answer.get("ID").getAsString();
+		
+		return ID;
 	}
 	
 	/**

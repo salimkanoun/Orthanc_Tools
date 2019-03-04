@@ -105,7 +105,7 @@ public class Auto_Fetch {
 	 */
 	private void makeRetrieve(String patientID) {
 		
-		StudyDetails [] patients=restApi.getPatientsResults("Study", "*", patientID, studyDate, modality, studyDescription, "*", queryAet);
+		StudyDetails [] patients=restApi.getStudiesResults("Study", "*", patientID, studyDate, modality, studyDescription, "*", queryAet);
 		
 		int numberofAnswers=patients.length;
 		

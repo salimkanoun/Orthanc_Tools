@@ -50,7 +50,7 @@ public class ModelTablePatient extends DefaultTableModel{
 	public void addPatient(String patientName, String patientID, String studyDate, String modality, 
 			String studyDescription, String accessionNumber, String aet) {
 		
-		patients = rest.getPatientsResults("Study", patientName, patientID, studyDate, modality, studyDescription, accessionNumber, aet);
+		patients = rest.getStudiesResults("Study", patientName, patientID, studyDate, modality, studyDescription, accessionNumber, aet);
 		updateTable();
 
 	}

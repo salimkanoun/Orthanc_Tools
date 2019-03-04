@@ -117,7 +117,7 @@ public class AutoQuery  {
 			if (From==null && To==null) date="*";getClass();
 			//On lance la query
 			if (StringUtils.equals(name, "*")==false || StringUtils.equals(id, "*")==false || StringUtils.equals(dateFrom, "*")==false || StringUtils.equals(dateTo, "*")==false || StringUtils.equals(modality, "*")==false || StringUtils.equals(studyDescription, "*")==false|| StringUtils.equals(accessionNumber, "*")==false) {
-				results=api.getPatientsResults("Study", name, id, date, modality, studyDescription, accessionNumber, aet);
+				results=api.getStudiesResults("Study", name, id, date, modality, studyDescription, accessionNumber, aet);
 			}
 			else {
 				results=null;
