@@ -32,10 +32,19 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
@@ -74,25 +83,11 @@ import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
 
-import ij.plugin.PlugIn;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.prefs.Preferences;
-
-public class VueRest extends JFrame implements PlugIn{
+public class VueQuery extends JFrame {
 	
 	private static final long serialVersionUID = 1L;
 	// Instancie la classe rest qui fournit les services de connexion et input
-	private QueryRetrieve rest =new QueryRetrieve(new OrthancRestApis(null));
+	private QueryRetrieve rest;
 	
 	private JTabbedPane tabbedPane;
 	private ModelTablePatient modeleTablePatients = new ModelTablePatient(rest); // model for the main JTable (tableau)
@@ -152,7 +147,7 @@ public class VueRest extends JFrame implements PlugIn{
 	private JTextField textFieldNameIDAcc;
 	private JButton btnScheduleDaily, btnSchedule_1 ;
 	private JLabel info;
-	private AutoQuery autoQuery=new AutoQuery(rest);
+	private AutoQuery autoQuery;
 	private JTextArea textAreaConsole;
 	private SwingWorker<Void, Void> workerAutoRetrieve;
 	JButton btnStart ;
@@ -171,9 +166,11 @@ public class VueRest extends JFrame implements PlugIn{
 	private JTable lastFocusMain;
 	private JTable lastFocusHistory;
     
-	public VueRest() {
+	public VueQuery(OrthancRestApis http) {
 		
 		super("Orthanc queries");
+		
+		rest=new QueryRetrieve(http);
 		this.setResizable(true);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.addWindowListener(new WindowAdapter() {
@@ -537,6 +534,7 @@ public class VueRest extends JFrame implements PlugIn{
 		//////////////////////////     TAB 3 : AutoRetrieve ////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		
+		autoQuery=new AutoQuery(rest);
 		JPanel Panel_Center = new JPanel();
 		Panel_Center.setLayout(new GridLayout(2, 0, 0, 0));
 		
@@ -832,7 +830,12 @@ public class VueRest extends JFrame implements PlugIn{
 						
 						//On retrieve toutes les studies 
 						if (autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
-							filterSerie(0, results, null);
+							try {
+								filterSerie(results,null);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
 						else if (!autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
 							autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery. discard, 1);
@@ -849,19 +852,17 @@ public class VueRest extends JFrame implements PlugIn{
 				    	
 				    }};
 				    
-				timerDaily=new Timer();
-				
-				timerDaily.scheduleAtFixedRate(task, autoQuery.tenPM(), autoQuery.fONCE_PER_DAY);
-				btnScheduleDaily.setBackground(Color.ORANGE);
-				timerOnDaily=true;
-				info.setText("Daily scheduled "+ autoQuery.fTEN_PM+"H");
-				}
-				else {
-				timerDaily.cancel();
-				timerDaily.purge();
-				btnScheduleDaily.setBackground(Color.gray);
-				timerOnDaily=false;
-				info.setText("Daily cancelled");
+					timerDaily=new Timer();
+					timerDaily.scheduleAtFixedRate(task, autoQuery.tenPM(), autoQuery.fONCE_PER_DAY);
+					btnScheduleDaily.setBackground(Color.ORANGE);
+					timerOnDaily=true;
+					info.setText("Daily scheduled "+ autoQuery.fTEN_PM+"H");
+				} else {
+					timerDaily.cancel();
+					timerDaily.purge();
+					btnScheduleDaily.setBackground(Color.gray);
+					timerOnDaily=false;
+					info.setText("Daily cancelled");
 				}
 
 				
@@ -1235,30 +1236,6 @@ public class VueRest extends JFrame implements PlugIn{
 		console.setVisible(true);
 		
 	}
-	/*
-	 * Displaying the frame
-	 */
-	public static void main(String... args) {
-		VueRest vue = new VueRest();
-		vue.setSize(1200, 400);
-		vue.pack();
-		vue.setLocationRelativeTo(null);
-		vue.setVisible(true);
-		
-	}
-
-	@Override
-	public void run(String string) {
-		VueRest vue = new VueRest();
-		vue.setSize(1200, 400);
-		vue.pack();
-		vue.setLocationRelativeTo(null);
-		vue.setVisible(true);
-	
-		
-	}
-	
-
 
 	private void makeWorker() {
 		
@@ -1286,7 +1263,8 @@ public class VueRest extends JFrame implements PlugIn{
 						// If using Serie filter
 						if (autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
 							info.setText("Analyzing Serie from Query "+(i+1)+"/"+table.getRowCount());
-							filterSerie(results);
+							int seriesRetrived=filterSerie(results,workerAutoRetrieve);
+							textAreaConsole.append("Downloaded " + seriesRetrived + " series \n");
 						} else if (autoQuery.chckbxSeriesFilter && results.length>autoQuery.discard) {
 							textAreaConsole.append("over limits, discarded,");
 						} else {
@@ -1320,7 +1298,7 @@ public class VueRest extends JFrame implements PlugIn{
 				textAreaConsole.append("found "+results.length+" studies,");
 				
 				if (autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
-					filterSerie(results);
+					filterSerie(results,workerAutoRetrieve);
 				}
 				else if (!autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
 					autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery. discard, 1);
@@ -1343,141 +1321,7 @@ public class VueRest extends JFrame implements PlugIn{
 		}
 		
 		
-		private void filterSerie(StudyDetails[] results) throws Exception {
-			//counter to log number of series retrieved
-			int serieCountRevtrieved=0;
-			
-			StringBuilder seriesModalities=new StringBuilder();
-			if (autoQuery.chckbxCr) seriesModalities.append("/CR/");
-			if (autoQuery.chckbxCt) seriesModalities.append("/CT/");
-			if (autoQuery.chckbxCmr) seriesModalities.append("/CMR/");
-			if (autoQuery.chckbxNm) seriesModalities.append("/NM/");
-			if (autoQuery.chckbxPt) seriesModalities.append("/PT/");
-			if (autoQuery.chckbxUs) seriesModalities.append("/US/");
-			if (autoQuery.chckbxXa) seriesModalities.append("/XA/");
-			if (autoQuery.chckbxMg) seriesModalities.append("/MG/");
-			
-			//on recupere le nombre de condition a checker
-			int nombreFiltre=0;
-			boolean filtreSerieDescription = false;
-			boolean filtreSerieNumber = false;
-			boolean filtreSerieModality = false;
-			String[] serieDescriptionArray = null;
-			String[] serieNumberArray = null;
-			String[] serieNumberExcludeArray = null;
-			String[] serieDescriptionExcludeArray = null;
-			//Convert string in Array splited by ; in which we will look at correspondencies
-			if (!StringUtils.isEmpty(seriesModalities.toString())) {
-				filtreSerieModality=true; 
-				nombreFiltre++;}
-			if (!StringUtils.isEmpty(autoQuery.serieDescriptionContains)) {
-				serieDescriptionArray=autoQuery.serieDescriptionContains.split(";");
-				filtreSerieDescription=true; 
-				nombreFiltre++;}
-			if (!StringUtils.isEmpty(autoQuery.serieNumberMatch)) {
-				serieNumberArray=autoQuery.serieNumberMatch.split(";");
-				filtreSerieNumber=true; 
-				nombreFiltre++;
-				}
-			if(!StringUtils.isEmpty(autoQuery.serieDescriptionExclude)) {
-				serieDescriptionExcludeArray=autoQuery.serieDescriptionExclude.split(";");
-			}
-			if(!StringUtils.isEmpty(autoQuery.serieNumberExclude)) {
-				serieNumberExcludeArray=autoQuery.serieNumberExclude.split(";");
-			}
-			
-			//On scann tous les results la 1ere dimension contient l'ID de la query et la deuxime le nombre de reponse study a scanner
-			for (int i=0 ; i<results.length; i++) {
-				if (workerAutoRetrieve!=null && workerAutoRetrieve.isCancelled()) return;
 
-				SerieDetails[] seriesDetails=rest.getSeriesAnswers(results[i].getStudyInstanceUID(), results[i].getSourceAet());
-				//On verifie qu'un parameter est bien defini
-				if (!StringUtils.isEmpty(seriesModalities) || !StringUtils.isEmpty(autoQuery.serieDescriptionContains) || !StringUtils.isEmpty(autoQuery.serieNumberMatch)  || !StringUtils.isEmpty(autoQuery.serieDescriptionExclude) || !StringUtils.isEmpty(autoQuery.serieNumberExclude)) {
-				//Alors on boucle les reponse	
-				for (int k=0; k<seriesDetails.length ; k++) {
-					if (workerAutoRetrieve!=null && workerAutoRetrieve.isCancelled()) return;
-						//On definit le candidat:
-						String seriesDescription=seriesDetails[k].getSeriesDescription().toLowerCase();
-						String modality=seriesDetails[k].getModality();
-						String seriesNumber=seriesDetails[k].getSeriesNumber();
-						
-						if ( ! ((!StringUtils.isEmpty(autoQuery.serieDescriptionExclude) && StringUtils.indexOfAny(seriesDescription,serieDescriptionExcludeArray )!=(-1) ) || (!StringUtils.isEmpty(autoQuery.serieNumberExclude) && (StringUtils.indexOfAny(seriesNumber ,serieNumberExcludeArray)) !=(-1) ) )  ) {
-							
-							//Si on a defini un contains ou un modalitie on prend que si existe un match
-							if ( (!StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.contains(seriesModalities.toString(), modality)) || (!StringUtils.isEmpty(autoQuery.serieDescriptionContains) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray))!=-1) || ( !StringUtils.isEmpty(autoQuery.serieNumberMatch) && (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)))  ) {
-								
-								// Une condition match
-								
-								//si plus d'un filtre active on verifie que ca passe les autre filtres
-								if (nombreFiltre>1) {
-									//Si 3 filtre on demande le perfect match et on retrieve
-									if (nombreFiltre==3) {
-										if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
-											info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-											rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  Aet_Retrieve.getSelectedItem().toString());
-											serieCountRevtrieved++;
-										}
-									}
-									//Si deux filtre il faut chercher le match des deux conditions
-									else if (nombreFiltre==2) {
-										if (!filtreSerieDescription) {
-											if ( StringUtils.contains(seriesModalities.toString(), modality) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
-												info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-												rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  Aet_Retrieve.getSelectedItem().toString());
-												serieCountRevtrieved++;
-											}
-										}
-										else if (!filtreSerieNumber) {
-											if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) ){
-												info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-												rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  Aet_Retrieve.getSelectedItem().toString());
-												serieCountRevtrieved++;
-											}
-											
-										}
-										else if (!filtreSerieModality) {
-											if ( (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
-												info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-												rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  Aet_Retrieve.getSelectedItem().toString());
-												serieCountRevtrieved++;
-											}
-											
-										}
-									}
-								}
-								//Si un seul filtre on retrieve la serie qui a matche
-								else {
-									info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-									rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  Aet_Retrieve.getSelectedItem().toString());
-									serieCountRevtrieved++;
-								}
-
-								
-								
-							}
-							//Si on a pas defini de contains ou de modalitie on telecharge tout ce qui n'est pas exclu
-							else if ( StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.isEmpty(autoQuery.serieDescriptionContains) && StringUtils.isEmpty(autoQuery.serieNumberMatch) ) {
-								info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1)+" Query "+(i+1)+"/"+table.getRowCount());
-								rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(), Aet_Retrieve.getSelectedItem().toString());
-								serieCountRevtrieved++;
-							}
-						}
-						
-						
-				}
-					
-				}
-			
-			
-			}
-			
-			textAreaConsole.append("Downloaded " + serieCountRevtrieved + " series \n");
-			return;
-		
-		
-		
-			
-			}
 	
 		};
 
@@ -1549,6 +1393,133 @@ public class VueRest extends JFrame implements PlugIn{
 	
 	public void setWorkingBoolean(boolean working) {
 		this.working=working;
+	}
+	
+	private int filterSerie(StudyDetails[] studyResults, SwingWorker<Void,Void> workerAutoRetrieve) throws Exception {
+		//counter to log number of series retrieved
+		int serieCountRevtrieved=0;
+		
+		StringBuilder seriesModalities=new StringBuilder();
+		if (autoQuery.chckbxCr) seriesModalities.append("/CR/");
+		if (autoQuery.chckbxCt) seriesModalities.append("/CT/");
+		if (autoQuery.chckbxCmr) seriesModalities.append("/CMR/");
+		if (autoQuery.chckbxNm) seriesModalities.append("/NM/");
+		if (autoQuery.chckbxPt) seriesModalities.append("/PT/");
+		if (autoQuery.chckbxUs) seriesModalities.append("/US/");
+		if (autoQuery.chckbxXa) seriesModalities.append("/XA/");
+		if (autoQuery.chckbxMg) seriesModalities.append("/MG/");
+		
+		//on recupere le nombre de condition a checker
+		int nombreFiltre=0;
+		boolean filtreSerieDescription = false;
+		boolean filtreSerieNumber = false;
+		boolean filtreSerieModality = false;
+		String[] serieDescriptionArray = null;
+		String[] serieNumberArray = null;
+		String[] serieNumberExcludeArray = null;
+		String[] serieDescriptionExcludeArray = null;
+		//Convert string in Array splited by ; in which we will look at correspondencies
+		if (!StringUtils.isEmpty(seriesModalities.toString())) {
+			filtreSerieModality=true; 
+			nombreFiltre++;}
+		if (!StringUtils.isEmpty(autoQuery.serieDescriptionContains)) {
+			serieDescriptionArray=autoQuery.serieDescriptionContains.split(";");
+			filtreSerieDescription=true; 
+			nombreFiltre++;}
+		if (!StringUtils.isEmpty(autoQuery.serieNumberMatch)) {
+			serieNumberArray=autoQuery.serieNumberMatch.split(";");
+			filtreSerieNumber=true; 
+			nombreFiltre++;
+			}
+		if(!StringUtils.isEmpty(autoQuery.serieDescriptionExclude)) {
+			serieDescriptionExcludeArray=autoQuery.serieDescriptionExclude.split(";");
+		}
+		if(!StringUtils.isEmpty(autoQuery.serieNumberExclude)) {
+			serieNumberExcludeArray=autoQuery.serieNumberExclude.split(";");
+		}
+		
+		//On scann tous les results la 1ere dimension contient l'ID de la query et la deuxime le nombre de reponse study a scanner
+		for (int i=0 ; i<studyResults.length; i++) {
+			if (workerAutoRetrieve!=null && workerAutoRetrieve.isCancelled()) return serieCountRevtrieved;
+
+			SerieDetails[] seriesDetails=rest.getSeriesAnswers(studyResults[i].getStudyInstanceUID(), studyResults[i].getSourceAet());
+			//On verifie qu'un parameter est bien defini
+			if (!StringUtils.isEmpty(seriesModalities) || !StringUtils.isEmpty(autoQuery.serieDescriptionContains) || !StringUtils.isEmpty(autoQuery.serieNumberMatch)  || !StringUtils.isEmpty(autoQuery.serieDescriptionExclude) || !StringUtils.isEmpty(autoQuery.serieNumberExclude)) {
+			//Alors on boucle les reponse	
+			for (int k=0; k<seriesDetails.length ; k++) {
+				if (workerAutoRetrieve!=null && workerAutoRetrieve.isCancelled()) return serieCountRevtrieved;
+					//On definit le candidat:
+					String seriesDescription=seriesDetails[k].getSeriesDescription().toLowerCase();
+					String modality=seriesDetails[k].getModality();
+					String seriesNumber=seriesDetails[k].getSeriesNumber();
+					
+					if ( ! ((!StringUtils.isEmpty(autoQuery.serieDescriptionExclude) && StringUtils.indexOfAny(seriesDescription,serieDescriptionExcludeArray )!=(-1) ) || (!StringUtils.isEmpty(autoQuery.serieNumberExclude) && (StringUtils.indexOfAny(seriesNumber ,serieNumberExcludeArray)) !=(-1) ) )  ) {
+						
+						//Si on a defini un contains ou un modalitie on prend que si existe un match
+						if ( (!StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.contains(seriesModalities.toString(), modality)) || (!StringUtils.isEmpty(autoQuery.serieDescriptionContains) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray))!=-1) || ( !StringUtils.isEmpty(autoQuery.serieNumberMatch) && (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)))  ) {
+							
+							// Une condition match
+							
+							//si plus d'un filtre active on verifie que ca passe les autre filtres
+							if (nombreFiltre>1) {
+								//Si 3 filtre on demande le perfect match et on retrieve
+								if (nombreFiltre==3) {
+									if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
+										info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
+										rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  Aet_Retrieve.getSelectedItem().toString());
+										serieCountRevtrieved++;
+									}
+								}
+								//Si deux filtre il faut chercher le match des deux conditions
+								else if (nombreFiltre==2) {
+									if (!filtreSerieDescription) {
+										if ( StringUtils.contains(seriesModalities.toString(), modality) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
+											info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
+											rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  Aet_Retrieve.getSelectedItem().toString());
+											serieCountRevtrieved++;
+										}
+									}
+									else if (!filtreSerieNumber) {
+										if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) ){
+											info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
+											rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  Aet_Retrieve.getSelectedItem().toString());
+											serieCountRevtrieved++;
+										}
+										
+									}
+									else if (!filtreSerieModality) {
+										if ( (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
+											info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
+											rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  Aet_Retrieve.getSelectedItem().toString());
+											serieCountRevtrieved++;
+										}
+										
+									}
+								}
+							}
+							//Si un seul filtre on retrieve la serie qui a matche
+							else {
+								info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
+								rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  Aet_Retrieve.getSelectedItem().toString());
+								serieCountRevtrieved++;
+							}
+
+							
+							
+						}
+						//Si on a pas defini de contains ou de modalitie on telecharge tout ce qui n'est pas exclu
+						else if ( StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.isEmpty(autoQuery.serieDescriptionContains) && StringUtils.isEmpty(autoQuery.serieNumberMatch) ) {
+							info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1)+" Query "+(i+1)+"/"+table.getRowCount());
+							rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(), Aet_Retrieve.getSelectedItem().toString());
+							serieCountRevtrieved++;
+						}
+					}
+				}
+			}
+		}
+		
+		return serieCountRevtrieved;
+		
 	}
 }
 

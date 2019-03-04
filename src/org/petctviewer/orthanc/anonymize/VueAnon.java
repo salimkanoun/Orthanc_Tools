@@ -98,7 +98,7 @@ import org.petctviewer.orthanc.export.ExportZipAndViewer;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.modify.Modify;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
-import org.petctviewer.orthanc.query.VueRest;
+import org.petctviewer.orthanc.query.VueQuery;
 import org.petctviewer.orthanc.reader.Read_Orthanc;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
@@ -389,7 +389,10 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				SwingUtilities.invokeLater(new Runnable () {
 					@Override
 					public void run() {
-						VueRest.main();
+						VueQuery query=new VueQuery(connexionHttp);
+						query.pack();
+						query.setLocationRelativeTo(gui);
+						query.setVisible(true);
 					}
 				});
 			}
@@ -403,8 +406,10 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 					@Override
 					public void run() {
 						ImportDCM importFrame=new ImportDCM(connexionHttp,gui);
+						importFrame.pack();
+						importFrame.setLocationRelativeTo(gui);
 						importFrame.setVisible(true);
-					}	
+					}
 				});
 			}
 		});

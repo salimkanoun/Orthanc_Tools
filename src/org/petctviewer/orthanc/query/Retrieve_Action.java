@@ -9,11 +9,11 @@ import javax.swing.SwingWorker;
 public class Retrieve_Action extends AbstractAction{
 	
 	private static final long serialVersionUID = 1L;
-	private VueRest gui;
+	private VueQuery gui;
 	private boolean main;
 	private QueryRetrieve rest;
 	
-	Retrieve_Action(VueRest gui, boolean main){
+	Retrieve_Action(VueQuery gui, boolean main){
 		this.main=main;
 		this.gui=gui;
 		this.rest=gui.getRestObject();	
