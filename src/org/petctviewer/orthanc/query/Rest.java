@@ -115,6 +115,9 @@ public class Rest {
 		return content;
 	}
 
+	
+	//SK CETTE METHODE DOIT DISPARAITRE
+	
 	/*
 	 * This method returns the desired value, it requires a getIndexContent String, and the desired value.
 	 * Some values can only be obtained if the contents correspond with the right query level 
@@ -243,6 +246,7 @@ public class Rest {
 		return idURL;
 	}
 
+
 	/*
 	 * This method returns all the series's description's (index 0), modalities (index 1), serie number (index 2) values in an array
 	 * of a queries ID result
@@ -266,8 +270,6 @@ public class Rest {
 			
 			String answer=getIndexContent(idQuery, i);
 			JsonObject contentJson= (JsonObject) parserJson.parse(answer);
-			
-			System.out.println(contentJson);
 			
 			String seriesDescriptions, modality, number;
 		
@@ -301,11 +303,13 @@ public class Rest {
 	}
 
 	/*
-	 * This method retrieves an instance, depending on its query ID 
+	 * This method retrieves an query answer, depending on its query ID / number 
 	 */
-	public void retrieve(String queryID, int answer, String retrieveAET) {
+	public void retrieve(String queryID, int answer, String retrieveAET) throws Exception {
 		StringBuilder sb=connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve/", retrieveAET);
-		System.out.println(sb);
+		if(sb==null) {
+			throw new Exception("Retrieved Failed");
+		}
 	}
 	
 

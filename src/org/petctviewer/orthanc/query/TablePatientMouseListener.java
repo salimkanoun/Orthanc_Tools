@@ -56,12 +56,11 @@ public class TablePatientMouseListener extends MouseAdapter {
 		}
 
 		// We clear the details
-		this.modeleSeries.clearQueriesIDs();
 		this.modeleSeries.clear();
 		//Get Patient Object and add it's series in Series table model
 		if(this.modelePatients.getRowCount() != 0){
 			PatientsDetails patient = (PatientsDetails)this.tableauPatients.getValueAt(this.tableauPatients.getSelectedRow(), 6);
-			this.modeleSeries.addDetails(patient);
+			this.modeleSeries.addSeriesDetails(patient);
 		}
 
 	}

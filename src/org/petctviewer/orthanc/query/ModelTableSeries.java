@@ -18,8 +18,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.query;
 
-import java.util.ArrayList;
-
 import javax.swing.table.DefaultTableModel;
 
 public class ModelTableSeries extends DefaultTableModel{
@@ -29,12 +27,11 @@ public class ModelTableSeries extends DefaultTableModel{
 	private Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, String.class, SeriesDetails.class};
 	
 	private SeriesDetails[] series ;
-	private ArrayList<String> listIndexes = null;
 	private Rest rest;
 	
 
 	public ModelTableSeries(Rest rest){
-		super(0,3);
+		super(0,4);
 		this.rest=rest;
 	}
 
@@ -51,43 +48,25 @@ public class ModelTableSeries extends DefaultTableModel{
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
-	public void addDetails(PatientsDetails patient) {
-		
+	public void addSeriesDetails(PatientsDetails patient) {
 		series =rest.getSeriesAnswers(patient.getStudyInstanceUID(), patient.getSourceAet());
 		updateTable();
-
 	}
 	
 	private void updateTable() {
 		//Empty Table
-		setRowCount(0);
+		clear();
 		//Fill with Series
 		for(SeriesDetails serie : series) {
 			this.addRow(new Object[] {serie.getSeriesDescription(), serie.getModality(), serie.getSeriesNumber(), serie});
 		}
 	}
-
 	
 	/*
-	 * This method clears the details list
+	 * This method clears the serie Table
 	 */
 	public void clear(){
 		setRowCount(0);
 	}
-
-	/*
-	 * This method retrieves the needed result
-	 */
-	public void retrieve(String queryID, int answer, String retrieveAET) {
-		rest.retrieve(queryID, answer, retrieveAET);
-	}
-
-	/*
-	 * This method clears the queries IDs list
-	 */
-	public void clearQueriesIDs(){
-		if(this.listIndexes != null){
-			this.listIndexes.removeAll(listIndexes);
-		}
-	}
+	
 }

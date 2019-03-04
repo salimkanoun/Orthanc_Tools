@@ -25,11 +25,12 @@ public class Retrieve_Action extends AbstractAction{
 		SwingWorker<Void,Void> worker= new SwingWorker<Void,Void> () {
 
 			@Override
-			protected Void doInBackground() {
+			protected Void doInBackground() throws Exception {
 				gui.getRetrieveButton(main).setEnabled(false);
 				gui.setWorkingBoolean(true);
 				JTable lastFocusedTable = gui.getLastFocusedTable(main);
 				int[] selectedrows=lastFocusedTable.getSelectedRows();
+				System.out.println(selectedrows.length);
 				for(int i=0; i<selectedrows.length ; i++) {
 					Object details = lastFocusedTable.getValueAt(selectedrows[i], lastFocusedTable.getColumnCount()-1);
 					gui.getStatusLabel().setText("<html>Retrieve state " + (i+1) + "/" + selectedrows.length + 
@@ -48,9 +49,14 @@ public class Retrieve_Action extends AbstractAction{
 			
 			@Override
 			protected void done(){
+				try {
+					get();
+					gui.getStatusLabel().setText("<html><font color='green'>The data have successfully been retrieved.</font></html>");
+				} catch (Exception e) {
+					gui.getStatusLabel().setText("<html><font color='red'>Error During Retrieve</font></html>");
+				}
 				gui.getRetrieveButton(main).setEnabled(true);
 				gui.setWorkingBoolean(false);
-				gui.getStatusLabel().setText("<html><font color='green'>The data have successfully been retrieved.</font></html>");
 			}
 			
 		};
