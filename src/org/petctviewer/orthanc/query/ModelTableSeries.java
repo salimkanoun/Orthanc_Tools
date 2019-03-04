@@ -26,7 +26,7 @@ public class ModelTableSeries extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
 	private String[] entetes = {"Series Desc", "Modality", "Serie num", "serieObject"};
-	private Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, SeriesDetails.class};
+	private Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, String.class, SeriesDetails.class};
 	
 	private SeriesDetails[] series ;
 	private ArrayList<String> listIndexes = null;
@@ -63,7 +63,7 @@ public class ModelTableSeries extends DefaultTableModel{
 		setRowCount(0);
 		//Fill with Series
 		for(SeriesDetails serie : series) {
-			this.addRow(new Object[] {serie.getSeriesDescription(), serie.getModality(), serie});
+			this.addRow(new Object[] {serie.getSeriesDescription(), serie.getModality(), serie.getSeriesNumber(), serie});
 		}
 	}
 

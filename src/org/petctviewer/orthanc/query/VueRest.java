@@ -28,6 +28,8 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -135,7 +137,7 @@ public class VueRest extends JFrame implements PlugIn{
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	
 	//Working status
-	boolean working;
+	private boolean working;
 	
 	//Processus Swing
 	SwingWorker<Void,Void> workerCsvRetrieve, workerRetrieve, worker ;
@@ -165,6 +167,9 @@ public class VueRest extends JFrame implements PlugIn{
 	String[] listRetrieveAET;
 	String[] distantAets;
 	
+	//Last focused table
+	private JTable lastFocusMain;
+	private JTable lastFocusHistory;
     
 	public VueRest() {
 		
@@ -213,6 +218,7 @@ public class VueRest extends JFrame implements PlugIn{
 		tablePatients = new JTable(modeleTablePatients);
 		tablePatients.setRowSorter(sorter);
 		tablePatients.getTableHeader().setReorderingAllowed(false);
+		this.
 
 		// We configure the columns
 		tablePatients.getColumnModel().getColumn(0).setMinWidth(170);
@@ -248,7 +254,7 @@ public class VueRest extends JFrame implements PlugIn{
 		popMenu.add(menuItemDisplayH);
 		tablePatients.setComponentPopupMenu(popMenu);
 		tablePatients.addMouseListener(new TablePatientMouseListener(tablePatients, modeleTablePatients, modeleTableSeries, state));
-
+		
 		tablePatients.setRowSorter(sorter);
 		tablePatients.setDefaultRenderer(Date.class, new DateRenderer());
 
@@ -370,7 +376,8 @@ public class VueRest extends JFrame implements PlugIn{
 		// Building the components for the southern part of the window : the AETs combobox, the Search and Filter buttons
 		this.state = new JLabel();
 		southD.add(retrieveAET);
-		retrieve = new JButton(new Retrieve_Action());
+		retrieve = new JButton("Retrieve");
+		retrieve.addActionListener(new Retrieve_Action(this, true));
 		southD.add(retrieve);
 		southD.add(state);
 		south.add(southD);
@@ -531,7 +538,8 @@ public class VueRest extends JFrame implements PlugIn{
 		stateH = new JLabel();
 		stateH.setText(null);
 		southH.add(this.retrieveAETH);
-		retrieveH = new JButton(new Retrieve_Action());
+		retrieveH  = new JButton("Retrieve");
+		retrieveH.addActionListener(new Retrieve_Action(this, false));
 		southH.add(retrieveH);
 		southH.add(this.stateH);
 		tablePatientsHistory.addMouseListener(new TablePatientMouseListener(tablePatientsHistory, modeleTablePatientHistory, modeleTableSeriesHistory, stateH));		
@@ -1044,6 +1052,12 @@ public class VueRest extends JFrame implements PlugIn{
 		// on the tab so that the default button changes accordingly
 		this.getRootPane().setDefaultButton(ajouter);
 		tabbedPane.addChangeListener(new ChangeTabListener(this, ajouter, filter));
+		
+		setFocusListener(tablePatients,true);
+		setFocusListener(tableSeries,true);
+		setFocusListener(tablePatientsHistory,false);
+		setFocusListener(tableSeriesHistory,false);
+		
 
 		Image image = new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage();
 		this.setIconImage(image);
@@ -1495,6 +1509,68 @@ public class VueRest extends JFrame implements PlugIn{
 	
 	
 	}
+	
+	/**
+	 * Add Focus listener To table, store the last focused table in main and history table
+	 * Usefull for retrieve triggering
+	 * @param table
+	 * @param main
+	 */
+	private void setFocusListener(JTable table, boolean main) {
+		
+		table.addFocusListener(new FocusListener() {
+			@Override
+			public void focusGained(FocusEvent arg0) {
+				
+			}
 
+			@Override
+			public void focusLost(FocusEvent arg0) {
+				if(main) {
+					lastFocusMain=table;
+				}else {
+					lastFocusHistory=table;
+				}
+			}
+			
+		});
+		
+	}
+	
+	public JTable getLastFocusedTable(boolean main) {
+		if(main) {
+			return lastFocusMain;
+		}else {
+			return lastFocusHistory;
+		}
+	}
+
+	public JLabel getStatusLabel() {
+		return this.state;
+	}
+	
+	public Rest getRestObject() {
+		return this.rest;
+	}
+	
+	public String getRetrieveAet(boolean main) {
+		if (main) {
+			return (String) retrieveAET.getSelectedItem();
+		}else {
+			return (String) retrieveAETH.getSelectedItem();
+		}
+	}
+	
+	public JButton getRetrieveButton(boolean main) {
+		if (main) {
+			return (JButton) this.retrieve;
+		}else {
+			return (JButton) this.retrieveH;
+		}
+	}
+	
+	public void setWorkingBoolean(boolean working) {
+		this.working=working;
+	}
 }
 

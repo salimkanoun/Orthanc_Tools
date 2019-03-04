@@ -261,10 +261,13 @@ public class Rest {
 		}
 		
 		seriesDetails = new SeriesDetails[answersID.size()];
+		
 		for(int i = 0; i < answersID.size(); i++){
 			
 			String answer=getIndexContent(idQuery, i);
 			JsonObject contentJson= (JsonObject) parserJson.parse(answer);
+			
+			System.out.println(contentJson);
 			
 			String seriesDescriptions, modality, number;
 		
