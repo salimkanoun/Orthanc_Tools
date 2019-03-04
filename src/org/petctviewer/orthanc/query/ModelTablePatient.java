@@ -25,12 +25,12 @@ public class ModelTablePatient extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
 	private String[] entetes = {"Patient name", "Patient ID", "Study date", "Study description", "Accession number", "Study UID", "patientObject"};
-	private Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, Date.class, String.class, String.class, String.class, PatientsDetails.class};
-	private PatientsDetails[] patients;
-	private Rest rest;
+	private Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, Date.class, String.class, String.class, String.class, StudyDetails.class};
+	private StudyDetails[] patients;
+	private QueryRetrieve rest;
 
 
-	public ModelTablePatient(Rest rest){
+	public ModelTablePatient(QueryRetrieve rest){
 		super(0,7);
 		this.rest = rest;
 	}
@@ -59,7 +59,7 @@ public class ModelTablePatient extends DefaultTableModel{
 		//Erase Table
 		this.setRowCount(0);
 		//Insert new patients
-		for (PatientsDetails patient : patients) {
+		for (StudyDetails patient : patients) {
 			this.addRow(new Object[] {patient.getPatientName(), patient.getPatientID(), 
 					patient.getStudyDate(), patient.getStudyDescription(), patient.getAccessionNumber(), patient.getStudyInstanceUID(), patient});
 			

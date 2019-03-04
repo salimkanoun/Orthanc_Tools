@@ -11,8 +11,8 @@ import javax.swing.JLabel;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.petctviewer.orthanc.query.PatientsDetails;
-import org.petctviewer.orthanc.query.Rest;
+import org.petctviewer.orthanc.query.StudyDetails;
+import org.petctviewer.orthanc.query.QueryRetrieve;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class Auto_Fetch {
@@ -20,7 +20,7 @@ public class Auto_Fetch {
 	private OrthancRestApis connexion;
 	private String level, studyDate, modality, studyDescription, queryAet , retrieveAet;
 	private JSONParser parser=new JSONParser();
-	private Rest restApi;
+	private QueryRetrieve restApi;
 	private JLabel status;
 	
 	//sert a etre arrete via methode
@@ -28,7 +28,7 @@ public class Auto_Fetch {
 	
 	public Auto_Fetch(OrthancRestApis connexion, String level, String studyDate, String modality, String studyDescription, String queryAet, JLabel status) {
 		this.connexion=connexion;
-		restApi=new Rest(connexion);
+		restApi=new QueryRetrieve(connexion);
 		this.level=level;
 		this.studyDate=studyDate;
 		this.studyDescription=studyDescription;
@@ -105,7 +105,7 @@ public class Auto_Fetch {
 	 */
 	private void makeRetrieve(String patientID) {
 		
-		PatientsDetails [] patients=restApi.getPatientsResults("Study", "*", patientID, studyDate, modality, studyDescription, "*", queryAet);
+		StudyDetails [] patients=restApi.getPatientsResults("Study", "*", patientID, studyDate, modality, studyDescription, "*", queryAet);
 		
 		int numberofAnswers=patients.length;
 		

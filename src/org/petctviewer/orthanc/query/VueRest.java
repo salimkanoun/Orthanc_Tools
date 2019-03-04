@@ -92,7 +92,7 @@ public class VueRest extends JFrame implements PlugIn{
 	
 	private static final long serialVersionUID = 1L;
 	// Instancie la classe rest qui fournit les services de connexion et input
-	private Rest rest =new Rest(new OrthancRestApis(null));
+	private QueryRetrieve rest =new QueryRetrieve(new OrthancRestApis(null));
 	
 	private JTabbedPane tabbedPane;
 	private ModelTablePatient modeleTablePatients = new ModelTablePatient(rest); // model for the main JTable (tableau)
@@ -178,16 +178,13 @@ public class VueRest extends JFrame implements PlugIn{
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.addWindowListener(new WindowAdapter() {
 			
-		
 	    @Override
 	    public void windowClosing(WindowEvent e) {
 	    	if (working==true) {
 		    	String ObjButtons[] = {"Yes","No"};
 				int PromptResult = JOptionPane.showOptionDialog(null,"Operation pending Are you sure you want to exit?","Orthanc Query",JOptionPane.DEFAULT_OPTION,JOptionPane.WARNING_MESSAGE,null,ObjButtons,ObjButtons[1]);
 				if (PromptResult==JOptionPane.YES_OPTION) {
-					//SK A FAIRE Terminer les processus SWING Voir dans sources de script editor comment evite la sortie de Fiji
 					dispose();
-					
 				}
 	    	}
 	    	else {
@@ -195,9 +192,9 @@ public class VueRest extends JFrame implements PlugIn{
 	    	}
 	    }});
 		
-		//SK TEMPORAIRE //AET
-		listRetrieveAET = ArrayUtils.addAll(new String[] {rest.getLocalAet()}, rest.getAets());
-		distantAets=rest.getAets();
+		//Stores AET
+		storeAets();
+
 
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -271,19 +268,6 @@ public class VueRest extends JFrame implements PlugIn{
 		tableSeries.getColumnModel().getColumn(2).setMaxWidth(100);
 		tableSeries.getColumnModel().getColumn(2).setResizable(false);
 		tableSeries.setPreferredScrollableViewportSize(new Dimension(400,400));
-		tableSeries.addMouseListener(new MouseAdapter() {
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				try{
-					if(state.getText().equals("Done") && state != null){
-						state.setText(null);
-					}
-				}catch(Exception e1){
-					// Ignore
-				}
-			}
-		});
 
 		List<RowSorter.SortKey> sortKeysDetails = new ArrayList<>();
 		sortKeysDetails.add(new RowSorter.SortKey(1, SortOrder.ASCENDING));
@@ -322,8 +306,7 @@ public class VueRest extends JFrame implements PlugIn{
 
 		// Creating the text inputs
 		JPanel textInput = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		String[] patientParam = {"Patient name", "Patient ID", "Accession number"};
-		searchingParam = new JComboBox<String>(patientParam);
+		searchingParam = new JComboBox<String>(new String[] {"Patient name", "Patient ID", "Accession number"});
 		userInput = new JTextField();
 		userInput.setToolTipText("Set your input accordingly to the field combobox on the left. ('*' stands for any character)");
 		description = new JTextField();
@@ -351,11 +334,9 @@ public class VueRest extends JFrame implements PlugIn{
 
 		// Creating the "search" button (ajouter)
 		JButton ajouter = new JButton(new SearchAction(this));
-
-		
+		//Combobox to select Destination AET
 		retrieveAET = new JComboBox<String>(listRetrieveAET);
-
-
+		
 		// Creating the datepickers
 		JPanel dates = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		from = new DatePicker(new Date(), new SimpleDateFormat("MM-dd-yyyy"));
@@ -604,25 +585,20 @@ public class VueRest extends JFrame implements PlugIn{
 					@Override
 					protected Void doInBackground()  {	
 							working=true;
-							ArrayList<PatientsDetails> patientArray =new ArrayList<PatientsDetails>();
+							ArrayList<StudyDetails> patientArray =new ArrayList<StudyDetails>();
+							
 							for (int i=0; i<table.getRowCount(); i++) {
 								info.setText("Query "+(i+1)+"/"+(table.getRowCount()));
-								try {		
-										String name=(table.getValueAt(i, 0).toString()+"^"+table.getValueAt(i, 1).toString());
-								
-										String[] results=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox.getSelectedItem().toString() );
-										
-										//On recupe les infos toutes les studies 
-										if (results!=null) {
-											autoQuery.getContent(results, patientArray, comboBox.getSelectedItem().toString());
-											
-										}
-										
-										else { System.out.println("Query "+ (i+1) +" Empty result or undefined parameters"); }
-										
-								} catch (IOException | ParseException e) {e.printStackTrace();}
-								
-							
+								String name=(table.getValueAt(i, 0).toString()+"^"+table.getValueAt(i, 1).toString());
+
+								StudyDetails[] studies=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox.getSelectedItem().toString() );
+								if(studies.length==0) {
+									System.out.println("Query "+ (i+1) +" Empty result or undefined parameters");
+								}else {
+									for(StudyDetails study:studies) {
+										patientArray.add(study);
+									}
+								}
 							}
 							
 							//On a les resulats en stock on appelle la fonction pour creer et recuperer les results de la dialogbox
@@ -840,23 +816,29 @@ public class VueRest extends JFrame implements PlugIn{
 						//On construit la string modalities
 						StringBuilder modalities=sbModalitiesAutoQuery();
 						
-						String[] results=null;
+						StudyDetails[] results=null;
 						
-						if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "Name")) results=autoQuery.sendQuery(textFieldNameIDAcc.getText(),"*",df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),"*", comboBox.getSelectedItem().toString());
-						else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "ID")) results=autoQuery.sendQuery("*",textFieldNameIDAcc.getText(),df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),"*", comboBox.getSelectedItem().toString());
-						else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "Accession")) results=autoQuery.sendQuery("*","*",df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),textFieldNameIDAcc.getText(), comboBox.getSelectedItem().toString());
+						if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "Name")) {
+							results=autoQuery.sendQuery(textFieldNameIDAcc.getText(),"*",df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),"*", comboBox.getSelectedItem().toString());
+						}
+						else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "ID")) {
+							results=autoQuery.sendQuery("*",textFieldNameIDAcc.getText(),df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),"*", comboBox.getSelectedItem().toString());
+						}
+						else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "Accession")) {
+							results=autoQuery.sendQuery("*","*",df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),textFieldNameIDAcc.getText(), comboBox.getSelectedItem().toString());
+						}
 						
-						textAreaConsole.append("found "+ results[1] +" studies,");
+						textAreaConsole.append("found "+ results.length +" studies,");
 						
 						//On retrieve toutes les studies 
-						if (autoQuery.chckbxSeriesFilter && Integer.parseInt(results[1])<=autoQuery.discard) {
+						if (autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
 							filterSerie(0, results, null);
 						}
-						else if (!autoQuery.chckbxSeriesFilter && Integer.parseInt(results[1])<=autoQuery.discard) {
+						else if (!autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
 							autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery. discard, 1);
 							textAreaConsole.append("Retrieved \n");
 						}
-						else if(Integer.parseInt(results[1])>autoQuery.discard) {
+						else if(results.length>autoQuery.discard) {
 							textAreaConsole.append("Discarded (over limits) \n");
 						}
 						else if(results.length==0) {
@@ -906,22 +888,17 @@ public class VueRest extends JFrame implements PlugIn{
 						timer.schedule(task, difference);
 						btnSchedule_1.setBackground(Color.ORANGE);
 						timerOn=true ;
-					}
-					else {
+					} else {
 						info.setText("Schedule Time already passed, reset time");
 					}
 					
-				}
-				 else {
+				} else {
 					 timerOn=false;
 					 btnSchedule_1.setBackground(Color.GRAY);
 					 info.setText("Schedule Cancelled");
 					 timer.cancel();
 					 timer.purge();
 				 }
-				
-				
-				
 			}
 		});
 		panel_Bottom.add(btnSchedule_1);
@@ -1194,7 +1171,7 @@ public class VueRest extends JFrame implements PlugIn{
 	 * AutoQuery :Appelle la dialog d'affichage des resultat et recup�re les resultat valid�s pour l'injecter dans la table de la main frame
 	 * @param patientArray
 	 */
-	private void showResultTable(ArrayList<PatientsDetails> patientArray) {
+	private void showResultTable(ArrayList<StudyDetails> patientArray) {
 		AutoQueryResultTableDialog resultDialog=new AutoQueryResultTableDialog(patientArray);
 		resultDialog.setModal(true);
 		resultDialog.populateTable();
@@ -1284,10 +1261,11 @@ public class VueRest extends JFrame implements PlugIn{
 
 
 	private void makeWorker() {
+		
 		workerAutoRetrieve =new SwingWorker<Void,Void>(){
 
 			@Override
-			protected Void doInBackground()  {
+			protected Void doInBackground() throws Exception  {
 			showConsoleFrame();
 			textAreaConsole.append("Retrieved AET,"+comboBox.getSelectedItem().toString()+"\n");
 			btnSchedule_1.setEnabled(false);
@@ -1300,63 +1278,60 @@ public class VueRest extends JFrame implements PlugIn{
 					//Construction String Name
 					String name=(table.getValueAt(i, 0).toString()+"^"+table.getValueAt(i, 1).toString());
 					if (name.equals("*^*")) name="*" ;
-					String[] results=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox.getSelectedItem().toString());
+					StudyDetails[] results=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox.getSelectedItem().toString());
 					textAreaConsole.append("["+ name.toString() + "_"+ table.getValueAt(i, 2).toString()+ "_"+ table.getValueAt(i, 4).toString().replaceAll("/", "") + "_" +table.getValueAt(i, 5).toString().replaceAll("/", "")+"_"+table.getValueAt(i, 6).toString()+"_"+table.getValueAt(i, 7).toString()+"_"+table.getValueAt(i, 3).toString()+"],");
 					//On retrieve toutes les studies 
 					if (results!=null) {
-						textAreaConsole.append(results[1]+" Studies match,");
+						textAreaConsole.append(results.length+" Studies match,");
 						// If using Serie filter
-						if (autoQuery.chckbxSeriesFilter && Integer.parseInt(results[1])<=autoQuery.discard) {
-							filterSerie(i, results, workerAutoRetrieve);
-						}
-						else if (autoQuery.chckbxSeriesFilter && Integer.parseInt(results[1])>autoQuery.discard) {
+						if (autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
+							info.setText("Analyzing Serie from Query "+(i+1)+"/"+table.getRowCount());
+							filterSerie(results);
+						} else if (autoQuery.chckbxSeriesFilter && results.length>autoQuery.discard) {
 							textAreaConsole.append("over limits, discarded,");
-			
-						}
-						else {
+						} else {
 							info.setText("Retrieve "+(i+1)+" From "+table.getRowCount());
 							autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery.discard, i);
 							textAreaConsole.append(results[1] + " studies Retrieved \n");
 						}
 						
-					}
-					
-					else { 
+					} else { 
 						info.setText("Empty Results");
 						textAreaConsole.append("empty Results,");
-					}
-								
-						
-						
+					}	
 				}
 			
-			
-			
+			} else {
+				//On construit la string modalities
+				StringBuilder modalities=sbModalitiesAutoQuery();
+				StudyDetails[] results=null;
+				
+				//Requette selon la comboBox pour name, id, accession
+				if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "Name")) {
+					results=autoQuery.sendQuery(textFieldNameIDAcc.getText(),"*",df.format(from.getDate()),df.format(to.getDate()),modalities.toString(),studyDescription.getText(),"*", comboBox.getSelectedItem().toString());
+				}
+				else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "ID")) {
+					results=autoQuery.sendQuery("*",textFieldNameIDAcc.getText(),df.format(from.getDate()),df.format(to.getDate()),modalities.toString(),studyDescription.getText(),"*", comboBox.getSelectedItem().toString());
+				}
+				else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "Accession")) {
+					results=autoQuery.sendQuery("*","*",df.format(from.getDate()),df.format(to.getDate()),modalities.toString(),studyDescription.getText(),textFieldNameIDAcc.getText(), comboBox.getSelectedItem().toString());
+				}
+				
+				textAreaConsole.append("found "+results.length+" studies,");
+				
+				if (autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
+					filterSerie(results);
+				}
+				else if (!autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
+					autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery. discard, 1);
+					textAreaConsole.append("Retrieved \n");
+				}
+				else if(results.length>autoQuery.discard) {
+					textAreaConsole.append("Discarded (over limits) \n");
+				}
+					
 			}
-
-			else {
-					//On construit la string modalities
-					StringBuilder modalities=sbModalitiesAutoQuery();
-					String[] results=null;
-					
-					//Requette selon la comboBox pour name, id, accession
-					if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "Name")) results=autoQuery.sendQuery(textFieldNameIDAcc.getText(),"*",df.format(from.getDate()),df.format(to.getDate()),modalities.toString(),studyDescription.getText(),"*", comboBox.getSelectedItem().toString());
-					else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "ID")) results=autoQuery.sendQuery("*",textFieldNameIDAcc.getText(),df.format(from.getDate()),df.format(to.getDate()),modalities.toString(),studyDescription.getText(),"*", comboBox.getSelectedItem().toString());
-					else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "Accession")) results=autoQuery.sendQuery("*","*",df.format(from.getDate()),df.format(to.getDate()),modalities.toString(),studyDescription.getText(),textFieldNameIDAcc.getText(), comboBox.getSelectedItem().toString());
-					textAreaConsole.append("found "+results[1]+" studies,");
-					if (autoQuery.chckbxSeriesFilter && Integer.parseInt(results[1])<=autoQuery.discard) {
-						filterSerie(0, results, null);
-					}
-					else if (!autoQuery.chckbxSeriesFilter && Integer.parseInt(results[1])<=autoQuery.discard) {
-						autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery. discard, 1);
-						textAreaConsole.append("Retrieved \n");
-					}
-					else if(Integer.parseInt(results[1])>autoQuery.discard) {
-						textAreaConsole.append("Discarded (over limits) \n");
-					}
-					
-				}
-				return null;
+			return null;
 		}
 			
 		@Override
@@ -1366,148 +1341,146 @@ public class VueRest extends JFrame implements PlugIn{
 			working=false;
 			btnStart.setText("Start Retrieve");
 		}
-	
-	};
-
-	}
-	
-	private Void filterSerie(int i, String[] results, SwingWorker<Void, Void> workerAutoRetrieve) {
-
-		//counter to log number of series retrieved
-		int serieCountRevtrieved=0;
-		info.setText("Analyzing Serie from Query "+(i+1)+"/"+table.getRowCount());
 		
-		StringBuilder seriesModalities=new StringBuilder();
-		if (autoQuery.chckbxCr) seriesModalities.append("/CR/");
-		if (autoQuery.chckbxCt) seriesModalities.append("/CT/");
-		if (autoQuery.chckbxCmr) seriesModalities.append("/CMR/");
-		if (autoQuery.chckbxNm) seriesModalities.append("/NM/");
-		if (autoQuery.chckbxPt) seriesModalities.append("/PT/");
-		if (autoQuery.chckbxUs) seriesModalities.append("/US/");
-		if (autoQuery.chckbxXa) seriesModalities.append("/XA/");
-		if (autoQuery.chckbxMg) seriesModalities.append("/MG/");
 		
-		//on recupere le nombre de condition a checker
-		int nombreFiltre=0;
-		boolean filtreSerieDescription = false;
-		boolean filtreSerieNumber = false;
-		boolean filtreSerieModality = false;
-		String[] serieDescriptionArray = null;
-		String[] serieNumberArray = null;
-		String[] serieNumberExcludeArray = null;
-		String[] serieDescriptionExcludeArray = null;
-		//Convert string in Array splited by ; in which we will look at correspondencies
-		if (!StringUtils.isEmpty(seriesModalities.toString())) {
-			filtreSerieModality=true; 
-			nombreFiltre++;}
-		if (!StringUtils.isEmpty(autoQuery.serieDescriptionContains)) {
-			serieDescriptionArray=autoQuery.serieDescriptionContains.split(";");
-			filtreSerieDescription=true; 
-			nombreFiltre++;}
-		if (!StringUtils.isEmpty(autoQuery.serieNumberMatch)) {
-			serieNumberArray=autoQuery.serieNumberMatch.split(";");
-			filtreSerieNumber=true; 
-			nombreFiltre++;
+		private void filterSerie(StudyDetails[] results) throws Exception {
+			//counter to log number of series retrieved
+			int serieCountRevtrieved=0;
+			
+			StringBuilder seriesModalities=new StringBuilder();
+			if (autoQuery.chckbxCr) seriesModalities.append("/CR/");
+			if (autoQuery.chckbxCt) seriesModalities.append("/CT/");
+			if (autoQuery.chckbxCmr) seriesModalities.append("/CMR/");
+			if (autoQuery.chckbxNm) seriesModalities.append("/NM/");
+			if (autoQuery.chckbxPt) seriesModalities.append("/PT/");
+			if (autoQuery.chckbxUs) seriesModalities.append("/US/");
+			if (autoQuery.chckbxXa) seriesModalities.append("/XA/");
+			if (autoQuery.chckbxMg) seriesModalities.append("/MG/");
+			
+			//on recupere le nombre de condition a checker
+			int nombreFiltre=0;
+			boolean filtreSerieDescription = false;
+			boolean filtreSerieNumber = false;
+			boolean filtreSerieModality = false;
+			String[] serieDescriptionArray = null;
+			String[] serieNumberArray = null;
+			String[] serieNumberExcludeArray = null;
+			String[] serieDescriptionExcludeArray = null;
+			//Convert string in Array splited by ; in which we will look at correspondencies
+			if (!StringUtils.isEmpty(seriesModalities.toString())) {
+				filtreSerieModality=true; 
+				nombreFiltre++;}
+			if (!StringUtils.isEmpty(autoQuery.serieDescriptionContains)) {
+				serieDescriptionArray=autoQuery.serieDescriptionContains.split(";");
+				filtreSerieDescription=true; 
+				nombreFiltre++;}
+			if (!StringUtils.isEmpty(autoQuery.serieNumberMatch)) {
+				serieNumberArray=autoQuery.serieNumberMatch.split(";");
+				filtreSerieNumber=true; 
+				nombreFiltre++;
+				}
+			if(!StringUtils.isEmpty(autoQuery.serieDescriptionExclude)) {
+				serieDescriptionExcludeArray=autoQuery.serieDescriptionExclude.split(";");
 			}
-		if(!StringUtils.isEmpty(autoQuery.serieDescriptionExclude)) {
-			serieDescriptionExcludeArray=autoQuery.serieDescriptionExclude.split(";");
-		}
-		if(!StringUtils.isEmpty(autoQuery.serieNumberExclude)) {
-			serieNumberExcludeArray=autoQuery.serieNumberExclude.split(";");
-		}
-		
-		//On scann tous les results la 1ere dimension contient l'ID de la query et la deuxime le nombre de reponse study a scanner
-		for (int j=0 ; j<Integer.parseInt(results[1]); j++) {
-			if (workerAutoRetrieve!=null && workerAutoRetrieve.isCancelled()) return null;
-			String content=rest.getIndexContent(results[0], j);
-			//On recupere le study ID de la response au niveau study
-			String studyID=rest.querySeries((String) rest.getValue(content, "StudyInstanceUID"), comboBox.getSelectedItem().toString());
-			// On recupere les series disponible via une nouvelle requette demandant ce studyID
-			String[][] seriesDetails=rest.getSeriesDescriptionValues(studyID);
-			//On verifie qu'un parameter est bien defini
-			if (!StringUtils.isEmpty(seriesModalities) || !StringUtils.isEmpty(autoQuery.serieDescriptionContains) || !StringUtils.isEmpty(autoQuery.serieNumberMatch)  || !StringUtils.isEmpty(autoQuery.serieDescriptionExclude) || !StringUtils.isEmpty(autoQuery.serieNumberExclude)) {
-			//Alors on boucle les reponse	
-			for (int k=0; k<seriesDetails[0].length ; k++) {
-				if (workerAutoRetrieve!=null && workerAutoRetrieve.isCancelled()) return null;
-					//On definit le candidat:
-					String seriesDescription=seriesDetails[0][k].toLowerCase();
-					String modality=seriesDetails[1][k];
-					String seriesNumber=seriesDetails[2][k];
-					
-					if ( ! ((!StringUtils.isEmpty(autoQuery.serieDescriptionExclude) && StringUtils.indexOfAny(seriesDescription,serieDescriptionExcludeArray )!=(-1) ) || (!StringUtils.isEmpty(autoQuery.serieNumberExclude) && (StringUtils.indexOfAny(seriesNumber ,serieNumberExcludeArray)) !=(-1) ) )  ) {
+			if(!StringUtils.isEmpty(autoQuery.serieNumberExclude)) {
+				serieNumberExcludeArray=autoQuery.serieNumberExclude.split(";");
+			}
+			
+			//On scann tous les results la 1ere dimension contient l'ID de la query et la deuxime le nombre de reponse study a scanner
+			for (int i=0 ; i<results.length; i++) {
+				if (workerAutoRetrieve!=null && workerAutoRetrieve.isCancelled()) return;
+
+				SerieDetails[] seriesDetails=rest.getSeriesAnswers(results[i].getStudyInstanceUID(), results[i].getSourceAet());
+				//On verifie qu'un parameter est bien defini
+				if (!StringUtils.isEmpty(seriesModalities) || !StringUtils.isEmpty(autoQuery.serieDescriptionContains) || !StringUtils.isEmpty(autoQuery.serieNumberMatch)  || !StringUtils.isEmpty(autoQuery.serieDescriptionExclude) || !StringUtils.isEmpty(autoQuery.serieNumberExclude)) {
+				//Alors on boucle les reponse	
+				for (int k=0; k<seriesDetails.length ; k++) {
+					if (workerAutoRetrieve!=null && workerAutoRetrieve.isCancelled()) return;
+						//On definit le candidat:
+						String seriesDescription=seriesDetails[k].getSeriesDescription().toLowerCase();
+						String modality=seriesDetails[k].getModality();
+						String seriesNumber=seriesDetails[k].getSeriesNumber();
 						
-						//Si on a defini un contains ou un modalitie on prend que si existe un match
-						if ( (!StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.contains(seriesModalities.toString(), modality)) || (!StringUtils.isEmpty(autoQuery.serieDescriptionContains) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray))!=-1) || ( !StringUtils.isEmpty(autoQuery.serieNumberMatch) && (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)))  ) {
+						if ( ! ((!StringUtils.isEmpty(autoQuery.serieDescriptionExclude) && StringUtils.indexOfAny(seriesDescription,serieDescriptionExcludeArray )!=(-1) ) || (!StringUtils.isEmpty(autoQuery.serieNumberExclude) && (StringUtils.indexOfAny(seriesNumber ,serieNumberExcludeArray)) !=(-1) ) )  ) {
 							
-							// Une condition match
-							
-							//si plus d'un filtre active on verifie que ca passe les autre filtres
-							if (nombreFiltre>1) {
-								//Si 3 filtre on demande le perfect match et on retrieve
-								if (nombreFiltre==3) {
-									if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
-										info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-										rest.retrieve(studyID, k,  Aet_Retrieve.getSelectedItem().toString());
-										serieCountRevtrieved++;
+							//Si on a defini un contains ou un modalitie on prend que si existe un match
+							if ( (!StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.contains(seriesModalities.toString(), modality)) || (!StringUtils.isEmpty(autoQuery.serieDescriptionContains) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray))!=-1) || ( !StringUtils.isEmpty(autoQuery.serieNumberMatch) && (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)))  ) {
+								
+								// Une condition match
+								
+								//si plus d'un filtre active on verifie que ca passe les autre filtres
+								if (nombreFiltre>1) {
+									//Si 3 filtre on demande le perfect match et on retrieve
+									if (nombreFiltre==3) {
+										if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
+											info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
+											rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  Aet_Retrieve.getSelectedItem().toString());
+											serieCountRevtrieved++;
+										}
+									}
+									//Si deux filtre il faut chercher le match des deux conditions
+									else if (nombreFiltre==2) {
+										if (!filtreSerieDescription) {
+											if ( StringUtils.contains(seriesModalities.toString(), modality) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
+												info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
+												rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  Aet_Retrieve.getSelectedItem().toString());
+												serieCountRevtrieved++;
+											}
+										}
+										else if (!filtreSerieNumber) {
+											if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) ){
+												info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
+												rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  Aet_Retrieve.getSelectedItem().toString());
+												serieCountRevtrieved++;
+											}
+											
+										}
+										else if (!filtreSerieModality) {
+											if ( (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
+												info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
+												rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  Aet_Retrieve.getSelectedItem().toString());
+												serieCountRevtrieved++;
+											}
+											
+										}
 									}
 								}
-								//Si deux filtre il faut chercher le match des deux conditions
-								else if (nombreFiltre==2) {
-									if (!filtreSerieDescription) {
-										if ( StringUtils.contains(seriesModalities.toString(), modality) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
-											info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-											rest.retrieve(studyID, k,  Aet_Retrieve.getSelectedItem().toString());
-											serieCountRevtrieved++;
-										}
-									}
-									else if (!filtreSerieNumber) {
-										if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) ){
-											info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-											rest.retrieve(studyID, k,  Aet_Retrieve.getSelectedItem().toString());
-											serieCountRevtrieved++;
-										}
-										
-									}
-									else if (!filtreSerieModality) {
-										if ( (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
-											info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-											rest.retrieve(studyID, k,  Aet_Retrieve.getSelectedItem().toString());
-											serieCountRevtrieved++;
-										}
-										
-									}
+								//Si un seul filtre on retrieve la serie qui a matche
+								else {
+									info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
+									rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  Aet_Retrieve.getSelectedItem().toString());
+									serieCountRevtrieved++;
 								}
+
+								
+								
 							}
-							//Si un seul filtre on retrieve la serie qui a matche
-							else {
-								info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-								rest.retrieve(studyID, k,  Aet_Retrieve.getSelectedItem().toString());
+							//Si on a pas defini de contains ou de modalitie on telecharge tout ce qui n'est pas exclu
+							else if ( StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.isEmpty(autoQuery.serieDescriptionContains) && StringUtils.isEmpty(autoQuery.serieNumberMatch) ) {
+								info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1)+" Query "+(i+1)+"/"+table.getRowCount());
+								rest.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(), Aet_Retrieve.getSelectedItem().toString());
 								serieCountRevtrieved++;
 							}
+						}
+						
+						
+				}
+					
+				}
+			
+			
+			}
+			
+			textAreaConsole.append("Downloaded " + serieCountRevtrieved + " series \n");
+			return;
+		
+		
+		
+			
+			}
+	
+		};
 
-							
-							
-						}
-						//Si on a pas defini de contains ou de modalitie on telecharge tout ce qui n'est pas exclu
-						else if ( StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.isEmpty(autoQuery.serieDescriptionContains) && StringUtils.isEmpty(autoQuery.serieNumberMatch) ) {
-							info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails[0].length+1)+" Query "+(i+1)+"/"+table.getRowCount());
-							rest.retrieve(studyID, k, Aet_Retrieve.getSelectedItem().toString());
-							serieCountRevtrieved++;
-						}
-					}
-					
-					
-			}
-				
-			}
-		
-		
-		}
-		
-		textAreaConsole.append("Downloaded " + serieCountRevtrieved + " series \n");
-		return null;
-	
-	
 	}
 	
 	/**
@@ -1537,6 +1510,11 @@ public class VueRest extends JFrame implements PlugIn{
 		
 	}
 	
+	private void storeAets() {
+		listRetrieveAET = ArrayUtils.addAll(new String[] {rest.getLocalAet()}, rest.getAets());
+		distantAets=rest.getAets();
+	}
+	
 	public JTable getLastFocusedTable(boolean main) {
 		if(main) {
 			return lastFocusMain;
@@ -1549,7 +1527,7 @@ public class VueRest extends JFrame implements PlugIn{
 		return this.state;
 	}
 	
-	public Rest getRestObject() {
+	public QueryRetrieve getRestObject() {
 		return this.rest;
 	}
 	

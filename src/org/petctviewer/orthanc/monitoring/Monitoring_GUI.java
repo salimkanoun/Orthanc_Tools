@@ -46,7 +46,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
-import org.petctviewer.orthanc.query.Rest;
+import org.petctviewer.orthanc.query.QueryRetrieve;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import javax.swing.ListSelectionModel;
@@ -629,7 +629,7 @@ public class Monitoring_GUI extends JFrame {
 	}
 	
 	private void setAET() {
-		Rest restApi=new Rest(parametre);
+		QueryRetrieve restApi=new QueryRetrieve(parametre);
 		String[] aets=restApi.getAets();
 		for (int i=0; i<aets.length ; i++) {
 			comboBoxAET_AutoFetch.addItem((String) aets[i]);

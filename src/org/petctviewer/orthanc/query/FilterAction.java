@@ -100,8 +100,6 @@ public class FilterAction extends AbstractAction {
 		modeleDetailsH.clear();
 
 		// We make the query, based on the user's input
-		
-
 		if(modalities.toString().length() == 0){
 			modalities.append("*");
 		}

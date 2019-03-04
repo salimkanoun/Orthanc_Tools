@@ -17,7 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.query;
 
-public class SeriesDetails {
+public class SerieDetails {
 	private String modality;
 	private String studyInstanceUID;
 	private String seriesDescription;
@@ -26,7 +26,7 @@ public class SeriesDetails {
 	private String aet;
 	private int answerNumber;
 
-	public SeriesDetails(String seriesDescription, String modality, String studyInstanceUID, String serieNumber, String aet, String idQuery, int answerNumber) {
+	public SerieDetails(String seriesDescription, String modality, String studyInstanceUID, String serieNumber, String aet, String idQuery, int answerNumber) {
 		this.modality = modality;
 		this.studyInstanceUID = studyInstanceUID;
 		this.seriesDescription = seriesDescription;

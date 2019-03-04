@@ -24,13 +24,13 @@ public class ModelTableSeries extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
 	private String[] entetes = {"Series Desc", "Modality", "Serie num", "serieObject"};
-	private Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, String.class, SeriesDetails.class};
+	private Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, String.class, SerieDetails.class};
 	
-	private SeriesDetails[] series ;
-	private Rest rest;
+	private SerieDetails[] series ;
+	private QueryRetrieve rest;
 	
 
-	public ModelTableSeries(Rest rest){
+	public ModelTableSeries(QueryRetrieve rest){
 		super(0,4);
 		this.rest=rest;
 	}
@@ -48,7 +48,7 @@ public class ModelTableSeries extends DefaultTableModel{
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
-	public void addSeriesDetails(PatientsDetails patient) {
+	public void addSeriesDetails(StudyDetails patient) {
 		series =rest.getSeriesAnswers(patient.getStudyInstanceUID(), patient.getSourceAet());
 		updateTable();
 	}
@@ -57,7 +57,7 @@ public class ModelTableSeries extends DefaultTableModel{
 		//Empty Table
 		clear();
 		//Fill with Series
-		for(SeriesDetails serie : series) {
+		for(SerieDetails serie : series) {
 			this.addRow(new Object[] {serie.getSeriesDescription(), serie.getModality(), serie.getSeriesNumber(), serie});
 		}
 	}

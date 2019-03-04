@@ -21,9 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -43,7 +41,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class AutoQuery  {
 
-	protected Rest api;
+	protected QueryRetrieve api;
 	protected String[] availableAets;
 	protected String aetRetrieve;
 	private Preferences jPrefer;
@@ -57,7 +55,7 @@ public class AutoQuery  {
 	private DateFormat df = new SimpleDateFormat("yyyyMMdd");
 	
 	
-	public AutoQuery(Rest rest) {
+	public AutoQuery(QueryRetrieve rest) {
 		api=rest;
 
 		availableAets=api.getAets();
@@ -101,8 +99,8 @@ public class AutoQuery  {
 	 * @return
 	 * @throws IOException
 	 */
-	public String[] sendQuery(String name, String id, String dateFrom, String dateTo, String modality, String studyDescription, String accessionNumber, String aet) {
-		String[] results=null;
+	public StudyDetails[] sendQuery(String name, String id, String dateFrom, String dateTo, String modality, String studyDescription, String accessionNumber, String aet) {
+		StudyDetails[] results=null;
 		try {
 			//Selectionne l'AET de query
 			//On format les date pour avoir la bonne string
@@ -119,9 +117,7 @@ public class AutoQuery  {
 			if (From==null && To==null) date="*";getClass();
 			//On lance la query
 			if (StringUtils.equals(name, "*")==false || StringUtils.equals(id, "*")==false || StringUtils.equals(dateFrom, "*")==false || StringUtils.equals(dateTo, "*")==false || StringUtils.equals(modality, "*")==false || StringUtils.equals(studyDescription, "*")==false|| StringUtils.equals(accessionNumber, "*")==false) {
-				
-				results=api.getQueryAnswerIndexes("Study", name , id, date, modality, studyDescription , accessionNumber, aet);
-				
+				results=api.getPatientsResults("Study", name, id, date, modality, studyDescription, accessionNumber, aet);
 			}
 			else {
 				results=null;
@@ -141,21 +137,25 @@ public class AutoQuery  {
 	 * @param discard
 	 * @throws IOException
 	 */
-	public void retrieveQuery(String[] results, String aetRetrieve, int discard, int queryNumberList) {
+	public void retrieveQuery(StudyDetails[] results, String aetRetrieve, int discard, int queryNumberList) {
 	
-		if (Integer.valueOf(results[1])<=discard){		
-			for (int i=0; i<Integer.valueOf(results[1]); i++) {
-			api.retrieve(results[0], i, aetRetrieve );
+		if (results.length<=discard){
+			int studiesRetrievedSuccess=0;
+			for (int i=0; i<results.length; i++) {
+				try {
+					api.retrieve(results[i].getQueryID(), results[i].getAnswerNumber(), aetRetrieve );
+					studiesRetrievedSuccess++;
+				} catch (Exception e) {
+					System.out.println( "Error During Retrieve Patient ID"+results[i].getPatientID() +" Study Date "+ results[i].getStudyDate() );
+					e.printStackTrace();
+				}
 			}
-			System.out.println( results[1] + " studies Retrieved");
+			System.out.println( studiesRetrievedSuccess + " studies Retrieved");
 		}
 		else {
 			System.out.println("Discarted because Study Query answers over discard limit");
 		}
 	}
-	
-	
-	
 	
 	/**
 	 * Date programmation
@@ -244,38 +244,6 @@ public class AutoQuery  {
   			    "Wrong Input",
   			    JOptionPane.WARNING_MESSAGE);
   	  }
-	/**
-	 * Get content of a result.
-	 * @param results
-	 * @param path
-	 * @throws IOException
-	 * @throws ParseException 
-	 */
-	protected void getContent(String[] results, ArrayList<PatientsDetails> patientArray, String aet) throws IOException, ParseException {
-		DateFormat parser = new SimpleDateFormat("yyyyMMdd");
-		
-		for (int i=0; i<Integer.parseInt(results[1]); i++) {
-			String name = (String)api.getValue(api.getIndexContent(results[0],i), "PatientName");
-			String id = (String)api.getValue(api.getIndexContent(results[0],i), "PatientID");
-			String accNumber = (String)api.getValue(api.getIndexContent(results[0],i), "AccessionNumber");
-			Date date = parser.parse((String)api.getValue(api.getIndexContent(results[0],i), "StudyDate"));
-			String studyDesc = (String)api.getValue(api.getIndexContent(results[0],i), "StudyDescription");
-			String modality = (String)api.getValue(api.getIndexContent(results[0],i), "ModalitiesInStudy");
-			String studyUID = (String)api.getValue(api.getIndexContent(results[0],i), "StudyInstanceUID");
-			
-			PatientsDetails patient=new PatientsDetails(name, id, date, studyDesc, accNumber, studyUID, modality, aet);
-			patientArray.add(patient);
-		}
-		
-		
-	}
-	
-	
-	
-	
-	
-	
-
 
 }
 

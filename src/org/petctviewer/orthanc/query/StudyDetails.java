@@ -21,7 +21,7 @@ package org.petctviewer.orthanc.query;
 import java.util.Date;
 
 
-public class PatientsDetails {
+public class StudyDetails {
 	private String patientName;
 	private String patientID;
 	private String accessionNumber;
@@ -30,9 +30,22 @@ public class PatientsDetails {
 	private String studyInstanceUID;
 	private String queryID;
 	private String sourceAet;
+	private String modalitiesInStudy;
 	private int answserNumber;
 	
-	public PatientsDetails(String patientName, String patientID, Date studyDate,
+	/**
+	 * Constructor for Queries
+	 * @param patientName
+	 * @param patientID
+	 * @param studyDate
+	 * @param studyDescription
+	 * @param accessionNumber
+	 * @param studyInstanceUID
+	 * @param sourceAet
+	 * @param queryID
+	 * @param answerNumber
+	 */
+	public StudyDetails(String patientName, String patientID, Date studyDate,
 			String studyDescription, String accessionNumber, String studyInstanceUID, String sourceAet, String queryID, int answerNumber) {
 		this.patientName = patientName;
 		this.patientID = patientID;
@@ -43,6 +56,28 @@ public class PatientsDetails {
 		this.sourceAet=sourceAet;
 		this.queryID=queryID;
 		this.answserNumber=answerNumber;
+	}
+	
+	/**
+	 * Constructor for AutoQuery Patient Storage
+	 * @param patientName
+	 * @param patientID
+	 * @param studyDate
+	 * @param studyDescription
+	 * @param accessionNumber
+	 * @param studyInstanceUID
+	 * @param modalitiesInStudy
+	 */
+	public StudyDetails(String patientName, String patientID, Date studyDate,
+			String studyDescription, String accessionNumber, String studyInstanceUID, String modalitiesInStudy, String sourceAet) {
+		this.patientName = patientName;
+		this.patientID = patientID;
+		this.accessionNumber = accessionNumber;
+		this.studyDate = studyDate;
+		this.studyDescription = studyDescription;
+		this.studyInstanceUID = studyInstanceUID;
+		this.modalitiesInStudy=modalitiesInStudy;
+		this.sourceAet=sourceAet;
 	}
 
 	public String getPatientName() {
@@ -79,6 +114,10 @@ public class PatientsDetails {
 	
 	public int getAnswerNumber() {
 		return this.answserNumber;
+	}
+	
+	public String getModalities() {
+		return this.modalitiesInStudy;
 	}
 	
 	

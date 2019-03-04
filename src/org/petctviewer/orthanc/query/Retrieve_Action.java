@@ -11,7 +11,7 @@ public class Retrieve_Action extends AbstractAction{
 	private static final long serialVersionUID = 1L;
 	private VueRest gui;
 	private boolean main;
-	private Rest rest;
+	private QueryRetrieve rest;
 	
 	Retrieve_Action(VueRest gui, boolean main){
 		this.main=main;
@@ -36,11 +36,11 @@ public class Retrieve_Action extends AbstractAction{
 					gui.getStatusLabel().setText("<html>Retrieve state " + (i+1) + "/" + selectedrows.length + 
 							" <font color='red'> (Do not touch any buttons or any tables while the retrieve is not done)</font></html>");
 
-					if(details instanceof PatientsDetails) {
-						rest.retrieve( ((PatientsDetails) details).getQueryID(), ((PatientsDetails) details).getAnswerNumber(), gui.getRetrieveAet(main) );
+					if(details instanceof StudyDetails) {
+						rest.retrieve( ((StudyDetails) details).getQueryID(), ((StudyDetails) details).getAnswerNumber(), gui.getRetrieveAet(main) );
 						
-					}else if(details instanceof SeriesDetails) {
-						rest.retrieve(((SeriesDetails) details).getIdQuery(), ((SeriesDetails) details).getAnswerNumber(),  gui.getRetrieveAet(main));
+					}else if(details instanceof SerieDetails) {
+						rest.retrieve(((SerieDetails) details).getIdQuery(), ((SerieDetails) details).getAnswerNumber(),  gui.getRetrieveAet(main));
 						
 					}
 				}

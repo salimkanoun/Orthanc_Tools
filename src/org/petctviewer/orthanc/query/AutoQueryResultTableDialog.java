@@ -45,27 +45,13 @@ public class AutoQueryResultTableDialog extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
 	private JTable table;
-	private ArrayList<PatientsDetails> patientList;
+	private ArrayList<StudyDetails> patientList;
 	boolean validate;
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			AutoQueryResultTableDialog dialog = new AutoQueryResultTableDialog(new ArrayList<PatientsDetails> ());
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setSize(dialog.getPreferredSize());
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 	/**
 	 * Create the dialog.
 	 */
-	public AutoQueryResultTableDialog(ArrayList<PatientsDetails> patientList) {
+	public AutoQueryResultTableDialog(ArrayList<StudyDetails> patientList) {
 		this.patientList= patientList;
 		
 		getContentPane().setLayout(new BorderLayout());
@@ -147,9 +133,6 @@ public class AutoQueryResultTableDialog extends JDialog {
 						//On ecrit le CSV
 						writeCSV(csv.toString(), fileChooser.getSelectedFile().getAbsolutePath().toString());
 					
-						
-						
-					
 				}
 				}
 				});
@@ -188,7 +171,7 @@ public class AutoQueryResultTableDialog extends JDialog {
 			}
 			
 			//On passe le  \ en \\
-			String modalityString=patientList.get(i).getModality();
+			String modalityString=patientList.get(i).getModalities();
 			if (modalityString.contains("\\")) modalityString = modalityString.replace("\\", "\\\\");
 			// on ajoute la ligne
 			model.addRow(new Object[] {lastName, firstName, patientList.get(i).getPatientID(), patientList.get(i).getAccessionNumber(),parser.format(patientList.get(i).getStudyDate()), parser.format(patientList.get(i).getStudyDate()), modalityString, patientList.get(i).getStudyDescription() });
@@ -206,7 +189,6 @@ public class AutoQueryResultTableDialog extends JDialog {
 	 * @param csv
 	 */
 	private void buildCSV(String nom, String prenom, String id, String accession, String dateFrom, String dateTo, String modality, String studyDescription, StringBuilder csv) {
-		
 		csv.append(nom+","+prenom+","+id+","+accession+","+dateFrom+","+dateTo+","+modality+","+studyDescription+"\n");
 	}
 	
