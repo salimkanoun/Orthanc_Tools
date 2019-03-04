@@ -19,15 +19,21 @@ package org.petctviewer.orthanc.query;
 
 public class SeriesDetails {
 	private String modality;
-	private String seriesInstanceUID;
+	private String studyInstanceUID;
 	private String seriesDescription;
 	private String serieNumber;
+	private String idQuery;
+	private String aet;
+	private int answerNumber;
 
-	public SeriesDetails(String seriesDescription, String modality, String seriesInstanceUID, String serieNumber) {
+	public SeriesDetails(String seriesDescription, String modality, String studyInstanceUID, String serieNumber, String aet, String idQuery, int answerNumber) {
 		this.modality = modality;
-		this.seriesInstanceUID = seriesInstanceUID;
+		this.studyInstanceUID = studyInstanceUID;
 		this.seriesDescription = seriesDescription;
 		this.serieNumber=serieNumber;
+		this.idQuery=idQuery;
+		this.answerNumber=answerNumber;
+		this.aet=aet;
 	}
 
 	public String getModality() {
@@ -38,12 +44,24 @@ public class SeriesDetails {
 		return seriesDescription;
 	}
 
-	public String getSeriesInstanceUID() {
-		return this.seriesInstanceUID;
+	public String getStudyInstanceUID() {
+		return this.studyInstanceUID;
 	}
 
 	public String getSeriesNumber() {
 		return this.serieNumber;
+	}
+	
+	public String getIdQuery() {
+		return this.idQuery;
+	}
+	
+	public int getAnswerNumber() {
+		return this.answerNumber;
+	}
+	
+	public String getAet() {
+		return this.aet;
 	}
 	
 }

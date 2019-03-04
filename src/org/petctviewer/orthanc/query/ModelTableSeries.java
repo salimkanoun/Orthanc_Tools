@@ -25,11 +25,10 @@ import javax.swing.table.DefaultTableModel;
 public class ModelTableSeries extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Series Desc", "Modality", "Serie num"};
-	private Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, String.class};
+	private String[] entetes = {"Series Desc", "Modality", "Serie num", "serieObject"};
+	private Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, SeriesDetails.class};
 	
-	private String idURL;
-	private ArrayList<SeriesDetails> series ;
+	private SeriesDetails[] series ;
 	private ArrayList<String> listIndexes = null;
 	private Rest rest;
 	
@@ -52,27 +51,10 @@ public class ModelTableSeries extends DefaultTableModel{
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
-	public void addDetails(String patientName, String patientID, String studyDate, 
-			String studyDescription, String accessionNumber, String studyInstanceUID, String aet) throws Exception{
-		this.listIndexes = new ArrayList<String>();
-		this.idURL = rest.getSeriesDescriptionID(studyInstanceUID, aet);
-		String[][] studyDescriptionAndModality = rest.getSeriesDescriptionValues(idURL);
-		series = new ArrayList<SeriesDetails>();
-		SeriesDetails d;
-		if(studyDescriptionAndModality[0].length != 0){
-			if(studyInstanceUID == null){
-				throw new Exception("This study doesn't have an instance UID !");
-			}
-			for(int i = 0; i < studyDescriptionAndModality[0].length; i++){
-				d = new SeriesDetails(studyDescriptionAndModality[0][i], studyDescriptionAndModality[1][i], studyInstanceUID, studyDescriptionAndModality[2][i]);
-				series.add(d);
-				// Whenever we add details, we store the query ID, in order to use it for the retrieve queries
-				this.listIndexes.add(this.idURL);
-				//fireTableRowsInserted(details.size() - 1, details.size() - 1);
-				
-			}
-			updateTable();
-		}
+	public void addDetails(PatientsDetails patient) {
+		
+		series =rest.getSeriesAnswers(patient.getStudyInstanceUID(), patient.getSourceAet());
+		updateTable();
 
 	}
 	
@@ -81,7 +63,7 @@ public class ModelTableSeries extends DefaultTableModel{
 		setRowCount(0);
 		//Fill with Series
 		for(SeriesDetails serie : series) {
-			this.addRow(new String[] {serie.getSeriesDescription(), serie.getModality(), serie.getSeriesNumber()});
+			this.addRow(new Object[] {serie.getSeriesDescription(), serie.getModality(), serie});
 		}
 	}
 
@@ -91,10 +73,6 @@ public class ModelTableSeries extends DefaultTableModel{
 	 */
 	public void clear(){
 		setRowCount(0);
-	}
-
-	public String getQueryID(int index){
-		return this.listIndexes.get(index);
 	}
 
 	/*

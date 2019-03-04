@@ -28,19 +28,21 @@ public class PatientsDetails {
 	private Date studyDate;
 	private String studyDescription;
 	private String studyInstanceUID;
-	private String modality;
+	private String queryID;
 	private String sourceAet;
+	private int answserNumber;
 	
 	public PatientsDetails(String patientName, String patientID, Date studyDate,
-			String studyDescription, String accessionNumber, String studyInstanceUID, String modality, String sourceAet) {
+			String studyDescription, String accessionNumber, String studyInstanceUID, String sourceAet, String queryID, int answerNumber) {
 		this.patientName = patientName;
 		this.patientID = patientID;
 		this.accessionNumber = accessionNumber;
 		this.studyDate = studyDate;
 		this.studyDescription = studyDescription;
 		this.studyInstanceUID = studyInstanceUID;
-		this.modality=modality;
 		this.sourceAet=sourceAet;
+		this.queryID=queryID;
+		this.answserNumber=answerNumber;
 	}
 
 	public String getPatientName() {
@@ -67,12 +69,18 @@ public class PatientsDetails {
 		return studyInstanceUID;
 	}
 	
-	public String getModality() {
-		return this.modality;
-	}
-	
 	public String getSourceAet() {
 		return sourceAet;
 	}
+	
+	public String getQueryID() {
+		return this.queryID;
+	}
+	
+	public int getAnswerNumber() {
+		return this.answserNumber;
+	}
+	
+	
 
 }

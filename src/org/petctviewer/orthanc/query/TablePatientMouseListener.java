@@ -20,9 +20,6 @@ package org.petctviewer.orthanc.query;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import javax.swing.JLabel;
 import javax.swing.JTable;
@@ -52,8 +49,7 @@ public class TablePatientMouseListener extends MouseAdapter {
 			int currentRow = tableauPatients.rowAtPoint(point);
 			tableauPatients.setRowSelectionInterval(currentRow, currentRow);
 		}
-		DateFormat df = new SimpleDateFormat("yyyyMMdd");
-
+		
 		// If the state's text is "Done" we make it disappear
 		if(this.state != null){
 			this.state.setText(null);
@@ -62,24 +58,12 @@ public class TablePatientMouseListener extends MouseAdapter {
 		// We clear the details
 		this.modeleSeries.clearQueriesIDs();
 		this.modeleSeries.clear();
-
-		try {
-			if(this.modelePatients.getRowCount() != 0){
-				Date date = (Date)this.tableauPatients.getValueAt(this.tableauPatients.getSelectedRow(), 2);
-				String patientName = (String)this.tableauPatients.getValueAt(this.tableauPatients.getSelectedRow(), 0);
-				String patientID = (String)this.tableauPatients.getValueAt(this.tableauPatients.getSelectedRow(), 1);
-				String studyDate = df.format(date); 
-				String studyDescription = (String)this.tableauPatients.getValueAt(this.tableauPatients.getSelectedRow(), 3);
-				String accessionNumber = (String)this.tableauPatients.getValueAt(this.tableauPatients.getSelectedRow(), 4);
-				String studyInstanceUID = (String)this.tableauPatients.getValueAt(this.tableauPatients.getSelectedRow(), 5);
-				String aet = (String)this.tableauPatients.getValueAt(this.tableauPatients.getSelectedRow(), 6);
-
-				this.modeleSeries.addDetails(patientName, patientID, studyDate, studyDescription, accessionNumber, studyInstanceUID, 
-						aet);
-			}
-		} catch (Exception e1) {
-			e1.printStackTrace();
+		//Get Patient Object and add it's series in Series table model
+		if(this.modelePatients.getRowCount() != 0){
+			PatientsDetails patient = (PatientsDetails)this.tableauPatients.getValueAt(this.tableauPatients.getSelectedRow(), 6);
+			this.modeleSeries.addDetails(patient);
 		}
+
 	}
 	
 	@Override

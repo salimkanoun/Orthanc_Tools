@@ -18,17 +18,25 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.query;
 
-import org.json.simple.JSONArray;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class Rest {
 
 	private OrthancRestApis connexion;
 	private JSONObject contentJson=new JSONObject();
 	private JSONParser parser = new JSONParser();
+	private JsonParser parserJson = new JsonParser();
 
 	public Rest(OrthancRestApis connexion){
 		this.connexion=connexion;
@@ -40,7 +48,7 @@ public class Rest {
 	 */
 	private String getQueryID(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber, String aet) {
 		// We re-define the new query
-		String query =setQuery(level, name, id, studyDate, modality, studyDescription, accessionNumber);
+		String query =buildQuery(level, name, id, studyDate, modality, studyDescription, accessionNumber);
 		String ID = null;
 		
 		JSONObject answer;
@@ -50,7 +58,7 @@ public class Rest {
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-		System.out.println(ID);
+		
 		return ID;
 	}
 
@@ -59,21 +67,42 @@ public class Rest {
 	 * This method gets the answer's indexes to an Orthanc query, as an Object[].
 	 * An Object[] should be instantiated to store the values inside it.
 	 */
-	public String[] getQueryAnswerIndexes(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber, String aet) {
+	public PatientsDetails[] getPatientsResults(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber, String aet) {
 		// We call getQueryID to generate a query ID
 		String idQuery =  this.getQueryID(level, name, id, studyDate, modality, studyDescription, accessionNumber, aet);
 		
-		JSONArray contentArray = null;
-		try {
-			contentArray = (JSONArray) parser.parse(connexion.makeGetConnectionAndStringBuilder("/queries/" + idQuery + "/answers/").toString());
-		} catch (ParseException e) {
-			e.printStackTrace();
+		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/queries/" + idQuery + "/answers/");
+		
+		JsonArray answers=(JsonArray) parserJson.parse(sb.toString());
+		
+		PatientsDetails[] patients=new PatientsDetails[answers.size()];
+		DateFormat dateParser = new SimpleDateFormat("yyyyMMdd");
+		
+		for (int i=0; i<answers.size(); i++) {
+			
+			int answer=answers.get(i).getAsInt();
+			String indexContent = getIndexContent(idQuery,answer);
+			JsonObject contentJson= (JsonObject) parserJson.parse(indexContent);
+
+			String patientName=contentJson.get("0010,0010").getAsJsonObject().get("Value").getAsString();
+			String patientID=contentJson.get("0010,0020").getAsJsonObject().get("Value").getAsString();
+			String studyInstanceUID=contentJson.get("0020,000d").getAsJsonObject().get("Value").getAsString();
+			String studyDate2=contentJson.get("0008,0020").getAsJsonObject().get("Value").getAsString();
+			String accessionNumber2=contentJson.get("0008,0050").getAsJsonObject().get("Value").getAsString();
+			String studyDescription2=contentJson.get("0008,1030").getAsJsonObject().get("Value").getAsString();
+			
+			Date studyDateParsed = null;
+			try {
+				studyDateParsed = dateParser.parse(studyDate2);
+			} catch (java.text.ParseException e) {
+				e.printStackTrace();
+			}
+			
+			patients[i] = new PatientsDetails(patientName, patientID, studyDateParsed, studyDescription2, accessionNumber2, studyInstanceUID, aet, idQuery,answer);
+			
 		}
 		
-		String[] resultatQueryIDSize = new String[2];
-		resultatQueryIDSize[0]=idQuery;
-		resultatQueryIDSize[1]=String.valueOf(contentArray.size());
-		return resultatQueryIDSize;
+		return patients;
 	}
 
 	/*
@@ -193,102 +222,119 @@ public class Rest {
 	 * This method returns the series's descriptions's ID.
 	 * It is treated separately because we only need the sole series's descriptions here. 
 	 */
-	public String getSeriesDescriptionID(String studyInstanceUID, String aet) {
+	private String querySeries(String studyInstanceUID, String aet) {
 		// getting the query ID
-		String query = "{ \"Level\" : \"" + "Series" + "\", \"Query\" : "
-				+ "{\"Modality\" : \"" + "*" + "\","
-				+ "\"ProtocolName\" : \"" + "*" + "\","
-				+ "\"SeriesDescription\" : \"" + "*" + "\","
-				+ "\"SeriesInstanceUID\" : \"" + "*" + "\","
-				+ "\"StudyInstanceUID\" : \"" + studyInstanceUID + "\"}"
-				+ "}";
+		JsonObject query = new JsonObject();
+		query.addProperty("Level", "Series");
 		
-		JSONObject answer;
-		String idURL =null;
-		try {
-			answer = (JSONObject) parser.parse(connexion.makePostConnectionAndStringBuilder("/modalities/" + aet + "/query/", query).toString());
-			idURL=(String) answer.get("ID");
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
+		JsonObject queryDetails = new JsonObject();
+		queryDetails.addProperty("Modality", "*");
+		queryDetails.addProperty("ProtocolName", "*");
+		queryDetails.addProperty("SeriesDescription", "*");
+		queryDetails.addProperty("StudyInstanceUID", "*");
+		queryDetails.addProperty("StudyInstanceUID", studyInstanceUID);
+		
+		query.add("Query", queryDetails);
+		
+		StringBuilder sb=connexion.makePostConnectionAndStringBuilder("/modalities/" + aet + "/query/", query.toString());
+		JsonObject answer=(JsonObject) parserJson.parse(sb.toString());
+		String idURL=answer.get("ID").getAsString();
 		
 		return idURL;
 	}
 
 	/*
-	 * This method returns the series's description's (index 0) and modalities (index 1) values in an array
+	 * This method returns all the series's description's (index 0), modalities (index 1), serie number (index 2) values in an array
+	 * of a queries ID result
 	 */
-	public String[] [] getSeriesDescriptionValues(String idURL) {
-		String[] [] values=null;
-		try {
-				JSONArray serverResponseArray=(JSONArray) parser.parse(connexion.makeGetConnectionAndStringBuilder("/queries/" + idURL + "/answers/").toString());
+	public SeriesDetails[] getSeriesAnswers(String studyInstanceUID, String aet) {
+		
+		String idQuery=querySeries(studyInstanceUID, aet);
+		
+		SeriesDetails[] seriesDetails=null;
+		
+		StringBuilder sb = connexion.makeGetConnectionAndStringBuilder("/queries/" + idQuery + "/answers/");
+		JsonArray answersID=(JsonArray) parserJson.parse(sb.toString());
+		
+		if(answersID.size() == 0){
+		 return null;
+		}
+		
+		seriesDetails = new SeriesDetails[answersID.size()];
+		for(int i = 0; i < answersID.size(); i++){
 			
-			if(serverResponseArray.size() == 0){
-				throw new Exception("No Answer for this Query");
+			String answer=getIndexContent(idQuery, i);
+			JsonObject contentJson= (JsonObject) parserJson.parse(answer);
+			
+			String seriesDescriptions, modality, number;
+		
+			if (contentJson.has("0008,103e")) {
+				JsonObject serieDescriptionJson=contentJson.get("0008,103e").getAsJsonObject();
+				seriesDescriptions=serieDescriptionJson.get("Value").getAsString();	
+			} else {
+				seriesDescriptions="";	
 			}
 			
-			values = new String[3][serverResponseArray.size()];
-			for(int i = 0; i < serverResponseArray.size(); i++){
-				contentJson= (JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/queries/" + idURL + "/answers/" + i + "/content").toString());
-				
-				if (contentJson.containsKey("0008,103e")) {
-					JSONObject studyDescriptionJson=(JSONObject) parser.parse(contentJson.get("0008,103e").toString());
-					values[0][i]=(String) studyDescriptionJson.get("Value");	
-				} else {
-					values[0][i]="";	
-				}
-				
-				if (contentJson.containsKey("0008,0060")) {
-					JSONObject modalityJson=(JSONObject) parser.parse(contentJson.get("0008,0060").toString());
-					values[1][i]=(String) modalityJson.get("Value");
-				}else {
-					values[1][i]="";
-				}
-				
-				if (contentJson.containsKey("0020,0011")) {
-					JSONObject serieNumberJson;
-				
-						serieNumberJson = (JSONObject) parser.parse(contentJson.get("0020,0011").toString());
-					
-					values[2][i]=(String) serieNumberJson.get("Value");
-				}else {
-					values[2][i]="";
-				}
-				
-				
+			if (contentJson.has("0008,0060")) {
+				JsonObject modalityJson=contentJson.get("0008,0060").getAsJsonObject();
+				modality=modalityJson.get("Value").getAsString();
+			}else {
+				modality="";
 			}
 			
-		} catch (Exception e) {
-					e.printStackTrace();
-				}
-		return values;
+			if (contentJson.has("0020,0011")) {
+				JsonObject serieNumberJson=contentJson.get("0020,0011").getAsJsonObject();
+				number=serieNumberJson.get("Value").getAsString();
+			}else {
+				number="";
+			}
+			
+			seriesDetails[i]= new SeriesDetails(seriesDescriptions,modality, studyInstanceUID, number,aet, idQuery, i );
+			
+			
+		}
+			
+		return seriesDetails;
 	}
 
 	/*
 	 * This method retrieves an instance, depending on its query ID 
 	 */
 	public void retrieve(String queryID, int answer, String retrieveAET) {
-		connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve/", retrieveAET);
+		StringBuilder sb=connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve/", retrieveAET);
+		System.out.println(sb);
 	}
 	
 
-	private String setQuery(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber) {
-		String query = "{ \"Level\" : \"" + level + "\", \"Query\" : "
-				+ "{\"PatientName\" : \"" + name + "\","
-				+ "\"PatientID\" : \"" + id + "\","
-				+ "\"StudyDate\" : \"" + studyDate + "\","
-				+ "\"ModalitiesInStudy\" : \"" + modality + "\","
-				+ "\"StudyDescription\" : \"" + studyDescription + "\","
-				+ "\"AccessionNumber\" : \"" + accessionNumber + "\"}"
-				+ "}";
-		System.out.println(query);
-		return query;
+	private String buildQuery(String level, String name, String id, String studyDate, String modality, String studyDescription, String accessionNumber) {
+		JsonObject query = new JsonObject();
+		query.addProperty("Level", level);
+		
+		JsonObject queryDetails = new JsonObject();
+		queryDetails.addProperty("PatientName", name);
+		queryDetails.addProperty("PatientID", id);
+		queryDetails.addProperty("StudyDate", studyDate);
+		queryDetails.addProperty("ModalitiesInStudy", modality);
+		queryDetails.addProperty("StudyDescription", studyDescription);
+		queryDetails.addProperty("AccessionNumber", accessionNumber);
+		
+		query.add("Query", queryDetails);
+		
+		return query.toString();
 	}
 	
+	/**
+	 * Get available distant AETs in Orthanc
+	 * @return String
+	 */
 	public String[] getAets() {
 		return connexion.getAET();
 	}
 	
+	/**
+	 * Get Local AET of this Orthanc Server
+	 * @return String
+	 */
 	public String getLocalAet() {
 		return connexion.getLocalAET();
 	}

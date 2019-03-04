@@ -133,10 +133,6 @@ public class VueRest extends JFrame implements PlugIn{
 	
 	// Tab Setup
 	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
-
-	// these list contains the selected rows's model's indexes in order to retrieve the series
-	private ArrayList<Integer> rowsModelsIndexes = new ArrayList<>();
-	private ArrayList<Integer> rowsModelsIndexesH = new ArrayList<>();
 	
 	//Working status
 	boolean working;
@@ -374,18 +370,14 @@ public class VueRest extends JFrame implements PlugIn{
 		// Building the components for the southern part of the window : the AETs combobox, the Search and Filter buttons
 		this.state = new JLabel();
 		southD.add(retrieveAET);
-		retrieve = new JButton(new RetrieveAction(rowsModelsIndexes, tableSeries, modeleTableSeries, state, retrieveAET));
+		retrieve = new JButton(new Retrieve_Action());
 		southD.add(retrieve);
 		southD.add(state);
 		south.add(southD);
-
-		// Setting the mouse listener on tableau
-		tablePatients.addMouseListener(new TablePatientMouseListener(tablePatients, modeleTablePatients, modeleTableSeries, state));
-
+		
 		// Setting the rowSelection that will allow for retrieves on specific series
 		ListSelectionModel rowSelectionModel = tableSeries.getSelectionModel();
 		rowSelectionModel.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		rowSelectionModel.addListSelectionListener(new TableListSelectionListener(rowsModelsIndexes, tableSeries));
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////		
 		////////////////////////////////// END OF TAB 1 : QUERIES/RETRIEVE ////////////////////////////////////
@@ -539,7 +531,7 @@ public class VueRest extends JFrame implements PlugIn{
 		stateH = new JLabel();
 		stateH.setText(null);
 		southH.add(this.retrieveAETH);
-		retrieveH = new JButton(new RetrieveAction(rowsModelsIndexesH, tableSeriesHistory, modeleTableSeriesHistory, stateH, retrieveAETH));
+		retrieveH = new JButton(new Retrieve_Action());
 		southH.add(retrieveH);
 		southH.add(this.stateH);
 		tablePatientsHistory.addMouseListener(new TablePatientMouseListener(tablePatientsHistory, modeleTablePatientHistory, modeleTableSeriesHistory, stateH));		
@@ -547,8 +539,6 @@ public class VueRest extends JFrame implements PlugIn{
 		// Setting the rowSelection that will allow for retrieves
 		ListSelectionModel rowSelectionModelH = tableSeriesHistory.getSelectionModel();
 		rowSelectionModelH.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		rowSelectionModelH.addListSelectionListener(new TableListSelectionListener(rowsModelsIndexesH, tableSeriesHistory));
-
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////		
 		////////////////////////////////// END OF TAB 2 : HISTORY /////////////////////////////////////////////
@@ -1171,94 +1161,6 @@ public class VueRest extends JFrame implements PlugIn{
 		
 	}
 	
-	 
-	private class RetrieveAction extends AbstractAction{
-
-		private static final long serialVersionUID = 1L;
-		private ArrayList<Integer> rowsModelsIndexes;
-		private JTable tableauDetails;
-		private ModelTableSeries modeleDetails;
-		private JLabel state;
-		private JComboBox<String> retrieveAET;
-
-		public RetrieveAction(ArrayList<Integer> rowsModelsIndexes, JTable tableauDetails, 
-				ModelTableSeries modeleDetails, JLabel state, JComboBox<String> retrieveAET){
-			super("Retrieve");
-			this.rowsModelsIndexes = rowsModelsIndexes;
-			this.tableauDetails = tableauDetails;
-			this.modeleDetails = modeleDetails;
-			this.state = state;
-			this.retrieveAET = retrieveAET;
-		}
-
-
-		@Override
-		public void actionPerformed(ActionEvent arg0) {
-			SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-
-				@Override
-				protected Void doInBackground() throws Exception {
-					working=true;
-					retrieve.setEnabled(false);
-					retrieveH.setEnabled(false);
-					try {
-						if(rowsModelsIndexes.size() == 0){
-							// If whole studies/study were/was selected
-							DateFormat df = new SimpleDateFormat("yyyyMMdd");
-							int numPatient=0;
-							for(Integer row : tablePatients.getSelectedRows()){
-								numPatient++;
-								modeleDetails.clear();
-								Date date = (Date)tablePatients.getValueAt(row, 2);
-								String patientName = (String)tablePatients.getValueAt(row, 0);
-								String patientID = (String)tablePatients.getValueAt(row, 1);
-								String studyDate = df.format(date); 
-								String studyDescription = (String)tablePatients.getValueAt(row, 3);
-								String accessionNumber = (String)tablePatients.getValueAt(row, 4);
-								String studyInstanceUID = (String)tablePatients.getValueAt(row, 5);
-
-								modeleDetails.addDetails(patientName, patientID, studyDate, studyDescription, accessionNumber, studyInstanceUID, queryAET.getSelectedItem().toString());
-								for(int i = 0; i < tableauDetails.getRowCount(); i++){
-									state.setText("<html>Patient " + (numPatient) + "/" + tablePatients.getSelectedColumnCount() + " - Retrieve state  " + (i+1) + "/" + tableauDetails.getRowCount() + 
-											" <font color='red'> (Do not touch any buttons or any tables while the retrieve is not done)</font></html>");
-									modeleDetails.retrieve(modeleDetails.getQueryID(i), i, 
-											retrieveAET.getSelectedItem().toString());
-								}
-							}
-							tablePatients.setRowSelectionInterval(0,0);
-						}else{
-							// If only series were selected
-							int i = 0;
-							for(int j : rowsModelsIndexes){
-								state.setText("<html>Retrieve state  " + (i+1) + "/" + rowsModelsIndexes.size()  + 
-										" <font color='red'>(Do not touch any buttons or any tables while the retrieve is not done)</font></html>");
-								modeleDetails.retrieve(modeleDetails.getQueryID(j), j, 
-										retrieveAET.getSelectedItem().toString());
-							}
-							i++;
-						}
-					}
-					catch (IOException e) {
-						e.printStackTrace();
-					}catch (Exception e){
-						e.printStackTrace();
-					}
-					return null;
-				}
-
-				@Override
-				protected void done(){
-					retrieve.setEnabled(true);
-					retrieveH.setEnabled(true);
-					state.setText("<html><font color='green'>The data have successfully been retrieved.</font></html>");
-					working=false;
-				}
-				
-			};
-			worker.execute();
-		}
-		
-	}
 	
 	protected StringBuilder sbModalitiesAutoQuery() {
 		StringBuilder modalities=new StringBuilder();
@@ -1505,7 +1407,7 @@ public class VueRest extends JFrame implements PlugIn{
 			if (workerAutoRetrieve!=null && workerAutoRetrieve.isCancelled()) return null;
 			String content=rest.getIndexContent(results[0], j);
 			//On recupere le study ID de la response au niveau study
-			String studyID=rest.getSeriesDescriptionID((String) rest.getValue(content, "StudyInstanceUID"), comboBox.getSelectedItem().toString());
+			String studyID=rest.querySeries((String) rest.getValue(content, "StudyInstanceUID"), comboBox.getSelectedItem().toString());
 			// On recupere les series disponible via une nouvelle requette demandant ce studyID
 			String[][] seriesDetails=rest.getSeriesDescriptionValues(studyID);
 			//On verifie qu'un parameter est bien defini
