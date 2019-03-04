@@ -11,6 +11,7 @@ import javax.swing.JLabel;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.petctviewer.orthanc.query.PatientsDetails;
 import org.petctviewer.orthanc.query.Rest;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
@@ -104,11 +105,17 @@ public class Auto_Fetch {
 	 */
 	private void makeRetrieve(String patientID) {
 		
-		String[] results=restApi.getQueryAnswerIndexes("Study", "*", patientID, studyDate, modality, studyDescription, "*", queryAet);
-		int numberofAnswers=Integer.parseInt(results[1]);
+		PatientsDetails [] patients=restApi.getPatientsResults("Study", "*", patientID, studyDate, modality, studyDescription, "*", queryAet);
+		
+		int numberofAnswers=patients.length;
+		
 		for (int i=0 ; i<numberofAnswers ; i++) {
-			restApi.retrieve(results[0], i, retrieveAet);
-			status.setText("Retriving "+(i+1)+ "/"+ (numberofAnswers) );
+			try {
+				restApi.retrieve(patients[i].getQueryID(), i, retrieveAet);
+				status.setText("Retriving "+(i+1)+ "/"+ (numberofAnswers) );
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		status.setText("Done, waiting");
 		
