@@ -57,28 +57,6 @@ public class StudyDetails {
 		this.queryID=queryID;
 		this.answserNumber=answerNumber;
 	}
-	
-	/**
-	 * Constructor for AutoQuery Patient Storage
-	 * @param patientName
-	 * @param patientID
-	 * @param studyDate
-	 * @param studyDescription
-	 * @param accessionNumber
-	 * @param studyInstanceUID
-	 * @param modalitiesInStudy
-	 */
-	public StudyDetails(String patientName, String patientID, Date studyDate,
-			String studyDescription, String accessionNumber, String studyInstanceUID, String modalitiesInStudy, String sourceAet) {
-		this.patientName = patientName;
-		this.patientID = patientID;
-		this.accessionNumber = accessionNumber;
-		this.studyDate = studyDate;
-		this.studyDescription = studyDescription;
-		this.studyInstanceUID = studyInstanceUID;
-		this.modalitiesInStudy=modalitiesInStudy;
-		this.sourceAet=sourceAet;
-	}
 
 	public String getPatientName() {
 		return patientName;
