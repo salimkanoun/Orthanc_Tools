@@ -124,10 +124,9 @@ public class QueryOrthancData {
 		
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/studies/"+studyOrthancID);
 		
-		SimpleDateFormat format =new SimpleDateFormat("YYYYMMdd");
+		SimpleDateFormat format =new SimpleDateFormat("yyyyMMdd");
 		
 		JsonObject studyData=(JsonObject) parserJson.parse(sb.toString());
-		
 		JsonObject studyDetails = (JsonObject) studyData.get("MainDicomTags");
 		String accessionNumber=studyDetails.get("AccessionNumber").getAsString();
 		String studyDate=studyDetails.get("StudyDate").getAsString();
@@ -172,7 +171,6 @@ public class QueryOrthancData {
 		JsonObject seriesDetails = (JsonObject) serieData.get("MainDicomTags");
 		String modality = seriesDetails.get("Modality").getAsString();
 		int nbOfSlice= serieData.get("Instances").getAsJsonArray().size();
-		//String seriesDate= seriesDetails.get("SeriesDate").getAsString();
 		String seriesDescription= seriesDetails.get("SeriesDescription").getAsString();
 		String seriesNumber= seriesDetails.get("SeriesNumber").getAsString();
 		
