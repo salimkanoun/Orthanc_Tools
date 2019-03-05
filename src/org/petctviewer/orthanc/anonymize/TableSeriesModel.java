@@ -65,7 +65,7 @@ public class TableSeriesModel extends DefaultTableModel{
 
 	public void addSerie(String studyID) {
 
-		QueryFillStore querySeries = new QueryFillStore(connexionHttp,"series", null, studyID, null, null);
+		QueryOrthancData querySeries = new QueryOrthancData(connexionHttp);
 		
 		Study2 study =querySeries.getStudyDetails(studyID, true);
 		for(Serie serie:study.getSeries()) {

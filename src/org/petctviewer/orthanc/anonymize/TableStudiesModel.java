@@ -54,7 +54,7 @@ public class TableStudiesModel extends DefaultTableModel{
 	 */
 	public void addStudy(String patientOrthancId) {
 		
-		QueryFillStore queryStudies = new QueryFillStore(connexionHttp, "studies", null, patientOrthancId, null, null);
+		QueryOrthancData queryStudies = new QueryOrthancData(connexionHttp);
 		
 		ArrayList<Study2> studies=queryStudies.getStudiesOfPatient(patientOrthancId);
 		

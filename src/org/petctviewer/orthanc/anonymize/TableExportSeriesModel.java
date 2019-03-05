@@ -127,12 +127,11 @@ public class TableExportSeriesModel extends DefaultTableModel{
 	public void addSerie(String studyID) {
 		this.studyID = studyID;
 
-		QueryFillStore querySeries = new QueryFillStore(connexionHttp,"series", null, studyID, null, null);
+		QueryOrthancData querySeries = new QueryOrthancData(connexionHttp);
 		
 		Study2 study =querySeries.getStudyDetails(studyID,true);
 		for(Serie serie:study.getSeries()) {
 			series.add(serie); 
-			
 			//"Serie description*", "Modality", "Instances", "Secondary capture", "ID", "Serie Number"
 			this.addRow(new String[] {serie.getSerieDescription(), serie.getModality(), String.valueOf(serie.getNbInstances()), String.valueOf(serie.isSecondaryCapture()), serie.getFistInstanceId(), serie.getSeriesNumber()});
 		}

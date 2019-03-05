@@ -615,41 +615,20 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				}
 			});
 		
-		JMenuItem menuItemSopClass = new JMenuItem("Check if secondary capture");
-		menuItemSopClass.addActionListener(new ActionListener() {			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				
-				tableauSeries.getValueAt(tableauSeries.getSelectedRow(),3);
-
-				String instanceUid = modeleSeries.getSerie(tableauSeries.convertRowIndexToModel(tableauSeries.getSelectedRow())).getInstance();
-				modeleSeries.checkSopClassUid(instanceUid);
-				modeleSeries.setValueAt(modeleSeries.checkSopClassUid(instanceUid), tableauSeries.convertRowIndexToModel(tableauSeries.getSelectedRow()), 3);
-				modeleSeries.fireTableCellUpdated(tableauSeries.getSelectedRow(), 3);
-				
-			}
-		});
 		JMenuItem menuItemAllSopClass = new JMenuItem("Detect all secondary captures");
 		menuItemAllSopClass.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				modeleSeries.detectAllSecondaryCaptures();
-				modeleSeries.clear();
-				modeleSeries.addSerie(tableauStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 3).toString());
+				setRenderer(tableauSeries);
 			}
 		});
+		
 		JMenuItem menuItemDeleteAllSop = new JMenuItem("Remove all secondary captures");
 		menuItemDeleteAllSop.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-					modeleSeries.removeAllSecondaryCaptures();
-					modeleSeries.clear();
-					modeleSeries.addSerie(tableauStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 3).toString());
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				} 
+				modeleSeries.removeAllSecondaryCaptures();
 			}
 		});
 		JMenuItem menuItemDeleteSeries = new JMenuItem("Delete this serie");
@@ -658,7 +637,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 		popMenuSeries.add(menuItemModifySeries);
 		popMenuSeries.addSeparator();
-		popMenuSeries.add(menuItemSopClass);
 		popMenuSeries.add(menuItemAllSopClass);
 		popMenuSeries.add(menuItemDeleteAllSop);
 		popMenuSeries.addSeparator();
@@ -2817,6 +2795,30 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
 			}
         });
+	}
+	
+	public static void setRenderer(JTable table) {
+		table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+				
+				boolean status = (boolean) table.getModel().getValueAt(row, 3);
+				if (status & !isSelected) {
+					setBackground(Color.RED);
+					setForeground(Color.black);
+				}else if(isSelected){
+					super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+				}else{
+					super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+				}
+				return this;
+			}   
+		});
+		
+		
 	}
 	
 	// LAUNCHERS

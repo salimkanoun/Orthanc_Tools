@@ -17,37 +17,25 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
 
-import org.json.simple.JSONObject;
-
+import org.petctviewer.orthanc.Patient;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
-public class TablePatientsModel extends AbstractTableModel{
+public class TablePatientsModel extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Patient Name", "Patient ID", "ID", "Birthdate", "Sex"};
-	private ArrayList<PatientAnon> patients = new ArrayList<PatientAnon>();
-	private final Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, String.class, Date.class, String.class};
+	private String[] entetes = {"Patient Name", "Patient ID", "ID", "Birthdate", "Sex", "patientObject"};
+	private final Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, String.class, Date.class, String.class, Patient.class};
 	private OrthancRestApis connexionHttp;
 
 	public TablePatientsModel(OrthancRestApis connexionHttp){
-		super();
+		super(0,6);
 		//Set des settings
 		this.connexionHttp=connexionHttp;
-	}
-
-	@Override
-	public int getColumnCount() {
-		return entetes.length;
 	}
 
 	@Override
@@ -60,96 +48,17 @@ public class TablePatientsModel extends AbstractTableModel{
 		return columnClasses[column];
 	}
 
-	@Override
-	public int getRowCount() {
-		return patients.size();
-	}
-
-	@Override
-	public Object getValueAt(int rowIndex, int columnIndex) {
-		switch (columnIndex) {
-		case 0:
-			return patients.get(rowIndex).getPatientName();
-		case 1:
-			return patients.get(rowIndex).getPatientId();
-		case 2:
-			return patients.get(rowIndex).getId();
-		case 3:
-			return patients.get(rowIndex).getBirthdate();
-		case 4:
-			return patients.get(rowIndex).getSex();
-		default:
-			return null; //Ne devrait jamais arriver
-		}
-	}
-
-	public void removePatient(int rowIndex){
-		this.patients.remove(rowIndex);
-		fireTableRowsDeleted(rowIndex, rowIndex);
-	}
-
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
-	public void addPatient(String inputType, String input, String date, String studyDesc) throws IOException, ParseException{
-		DateFormat parser = new SimpleDateFormat("yyyyMMdd");
+	public void addPatient(String inputType, String input, String date, String studyDesc) {
 		
-		QueryFillStore queryPatients = new QueryFillStore(connexionHttp, "patients", inputType, input, date, studyDesc);
+		QueryOrthancData queryPatients = new QueryOrthancData(connexionHttp);
 		
-		//On recupere la liste des reponses du niveau patients 
+		ArrayList<Patient> patients =queryPatients.findPatients(inputType, input, date, studyDesc);
 		
-		List<JSONObject> jsonResponsesPatient=queryPatients.getJsonResponse();
-		
-		//On prepare les variables de stockage
-		String[] name = new String[jsonResponsesPatient.size()];
-		String[] patientID = new String[jsonResponsesPatient.size()];
-		String[] patientSex = new String[jsonResponsesPatient.size()];
-		String[] id = new String[jsonResponsesPatient.size()];
-		//String[] birthdateBrut = new String[jsonResponsesPatient.size()];
-		Date[] birthdate = new Date[jsonResponsesPatient.size()];
-		
-		//On boucle pour extraire les valeurs des JSONs
-		for(int i=0; i<jsonResponsesPatient.size();i++){
-			JSONObject mainDicomTag=(JSONObject) jsonResponsesPatient.get(i).get("MainDicomTags");
-			id[i]=(String) (String)jsonResponsesPatient.get(i).get("ID");
-			
-			if (mainDicomTag.containsKey("PatientName")) {
-				name[i]=(String) mainDicomTag.get("PatientName");
-			}else {
-				name[i]="";
-			}
-			
-			if (mainDicomTag.containsKey("PatientID")) {
-				patientID[i]=(String) mainDicomTag.get("PatientID");
-			}else {
-				patientID[i]="";
-			}
-			
-			if (mainDicomTag.containsKey("PatientBirthDate")) {
-				String birthdateBrut=(String) mainDicomTag.get("PatientBirthDate");
-				if (!birthdateBrut.equals("")) birthdate[i]= parser.parse(birthdateBrut); else birthdate[i]=null;
-			}else {
-				birthdate[i]=null;
-			}
-			
-			if (mainDicomTag.containsKey("PatientSex")) {
-				patientSex[i]=(String) mainDicomTag.get("PatientSex");
-			}else {
-				patientSex[i]="";
-			}
-			
-			
-		}
-		
-		for(int i = 0; i < id.length; i++){
-			PatientAnon p = new PatientAnon(name[i], patientID[i], id[i], null,patientSex[i], null);
-			if(birthdate[i] != null){
-				p = new PatientAnon(name[i], patientID[i], id[i], birthdate[i],patientSex[i], null);
-			}
-			if(!this.patients.contains(p) && id[i].length() > 0){
-				this.patients.add(p);
-				fireTableRowsInserted(patients.size() - 1, patients.size() - 1);
-			}
+		for (Patient patient : patients) {
+			this.addRow(new Object[] {patient.getName(), patient.getPatientId(), patient.getPatientOrthancId(), null, null, patient});
 		}
 	}
 	
@@ -157,10 +66,6 @@ public class TablePatientsModel extends AbstractTableModel{
 	 * This method clears the series list
 	 */
 	public void clear(){
-		if(this.getRowCount() !=0){
-			for(int i = this.getRowCount(); i > 0; i--){
-				this.removePatient(i-1);
-			}
-		}
+		this.setRowCount(0);
 	}
 }

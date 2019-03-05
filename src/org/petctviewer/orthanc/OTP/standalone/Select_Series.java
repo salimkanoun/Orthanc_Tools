@@ -12,6 +12,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 
 import org.petctviewer.orthanc.anonymize.TableSeriesModel;
+import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import java.awt.event.ActionListener;
@@ -28,13 +29,15 @@ public class Select_Series extends JDialog {
 		TableSeriesModel tableSeriesModel=new TableSeriesModel(connexionHttp);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		tableSeriesModel.addSerie(studyUID);
-		tableSeriesModel.detectAllSecondaryCaptures();
+		
 		JTable tableSeries = new JTable(tableSeriesModel);
 		tableSeries.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		tableSeries.getColumnModel().getColumn(3).setMinWidth(0);;
 		tableSeries.getColumnModel().getColumn(4).setMinWidth(0);
 		tableSeries.getColumnModel().getColumn(3).setMaxWidth(0);
 		tableSeries.getColumnModel().getColumn(4).setMaxWidth(0);
+		VueAnon.setRenderer(tableSeries);
+		
 		getContentPane().setLayout(new BorderLayout());
 		JPanel contentPanel = new JPanel();
 		contentPanel.setLayout(new FlowLayout());
