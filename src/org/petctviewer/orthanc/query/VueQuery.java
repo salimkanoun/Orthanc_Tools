@@ -908,7 +908,7 @@ public class VueQuery extends JFrame {
 		JButton btnOptions = new JButton("Options");
 		btnOptions.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				Option_Auto_Query options=new Option_Auto_Query();
+				AutoQueryOptions options=new AutoQueryOptions();
 				options.setLocationRelativeTo(null);
 				options.setModal(true);
 				options.setVisible(true);
