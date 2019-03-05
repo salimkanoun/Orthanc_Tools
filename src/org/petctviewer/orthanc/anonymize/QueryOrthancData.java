@@ -107,14 +107,9 @@ public class QueryOrthancData {
 	
 	public ArrayList<Study2>  getStudiesOfPatient(String patientOrthancID) {
 		
-		
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/patients/"+patientOrthancID);
-		
 		JsonObject patientData=(JsonObject) parserJson.parse(sb.toString());
-		System.out.println(patientData);
-		
 		JsonArray studyIdArray=patientData.get("Studies").getAsJsonArray();
-		
 		ArrayList<Study2> studies=new ArrayList<Study2>();
 		
 		Iterator<JsonElement> iterator = studyIdArray.iterator();
@@ -127,14 +122,11 @@ public class QueryOrthancData {
 	
 	public Study2 getStudyDetails(String studyOrthancID, boolean includeSerieLevel) {
 		
-		System.out.println(studyOrthancID);
-		
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/studies/"+studyOrthancID);
 		
 		SimpleDateFormat format =new SimpleDateFormat("YYYYMMdd");
 		
 		JsonObject studyData=(JsonObject) parserJson.parse(sb.toString());
-		System.out.println(studyData);
 		
 		JsonObject studyDetails = (JsonObject) studyData.get("MainDicomTags");
 		String accessionNumber=studyDetails.get("AccessionNumber").getAsString();

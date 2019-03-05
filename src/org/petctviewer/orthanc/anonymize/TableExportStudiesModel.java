@@ -18,13 +18,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 package org.petctviewer.orthanc.anonymize;
 
 import java.io.IOException;
-import java.util.Date;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 
 import org.json.simple.JSONObject;
