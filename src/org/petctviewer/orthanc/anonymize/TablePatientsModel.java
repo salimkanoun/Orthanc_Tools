@@ -22,7 +22,6 @@ import java.util.Date;
 
 import javax.swing.table.DefaultTableModel;
 
-import org.petctviewer.orthanc.Patient;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class TablePatientsModel extends DefaultTableModel{
@@ -46,6 +45,11 @@ public class TablePatientsModel extends DefaultTableModel{
 	@Override
 	public Class<?> getColumnClass(int column){
 		return columnClasses[column];
+	}
+	
+
+	public Patient getPatient(int row){
+		return (Patient) getValueAt(row, 5);
 	}
 
 	/*

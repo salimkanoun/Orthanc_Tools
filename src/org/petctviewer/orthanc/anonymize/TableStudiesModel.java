@@ -48,6 +48,10 @@ public class TableStudiesModel extends DefaultTableModel{
 	public Class<?> getColumnClass(int column){
 		return columnClasses[column];
 	}
+	
+	public Study2 getStudy(int row) {
+		return (Study2) this.getValueAt(row, 4);
+	}
 
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable

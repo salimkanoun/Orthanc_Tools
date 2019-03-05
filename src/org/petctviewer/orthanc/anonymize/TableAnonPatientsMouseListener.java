@@ -26,27 +26,28 @@ import javax.swing.JTable;
 public class TableAnonPatientsMouseListener extends MouseAdapter {
 
 	private JTable tableau;
-	private TableAnonPatientsModel modele;
+	private TableAnonPatientsModel modeleAnonPatient;
 	private TableAnonStudiesModel modeleAnonStudies;
+	private QueryOrthancData queryOrthanc;
 
-	public TableAnonPatientsMouseListener(JTable tableau, TableAnonPatientsModel modele, 
-			TableAnonStudiesModel modeleAnonStudies) {
+	public TableAnonPatientsMouseListener(JTable tableau, TableAnonPatientsModel modeleAnonPatient, 
+			TableAnonStudiesModel modeleAnonStudies, QueryOrthancData queryOrthanc) {
 		this.tableau = tableau;
-		this.modele = modele;
+		this.modeleAnonPatient = modeleAnonPatient;
 		this.modeleAnonStudies = modeleAnonStudies;
+		this.queryOrthanc=queryOrthanc;
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent event) {
-		if(this.modele.getRowCount() != 0){
+		if(this.modeleAnonPatient.getRowCount() != 0){
 			// We clear the details
 			this.modeleAnonStudies.clear();
 			
-			String patientName = this.tableau.getValueAt(this.tableau.getSelectedRow(), 0).toString();
-			String patientID = this.tableau.getValueAt(this.tableau.getSelectedRow(), 1).toString();
-			ArrayList<String> selectedUIDs = this.modele.getPatient(this.tableau.getSelectedRow()).getSelectedStudyUID();
+			int selectedRow =this.tableau.getSelectedRow();
+			Patient patient=modeleAnonPatient.getPatient(selectedRow);
 			
-			this.modeleAnonStudies.addStudies(patientName, patientID, selectedUIDs);
+			this.modeleAnonStudies.addStudies(patient.getSelectedStudyOrthancID());
 			
 		}
 

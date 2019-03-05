@@ -30,24 +30,24 @@ public class CloseWindowAdapter extends WindowAdapter{
 
 	private VueAnon mainFrame;
 	private ArrayList<String> zipContent;
-	private ArrayList<String> oldOrthancUIDs;
+	private ArrayList<Study2> studyAnonList;
 	private ArrayList<String> exportIds;
 	private Monitoring_GUI monitoring;
 	private Run_Orthanc runOrthanc;
 
 	public CloseWindowAdapter(VueAnon mainFrame, ArrayList<String> zipContent, 
-			ArrayList<String> oldOrthancUIDs, ArrayList<String> exportIds, Monitoring_GUI monitoring, Run_Orthanc runOrthanc){
+			ArrayList<Study2> studyAnonList, ArrayList<String> exportIds, Monitoring_GUI monitoring, Run_Orthanc runOrthanc){
 		this.exportIds = exportIds;
 		this.mainFrame = mainFrame;
 		this.zipContent = zipContent;
-		this.oldOrthancUIDs = oldOrthancUIDs;
+		this.studyAnonList = studyAnonList;
 		this.monitoring=monitoring;
 		this.runOrthanc=runOrthanc;
 	}
 	
 	@Override
 	public void windowClosing(WindowEvent e) {
-		if(!zipContent.isEmpty() || !oldOrthancUIDs.isEmpty() || !exportIds.isEmpty() || monitoring.isRunningMonitoringService()){
+		if(!zipContent.isEmpty() || !studyAnonList.isEmpty() || !exportIds.isEmpty() || monitoring.isRunningMonitoringService()){
 			int PromptResult = JOptionPane.showConfirmDialog(null,"Are you sure you want to exit?","Orthanc Tools",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
 			if(PromptResult==JOptionPane.YES_OPTION) {
 				closeAll();

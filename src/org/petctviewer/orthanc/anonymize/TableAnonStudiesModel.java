@@ -31,28 +31,24 @@ import org.json.simple.parser.JSONParser;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
 
-public class TableAnonStudiesModel extends AbstractTableModel{
+public class TableAnonStudiesModel extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Study description*", "Study date", "Old UID", "Patient id"};
-	private Class<?>[] typeEntetes = {String.class, Date.class, String.class, String.class};
-	private ArrayList<Study> shownStudies = new ArrayList<Study>();
-	private ArrayList<Study> studies = new ArrayList<Study>();
-	private ArrayList<String> listeOldOrthancUIDs = new ArrayList<String>();
-	private ArrayList<String> listeNewOrthancUIDs = new ArrayList<String>();
-	private HashMap<String, String> newDescriptions = new HashMap<String, String>();
-	private String url;
+	private String[] entetes = {"Study description*", "Study date", "studyOrthancId", "Patient id", "studyObject"};
+	private Class<?>[] typeEntetes = {String.class, Date.class, String.class, String.class, Study2.class};
+	//private ArrayList<Study> shownStudies = new ArrayList<Study>();
+	//private ArrayList<Study> studies = new ArrayList<Study>();
+	//private ArrayList<String> listeOldOrthancUIDs = new ArrayList<String>();
+	//private ArrayList<String> listeNewOrthancUIDs = new ArrayList<String>();
+	//private HashMap<String, String> newDescriptions = new HashMap<String, String>();
+	//private String url;
 	private OrthancRestApis connexionHttp;
 
 	public TableAnonStudiesModel(OrthancRestApis connexionHttp){
-		super();
+		super(0,5);
 		this.connexionHttp=connexionHttp;
-	}
-
-	@Override
-	public int getColumnCount() {
-		return entetes.length;
 	}
 
 	@Override
@@ -65,47 +61,37 @@ public class TableAnonStudiesModel extends AbstractTableModel{
 		return typeEntetes[columnIndex];
 	}
 
-	@Override
-	public int getRowCount() {
-		return shownStudies.size();
-	}
-
 	public boolean isCellEditable(int row, int col){
 		if(col == 0){
 			return true; 
 		}
 		return false;
 	}
-
-	public void setValueAt(Object value, int row, int col) {
-		shownStudies.get(row).setStudyDescription(value.toString());
-		fireTableCellUpdated(row, col);
-		String uid = this.getValueAt(row, 4).toString();
-		if(!newDescriptions.containsKey(uid)){
-			newDescriptions.put(uid, value.toString());
-		}else{
-			newDescriptions.replace(uid, value.toString());
+	
+	public ArrayList<Study2> getStudyList(){
+		ArrayList<Study2> studies=new ArrayList<Study2>();
+		
+		for(int i=0; i<this.getRowCount(); i++) {
+			Study2 study=(Study2) getValueAt(i, 4);
+			studies.add(study);
 		}
+		
+		return studies;
 	}
-
-	@Override
-	public Object getValueAt(int rowIndex, int columnIndex) {
-		switch (columnIndex) {
-		case 0:
-			return shownStudies.get(rowIndex).getStudyDescription();
-		case 1:
-			return shownStudies.get(rowIndex).getDate();
-		case 2:
-			return shownStudies.get(rowIndex).getOldStudyInstanceUID();
-		case 3:
-			return shownStudies.get(rowIndex).getPatientID();
-		case 4:
-			return shownStudies.get(rowIndex).getId();
-		default:
-			return null; //Ne devrait jamais arriver
+	
+	/*
+	public ArrayList<Study2> getModalitiesInStudyList(){
+		ArrayList<Study2> studies=new ArrayList<Study2>();
+		
+		for(int i=0; i<this.getRowCount(); i++) {
+			Study2 study=(Study2) getValueAt(i, 4);
+			studies.add(study);
 		}
-	}
+		
+		return studies;
+	}*/
 
+	/*
 	public ArrayList<String> getModalities() {
 		ArrayList<String> listeModalities = new ArrayList<String>();
 		for(Study s : this.studies){
@@ -128,7 +114,9 @@ public class TableAnonStudiesModel extends AbstractTableModel{
 		}
 		return listeModalities;
 	}
+	*/
 
+	/*
 	// This method removes the secondary captures and structured reports, after anonymization
 	public void removeScAndSr() throws IOException{
 		ArrayList<String> listeUidsToRemove = new ArrayList<String>();
@@ -165,8 +153,9 @@ public class TableAnonStudiesModel extends AbstractTableModel{
 			this.url="/instances/" + uidToRemove;
 			connexionHttp.makeDeleteConnection(url);
 		}
-	}
+	}*/
 
+	/*
 	public String getNewDesc(String oldUid){
 		return this.newDescriptions.getOrDefault(oldUid, "");
 	}
@@ -188,7 +177,8 @@ public class TableAnonStudiesModel extends AbstractTableModel{
 	public ArrayList<String> getNewOrthancUIDs(){
 		return this.listeNewOrthancUIDs;
 	}
-
+*/
+	/*
 	public ArrayList<String> getPatientIDs(){
 		ArrayList<String> listeIDs = new ArrayList<String>();
 		for(Study s : this.studies){
@@ -199,9 +189,8 @@ public class TableAnonStudiesModel extends AbstractTableModel{
 		return listeIDs;
 	}
 
-	public void removeShownStudy(int rowIndex){
-		this.shownStudies.remove(rowIndex);
-		fireTableRowsDeleted(rowIndex, rowIndex);
+	public void removeStudy(int rowIndex){
+		
 	}
 
 
@@ -233,11 +222,19 @@ public class TableAnonStudiesModel extends AbstractTableModel{
 	public ArrayList<Study> getShownStudies(){
 		return this.shownStudies;
 	}
+	*/
 	
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
-	public void addStudies(String patientName, String patientID, ArrayList<String> listeUIDs) {
+	public void addStudies(ArrayList<Study2> studiesOrthancID) {
+		
+		for(Study2 study:studiesOrthancID) {
+			//"Study description*", "Study date", "studyOrthancId", "Patient id", "studyObject"
+			this.addRow(new Object[] {study.getStudyDescription(), study.getDate(), study.getOrthancId(), study.getPatientID(), study});
+		}
+		
+		/*
 		DateFormat parser = new SimpleDateFormat("yyyyMMdd");
 		for(String uid : listeUIDs){
 			Date studyDate = null;
@@ -266,9 +263,10 @@ public class TableAnonStudiesModel extends AbstractTableModel{
 					fireTableDataChanged();
 				}
 			}
-		}
+		}*/
 	}
 	
+	/*
 	private String[] getStudyDescriptionAndUID(String orthancUID) {
 		String[] studyDescriptionAndUID=new String[3];
 		try {
@@ -293,10 +291,12 @@ public class TableAnonStudiesModel extends AbstractTableModel{
 		
 		return studyDescriptionAndUID;
 	}
-
+*/
+	
 	/*
 	 * This method empties completely the studies list
 	 */
+	/*
 	public void empty(){
 		if(this.getRowCount() !=0){
 			this.studies.removeAll(this.studies);
@@ -306,7 +306,8 @@ public class TableAnonStudiesModel extends AbstractTableModel{
 			fireTableRowsDeleted(0, 0);
 		}
 	}
-
+*/
+	/*
 	public void addNewUid(String uid){
 		if(!this.listeNewOrthancUIDs.contains(uid)){
 			this.listeNewOrthancUIDs.add(uid);
@@ -316,18 +317,16 @@ public class TableAnonStudiesModel extends AbstractTableModel{
 	public void removeFromList(String uid){
 		this.listeNewOrthancUIDs.remove(uid);
 	}
-
+*/
 	/*
 	 * This method clears the series list
 	 */
 	public void clear(){
-		if(this.getRowCount() !=0){
-			for(int i = this.getRowCount(); i > 0; i--){
-				this.removeShownStudy(i-1);
-			}
-		}
+		this.setRowCount(0);
 	}
 	
+	
+	/*
 	/**
 	 * retrieve list series IDs of a given study
 	 * @param sourceList
@@ -336,7 +335,7 @@ public class TableAnonStudiesModel extends AbstractTableModel{
 	 * @return
 	 * @throws IOException
 	 */
-
+/*
 	private ArrayList<String> fillListIDs(ArrayList<String> sourceList, String level, String pattern) throws IOException{
 		ArrayList<String> list = new ArrayList<String>();
 		for(String uid : sourceList){
@@ -358,4 +357,5 @@ public class TableAnonStudiesModel extends AbstractTableModel{
 			
 		return list;
 	}
+	*/
 }

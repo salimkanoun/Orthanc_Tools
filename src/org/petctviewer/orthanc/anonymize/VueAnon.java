@@ -122,6 +122,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	
 	//Objet de connexion aux restFul API, prend les settings des registery et etabli les connexion a la demande
 	public OrthancRestApis connexionHttp;
+	public QueryOrthancData queryOrthanc;
 	protected JPanel tablesPanel, mainPanel, topPanel, anonBtnPanelTop;
 	
 	// Tables (p1)
@@ -237,6 +238,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	public VueAnon() {
 		super("Orthanc Tools");
 		connexionHttp= new OrthancRestApis(null);
+		queryOrthanc=new QueryOrthancData(connexionHttp);
 		runOrthanc=new Run_Orthanc();
 		//Until we reach the Orthanc Server we give the setup panel
 		int check=0;
@@ -281,7 +283,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		modeleExportStudies = new TableExportStudiesModel(connexionHttp);
 		modeleExportSeries = new TableExportSeriesModel(connexionHttp);
 		modeleAnonStudies = new TableAnonStudiesModel(connexionHttp);
-		modeleAnonPatients = new TableAnonPatientsModel();
+		modeleAnonPatients = new TableAnonPatientsModel(connexionHttp);
 		
 		
 
@@ -900,7 +902,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		anonPatientTable.getColumnModel().getColumn(5).setMinWidth(0);
 		anonPatientTable.getColumnModel().getColumn(5).setMaxWidth(0);
 		anonPatientTable.setPreferredScrollableViewportSize(new Dimension(440,130));
-		anonPatientTable.addMouseListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies));
+		anonPatientTable.addMouseListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies, queryOrthanc));
 		anonPatientTable.putClientProperty("terminateEditOnFocusLost", true);
 
 		anonStudiesTable = new JTable(modeleAnonStudies);
@@ -962,51 +964,31 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		});
 
 		addToAnon = new JButton("Add to anonymization list");
+		
 		addToAnon.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if(tableauPatients.getSelectedRow() != -1){
-					try {
-						String patientName = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 0).toString();
-						String patientID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 1).toString();
-						String patientOrthancID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 2).toString();
-						ArrayList<String> listeDummy = new ArrayList<String>();
-						if((tableauSeries.getSelectedRow() != -1 || tableauStudies.getSelectedRow() != -1) && tableauPatients.getSelectedRows().length == 1){
-							listeDummy.add(modeleStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 3).toString());
-							modeleAnonPatients.addPatient(connexionHttp,patientName, patientID,patientOrthancID, listeDummy);
-							modeleAnonStudies.clear();
-							modeleAnonStudies.addStudies(patientName, patientID, listeDummy);
-							for(int i = 0; i < modeleAnonPatients.getPatientList().size(); i++){
-								if(modeleAnonPatients.getPatient(i).getPatientId().equals(patientID) && 
-										modeleAnonPatients.getPatient(i).getPatientName().equals(patientName)){
-									anonPatientTable.setRowSelectionInterval(i, i);
-								}
-							}
-						}else {
-							for(Integer i : tableauPatients.getSelectedRows()){
-								modeleStudies.clear();
-								patientName = tableauPatients.getValueAt(i, 0).toString();
-								patientID = tableauPatients.getValueAt(i, 1).toString();
-								patientOrthancID = tableauPatients.getValueAt(i, 2).toString();
-								ArrayList<String> listeUIDs = new ArrayList<String>();
-								modeleStudies.addStudy(patientOrthancID);
-								listeUIDs.addAll(modeleStudies.getOrthancIds());
-								modeleAnonPatients.addPatient(connexionHttp,patientName, patientID,patientOrthancID, listeUIDs);
-								modeleAnonStudies.clear();
-								modeleAnonStudies.addStudies(patientName, patientID, listeUIDs);
-							}
-							for(int i = 0; i < modeleAnonPatients.getPatientList().size(); i++){
-								if(modeleAnonPatients.getPatient(i).getPatientId().equals(patientID) && 
-										modeleAnonPatients.getPatient(i).getPatientName().equals(patientName)){
-									anonPatientTable.setRowSelectionInterval(i, i);
-								}
-							}
-						}
-					}catch (IOException | ParseException e) {
-						e.printStackTrace();
-					} 
+				//If request for patient Table Add all studies in Anon
+				if(lastTableFocus==tableauPatients) {
+					int[] selectedRows=tableauPatients.getSelectedRows();
+					for(int row:selectedRows) {
+						int modelRow=tableauPatients.convertRowIndexToModel(row);
+						Patient patient=modelePatients.getPatient(modelRow);
+						patient.storeChildStudies(queryOrthanc);
+						patient.selectAllChildStudies();
+						modeleAnonPatients.addPatient(patient);	
+					}
+					
+					
+				//Else Add Selected study
+				}else {
+					int[] selectedRows=tableauStudies.getSelectedRows();
+					for(int row:selectedRows) {
+						int modelRow=tableauStudies.convertRowIndexToModel(row);
+						modeleAnonPatients.addStudy(modeleStudies.getStudy(modelRow));
+					}
+					
 				}
-				pack();
 			}
 		});
 		removeFromAnonList = new JButton("Remove");
@@ -1014,23 +996,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		removeFromAnonList.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(anonStudiesTable.getSelectedRow() != -1){
-					String patientID = modeleAnonStudies.getValueAt(
-							anonStudiesTable.convertRowIndexToModel(anonStudiesTable.getSelectedRow()), 3).toString();
-					String uidToRemove = modeleAnonStudies.removeStudy(anonStudiesTable.getSelectedRow());
-					modeleAnonPatients.removeStudy(uidToRemove);
-					if(anonStudiesTable.getRowCount() == 0){
-						for(int i = 0; i< modeleAnonPatients.getPatientList().size(); i++){
-							if(modeleAnonPatients.getPatientList().get(i).getPatientId().equals(patientID)){
-								modeleAnonPatients.removePatient(i);
-							}
-						}
-					}
-				}else if(anonPatientTable.getSelectedRow() != -1){
-					modeleAnonPatients.removePatient(anonPatientTable.getSelectedRow());
-					modeleAnonStudies.empty();
-				}
-				pack();
+//AFAIRE
 			}
 		});
 		
@@ -2412,7 +2378,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.getContentPane().add(tabbedPane);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.getRootPane().setDefaultButton(search);
-		this.addWindowListener(new CloseWindowAdapter(this, this.zipContent, this.modeleAnonStudies.getOldOrthancUIDs(), this.modeleExportStudies.getOrthancIds(), monitoring, runOrthanc));
+		this.addWindowListener(new CloseWindowAdapter(this, this.zipContent, this.modeleAnonStudies.getStudyList(), this.modeleExportStudies.getOrthancIds(), monitoring, runOrthanc));
 		pack();
 		
 	}
@@ -2554,6 +2520,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	}
 
 	public void actionPerformed(ActionEvent arg0) {
+		/*
 		anonCount = 0;
 		
 		SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
@@ -2723,6 +2690,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		if(!modeleAnonStudies.getOldOrthancUIDs().isEmpty()){
 				worker.execute();
 		}
+		*/
 	}
 	
 	
