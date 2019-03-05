@@ -150,7 +150,6 @@ public class QueryOrthancData {
 		if(includeSerieLevel) {
 			series=new ArrayList<Serie>();
 			JsonArray childSeries= studyData.get("Series").getAsJsonArray();
-			System.out.println(childSeries);
 			Iterator<JsonElement> iterator = childSeries.iterator();
 			while(iterator.hasNext()) {
 				String seriesOrthancId=iterator.next().getAsString();
