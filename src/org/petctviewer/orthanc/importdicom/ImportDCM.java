@@ -231,17 +231,19 @@ public class ImportDCM extends JDialog {
 					
 					//HashMap for a new Study imported
 					HashMap<String, String> newStudy=new HashMap<String,String>();
-					String studyDate=((JsonObject) (parentStudy.get("MainDicomTags"))).get("StudyDate").getAsString();
-					String patientID=((JsonObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientID").getAsString();
-					String patientName=((JsonObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientName").getAsString();
-					String patientDOB=((JsonObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientBirthDate").getAsString();
-					String patientSex=((JsonObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientSex").getAsString();
+					String studyDate=parentStudy.get("MainDicomTags").getAsJsonObject().get("StudyDate").getAsString();
+					String patientID= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientID").getAsString();
+					String patientName= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientName").getAsString();
+					String patientDOB= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientBirthDate").getAsString();
+					String patientSex= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientSex").getAsString();
+					String patientOrthancID=parentStudy.get("ParentPatient").getAsString();
 					
 					newStudy.put("studyDate", studyDate);
 					newStudy.put("patientID", patientID);
 					newStudy.put("patientName", patientName);
 					newStudy.put("patientDOB", patientDOB);
 					newStudy.put("patientSex", patientSex);
+					newStudy.put("patientOrthancID", patientOrthancID);
 					importedstudy.put(parentStudyID, newStudy);
 				}
 				

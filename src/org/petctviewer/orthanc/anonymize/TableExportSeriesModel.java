@@ -17,11 +17,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
-import java.util.ArrayList;
-
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 
 import org.petctviewer.orthanc.setup.OrthancRestApis;
@@ -29,25 +24,26 @@ import org.petctviewer.orthanc.setup.OrthancRestApis;
 public class TableExportSeriesModel extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Serie description*", "Modality", "Instances", "Secondary capture", "ID", "Serie Number"};
-	private ArrayList<Serie> series = new ArrayList<Serie>();
-	private String studyID = "";
-	private String url;
-	private JFrame frame;
-	private JLabel stateExport;
+	private String[] entetes = {"Serie description*", "Modality", "Instances", "Secondary capture", "ID", "Serie Number", "serieObject"};
+	private Class<?>[] classEntetes = {String.class, String.class, Integer.class, Boolean.class, String.class, String.class, Serie.class};
 	private OrthancRestApis connexionHttp;
+	//Store the current StudyOrthanc ID the Series came from (for refresh)
+	private String studyOrthancID;
 
-	public TableExportSeriesModel(OrthancRestApis connexionHttp, JFrame frame, JLabel stateExport){
-		super(0,6);
-		//On set les settings de connexion
+	public TableExportSeriesModel(OrthancRestApis connexionHttp){
+		super(0,7);
 		this.connexionHttp=connexionHttp;
-		this.frame = frame;
-		this.stateExport = stateExport;
+	
 	}
 
 	@Override
 	public String getColumnName(int columnIndex){
 		return entetes[columnIndex];
+	}
+	
+	@Override
+	public Class<?> getColumnClass(int column){
+		return classEntetes[column];
 	}
 
 	public boolean isCellEditable(int row, int col){
@@ -56,8 +52,9 @@ public class TableExportSeriesModel extends DefaultTableModel{
 		}
 		return false;
 	}
-	
-	public void setValueAt(Object value, int row, int col) {
+
+	//SK A REFLECHIR COMMENT RE IMPEMENTER
+	/*public void setValueAt(Object value, int row, int col) {
 		String uid = this.getValueAt(row, 4).toString();
 		String oldDesc ;
 		if (this.getValueAt(row, 0)==null) oldDesc=""; else oldDesc=this.getValueAt(row, 0).toString();
@@ -97,105 +94,55 @@ public class TableExportSeriesModel extends DefaultTableModel{
 		if(!oldDesc.equals(value.toString()) && col == 0){
 			worker.execute();
 		}
-	}
+	}*/
 
 	public void removeAllSecondaryCaptures() {
-		ArrayList<Serie> seriesToRemove = new ArrayList<Serie>();
-		for(Serie s : series){
-			if(s.isSecondaryCapture()){
-				url="/series/" + s.getId();
+		
+		for(int i=0; i<this.getRowCount(); i++){
+			Serie serie= (Serie) this.getValueAt(i, 7);
+			if(serie.isSecondaryCapture()){
+				String url="/series/" + serie.getId();
 				boolean success=connexionHttp.makeDeleteConnection(url);
-				if(success) {
-					seriesToRemove.add(s);
+				if(!success) {
+					System.out.println("Error Erasing "+serie.getSerieDescription());
 				}
+				
 			}
 		}
-		for(Serie s : seriesToRemove){
-			removeSerie(series.indexOf(s));
-		}
-	}
+		//Refresh the Table by quering again Orthanc
+		this.addSerie(studyOrthancID);
 
-	public void removeSerie(int rowIndex){
-		this.series.remove(rowIndex);
-		this.removeRow(rowIndex);
-	}
-
-	public ArrayList<Serie> getSeries(){
-		return this.series;
 	}
 	
-	public void addSerie(String studyID) {
-		this.studyID = studyID;
+	public void removeSerie(int selectedRow) {
+		Serie serie= (Serie) this.getValueAt(selectedRow,7);
+		String url="/series/" + serie.getId();
+		boolean success=connexionHttp.makeDeleteConnection(url);
+		if(!success) {
+			System.out.println("Error Erasing "+serie.getSerieDescription());
+		}
+		
+	}
 
+	public void addSerie(String studyOrthancID) {
+		this.studyOrthancID=studyOrthancID;
+		clear();
 		QueryOrthancData querySeries = new QueryOrthancData(connexionHttp);
 		
-		Study2 study =querySeries.getStudyDetails(studyID,true);
+		Study2 study =querySeries.getStudyDetails(studyOrthancID,true);
 		for(Serie serie:study.getSeries()) {
-			series.add(serie); 
-			//"Serie description*", "Modality", "Instances", "Secondary capture", "ID", "Serie Number"
 			this.addRow(new String[] {serie.getSerieDescription(), serie.getModality(), String.valueOf(serie.getNbInstances()), String.valueOf(serie.isSecondaryCapture()), serie.getFistInstanceId(), serie.getSeriesNumber()});
 		}
-		fireTableRowsInserted(series.size() - 1, series.size() - 1);
-
-		
-		
-		/*querySeries.getSeriesOfStudy(studyID);
-		List<JSONObject> jsonResponsesPatient=querySeries.getJsonResponse();
-		
-		String[] id = new String[jsonResponsesPatient.size()];
-		String[] description = new String[jsonResponsesPatient.size()];
-		String[] serieNumber = new String[jsonResponsesPatient.size()];
-		String[] modality = new String[jsonResponsesPatient.size()];
-		String[] nbInstances = new String[jsonResponsesPatient.size()];
-		String[] instance = new String[jsonResponsesPatient.size()];
-		String[] study = new String[jsonResponsesPatient.size()];
-		
-		//On boucle pour extraire les valeurs des JSONs
-		for(int i=0; i<jsonResponsesPatient.size();i++){
-			JSONObject mainDicomTag=(JSONObject) jsonResponsesPatient.get(i).get("MainDicomTags");
-			id[i]=(String) jsonResponsesPatient.get(i).get("ID");
-			
-			if (mainDicomTag.containsKey("SeriesDescription")) {
-				description[i]=((String) mainDicomTag.get("SeriesDescription"));
-			} else {
-				description[i]="";
-			}
-			
-			if (mainDicomTag.containsKey("SeriesNumber")) {
-				serieNumber[i]=((String) mainDicomTag.get("SeriesNumber"));
-			} else {
-				serieNumber[i]="";
-			}
-			
-			if (mainDicomTag.containsKey("Modality")) {
-				modality[i]=((String) mainDicomTag.get("SeriesDescription"));
-			} else {
-				modality[i]="";
-			}
-			
-			JSONArray instancesArray=(JSONArray) jsonResponsesPatient.get(i).get("Instances");
-			nbInstances[i]=String.valueOf(instancesArray.size());
-			instance[i]=(String) instancesArray.get(0);
-			
-			study[i]=  (String) jsonResponsesPatient.get(i).get("ParentStudy");
-		}
-
-		//checkSopClass will be set on click
-		for(int i = 0; i < id.length; i++){
-			Serie s = new Serie(description[i], modality[i], nbInstances[i], id[i], study[i], instance[i],serieNumber[i], this.checkSopClassUid(instance[i]));
-			if(instancesWithSecondaryCapture.contains(instance[i])){
-				s = new Serie(description[i], modality[i], nbInstances[i], id[i], study[i], instance[i],serieNumber[i], true);
-			}*/
-			
-		//}
-
+	}
+	
+	public String getStudyOriginID() {
+		return studyOrthancID;
 	}
 
 	/*
 	 * This method clears the series list
 	 */
 	public void clear(){
-		this.series.clear();
 		this.setRowCount(0);
 		
 	}

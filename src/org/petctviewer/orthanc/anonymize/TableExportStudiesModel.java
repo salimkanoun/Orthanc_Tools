@@ -17,30 +17,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 import javax.swing.table.DefaultTableModel;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class TableExportStudiesModel extends DefaultTableModel{
 
 	private static final long serialVersionUID = 1L;
-	private String[] entetes = {"Patient name", "Patient ID", "Study date", "Study description", "Accession number", "ID"};
-	private final Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, Date.class, String.class, String.class, String.class};
-	private ArrayList<Study> studies = new ArrayList<Study>();
-	private ArrayList<String> ids = new ArrayList<String>();
+	private String[] entetes = {"Patient name", "Patient ID", "Study date", "Study description", "Accession number", "ID", "studyObject"};
+	private final Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, Date.class, String.class, String.class, String.class, Study2.class};
 	private OrthancRestApis connexionHttp;
 
 	public TableExportStudiesModel(OrthancRestApis connexionHttp){
-		super(0,6);
+		super(0,7);
 		//Recupere les settings
 		this.connexionHttp=connexionHttp;
 	}
@@ -59,76 +51,44 @@ public class TableExportStudiesModel extends DefaultTableModel{
 	public Class<?> getColumnClass(int column){
 		return columnClasses[column];
 	}
-
-	public ArrayList<Study> getStudiesList(){
-		return this.studies;
-	}
-
-	public void removeStudy(int rowIndex){
-		this.studies.remove(rowIndex);
-		this.ids.remove(rowIndex);
-		fireTableRowsDeleted(rowIndex, rowIndex);
-	}
-
+	
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
-	public void addStudy(String patientName, String patientID, String studyID) throws IOException, ParseException{
+	public void addStudy(String studyOrthancID) {
 		
-		DateFormat parser = new SimpleDateFormat("yyyyMMdd");
+		QueryOrthancData queryStudies = new QueryOrthancData(connexionHttp);
 		
-		StringBuilder studydetails= connexionHttp.makeGetConnectionAndStringBuilder("/studies/"+studyID);
+		ArrayList<Study2> studies=queryStudies.getStudiesOfPatient(studyOrthancID);
 		
-		JSONParser parserJson=new JSONParser();
-		JSONObject response = null;
-		try {
-			response=(JSONObject) parserJson.parse(studydetails.toString());
-		} catch (org.json.simple.parser.ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		for(Study2 study :studies) {
+			this.addRow(new Object[] {study.getPatientName(),study.getPatientID(),study.getDate(), study.getStudyDescription(), study.getAccession(), study.getOrthancId(), study});	
 		}
 		
-		JSONObject mainTags=(JSONObject) response.get("MainDicomTags");
-		
-		//Get and parse date
-		String dateString=mainTags.get("StudyDate").toString();
-		Date dateValue;
-		if (!dateString.equals("")) dateValue=parser.parse(dateString); else dateValue=null;
-		
-		String[] id = {studyID};
-		String[] description = {(String) mainTags.get("StudyDescription")};
-		String[] accession = {(String) mainTags.get("AccessionNumber")};
-		Date[] date = {dateValue};
-		String[] studyInstanceUID = {(String) mainTags.get("StudyInstanceUID")};
-		
-		
-
-		for(int i = 0; i < id.length; i++){
-			Study s = new Study(description[i], null, accession[i], id[i], null, patientName, patientID, studyInstanceUID[i]);
-			if(date[i]!=null){
-				s = new Study(description[i], date[i], accession[i], id[i], null, patientName, patientID, studyInstanceUID[i]);
-			}
-			if(!this.studies.contains(s)){
-				this.studies.add(s);
-				fireTableRowsInserted(studies.size() - 1, studies.size() - 1);
-				this.ids.add(s.getId());
-			}
-		}
-	}
-
-	public void clearIdsList(){
-		this.ids.removeAll(ids);
 	}
 	
-	public ArrayList<String> getOrthancIds(){
-		return this.ids;
+	public void removeStudy(String studyOrthancID) {
+		for (int i=0; i<this.getRowCount(); i++) {
+			if(this.getValueAt(i, 5).equals(studyOrthancID)) {
+				this.removeRow(i);
+				break;
+			}
+		}
+		
 	}
-
+	
+	public ArrayList<String> getOrthancIds() {
+		ArrayList<String> studyIds=new ArrayList<String>();
+		for (int i=0; i<this.getRowCount(); i++) {
+			studyIds.add((String) getValueAt(i, 5));
+		}
+		return studyIds;
+	}
+	
 	/*
 	 * This method clears the studies list
 	 */
 	public void clear(){
-		this.studies.clear();
 		this.setRowCount(0);
 	}
 }

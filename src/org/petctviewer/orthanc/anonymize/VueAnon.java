@@ -279,7 +279,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		modeleStudies = new TableStudiesModel(connexionHttp);
 		modeleSeries = new TableSeriesModel(connexionHttp);
 		modeleExportStudies = new TableExportStudiesModel(connexionHttp);
-		modeleExportSeries = new TableExportSeriesModel(connexionHttp, this, stateExports);
+		modeleExportSeries = new TableExportSeriesModel(connexionHttp);
 		modeleAnonStudies = new TableAnonStudiesModel(connexionHttp);
 		modeleAnonPatients = new TableAnonPatientsModel();
 		
@@ -899,10 +899,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		anonPatientTable.getColumnModel().getColumn(4).setMinWidth(120);
 		anonPatientTable.getColumnModel().getColumn(5).setMinWidth(0);
 		anonPatientTable.getColumnModel().getColumn(5).setMaxWidth(0);
-		anonPatientTable.getColumnModel().getColumn(6).setMinWidth(0);
-		anonPatientTable.getColumnModel().getColumn(6).setMaxWidth(0);
-		anonPatientTable.getColumnModel().getColumn(7).setMinWidth(0);
-		anonPatientTable.getColumnModel().getColumn(7).setMaxWidth(0);
 		anonPatientTable.setPreferredScrollableViewportSize(new Dimension(440,130));
 		anonPatientTable.addMouseListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies));
 		anonPatientTable.putClientProperty("terminateEditOnFocusLost", true);
@@ -974,12 +970,10 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 						String patientName = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 0).toString();
 						String patientID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 1).toString();
 						String patientOrthancID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 2).toString();
-						Date patientBirthDate = (Date)tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 3);
-						String patientSex = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 4).toString();
 						ArrayList<String> listeDummy = new ArrayList<String>();
 						if((tableauSeries.getSelectedRow() != -1 || tableauStudies.getSelectedRow() != -1) && tableauPatients.getSelectedRows().length == 1){
 							listeDummy.add(modeleStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 3).toString());
-							modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientBirthDate, patientSex, listeDummy);
+							modeleAnonPatients.addPatient(connexionHttp,patientName, patientID,patientOrthancID, listeDummy);
 							modeleAnonStudies.clear();
 							modeleAnonStudies.addStudies(patientName, patientID, listeDummy);
 							for(int i = 0; i < modeleAnonPatients.getPatientList().size(); i++){
@@ -994,12 +988,10 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 								patientName = tableauPatients.getValueAt(i, 0).toString();
 								patientID = tableauPatients.getValueAt(i, 1).toString();
 								patientOrthancID = tableauPatients.getValueAt(i, 2).toString();
-								patientBirthDate = (Date)tableauPatients.getValueAt(i, 3);
-								patientSex=tableauPatients.getValueAt(i, 4).toString();
 								ArrayList<String> listeUIDs = new ArrayList<String>();
 								modeleStudies.addStudy(patientOrthancID);
-								listeUIDs.addAll(modeleStudies.getIds());
-								modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientBirthDate, patientSex, listeUIDs);
+								listeUIDs.addAll(modeleStudies.getOrthancIds());
+								modeleAnonPatients.addPatient(connexionHttp,patientName, patientID,patientOrthancID, listeUIDs);
 								modeleAnonStudies.clear();
 								modeleAnonStudies.addStudies(patientName, patientID, listeUIDs);
 							}
@@ -1370,10 +1362,10 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				modeleExportSeries.clear();
-				modeleExportStudies.removeStudy(tableauExportStudies.convertRowIndexToModel(tableauExportStudies.getSelectedRow()));
+				modeleExportStudies.removeRow(tableauExportStudies.getSelectedRow());
 			}
 		});
+		
 		popMenuExportStudies.add(menuItemExportStudiesRemove);
 
 		JMenuItem menuItemExportStudiesDelete = new JMenuItem("Delete this study");
@@ -1383,8 +1375,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			public void actionPerformed(ActionEvent arg0) {
 				DeleteActionExport del = new DeleteActionExport(connexionHttp, tableauExportStudies, modeleExportStudies);
 				del.delete();
-				modeleExportStudies.removeStudy(tableauExportStudies.convertRowIndexToModel(tableauExportStudies.getSelectedRow()));
-				modeleExportSeries.clear();
+				modeleExportStudies.removeRow(tableauExportStudies.getSelectedRow());
 			}
 		});
 		popMenuExportStudies.add(menuItemExportStudiesDelete);
@@ -1394,18 +1385,17 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				int dialogResult;
-				dialogResult = JOptionPane.showConfirmDialog (gui, 
+				int dialogResult = JOptionPane.showConfirmDialog (gui, 
 						"Are you sure you want to clear the export list ?",
 						"Clearing the export list",
 						JOptionPane.YES_NO_OPTION);
 				if(dialogResult == JOptionPane.YES_OPTION){
 					modeleExportSeries.clear();
 					modeleExportStudies.clear();
-					modeleExportStudies.clearIdsList();
 				}
 			}
 		});
+		
 		popMenuExportStudies.add(menuItemEmptyList);
 		addPopUpMenuListener(popMenuExportStudies, tableauExportStudies);
 
@@ -1478,14 +1468,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				String uid = tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(), 4).toString();
-				DeleteActionExport del = new DeleteActionExport(connexionHttp, tableauExportSeries, modeleExportSeries);
-				del.delete();
-				if(tableauExportSeries.getRowCount() == 1){
-					modeleAnonStudies.removeFromList(uid);
-					modeleExportStudies.removeStudy(tableauExportStudies.convertRowIndexToModel(tableauExportStudies.getSelectedRow()));
-				}
-				modeleExportSeries.removeSerie(tableauExportSeries.convertRowIndexToModel(tableauExportSeries.getSelectedRow()));
+				modeleExportSeries.removeRow(tableauExportSeries.getSelectedRow());
 			}
 		});
 
@@ -1494,8 +1477,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				modeleExportSeries.removeAllSecondaryCaptures();
-				if(modeleExportSeries.getSeries().isEmpty()){
-					modeleExportStudies.removeStudy(tableauExportStudies.convertRowIndexToModel(tableauExportStudies.getSelectedRow()));
+				if(modeleExportSeries.getRowCount()==0){
+					modeleExportStudies.removeStudy(modeleExportSeries.getStudyOriginID());
 				}
 			}
 		});
@@ -2429,7 +2412,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.getContentPane().add(tabbedPane);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.getRootPane().setDefaultButton(search);
-		this.addWindowListener(new CloseWindowAdapter(this, this.zipContent, this.modeleAnonStudies.getOldOrthancUIDs(), this.modeleExportStudies.getStudiesList(), monitoring, runOrthanc));
+		this.addWindowListener(new CloseWindowAdapter(this, this.zipContent, this.modeleAnonStudies.getOldOrthancUIDs(), this.modeleExportStudies.getOrthancIds(), monitoring, runOrthanc));
 		pack();
 		
 	}
@@ -2677,7 +2660,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 								i++;
 								newStudyID = quAnon.getNewUID();
 								//Add anonymized study in export list
-								modeleExportStudies.addStudy(newName, newID, newStudyID);
+								modeleExportStudies.addStudy(newStudyID);
 							}
 
 							j++;
@@ -2695,8 +2678,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 					}
 				} catch (IOException e1) {
 					e1.printStackTrace();
-				} catch (ParseException e) {
-					e.printStackTrace();
 				}
 				return null;
 			}
@@ -2729,7 +2710,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				} catch (Exception e1) {
 					// IGNORE
 				}
-				//Si foncion a �t� fait avec le CTP on fait l'envoi auto A l'issue de l'anon
+				//Si fonction a ete fait avec le CTP on fait l'envoi auto A l'issue de l'anon
 				if(autoSendCTP) {
 					exportCTP.doClick();
 					autoSendCTP=false;

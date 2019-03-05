@@ -20,8 +20,6 @@ package org.petctviewer.orthanc.anonymize;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
-
 import javax.swing.table.AbstractTableModel;
 
 import org.petctviewer.orthanc.setup.OrthancRestApis;
@@ -29,7 +27,7 @@ import org.petctviewer.orthanc.setup.OrthancRestApis;
 public class TableAnonPatientsModel extends AbstractTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Old name", "Old ID", "Old UID", "New name*", "New ID*", "New UID", "birthdate", "Sex"};
+	private String[] entetes = {"Old name", "Old ID", "Old UID", "New name*", "New ID*", "New UID"};
 	private ArrayList<PatientAnon> patients = new ArrayList<PatientAnon>();
 
 	public TableAnonPatientsModel(){
@@ -66,10 +64,6 @@ public class TableAnonPatientsModel extends AbstractTableModel{
 			return patients.get(rowIndex).getNewID();
 		case 5:
 			return patients.get(rowIndex).getNewUID();
-		case 6:
-			return patients.get(rowIndex).getBirthdate();
-		case 7:
-			return patients.get(rowIndex).getSex();
 		default:
 			return null; //Ne devrait jamais arriver
 		}
@@ -120,8 +114,8 @@ public class TableAnonPatientsModel extends AbstractTableModel{
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
-	public void addPatient(OrthancRestApis connexion, String patientName, String patientID, Date birthdate, String sex, ArrayList<String> selectedStudies) throws IOException, ParseException{
-		PatientAnon p = new PatientAnon(patientName, patientID, "", birthdate, sex, selectedStudies);
+	public void addPatient(OrthancRestApis connexion, String patientName, String patientID , String patientOrthancID, ArrayList<String> selectedStudies) throws IOException, ParseException{
+		PatientAnon p = new PatientAnon(patientName, patientID, patientOrthancID, selectedStudies);
 		if(!this.patients.contains(p)){
 			this.patients.add(p);
 			fireTableRowsInserted(patients.size() - 1, patients.size() - 1);

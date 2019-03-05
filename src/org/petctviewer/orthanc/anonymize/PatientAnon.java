@@ -18,25 +18,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 package org.petctviewer.orthanc.anonymize;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 public class PatientAnon {
 	private String patientName;
 	private String patientId;;
 	private String id;
-	private Date birthdate;
-	private String sex;
 	private String newName;
 	private String newID;
 	private String newUID;
 	private ArrayList<String> selectedStudyUID = new ArrayList<String>();
 	
-	public PatientAnon(String patientName, String patientId, String id, Date birthdate, String sex, ArrayList<String> selectedStudyUID){
+	public PatientAnon(String patientName, String patientId, String patientOrthancId, ArrayList<String> selectedStudyUID){
 		this.patientName = patientName;
 		this.patientId = patientId;
-		this.id = id;
-		this.birthdate = birthdate;
-		this.sex=sex;
+		this.id = patientOrthancId;
 		this.newName = "";
 		this.newID = "";
 		this.newUID = "";
@@ -65,22 +60,6 @@ public class PatientAnon {
 
 	public void setId(String id) {
 		this.id = id;
-	}
-
-	public Date getBirthdate() {
-		return birthdate;
-	}
-
-	public void setBirthdate(Date birthdate) {
-		this.birthdate = birthdate;
-	}
-	
-	public void setSex(String sex) {
-		this.sex=sex;
-	}
-	
-	public String getSex() {
-		return sex;
 	}
 
 	public String getNewName() {
@@ -120,35 +99,16 @@ public class PatientAnon {
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((patientId == null) ? 0 : patientId.hashCode());
-		result = prime * result + ((patientName == null) ? 0 : patientName.hashCode());
-		return result;
-	}
-
-	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) return true;
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
 		PatientAnon other = (PatientAnon) obj;
-		if (patientId == null) {
-			if (other.patientId != null)
-				return false;
-		} else if (!patientId.equals(other.patientId))
+		if (patientId == other.patientId) {
+				return true;
+		} else {
 			return false;
-		if (patientName == null) {
-			if (other.patientName != null)
-				return false;
-		} else if (!patientName.equals(other.patientName))
-			return false;
-		PatientAnon p = (PatientAnon) obj;
-		return this.getPatientId().equals(p.getPatientId())&&
-				this.getPatientName().equals(p.getPatientName()) &&
-				this.getId().equals(p.getId()) &&
-				this.getBirthdate().equals(p.getBirthdate());
+		}
 	}
 	
 	

@@ -27,6 +27,7 @@ public class TableSeriesModel extends DefaultTableModel{
 	private String[] entetes = {"Serie description", "Modality", "Instances", "Secondary capture", "ID", "Serie Num", "SeriesObj"};
 	private Class<?>[] classEntetes = {String.class, String.class, Integer.class, Boolean.class, String.class, String.class, Serie.class};
 	private OrthancRestApis connexionHttp;
+	private String studyOrthancID;
 
 	public TableSeriesModel(OrthancRestApis connexionHttp){
 		super(0,7);
@@ -58,16 +59,18 @@ public class TableSeriesModel extends DefaultTableModel{
 		for(int i=0; i<this.getRowCount(); i++) {
 			if ((Boolean) this.getValueAt(i, 3)) {
 				connexionHttp.makeDeleteConnection("/series/"+this.getValueAt(i, 4));
-				this.removeRow(i);
 			}
 		}
+		//refresh the table
+		addSerie(studyOrthancID);
 	}
 
-	public void addSerie(String studyID) {
-
+	public void addSerie(String studyOrthancID) {
+		this.studyOrthancID=studyOrthancID;
+		clear();
 		QueryOrthancData querySeries = new QueryOrthancData(connexionHttp);
 		
-		Study2 study =querySeries.getStudyDetails(studyID, true);
+		Study2 study =querySeries.getStudyDetails(studyOrthancID, true);
 		for(Serie serie:study.getSeries()) {
 			this.addRow(new Object[] {serie.getSerieDescription(), 
 				serie.getModality(), 

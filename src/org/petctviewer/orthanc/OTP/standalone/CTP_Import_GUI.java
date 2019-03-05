@@ -4,11 +4,8 @@ import java.awt.MouseInfo;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -129,6 +126,7 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 	@Override
 	public void ImportFinished(HashMap<String, HashMap<String, String>> importedStudy) {
 		HashMap<String, HashMap<String, String>> importedstudy=importFrame.getImportedStudy();
+		
 		Set<String> keys=importedstudy.keySet();
 		String[] keysArray=new String[keys.size()];
 		keys.toArray(keysArray);
@@ -136,24 +134,14 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 		for (int i=0; i<keysArray.length; i++) {
 			String patientName=importedstudy.get(keysArray[i]).get("patientName");
 			String patientID=importedstudy.get(keysArray[i]).get("patientID");
-			String patientDOBString=importedstudy.get(keysArray[i]).get("patientDOB");
-			String patientSex=importedstudy.get(keysArray[i]).get("patientSex");
-			DateFormat df=new SimpleDateFormat("YYYYMMDD");
-			Date patientDOB=null;
-			try {
-				patientDOB = df.parse(patientDOBString);
-			} catch (ParseException e2) {
-				// TODO Auto-generated catch block
-				e2.printStackTrace();
-			}
+			String patientOrthancId=importedstudy.get(keysArray[i]).get("patientOrthancID");
 			
 			ArrayList<String> studyID=new ArrayList<String>();
 			studyID.add(keysArray[i]);
 
-			
 			try {
 				//modeleAnonPatients.clear();
-				modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientDOB, patientSex, studyID);
+				modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientOrthancId, studyID);
 				modeleAnonStudies.clear();
 				modeleAnonStudies.addStudies(patientName, patientID, studyID);
 				anonPatientTable.addRowSelectionInterval(0, 0);

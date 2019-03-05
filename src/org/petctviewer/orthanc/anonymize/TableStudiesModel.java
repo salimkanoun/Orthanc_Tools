@@ -70,4 +70,12 @@ public class TableStudiesModel extends DefaultTableModel{
 	public void clear(){
 		this.setRowCount(0);
 	}
+	
+	public ArrayList<String> getOrthancIds(){
+		ArrayList<String> studyIds=new ArrayList<String>();
+		for (int i=0; i<this.getRowCount(); i++) {
+			studyIds.add((String) getValueAt(i, 3));
+		}
+		return studyIds;
+	}
 }
