@@ -37,8 +37,6 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 
-
-
 public class AutoQuery  {
 
 	protected QueryRetrieve api;

@@ -90,15 +90,15 @@ public class VueQuery extends JFrame {
 	private QueryRetrieve rest;
 	
 	private JTabbedPane tabbedPane;
-	private ModelTablePatient modeleTablePatients = new ModelTablePatient(rest); // model for the main JTable (tableau)
-	private ModelTableSeries modeleTableSeries = new ModelTableSeries(rest); // model for the details JTable (tableauDetails) in the main tab
-	private ModelTablePatient modeleTablePatientHistory = new ModelTablePatient(rest); // model for the history JTable (tab History)
-	private ModelTableSeries modeleTableSeriesHistory = new ModelTableSeries(rest); // model for the details JTable (tableauDetails) in the history tab
+	
+	private ModelTablePatient modeleTablePatients; // model for the main JTable (tableau)
+	private ModelTableSeries modeleTableSeries; // model for the details JTable (tableauDetails) in the main tab
+	private ModelTablePatient modeleTablePatientHistory; // model for the history JTable (tab History)
+	private ModelTableSeries modeleTableSeriesHistory; // model for the details JTable (tableauDetails) in the history tab
 	private JTable tablePatients; // displayed table in the main tab
 	private JTable tableSeries; // displayed table containing the details in the main tab
 	private JTable tablePatientsHistory; // displayed table in the history tab
 	private JTable tableSeriesHistory; // displayed table containing the details in the history tab
-	private JPopupMenu popMenu = new JPopupMenu(); // popMenu that will pop when the user right-clicks on a row
 	
 	/*
 	 * The following components will be used to filter the tables, or make new searches
@@ -108,7 +108,7 @@ public class VueQuery extends JFrame {
 	private JComboBox<String> retrieveAET; // indexes every AETs available that the user can retrieve instances to
 	private JLabel state; // allows the user to know the state of the retrieve query 
 	private JTextField userInput; // associated with searchingParam to get the input
-	private JTextField userInputFirstName = new JTextField("*"); //First Name input in case of Name search
+	private JTextField userInputFirstName; //First Name input in case of Name search
 	private JPanel checkboxes; // contains every checkboxes
 	private JCheckBox cr,ct,cmr,nm,pt,us,xa,mg; // the chosen modalities 
 	private JTextField description; // allows to search for a particular description
@@ -141,7 +141,7 @@ public class VueQuery extends JFrame {
 	private JTextField studyDescription;
 	private JTable table;
 	private DateFormat df = new SimpleDateFormat("yyyyMMdd");
-	private JComboBox<String> comboBox, comboBox_NameIDAcc;
+	private JComboBox<String> comboBox_RetrieveAet, comboBox_NameIDAcc;
 	private JComboBox<String> Aet_Retrieve;
 	private JCheckBox chckbxCr , chckbxCt , chckbxCmr ,chckbxNm , chckbxPt ,chckbxUs ,chckbxXa ,chckbxMg ,chckbxToday;
 	private JTextField textFieldNameIDAcc;
@@ -150,7 +150,7 @@ public class VueQuery extends JFrame {
 	private AutoQuery autoQuery;
 	private JTextArea textAreaConsole;
 	private SwingWorker<Void, Void> workerAutoRetrieve;
-	JButton btnStart ;
+	private JButton btnStart ;
 	
 	//timer
 	private boolean timerOn;
@@ -191,6 +191,7 @@ public class VueQuery extends JFrame {
 		
 		//Stores AET
 		storeAets();
+		createModelTable();
 
 
 
@@ -245,6 +246,7 @@ public class VueQuery extends JFrame {
 		// Setting the table's sorter, renderer and popupmenu
 		JMenuItem menuItemDisplayH = new JMenuItem("Display history");
 		menuItemDisplayH.addActionListener(new displayHistoryAction());
+		JPopupMenu popMenu = new JPopupMenu();
 		popMenu.add(menuItemDisplayH);
 		tablePatients.setComponentPopupMenu(popMenu);
 		tablePatients.addMouseListener(new TablePatientMouseListener(tablePatients, modeleTablePatients, modeleTableSeries, state));
@@ -293,13 +295,7 @@ public class VueQuery extends JFrame {
 		
 		queryAET = new JComboBox<String>(distantAets);
 		queryAET.setBorder(new EmptyBorder(0, 30, 0, 0));
-		if(distantAets.length > 0){
-			if(jpreferPerso.getInt("SearchAET", 99) < distantAets.length){
-				queryAET.setSelectedIndex(jpreferPerso.getInt("SearchAET", 99));
-			}else{
-				queryAET.setSelectedIndex(0);	
-			}
-		}
+		
 
 		// Creating the text inputs
 		JPanel textInput = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -327,8 +323,7 @@ public class VueQuery extends JFrame {
 			}
 			
 		});
-		searchingParam.setSelectedIndex(jpreferPerso.getInt("InputParameter", 0));
-
+		
 		// Creating the "search" button (ajouter)
 		JButton ajouter = new JButton(new SearchAction(this));
 		//Combobox to select Destination AET
@@ -472,13 +467,7 @@ public class VueQuery extends JFrame {
 		queryAETH = new JComboBox<String>(distantAets);
 		queryAETH.setMinimumSize(new Dimension(200,20));
 		queryAETH.setMaximumSize(new Dimension(200,20));
-		if(distantAets.length > 0){
-			if(jpreferPerso.getInt("HistoryAET", 0) < distantAets.length){
-				queryAETH.setSelectedIndex(jpreferPerso.getInt("HistoryAET", 0));
-			}else{
-				queryAETH.setSelectedIndex(0);
-			}
-		}
+		
 		queryAETH.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent event) {
@@ -588,11 +577,12 @@ public class VueQuery extends JFrame {
 							for (int i=0; i<table.getRowCount(); i++) {
 								info.setText("Query "+(i+1)+"/"+(table.getRowCount()));
 								String name=(table.getValueAt(i, 0).toString()+"^"+table.getValueAt(i, 1).toString());
-
-								StudyDetails[] studies=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox.getSelectedItem().toString() );
+								if (name.equals("*^*")) name="*" ;
+								StudyDetails[] studies=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox_RetrieveAet.getSelectedItem().toString() );
 								if(studies.length==0) {
 									System.out.println("Query "+ (i+1) +" Empty result or undefined parameters");
 								}else {
+									System.out.println("Query "+ (i+1) +" Found "+studies.length+" results");
 									for(StudyDetails study:studies) {
 										patientArray.add(study);
 									}
@@ -759,22 +749,21 @@ public class VueQuery extends JFrame {
 		
 		JPanel Panel_Top = new JPanel();
 		
-		comboBox = new JComboBox<String>(distantAets);
-		if ((jpreferPerso.getInt("retrieveSelection", 0) <= comboBox.getItemCount()) && (comboBox.getItemCount() !=0) ) comboBox.setSelectedIndex(jpreferPerso.getInt("retrieveSelection", 0));
+		comboBox_RetrieveAet = new JComboBox<String>(distantAets);
 		
-		comboBox.addItemListener(new ItemListener() {
+		comboBox_RetrieveAet.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent arg0) {
 				if (arg0.getStateChange()==ItemEvent.SELECTED) {
 					//On sauve dans le registery chaque changement de selection pour le prochain lancement
-					jpreferPerso.putInt("retrieveSelection", comboBox.getSelectedIndex());
+					jpreferPerso.putInt("retrieveSelection", comboBox_RetrieveAet.getSelectedIndex());
 				}
 				
 			}});
 		
 		JLabel lblRetrieveFrom = new JLabel("Retrieve From :");
 		Panel_Top.add(lblRetrieveFrom);
-		Panel_Top.add(comboBox);
+		Panel_Top.add(comboBox_RetrieveAet);
 		
 		JPanel panel_Bottom = new JPanel();
 		
@@ -817,13 +806,13 @@ public class VueQuery extends JFrame {
 						StudyDetails[] results=null;
 						
 						if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "Name")) {
-							results=autoQuery.sendQuery(textFieldNameIDAcc.getText(),"*",df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),"*", comboBox.getSelectedItem().toString());
+							results=autoQuery.sendQuery(textFieldNameIDAcc.getText(),"*",df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),"*", comboBox_RetrieveAet.getSelectedItem().toString());
 						}
 						else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "ID")) {
-							results=autoQuery.sendQuery("*",textFieldNameIDAcc.getText(),df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),"*", comboBox.getSelectedItem().toString());
+							results=autoQuery.sendQuery("*",textFieldNameIDAcc.getText(),df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),"*", comboBox_RetrieveAet.getSelectedItem().toString());
 						}
 						else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "Accession")) {
-							results=autoQuery.sendQuery("*","*",df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),textFieldNameIDAcc.getText(), comboBox.getSelectedItem().toString());
+							results=autoQuery.sendQuery("*","*",df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),textFieldNameIDAcc.getText(), comboBox_RetrieveAet.getSelectedItem().toString());
 						}
 						
 						textAreaConsole.append("found "+ results.length +" studies,");
@@ -833,7 +822,6 @@ public class VueQuery extends JFrame {
 							try {
 								filterSerie(results,null);
 							} catch (Exception e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 						}
@@ -947,6 +935,7 @@ public class VueQuery extends JFrame {
 		textInput.add(searchingParam);
 		textInput.add(userInput);
 		textInput.add(new JLabel("First name : "));
+		userInputFirstName= new JTextField("*");
 		userInputFirstName.setPreferredSize(new Dimension(90,20));
 		textInput.add(userInputFirstName);
 		textInput.add(new JLabel("Description"));
@@ -1037,9 +1026,36 @@ public class VueQuery extends JFrame {
 		setFocusListener(tableSeriesHistory,false);
 		
 
+		applyPreferences();
 		Image image = new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage();
 		this.setIconImage(image);
 		this.getContentPane().add(tabbedPane);
+	}
+	
+	private void applyPreferences() {
+		
+		if(distantAets.length > 0){
+			if(jpreferPerso.getInt("SearchAET", 99) < distantAets.length){
+				queryAET.setSelectedIndex(jpreferPerso.getInt("SearchAET", 99));
+			}else{
+				queryAET.setSelectedIndex(0);	
+			}
+		}
+		
+		if(distantAets.length > 0){
+			if(jpreferPerso.getInt("HistoryAET", 0) < distantAets.length){
+				queryAETH.setSelectedIndex(jpreferPerso.getInt("HistoryAET", 0));
+			}else{
+				queryAETH.setSelectedIndex(0);
+			}
+		}
+		
+		searchingParam.setSelectedIndex(jpreferPerso.getInt("InputParameter", 0));
+		
+		if ((jpreferPerso.getInt("retrieveSelection", 0) <= comboBox_RetrieveAet.getItemCount()) && (comboBox_RetrieveAet.getItemCount() !=0) ) comboBox_RetrieveAet.setSelectedIndex(jpreferPerso.getInt("retrieveSelection", 0));
+		
+
+		
 	}
 
 	/*
@@ -1126,6 +1142,14 @@ public class VueQuery extends JFrame {
 			}
 		}
 	}
+	
+	
+	private void createModelTable() {
+		modeleTablePatients = new ModelTablePatient(rest); // model for the main JTable (tableau)
+		modeleTableSeries = new ModelTableSeries(rest); // model for the details JTable (tableauDetails) in the main tab
+		modeleTablePatientHistory = new ModelTablePatient(rest); // model for the history JTable (tab History)
+		modeleTableSeriesHistory = new ModelTableSeries(rest); // model for the details JTable (tableauDetails) in the history tab
+	}
 
 
 
@@ -1172,10 +1196,12 @@ public class VueQuery extends JFrame {
 	 * AutoQuery :Appelle la dialog d'affichage des resultat et recup�re les resultat valid�s pour l'injecter dans la table de la main frame
 	 * @param patientArray
 	 */
-	private void showResultTable(ArrayList<StudyDetails> patientArray) {
-		AutoQueryResultTableDialog resultDialog=new AutoQueryResultTableDialog(patientArray);
+	private void showResultTable(ArrayList<StudyDetails> studyArray) {
+		AutoQueryResultTableDialog resultDialog=new AutoQueryResultTableDialog();
 		resultDialog.setModal(true);
-		resultDialog.populateTable();
+		resultDialog.populateTable(studyArray);
+		resultDialog.pack();
+		resultDialog.setLocationRelativeTo(this);
 		resultDialog.setVisible(true);
 	
 		if (resultDialog.isValidate() && resultDialog.getTable().getRowCount()!=0) {
@@ -1244,7 +1270,7 @@ public class VueQuery extends JFrame {
 			@Override
 			protected Void doInBackground() throws Exception  {
 			showConsoleFrame();
-			textAreaConsole.append("Retrieved AET,"+comboBox.getSelectedItem().toString()+"\n");
+			textAreaConsole.append("Retrieved AET,"+comboBox_RetrieveAet.getSelectedItem().toString()+"\n");
 			btnSchedule_1.setEnabled(false);
 			
 			if (table.getRowCount()!=0) {
@@ -1255,7 +1281,7 @@ public class VueQuery extends JFrame {
 					//Construction String Name
 					String name=(table.getValueAt(i, 0).toString()+"^"+table.getValueAt(i, 1).toString());
 					if (name.equals("*^*")) name="*" ;
-					StudyDetails[] results=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox.getSelectedItem().toString());
+					StudyDetails[] results=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox_RetrieveAet.getSelectedItem().toString());
 					textAreaConsole.append("["+ name.toString() + "_"+ table.getValueAt(i, 2).toString()+ "_"+ table.getValueAt(i, 4).toString().replaceAll("/", "") + "_" +table.getValueAt(i, 5).toString().replaceAll("/", "")+"_"+table.getValueAt(i, 6).toString()+"_"+table.getValueAt(i, 7).toString()+"_"+table.getValueAt(i, 3).toString()+"],");
 					//On retrieve toutes les studies 
 					if (results!=null) {
@@ -1286,13 +1312,13 @@ public class VueQuery extends JFrame {
 				
 				//Requette selon la comboBox pour name, id, accession
 				if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "Name")) {
-					results=autoQuery.sendQuery(textFieldNameIDAcc.getText(),"*",df.format(from.getDate()),df.format(to.getDate()),modalities.toString(),studyDescription.getText(),"*", comboBox.getSelectedItem().toString());
+					results=autoQuery.sendQuery(textFieldNameIDAcc.getText(),"*",df.format(from.getDate()),df.format(to.getDate()),modalities.toString(),studyDescription.getText(),"*", comboBox_RetrieveAet.getSelectedItem().toString());
 				}
 				else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "ID")) {
-					results=autoQuery.sendQuery("*",textFieldNameIDAcc.getText(),df.format(from.getDate()),df.format(to.getDate()),modalities.toString(),studyDescription.getText(),"*", comboBox.getSelectedItem().toString());
+					results=autoQuery.sendQuery("*",textFieldNameIDAcc.getText(),df.format(from.getDate()),df.format(to.getDate()),modalities.toString(),studyDescription.getText(),"*", comboBox_RetrieveAet.getSelectedItem().toString());
 				}
 				else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "Accession")) {
-					results=autoQuery.sendQuery("*","*",df.format(from.getDate()),df.format(to.getDate()),modalities.toString(),studyDescription.getText(),textFieldNameIDAcc.getText(), comboBox.getSelectedItem().toString());
+					results=autoQuery.sendQuery("*","*",df.format(from.getDate()),df.format(to.getDate()),modalities.toString(),studyDescription.getText(),textFieldNameIDAcc.getText(), comboBox_RetrieveAet.getSelectedItem().toString());
 				}
 				
 				textAreaConsole.append("found "+results.length+" studies,");
@@ -1367,8 +1393,12 @@ public class VueQuery extends JFrame {
 		}
 	}
 
-	public JLabel getStatusLabel() {
-		return this.state;
+	public JLabel getStatusLabel(boolean main) {
+		if (main) {
+			return state;
+		}else {
+			return stateH;
+		}
 	}
 	
 	public QueryRetrieve getRestObject() {

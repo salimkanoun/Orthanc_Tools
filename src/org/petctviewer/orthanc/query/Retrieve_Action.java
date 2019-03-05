@@ -21,7 +21,6 @@ public class Retrieve_Action extends AbstractAction{
 
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		System.out.println("la");
 		SwingWorker<Void,Void> worker= new SwingWorker<Void,Void> () {
 
 			@Override
@@ -33,7 +32,7 @@ public class Retrieve_Action extends AbstractAction{
 				System.out.println(selectedrows.length);
 				for(int i=0; i<selectedrows.length ; i++) {
 					Object details = lastFocusedTable.getValueAt(selectedrows[i], lastFocusedTable.getColumnCount()-1);
-					gui.getStatusLabel().setText("<html>Retrieve state " + (i+1) + "/" + selectedrows.length + 
+					gui.getStatusLabel(main).setText("<html>Retrieve state " + (i+1) + "/" + selectedrows.length + 
 							" <font color='red'> (Do not touch any buttons or any tables while the retrieve is not done)</font></html>");
 
 					if(details instanceof StudyDetails) {
@@ -51,9 +50,9 @@ public class Retrieve_Action extends AbstractAction{
 			protected void done(){
 				try {
 					get();
-					gui.getStatusLabel().setText("<html><font color='green'>The data have successfully been retrieved.</font></html>");
+					gui.getStatusLabel(main).setText("<html><font color='green'>The data have successfully been retrieved.</font></html>");
 				} catch (Exception e) {
-					gui.getStatusLabel().setText("<html><font color='red'>Error During Retrieve</font></html>");
+					gui.getStatusLabel(main).setText("<html><font color='red'>Error During Retrieve</font></html>");
 				}
 				gui.getRetrieveButton(main).setEnabled(true);
 				gui.setWorkingBoolean(false);

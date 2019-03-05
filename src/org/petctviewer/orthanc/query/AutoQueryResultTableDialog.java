@@ -45,7 +45,6 @@ public class AutoQueryResultTableDialog extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
 	private JTable table;
-	private ArrayList<StudyDetails> patientList;
 	boolean validate;
 
 	
@@ -54,8 +53,7 @@ public class AutoQueryResultTableDialog extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public AutoQueryResultTableDialog(ArrayList<StudyDetails> patientList) {
-		this.patientList= patientList;
+	public AutoQueryResultTableDialog() {
 		
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -153,11 +151,11 @@ public class AutoQueryResultTableDialog extends JDialog {
 	/**
 	 * Ajoute les patients de l'array dans la table qu'on construit
 	 */
-	public void populateTable() {
+	public void populateTable(ArrayList<StudyDetails> studyList) {
 		DateFormat parser = new SimpleDateFormat("yyyyMMdd");
 		DefaultTableModel model = (DefaultTableModel) table.getModel();
-		for (int i=0; i<patientList.size(); i++) {
-			String name=patientList.get(i).getPatientName();
+		for (int i=0; i<studyList.size(); i++) {
+			String name=studyList.get(i).getPatientName();
 			int separator=name.indexOf("^");
 			String lastName=null;
 			String firstName=null;
@@ -165,17 +163,16 @@ public class AutoQueryResultTableDialog extends JDialog {
 				lastName=name.substring(0, separator);
 				firstName=name.substring(separator+1);
 			}
-			else   {
+			else {
 				lastName=name;
 				firstName="";
 			}
-			
 			//On passe le  \ en \\
-			String modalityString=patientList.get(i).getModalities();
+			String modalityString=studyList.get(i).getModalities();
 			if (modalityString.contains("\\")) modalityString = modalityString.replace("\\", "\\\\");
 			// on ajoute la ligne
-			model.addRow(new Object[] {lastName, firstName, patientList.get(i).getPatientID(), patientList.get(i).getAccessionNumber(),parser.format(patientList.get(i).getStudyDate()), parser.format(patientList.get(i).getStudyDate()), modalityString, patientList.get(i).getStudyDescription() });
-			}
+			model.addRow(new Object[] {lastName, firstName, studyList.get(i).getPatientID(), studyList.get(i).getAccessionNumber(),parser.format(studyList.get(i).getStudyDate()), parser.format(studyList.get(i).getStudyDate()), modalityString, studyList.get(i).getStudyDescription() });
+		}
 	}
 	
 	/**

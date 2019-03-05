@@ -79,7 +79,7 @@ public class QueryRetrieve {
 				e.printStackTrace();
 			}
 			
-			patients[i] = new StudyDetails(patientName, patientID, studyDateParsed, studyDescription2, accessionNumber2, studyInstanceUID, aet, idQuery,answer);
+			patients[i] = new StudyDetails(patientName, patientID, studyDateParsed, studyDescription2, modality , accessionNumber2, studyInstanceUID, aet, idQuery,answer);
 			
 		}
 		
@@ -212,11 +212,12 @@ public class QueryRetrieve {
 		queryDetails.addProperty("AccessionNumber", accessionNumber);
 		
 		query.add("Query", queryDetails);
-		
+		System.out.println(aet+query.toString());
 		String ID = null;
 		//Send the query to Orthanc and get it's ID to fetch answers
 		StringBuilder response=connexion.makePostConnectionAndStringBuilder("/modalities/" + aet + "/query/", query.toString());
 		JsonObject answer = (JsonObject) parserJson.parse(response.toString());
+		
 		ID=answer.get("ID").getAsString();
 		
 		return ID;

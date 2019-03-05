@@ -46,16 +46,18 @@ public class StudyDetails {
 	 * @param answerNumber
 	 */
 	public StudyDetails(String patientName, String patientID, Date studyDate,
-			String studyDescription, String accessionNumber, String studyInstanceUID, String sourceAet, String queryID, int answerNumber) {
+			String studyDescription, String modalitiesInStudy,String accessionNumber, String studyInstanceUID, String sourceAet, String queryID, int answerNumber) {
 		this.patientName = patientName;
 		this.patientID = patientID;
 		this.accessionNumber = accessionNumber;
 		this.studyDate = studyDate;
 		this.studyDescription = studyDescription;
+		this.modalitiesInStudy=modalitiesInStudy;
 		this.studyInstanceUID = studyInstanceUID;
 		this.sourceAet=sourceAet;
 		this.queryID=queryID;
 		this.answserNumber=answerNumber;
+		
 	}
 
 	public String getPatientName() {
