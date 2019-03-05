@@ -203,6 +203,7 @@
 		<version>2.0.1</version>
 	</dependency>
 	
+	<!--SK Passer a GSON A PREVOIR-->
 	<dependency>
 		<groupId>com.googlecode.json-simple</groupId>
 		<artifactId>json-simple</artifactId>
