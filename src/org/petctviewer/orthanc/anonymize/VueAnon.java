@@ -2807,8 +2807,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		VueAnon anon=new VueAnon();
 		anon.setLocationRelativeTo(null);
 		anon.setVisible(true);
-		
-		
 	}
 
 	@Override
