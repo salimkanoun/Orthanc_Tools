@@ -24,7 +24,7 @@ public class PatientAnon extends Patient{
 	private String newName;
 	private String newID;
 	private String newOrthancId;
-	private ArrayList<StudyAnon> selectedStudyAnon = new ArrayList<String>();
+	private ArrayList<Study2Anon> selectedStudyAnon = new ArrayList<Study2Anon>();
 	
 	public PatientAnon(String patientName, String patientId, String birthDate, String sex, String patientOrthancId){
 		super(patientName, patientId, birthDate, sex, patientOrthancId);
