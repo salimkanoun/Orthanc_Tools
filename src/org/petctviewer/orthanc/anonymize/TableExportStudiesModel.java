@@ -25,12 +25,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
-public class TableExportStudiesModel extends AbstractTableModel{
+public class TableExportStudiesModel extends DefaultTableModel{
 
 	private static final long serialVersionUID = 1L;
 	private String[] entetes = {"Patient name", "Patient ID", "Study date", "Study description", "Accession number", "ID"};
@@ -40,7 +41,7 @@ public class TableExportStudiesModel extends AbstractTableModel{
 	private OrthancRestApis connexionHttp;
 
 	public TableExportStudiesModel(OrthancRestApis connexionHttp){
-		super();
+		super(0,6);
 		//Recupere les settings
 		this.connexionHttp=connexionHttp;
 	}
@@ -58,31 +59,6 @@ public class TableExportStudiesModel extends AbstractTableModel{
 	@Override
 	public Class<?> getColumnClass(int column){
 		return columnClasses[column];
-	}
-
-	@Override
-	public int getRowCount() {
-		return studies.size();
-	}
-
-	@Override
-	public Object getValueAt(int rowIndex, int columnIndex) {
-		switch (columnIndex) {
-		case 0:
-			return studies.get(rowIndex).getPatientName();
-		case 1:
-			return studies.get(rowIndex).getPatientID();
-		case 2:
-			return studies.get(rowIndex).getDate();
-		case 3:
-			return studies.get(rowIndex).getStudyDescription();
-		case 4:
-			return studies.get(rowIndex).getAccession();
-		case 5:
-			return studies.get(rowIndex).getId();
-		default:
-			return null; //Ne devrait jamais arriver
-		}
 	}
 
 	public ArrayList<Study> getStudiesList(){
@@ -153,10 +129,7 @@ public class TableExportStudiesModel extends AbstractTableModel{
 	 * This method clears the studies list
 	 */
 	public void clear(){
-		if(this.getRowCount() !=0){
-			for(int i = this.getRowCount(); i > 0; i--){
-				this.removeStudy(i-1);
-			}
-		}
+		this.studies.clear();
+		this.setRowCount(0);
 	}
 }

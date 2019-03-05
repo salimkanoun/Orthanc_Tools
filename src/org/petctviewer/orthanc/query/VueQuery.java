@@ -91,9 +91,9 @@ public class VueQuery extends JFrame {
 	
 	private JTabbedPane tabbedPane;
 	
-	private ModelTablePatient modeleTablePatients; // model for the main JTable (tableau)
+	private ModelTableStudy modeleTablePatients; // model for the main JTable (tableau)
 	private ModelTableSeries modeleTableSeries; // model for the details JTable (tableauDetails) in the main tab
-	private ModelTablePatient modeleTablePatientHistory; // model for the history JTable (tab History)
+	private ModelTableStudy modeleTablePatientHistory; // model for the history JTable (tab History)
 	private ModelTableSeries modeleTableSeriesHistory; // model for the details JTable (tableauDetails) in the history tab
 	private JTable tablePatients; // displayed table in the main tab
 	private JTable tableSeries; // displayed table containing the details in the main tab
@@ -113,7 +113,7 @@ public class VueQuery extends JFrame {
 	private JCheckBox cr,ct,cmr,nm,pt,us,xa,mg; // the chosen modalities 
 	private JTextField description; // allows to search for a particular description
 	private DatePicker from, to; // allow to make a research in a user defined time frame
-	private TableRowSorter<ModelTablePatient> sorter; // used to filter and sort the rows for the main JTable
+	private TableRowSorter<ModelTableStudy> sorter; // used to filter and sort the rows for the main JTable
 	private TableRowSorter<ModelTableSeries> sorterDetails; // used to filter and sort the rows for the details JTable
 	private JButton retrieve;
 	
@@ -124,7 +124,7 @@ public class VueQuery extends JFrame {
 	private JPanel checkboxesH;
 	private JCheckBox crH,ctH,cmrH,nmH,ptH,usH,xaH,mgH;  
 	private DatePicker fromH, toH; // allow to make a research in a user defined time frame
-	private TableRowSorter<ModelTablePatient> sorterH; // used to sort the rows for the main JTable
+	private TableRowSorter<ModelTableStudy> sorterH; // used to sort the rows for the main JTable
 	private TableRowSorter<ModelTableSeries> sorterDetailsH; // used to filter and sort the rows for the details JTable
 	private JButton retrieveH;
 	
@@ -199,7 +199,7 @@ public class VueQuery extends JFrame {
 		//////////////////////////     TAB 1 : QUERIES/RETRIEVE ///////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		this.sorter = new TableRowSorter<ModelTablePatient>(modeleTablePatients);
+		this.sorter = new TableRowSorter<ModelTableStudy>(modeleTablePatients);
 		this.sorterDetails = new TableRowSorter<ModelTableSeries>(modeleTableSeries);
 		this.sorter.setSortsOnUpdates(true);
 		JPanel mainPanel = new JPanel(new GridBagLayout());
@@ -249,7 +249,7 @@ public class VueQuery extends JFrame {
 		JPopupMenu popMenu = new JPopupMenu();
 		popMenu.add(menuItemDisplayH);
 		tablePatients.setComponentPopupMenu(popMenu);
-		tablePatients.addMouseListener(new TablePatientMouseListener(tablePatients, modeleTablePatients, modeleTableSeries, state));
+		tablePatients.addMouseListener(new TableStudyMouseListener(tablePatients, modeleTablePatients, modeleTableSeries, state));
 		
 		tablePatients.setRowSorter(sorter);
 		tablePatients.setDefaultRenderer(Date.class, new DateRenderer());
@@ -369,7 +369,7 @@ public class VueQuery extends JFrame {
 		//////////////////////////     TAB 2 : HISTORY ////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		sorterH = new TableRowSorter<ModelTablePatient>(modeleTablePatientHistory);
+		sorterH = new TableRowSorter<ModelTableStudy>(modeleTablePatientHistory);
 		sorterH.setSortsOnUpdates(true);
 		sorterDetailsH = new TableRowSorter<ModelTableSeries>(modeleTableSeriesHistory);
 
@@ -509,7 +509,7 @@ public class VueQuery extends JFrame {
 		retrieveH.addActionListener(new Retrieve_Action(this, false));
 		southH.add(retrieveH);
 		southH.add(this.stateH);
-		tablePatientsHistory.addMouseListener(new TablePatientMouseListener(tablePatientsHistory, modeleTablePatientHistory, modeleTableSeriesHistory, stateH));		
+		tablePatientsHistory.addMouseListener(new TableStudyMouseListener(tablePatientsHistory, modeleTablePatientHistory, modeleTableSeriesHistory, stateH));		
 
 		// Setting the rowSelection that will allow for retrieves
 		ListSelectionModel rowSelectionModelH = tableSeriesHistory.getSelectionModel();
@@ -1145,9 +1145,9 @@ public class VueQuery extends JFrame {
 	
 	
 	private void createModelTable() {
-		modeleTablePatients = new ModelTablePatient(rest); // model for the main JTable (tableau)
+		modeleTablePatients = new ModelTableStudy(rest); // model for the main JTable (tableau)
 		modeleTableSeries = new ModelTableSeries(rest); // model for the details JTable (tableauDetails) in the main tab
-		modeleTablePatientHistory = new ModelTablePatient(rest); // model for the history JTable (tab History)
+		modeleTablePatientHistory = new ModelTableStudy(rest); // model for the history JTable (tab History)
 		modeleTableSeriesHistory = new ModelTableSeries(rest); // model for the details JTable (tableauDetails) in the history tab
 	}
 

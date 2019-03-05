@@ -25,18 +25,18 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 
-public class TablePatientMouseListener extends MouseAdapter {
+public class TableStudyMouseListener extends MouseAdapter {
 
 	private JTable tableauPatients;
-	private ModelTablePatient modelePatients;
+	private ModelTableStudy modeleStudy;
 	private ModelTableSeries modeleSeries;
 	private JLabel state;
 
-	public TablePatientMouseListener(JTable tableau, ModelTablePatient modele, 
-			ModelTableSeries modeleDetails, JLabel state) {
+	public TableStudyMouseListener(JTable tableau, ModelTableStudy modeleStudy, 
+			ModelTableSeries modeleSeries, JLabel state) {
 		this.tableauPatients = tableau;
-		this.modelePatients = modele;
-		this.modeleSeries = modeleDetails;
+		this.modeleStudy = modeleStudy;
+		this.modeleSeries = modeleSeries;
 		this.state = state;
 	}
 
@@ -58,7 +58,7 @@ public class TablePatientMouseListener extends MouseAdapter {
 		// We clear the details
 		this.modeleSeries.clear();
 		//Get Patient Object and add it's series in Series table model
-		if(this.modelePatients.getRowCount() != 0){
+		if(this.modeleStudy.getRowCount() != 0){
 			StudyDetails patient = (StudyDetails)this.tableauPatients.getValueAt(this.tableauPatients.getSelectedRow(), 6);
 			this.modeleSeries.addSeriesDetails(patient);
 		}

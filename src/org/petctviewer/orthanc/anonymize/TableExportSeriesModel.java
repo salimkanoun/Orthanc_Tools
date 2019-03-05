@@ -18,24 +18,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 package org.petctviewer.orthanc.anonymize;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingWorker;
-import javax.swing.table.AbstractTableModel;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import javax.swing.table.DefaultTableModel;
 
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
-public class TableExportSeriesModel extends AbstractTableModel{
+public class TableExportSeriesModel extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
 	private String[] entetes = {"Serie description*", "Modality", "Instances", "Secondary capture", "ID", "Serie Number"};
 	private ArrayList<Serie> series = new ArrayList<Serie>();
-	private ArrayList<String> instancesWithSecondaryCapture = new ArrayList<String>();
 	private String studyID = "";
 	private String url;
 	private JFrame frame;
@@ -43,7 +38,7 @@ public class TableExportSeriesModel extends AbstractTableModel{
 	private OrthancRestApis connexionHttp;
 
 	public TableExportSeriesModel(OrthancRestApis connexionHttp, JFrame frame, JLabel stateExport){
-		super();
+		super(0,6);
 		//On set les settings de connexion
 		this.connexionHttp=connexionHttp;
 		this.frame = frame;
@@ -51,38 +46,8 @@ public class TableExportSeriesModel extends AbstractTableModel{
 	}
 
 	@Override
-	public int getColumnCount(){
-		return entetes.length;
-	}
-
-	@Override
 	public String getColumnName(int columnIndex){
 		return entetes[columnIndex];
-	}
-
-	@Override
-	public int getRowCount(){
-		return series.size();
-	}
-
-	@Override
-	public Object getValueAt(int rowIndex, int columnIndex){
-		switch(columnIndex){
-		case 0:
-			return series.get(rowIndex).getSerieDescription();
-		case 1:
-			return series.get(rowIndex).getModality();
-		case 2:
-			return series.get(rowIndex).getNbInstances();
-		case 3:
-			return series.get(rowIndex).isSecondaryCapture();
-		case 4:
-			return series.get(rowIndex).getId();
-		case 5:
-			return series.get(rowIndex).getSeriesNumber();
-		default:
-			return null; //Ne devrait jamais arriver
-		}
 	}
 
 	public boolean isCellEditable(int row, int col){
@@ -134,40 +99,6 @@ public class TableExportSeriesModel extends AbstractTableModel{
 		}
 	}
 
-	
-	public Serie getSerie(int rowIndex){
-		return this.series.get(rowIndex);
-	}
-
-	public boolean checkSopClassUid(String instanceUid) {
-		if(instanceUid != null){
-			url="/instances/" + instanceUid + "/metadata/SopClassUid";
-			StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder(url);
-
-			ArrayList<String> sopClassUIDs = new ArrayList<String>();
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7.1");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7.2");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7.3");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7.4");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.11");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.22");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.33");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.40");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.50");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.59");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.65");
-			sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.67");
-
-			if(sopClassUIDs.contains(sb.toString())){
-				this.instancesWithSecondaryCapture.add(instanceUid);
-				return true;
-			}
-			return false;
-		}
-		return false;
-	}
-
 	public void removeAllSecondaryCaptures() {
 		ArrayList<Serie> seriesToRemove = new ArrayList<Serie>();
 		for(Serie s : series){
@@ -186,7 +117,7 @@ public class TableExportSeriesModel extends AbstractTableModel{
 
 	public void removeSerie(int rowIndex){
 		this.series.remove(rowIndex);
-		fireTableRowsDeleted(rowIndex, rowIndex);
+		this.removeRow(rowIndex);
 	}
 
 	public ArrayList<Serie> getSeries(){
@@ -195,8 +126,21 @@ public class TableExportSeriesModel extends AbstractTableModel{
 	
 	public void addSerie(String studyID) {
 		this.studyID = studyID;
-		
+
 		QueryFillStore querySeries = new QueryFillStore(connexionHttp,"series", null, studyID, null, null);
+		
+		Study2 study =querySeries.getStudyDetails(studyID,true);
+		for(Serie serie:study.getSeries()) {
+			series.add(serie); 
+			
+			//"Serie description*", "Modality", "Instances", "Secondary capture", "ID", "Serie Number"
+			this.addRow(new String[] {serie.getSerieDescription(), serie.getModality(), String.valueOf(serie.getNbInstances()), String.valueOf(serie.isSecondaryCapture()), serie.getFistInstanceId(), serie.getSeriesNumber()});
+		}
+		fireTableRowsInserted(series.size() - 1, series.size() - 1);
+
+		
+		
+		/*querySeries.getSeriesOfStudy(studyID);
 		List<JSONObject> jsonResponsesPatient=querySeries.getJsonResponse();
 		
 		String[] id = new String[jsonResponsesPatient.size()];
@@ -242,12 +186,9 @@ public class TableExportSeriesModel extends AbstractTableModel{
 			Serie s = new Serie(description[i], modality[i], nbInstances[i], id[i], study[i], instance[i],serieNumber[i], this.checkSopClassUid(instance[i]));
 			if(instancesWithSecondaryCapture.contains(instance[i])){
 				s = new Serie(description[i], modality[i], nbInstances[i], id[i], study[i], instance[i],serieNumber[i], true);
-			}
-			if(!this.series.contains(s)){
-				this.series.add(s);
-				fireTableRowsInserted(series.size() - 1, series.size() - 1);
-			}
-		}
+			}*/
+			
+		//}
 
 	}
 
@@ -255,11 +196,9 @@ public class TableExportSeriesModel extends AbstractTableModel{
 	 * This method clears the series list
 	 */
 	public void clear(){
-		if(this.getRowCount() !=0){
-			for(int i = this.getRowCount(); i > 0; i--){
-				this.removeSerie(i-1);
-			}
-		}
+		this.series.clear();
+		this.setRowCount(0);
+		
 	}
 
 }

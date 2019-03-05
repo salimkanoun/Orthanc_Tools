@@ -186,8 +186,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	private JTable tableauExportSeries;
 	private TableExportStudiesModel modeleExportStudies;
 	private TableExportSeriesModel modeleExportSeries;
-	private TableRowSorter<TableExportStudiesModel> sorterExportStudies;
-	private TableRowSorter<TableExportSeriesModel> sorterExportSeries;
+	//private TableRowSorter<TableExportStudiesModel> sorterExportStudies;
+	//private TableRowSorter<TableExportSeriesModel> sorterExportSeries;
 	private StringBuilder remoteFileName;
 	
 
@@ -619,6 +619,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		menuItemSopClass.addActionListener(new ActionListener() {			
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				
+				tableauSeries.getValueAt(tableauSeries.getSelectedRow(),3);
+
 				String instanceUid = modeleSeries.getSerie(tableauSeries.convertRowIndexToModel(tableauSeries.getSelectedRow())).getInstance();
 				modeleSeries.checkSopClassUid(instanceUid);
 				modeleSeries.setValueAt(modeleSeries.checkSopClassUid(instanceUid), tableauSeries.convertRowIndexToModel(tableauSeries.getSelectedRow()), 3);
@@ -992,7 +995,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 					try {
 						String patientName = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 0).toString();
 						String patientID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 1).toString();
-						String patientUID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 2).toString();
+						String patientOrthancID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 2).toString();
 						Date patientBirthDate = (Date)tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 3);
 						String patientSex = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 4).toString();
 						ArrayList<String> listeDummy = new ArrayList<String>();
@@ -1012,11 +1015,11 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 								modeleStudies.clear();
 								patientName = tableauPatients.getValueAt(i, 0).toString();
 								patientID = tableauPatients.getValueAt(i, 1).toString();
-								patientUID = tableauPatients.getValueAt(i, 2).toString();
+								patientOrthancID = tableauPatients.getValueAt(i, 2).toString();
 								patientBirthDate = (Date)tableauPatients.getValueAt(i, 3);
 								patientSex=tableauPatients.getValueAt(i, 4).toString();
 								ArrayList<String> listeUIDs = new ArrayList<String>();
-								modeleStudies.addStudy(patientName, patientID, patientUID);
+								modeleStudies.addStudy(patientOrthancID);
 								listeUIDs.addAll(modeleStudies.getIds());
 								modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientBirthDate, patientSex, listeUIDs);
 								modeleAnonStudies.clear();
@@ -1355,9 +1358,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		JPanel mainPanelExport = new JPanel(new BorderLayout());
-		JPanel tableExportPanel = new JPanel(new FlowLayout());
-		this.sorterExportStudies = new TableRowSorter<TableExportStudiesModel>(modeleExportStudies);
-		this.sorterExportSeries = new TableRowSorter<TableExportSeriesModel>(modeleExportSeries);		
+		JPanel tableExportPanel = new JPanel(new FlowLayout());	
 
 		this.tableauExportStudies = new JTable(modeleExportStudies);
 		this.tableauExportStudies.getTableHeader().setReorderingAllowed(false);
@@ -1430,9 +1431,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		popMenuExportStudies.add(menuItemEmptyList);
 		addPopUpMenuListener(popMenuExportStudies, tableauExportStudies);
 
-		sorterExportStudies.setSortKeys(sortKeysStudies);
-		sorterExportStudies.sort();
-		this.tableauExportStudies.setRowSorter(sorterExportStudies);
+		//sorterExportStudies.setSortKeys(sortKeysStudies);
+		//sorterExportStudies.sort();
+		//this.tableauExportStudies.setRowSorter(sorterExportStudies);
 		tableauExportStudies.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
 		this.tableauExportStudies.addMouseListener(new MouseAdapter() {
@@ -1467,27 +1468,28 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		
 		tableauExportSeries.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-		tableauExportSeries.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public Component getTableCellRendererComponent(JTable table,
-					Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-
-				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-
-				boolean status = (boolean)table.getModel().getValueAt(tableauExportSeries.convertRowIndexToModel(row), 3);
-				if (status & !isSelected) {
-					setBackground(Color.RED);
-					setForeground(Color.black);
-				}else if(isSelected){
-					setBackground(tableauExportStudies.getSelectionBackground());
-				}else{
-					setBackground(tableauExportStudies.getBackground());
-				}
-				return this;
-			}   
-		});
+		//SK A REVOIR COLORATION DES CAPTURE SECONDAIRES SUREMENT A INTEGRER DANS LE MODELE DE LA TABLE ELLE MEME
+//		tableauExportSeries.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
+//			private static final long serialVersionUID = 1L;
+//
+//			@Override
+//			public Component getTableCellRendererComponent(JTable table,
+//					Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+//
+//				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+//
+//				boolean status = (boolean)table.getModel().getValueAt(tableauExportSeries.convertRowIndexToModel(row), 3);
+//				if (status & !isSelected) {
+//					setBackground(Color.RED);
+//					setForeground(Color.black);
+//				}else if(isSelected){
+//					setBackground(tableauExportStudies.getSelectionBackground());
+//				}else{
+//					setBackground(tableauExportStudies.getBackground());
+//				}
+//				return this;
+//			}   
+//		});
 
 		JPopupMenu popMenuExportSeries = new JPopupMenu();
 		addPopUpMenuListener(popMenuExportSeries , tableauExportSeries);
@@ -1522,9 +1524,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 		popMenuExportSeries.add(menuItemExportSeriesDelete);
 		popMenuExportSeries.add(menuItemExportSeriesDeleteAllSc);
-		sorterExportSeries.setSortKeys(sortKeysSeries);
-		sorterExportSeries.sort();
-		this.tableauExportSeries.setRowSorter(sorterExportSeries);
+		//sorterExportSeries.setSortKeys(sortKeysSeries);
+		//sorterExportSeries.sort();
+		//this.tableauExportSeries.setRowSorter(sorterExportSeries);
 
 		tableExportPanel.add(new JScrollPane(this.tableauExportStudies));
 		tableExportPanel.add(new JScrollPane(this.tableauExportSeries));

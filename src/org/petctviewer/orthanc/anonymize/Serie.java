@@ -17,28 +17,56 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
+import java.util.ArrayList;
+
 public class Serie {
+	
 	private String serieDescription;
 	private String modality;
-	private String nbInstances;
-	private String instance;
-	private String study;
+	private int nbInstances;
+	private String firstInstanceId;
+	private String studyOrthancId;
 	private String id;
 	private String seriesNumber;
+	private String sopClassUid;
 	private boolean secondaryCapture;
 	
-	public Serie(String serieDescription, String modality, String nbInstances, 
-			String id, String study, String instance, String seriesNumber, boolean secondaryCapture){
+	public Serie(String serieDescription, String modality, int nbInstances, 
+			String id, String studyOrthancId, String firstInstanceId, String seriesNumber, String sopClassUid){
 		this.serieDescription = serieDescription;
 		this.modality = modality;
 		this.nbInstances = nbInstances;
 		this.id = id;
-		this.study = study;
-		this.instance = instance;
-		this.secondaryCapture = secondaryCapture;
+		this.studyOrthancId = studyOrthancId;
+		this.firstInstanceId = firstInstanceId;
+		this.sopClassUid = sopClassUid;
 		this.seriesNumber=seriesNumber;
+		checkIsSecondaryCapture();
 	}
 	
+	private void checkIsSecondaryCapture() {
+		ArrayList<String> sopClassUIDs = new ArrayList<String>();
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7.1");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7.2");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7.3");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.7.4");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.11");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.22");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.33");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.40");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.50");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.59");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.65");
+		sopClassUIDs.add("1.2.840.10008.5.1.4.1.1.88.67");
+
+		if(sopClassUIDs.contains(sopClassUid)){
+			secondaryCapture=true;
+		}else {
+			secondaryCapture=false;
+		}
+		
+	}
 	public String getSerieDescription(){
 		return serieDescription;
 	}
@@ -51,103 +79,28 @@ public class Serie {
 		return id;
 	}
 
-	public void setId(String id) {
-		this.id = id;
-	}
-
 	public String getModality() {
 		return modality;
 	}
 
-	public void setModality(String modality) {
-		this.modality = modality;
-	}
-
-	public String getNbInstances() {
+	public int getNbInstances() {
 		return nbInstances;
 	}
 
-	public void setNbInstances(String nbInstances) {
-		this.nbInstances = nbInstances;
+	public String getFistInstanceId() {
+		return firstInstanceId;
 	}
 
-	public String getInstance() {
-		return instance;
+	public String getStudyOrthancId() {
+		return studyOrthancId;
 	}
 
-	public void setInstance(String instance) {
-		this.instance = instance;
-	}
-
-	public String getStudy() {
-		return study;
-	}
-
-	public void setStudy(String study) {
-		this.study = study;
-	}
-	
 	public boolean isSecondaryCapture() {
 		return secondaryCapture;
-	}
-
-	public void setSecondaryCapture(boolean secondaryCapture) {
-		this.secondaryCapture = secondaryCapture;
 	}
 	
 	public String getSeriesNumber(){
 		return this.seriesNumber;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((serieDescription == null) ? 0 : serieDescription.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Serie other = (Serie) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (serieDescription == null) {
-			if (other.serieDescription != null)
-				return false;
-		} else if (!serieDescription.equals(other.serieDescription))
-			return false;
-		if (modality == null) {
-			if (other.modality != null)
-				return false;
-		} else if (!modality.equals(other.modality))
-			return false;
-		if (nbInstances == null) {
-			if (other.nbInstances != null)
-				return false;
-		} else if (!nbInstances.equals(other.nbInstances))
-			return false;
-		if (study == null) {
-			if (other.study != null)
-				return false;
-		} else if (!study.equals(other.study))
-			return false;
-		Serie s = (Serie) obj;
-		return this.getSerieDescription().equals(s.getSerieDescription())&&
-				this.getModality().equals(s.getModality()) &&
-				this.getNbInstances().equals(s.getNbInstances()) &&
-				this.getStudy().equals(s.getStudy()) &&
-				this.getId().equals(s.getId());
 	}
 	
 }

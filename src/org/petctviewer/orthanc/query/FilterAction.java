@@ -35,7 +35,7 @@ public class FilterAction extends AbstractAction {
 
 	private JLabel state;
 	private JPanel checkboxes;
-	private ModelTablePatient modeleH;
+	private ModelTableStudy modeleH;
 	private ModelTableSeries modeleDetailsH;
 	private DatePicker from;
 	private DatePicker to;
@@ -43,7 +43,7 @@ public class FilterAction extends AbstractAction {
 	private String name;
 	private String id;
 
-	public FilterAction(JLabel state, JPanel checkboxes, ModelTablePatient modeleH, ModelTableSeries modeleDetailsH, 
+	public FilterAction(JLabel state, JPanel checkboxes, ModelTableStudy modeleH, ModelTableSeries modeleDetailsH, 
 			DatePicker from, DatePicker to, JComboBox<String> queryAET) {
 		super("Filter");
 		this.state = state;

@@ -17,7 +17,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import org.json.simple.JSONArray;
@@ -26,6 +29,11 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import org.petctviewer.orthanc.setup.OrthancRestApis;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 
 public class QueryFillStore {
@@ -36,6 +44,7 @@ public class QueryFillStore {
 	private String input;
 	private ArrayList<String> ids = new ArrayList<String>();
 	private JSONParser parser = new JSONParser();
+	private JsonParser parserJson = new JsonParser();
 	private OrthancRestApis connexion;
 	
 	public QueryFillStore(OrthancRestApis connexion, String level, String inputType, String input, 
@@ -112,6 +121,97 @@ public class QueryFillStore {
 			}
 		}
 		
+	}
+	
+	public ArrayList<Study2>  getStudiesOfPatient(String patientOrthancID) {
+		
+		
+		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/patients/"+patientOrthancID);
+		
+		JsonObject patientData=(JsonObject) parserJson.parse(sb.toString());
+		System.out.println(patientData);
+		
+		JsonArray studyIdArray=patientData.get("Studies").getAsJsonArray();
+		
+		ArrayList<Study2> studies=new ArrayList<Study2>();
+		
+		Iterator<JsonElement> iterator = studyIdArray.iterator();
+		while(iterator.hasNext()) {
+			Study2 study=getStudyDetails(iterator.next().getAsString(), false);
+			studies.add(study);
+		}
+		return studies;
+	}
+	
+	public Study2 getStudyDetails(String studyOrthancID, boolean includeSerieLevel) {
+		
+		System.out.println(studyOrthancID);
+		
+		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/studies/"+studyOrthancID);
+		
+		SimpleDateFormat format =new SimpleDateFormat("YYYYMMdd");
+		
+		JsonObject studyData=(JsonObject) parserJson.parse(sb.toString());
+		System.out.println(studyData);
+		
+		JsonObject studyDetails = (JsonObject) studyData.get("MainDicomTags");
+		String accessionNumber=studyDetails.get("AccessionNumber").getAsString();
+		String studyDate=studyDetails.get("StudyDate").getAsString();
+		Date studyDateObject=null;
+		try {
+			studyDateObject=format.parse(studyDate);
+		} catch (java.text.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String studyDescription=studyDetails.get("StudyDescription").getAsString();
+		
+		JsonObject patientDetails = (JsonObject) studyData.get("PatientMainDicomTags");
+		String patientName=patientDetails.get("PatientName").getAsString();
+		String patientId=patientDetails.get("PatientID").getAsString();
+		String patientOrthancID=studyData.get("ParentPatient").getAsString();
+		
+		ArrayList<Serie> series=null;
+		
+		if(includeSerieLevel) {
+			series=new ArrayList<Serie>();
+			JsonArray childSeries= studyData.get("Series").getAsJsonArray();
+			System.out.println(childSeries);
+			Iterator<JsonElement> iterator = childSeries.iterator();
+			while(iterator.hasNext()) {
+				String seriesOrthancId=iterator.next().getAsString();
+				Serie serie=getSeriesDetails(seriesOrthancId);
+				series.add(serie);
+			}
+		}
+
+		Study2 study=new Study2(studyDescription, studyDateObject, accessionNumber, studyOrthancID, patientName, patientId, patientOrthancID, series);
+		
+		return study;
+		
+	}
+	
+	public Serie getSeriesDetails(String seriesOrthancID) {
+		
+		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/series/"+seriesOrthancID);
+		JsonObject serieData=(JsonObject) parserJson.parse(sb.toString());
+		
+		JsonObject seriesDetails = (JsonObject) serieData.get("MainDicomTags");
+		String modality = seriesDetails.get("Modality").getAsString();
+		int nbOfSlice= serieData.get("Instances").getAsJsonArray().size();
+		//String seriesDate= seriesDetails.get("SeriesDate").getAsString();
+		String seriesDescription= seriesDetails.get("SeriesDescription").getAsString();
+		String seriesNumber= seriesDetails.get("SeriesNumber").getAsString();
+		
+		String parentStudyOrthancID= serieData.get("ParentStudy").getAsString();
+		
+		StringBuilder sb2=connexion.makeGetConnectionAndStringBuilder("/instances/"+serieData.get("Instances").getAsJsonArray().get(0).getAsString()+"/metadata/SopClassUid");
+		String sopClassUid= sb2.toString();
+
+		
+		Serie serie=new Serie(seriesDescription, modality, nbOfSlice, seriesOrthancID, parentStudyOrthancID, serieData.get("Instances").getAsJsonArray().get(0).getAsString() , seriesNumber, sopClassUid);
+		
+		return serie;
 	}
 
 	private String sendQuery(String action){
