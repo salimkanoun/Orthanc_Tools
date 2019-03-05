@@ -19,97 +19,18 @@ package org.petctviewer.orthanc.anonymize;
 
 import java.util.ArrayList;
 
-public class PatientAnon {
-	private String patientName;
-	private String patientId;;
-	private String id;
+public class PatientAnon extends Patient{
+	
 	private String newName;
 	private String newID;
-	private String newUID;
-	private ArrayList<String> selectedStudyUID = new ArrayList<String>();
+	private String newOrthancId;
+	private ArrayList<StudyAnon> selectedStudyAnon = new ArrayList<String>();
 	
-	public PatientAnon(String patientName, String patientId, String patientOrthancId, ArrayList<String> selectedStudyUID){
-		this.patientName = patientName;
-		this.patientId = patientId;
-		this.id = patientOrthancId;
-		this.newName = "";
-		this.newID = "";
-		this.newUID = "";
-		this.selectedStudyUID = selectedStudyUID;
+	public PatientAnon(String patientName, String patientId, String birthDate, String sex, String patientOrthancId){
+		super(patientName, patientId, birthDate, sex, patientOrthancId);
 	}
 
-	public String getPatientName() {
-		return patientName;
-	}
-
-	public void setPatientName(String patientName) {
-		this.patientName = patientName;
-	}
-
-	public String getPatientId() {
-		return patientId;
-	}
-
-	public void setPatientId(String patientId) {
-		this.patientId = patientId;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getNewName() {
-		return newName;
-	}
-
-	public void setNewName(String newName) {
-		this.newName = newName;
-	}
-
-	public String getNewID() {
-		return newID;
-	}
-
-	public void setNewID(String newID) {
-		this.newID = newID;
-	}
-
-	public String getNewUID() {
-		return newUID;
-	}
-
-	public void setNewUID(String newUID) {
-		this.newUID = newUID;
-	}
-
-	public ArrayList<String> getSelectedStudyUID() {
-		return selectedStudyUID;
-	}
-
-	public void setSelectedStudyUID(ArrayList<String> selectedStudyUID) {
-		this.selectedStudyUID = selectedStudyUID;
-	}
 	
-	public void addUID(ArrayList<String> uid){
-		this.selectedStudyUID.addAll(uid);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) return true;
-		if (obj == null) return false;
-		if (getClass() != obj.getClass()) return false;
-		PatientAnon other = (PatientAnon) obj;
-		if (patientId == other.patientId) {
-				return true;
-		} else {
-			return false;
-		}
-	}
 	
 	
 }
