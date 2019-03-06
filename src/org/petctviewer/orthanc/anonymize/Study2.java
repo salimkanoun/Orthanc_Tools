@@ -5,14 +5,14 @@ import java.util.Date;
 
 public class Study2 {
 
-	private String studyDescription;
-	private Date date;
-	private String accession;
-	private String StudyOrthancId;
-	private String patientName;
-	private String patientID;
-	private String patientOrthancId;
-	private ArrayList<Serie> childSeries;
+	protected String studyDescription;
+	protected Date date;
+	protected String accession;
+	protected String StudyOrthancId;
+	protected String patientName;
+	protected String patientID;
+	protected String patientOrthancId;
+	protected ArrayList<Serie> childSeries;
 	
 	public Study2(String studyDescription, Date date, String accession,
 			String StudyOrthancId, String patientName, String patientID, String patientOrthancId, ArrayList<Serie> childSeries) {

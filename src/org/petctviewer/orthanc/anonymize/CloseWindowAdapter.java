@@ -29,25 +29,25 @@ import org.petctviewer.orthanc.setup.Run_Orthanc;
 public class CloseWindowAdapter extends WindowAdapter{
 
 	private VueAnon mainFrame;
-	private ArrayList<String> zipContent;
-	private ArrayList<Study2> studyAnonList;
-	private ArrayList<String> exportIds;
+	private ArrayList<String>  zipContent;
+	private TableAnonPatientsModel patientAnonList;
+	private TableExportStudiesModel exportlist;
 	private Monitoring_GUI monitoring;
 	private Run_Orthanc runOrthanc;
 
 	public CloseWindowAdapter(VueAnon mainFrame, ArrayList<String> zipContent, 
-			ArrayList<Study2> studyAnonList, ArrayList<String> exportIds, Monitoring_GUI monitoring, Run_Orthanc runOrthanc){
-		this.exportIds = exportIds;
+			TableAnonPatientsModel patientAnonList, TableExportStudiesModel exportlist, Monitoring_GUI monitoring, Run_Orthanc runOrthanc){
+		this.exportlist = exportlist;
 		this.mainFrame = mainFrame;
 		this.zipContent = zipContent;
-		this.studyAnonList = studyAnonList;
+		this.patientAnonList = patientAnonList;
 		this.monitoring=monitoring;
 		this.runOrthanc=runOrthanc;
 	}
 	
 	@Override
 	public void windowClosing(WindowEvent e) {
-		if(!zipContent.isEmpty() || !studyAnonList.isEmpty() || !exportIds.isEmpty() || monitoring.isRunningMonitoringService()){
+		if(zipContent.size()>0 || patientAnonList.getRowCount()>0 || exportlist.getRowCount()>0 || monitoring.isRunningMonitoringService()){
 			int PromptResult = JOptionPane.showConfirmDialog(null,"Are you sure you want to exit?","Orthanc Tools",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
 			if(PromptResult==JOptionPane.YES_OPTION) {
 				closeAll();

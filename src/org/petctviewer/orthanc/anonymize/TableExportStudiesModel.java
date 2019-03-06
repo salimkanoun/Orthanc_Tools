@@ -85,6 +85,14 @@ public class TableExportStudiesModel extends DefaultTableModel{
 		return studyIds;
 	}
 	
+	public ArrayList<Study2> getExportStudies(){
+		ArrayList<Study2> studies=new ArrayList<Study2>();
+		for (int i=0; i<this.getRowCount(); i++) {
+			studies.add((Study2) getValueAt(i, 6));
+		}
+		return studies;
+	}
+	
 	/*
 	 * This method clears the studies list
 	 */

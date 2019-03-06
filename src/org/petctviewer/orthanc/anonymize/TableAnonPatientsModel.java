@@ -27,12 +27,14 @@ public class TableAnonPatientsModel extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
 	private String[] entetes = {"Old name", "Old ID", "Old OrthancId", "New name*", "New ID*", "New OrthancId", "patientAnonObject"};
-	private Class<?>[] classEntetes = {String.class, String.class, String.class, String.class, String.class, String.class, Patient.class};
+	private Class<?>[] classEntetes = {String.class, String.class, String.class, String.class, String.class, String.class, PatientAnon.class};
 	private OrthancRestApis connexion;
+	//private TableAnonStudiesModel modelAnonStudies;
 	
-	public TableAnonPatientsModel(OrthancRestApis connexion){
+	public TableAnonPatientsModel(OrthancRestApis connexion/*, TableAnonStudiesModel modelAnonStudies*/){
 		super(0,7);
 		this.connexion=connexion;
+		//this.modelAnonStudies=modelAnonStudies;
 	}
 
 
@@ -58,24 +60,24 @@ public class TableAnonPatientsModel extends DefaultTableModel{
 		this.removeRow(rowIndex);
 	}
 
-	public ArrayList<Patient> getPatientList(){
-		ArrayList<Patient> patients=new ArrayList<Patient>();
+	public ArrayList<PatientAnon> getPatientList(){
+		ArrayList<PatientAnon> patients=new ArrayList<PatientAnon>();
 		
 		for(int i=0; i<this.getRowCount(); i++) {
-			Patient patient=(Patient) getValueAt(i, 2);
-			patients.add(patient);;
+			PatientAnon patient=(PatientAnon) getValueAt(i, 2);
+			patients.add(patient);
 		}
 		
 		return patients;
 	}
 	
-	public Patient getPatient(int rowIndex){
-		return (Patient) this.getValueAt(rowIndex, 6);
+	public PatientAnon getPatient(int rowIndex){
+		return (PatientAnon) this.getValueAt(rowIndex, 6);
 	}
 	
 	private int searchPatientOrthancIdRow(String patientOrthancId) {
 		for(int i=0; i<this.getRowCount(); i++) {
-			if(this.getValueAt(i, 2)==patientOrthancId) {
+			if(this.getValueAt(i, 2).equals(patientOrthancId)) {
 				return i;
 			}
 		}
@@ -86,7 +88,7 @@ public class TableAnonPatientsModel extends DefaultTableModel{
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
-	public void addPatient(Patient patient) {
+	public void addPatient(PatientAnon patient) {
 		
 		int patientExistingRow=searchPatientOrthancIdRow(patient.getPatientOrthancId());
 		if(patientExistingRow==-1) {
@@ -100,13 +102,17 @@ public class TableAnonPatientsModel extends DefaultTableModel{
 		
 		int patientExistingRow=searchPatientOrthancIdRow(study.getParentPatientId());
 		
+		//If not existing patient, create a new patientAnonObject and add the selected study in it
 		if(patientExistingRow==-1) {
-			
+			PatientAnon patientAnon=new PatientAnon (study.getPatientName(), study.getPatientID(),null,null, study.getParentPatientId());
+			patientAnon.storeChildStudies(new QueryOrthancData(connexion));
+			patientAnon.addNewAnonymizeStudyFromExistingStudy(study.getOrthancId());
 			this.addRow(new Object[]{study.getPatientName(), study.getPatientID(), study.getParentPatientId(),
-				"","","",new Patient(study.getPatientName(), study.getPatientID(),null,null,study.getParentPatientId())});
-			
+				"","","", patientAnon});
+		//If existing patient retrieve the PatientAnon object and Add the selected study in it
 		}else {
-			this.getPatient(patientExistingRow).addStudyOrthancIDtoSelected(study.getOrthancId());
+			this.getPatient(patientExistingRow).addNewAnonymizeStudyFromExistingStudy(study.getOrthancId());
+			//modelAnonStudies.add
 		}
 		
 	}

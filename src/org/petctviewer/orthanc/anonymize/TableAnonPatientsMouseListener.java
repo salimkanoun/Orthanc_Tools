@@ -45,9 +45,9 @@ public class TableAnonPatientsMouseListener extends MouseAdapter {
 			this.modeleAnonStudies.clear();
 			
 			int selectedRow =this.tableau.getSelectedRow();
-			Patient patient=modeleAnonPatient.getPatient(selectedRow);
+			PatientAnon patientAnon=modeleAnonPatient.getPatient(selectedRow);
 			
-			this.modeleAnonStudies.addStudies(patient.getSelectedStudyOrthancID());
+			this.modeleAnonStudies.addStudies(patientAnon);
 			
 		}
 

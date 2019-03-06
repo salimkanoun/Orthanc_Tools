@@ -45,8 +45,12 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.EventObject;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.prefs.Preferences;
 
 import javax.swing.BoxLayout;
@@ -79,7 +83,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableRowSorter;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -89,12 +92,11 @@ import org.json.simple.parser.JSONParser;
 import org.petctviewer.orthanc.Jsonsettings.SettingsGUI;
 import org.petctviewer.orthanc.OTP.CTP;
 import org.petctviewer.orthanc.OTP.CTP_Gui;
-import org.petctviewer.orthanc.anonymize.Tags.Choice;
 import org.petctviewer.orthanc.anonymize.gui.AboutBoxFrame;
 import org.petctviewer.orthanc.anonymize.gui.DateRenderer;
 import org.petctviewer.orthanc.export.ExportZip;
-import org.petctviewer.orthanc.export.SendFilesToRemote;
 import org.petctviewer.orthanc.export.ExportZipAndViewer;
+import org.petctviewer.orthanc.export.SendFilesToRemote;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.modify.Modify;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
@@ -134,9 +136,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	private TableSeriesModel modeleSeries;
 	protected TableAnonPatientsModel modeleAnonPatients;
 	protected TableAnonStudiesModel modeleAnonStudies;
-	private TableRowSorter<TablePatientsModel> sorterPatients;
-	private TableRowSorter<TableStudiesModel> sorterStudies;
-	private TableRowSorter<TableSeriesModel> sorterSeries;
 
 	// Orthanc toolbox (p1)
 	protected JTable anonPatientTable;
@@ -228,7 +227,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	private Run_Orthanc runOrthanc;
 	
 	// Last Table focus
-	private JTable lastTableFocus;
+	private JTable lastTableFocusMain;
+	private JTable lastTableFocusAnon;
 	
 	//CustomListener
 	private AnonymizeListener anonymizeListener;
@@ -419,7 +419,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		topPanel.add(search);
 		topPanel.add(queryRetrieveBtn);
 		topPanel.add(queryImportBtn);
-		this.state.setText("");
 		mainPanel.add(topPanel);
 
 		/////////////////////////////////////////////////////////////////////////////
@@ -431,12 +430,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.tableauPatients = new JTable(modelePatients);
 		this.tableauStudies = new JTable(modeleStudies);
 		this.tableauSeries = new JTable(modeleSeries);
-		this.sorterPatients = new TableRowSorter<TablePatientsModel>(modelePatients);
-		this.sorterStudies = new TableRowSorter<TableStudiesModel>(modeleStudies);
-		this.sorterSeries = new TableRowSorter<TableSeriesModel>(modeleSeries);
-		this.sorterPatients.setSortsOnUpdates(true);
-		this.sorterStudies.setSortsOnUpdates(true);
-		this.sorterSeries.setSortsOnUpdates(true);
 		
 		//Listener pour savoir quelle table a le dernier focus
 		FocusListener tableFocus=new FocusListener() {
@@ -445,7 +438,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			public void focusGained(FocusEvent e) {
 				//memorise le dernier focus de table
 				JTable source= (JTable) e.getSource();
-				lastTableFocus=source;
+				lastTableFocusMain=source;
 				//Tracking Visuel de la selection
 				if (source==tableauStudies){
 					tableauPatients.setSelectionBackground(Color.LIGHT_GRAY);
@@ -476,10 +469,27 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			}
 		};
 		
+		FocusListener tableFocusAnon=new FocusListener() {
+			@Override
+			public void focusGained(FocusEvent e) {
+			}
+
+			@Override
+			public void focusLost(FocusEvent e) {
+				//memorise le dernier focus de table
+				JTable source= (JTable) e.getSource();
+				lastTableFocusAnon=source;
+				
+			}
+		};
+		
 		//Add Focus listener to tables
 		this.tableauPatients.addFocusListener(tableFocus);
 		this.tableauStudies.addFocusListener(tableFocus);
 		this.tableauSeries.addFocusListener(tableFocus);
+		tableauPatients.setAutoCreateRowSorter(true);
+		tableauStudies.setAutoCreateRowSorter(true);
+		tableauSeries.setAutoCreateRowSorter(true);
 		
 		////////////////////////// PATIENTS ///////////////////////////////
 
@@ -506,12 +516,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.tableauPatients.addMouseListener(new TablePatientsMouseListener(
 				this, this.tableauPatients, this.modelePatients, this.modeleStudies, this.modeleSeries, 
 				tableauPatients.getSelectionModel()));
-		List<RowSorter.SortKey> sortKeysPatients = new ArrayList<>();
-		sortKeysPatients.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
-		sortKeysPatients.add(new RowSorter.SortKey(1, SortOrder.ASCENDING));
-		sorterPatients.setSortKeys(sortKeysPatients);
-		sorterPatients.sort();
-		this.tableauPatients.setRowSorter(sorterPatients);
 
 		JMenuItem menuItemModifyPatients = new JMenuItem("Show tags/ Modify");
 		menuItemModifyPatients.addActionListener(new ActionListener() {
@@ -551,12 +555,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.tableauStudies.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
 		this.tableauStudies.addMouseListener(new TableStudiesMouseListener(this, this.tableauStudies, this.modeleStudies, this.modeleSeries, tableauStudies.getSelectionModel()));
-		List<RowSorter.SortKey> sortKeysStudies = new ArrayList<>();
-		sortKeysStudies.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
-		sortKeysStudies.add(new RowSorter.SortKey(2, SortOrder.ASCENDING));
-		sorterStudies.setSortKeys(sortKeysStudies);
-		sorterStudies.sort();
-		this.tableauStudies.setRowSorter(sorterStudies);
 		this.tableauStudies.setDefaultRenderer(Date.class, new DateRenderer());
 		
 		JMenuItem menuItemModifyStudy = new JMenuItem("Show tags / Modify");
@@ -605,9 +603,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		List<RowSorter.SortKey> sortKeysSeries = new ArrayList<>();
 		sortKeysSeries.add(new RowSorter.SortKey(1, SortOrder.ASCENDING));
 		sortKeysSeries.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
-		sorterSeries.setSortKeys(sortKeysSeries);
-		sorterSeries.sort();
-		this.tableauSeries.setRowSorter(sorterSeries);
+		//sorterSeries.setSortKeys(sortKeysSeries);
+		//sorterSeries.sort();
+		//this.tableauSeries.setRowSorter(sorterSeries);
 
 		JMenuItem menuItemModifySeries = new JMenuItem("Show tags / Modify");
 		menuItemModifySeries.addActionListener(new ActionListener() {
@@ -618,10 +616,13 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			});
 		
 		JMenuItem menuItemAllSopClass = new JMenuItem("Detect all secondary captures");
+		
 		menuItemAllSopClass.addActionListener(new ActionListener() {
+			boolean activated=false;
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				setRenderer(tableauSeries);
+				activated=!activated;
+				toogleScRenderer(tableauSeries, activated, 3);
 			}
 		});
 		
@@ -647,27 +648,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		
 		this.tableauSeries.setComponentPopupMenu(popMenuSeries);
 
-		this.tableauSeries.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public Component getTableCellRendererComponent(JTable table,
-					Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-
-				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-
-				boolean status = (boolean)table.getModel().getValueAt(tableauSeries.convertRowIndexToModel(row), 3);
-				if (status && !isSelected) {
-					setBackground(Color.RED);
-					setForeground(Color.black);
-				}else if(isSelected){
-					setBackground(tableauExportStudies.getSelectionBackground());
-				}else{
-					setBackground(tableauExportStudies.getBackground());
-				}
-				return this;
-			}   
-		});
+		
+		
+		
 
 		/////////////////////////////////////////////////////////////////////////////
 		///////////////////////// ORTHANC TOOLBOX ///////////////////////////////////
@@ -701,7 +684,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 						boolean success;
 						@Override
 						protected Void doInBackground()  {
-							state.setText("<html>Storing data <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
+							setStateMessage("Storing data (Do not use the toolbox while the current operation is not done)", "red", -1);
 							storeBtn.setEnabled(false);
 							pack();
 							success=connexionHttp.sendToAet(listeAET.getSelectedItem().toString(), zipContent);
@@ -716,7 +699,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 								zipShownContentList.removeAll(zipShownContentList);
 								zipContent.removeAll(zipContent);
 							}else {
-								state.setText("<html><font color='red'>DICOM Send Failed</font></html>");
+								setStateMessage("DICOM Send Failed", "red", -1);
 								
 							}
 							storeBtn.setEnabled(true);
@@ -784,7 +767,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 						deletePatients.add("/patients/"+manageContent.get(i));
 					}
 				}
-				state.setText("<html><font color='red'>Deleting please wait</font></html>");
+				setStateMessage("Deleting please wait", "red", -1);
 				enableManageButtons(false);
 				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 					@Override
@@ -793,24 +776,24 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 						for (int i=0 ; i<deleteSeries.size(); i++){
 							connexionHttp.makeDeleteConnection(deleteSeries.get(i));
 							progress++;
-							state.setText("<html><font color='red'>Deleted "+ progress +"/"+manageContent.size()+"</font></html>");
+							setStateMessage("Deleted "+ progress +"/"+manageContent.size(), "red", -1);
 						}
 						for (int i=0 ; i<deleteStudies.size(); i++){
 							connexionHttp.makeDeleteConnection(deleteStudies.get(i));
 							progress++;
-							state.setText("<html><font color='red'>Deleted "+ progress +"/"+manageContent.size()+"</font></html>");
+							setStateMessage("Deleted "+ progress +"/"+manageContent.size(), "red", -1);
 						}
 						for (int i=0 ; i<deletePatients.size(); i++){
 							connexionHttp.makeDeleteConnection(deletePatients.get(i));
 							progress++;
-							state.setText("<html><font color='red'>Deleted "+ progress +"/"+manageContent.size()+"</font></html>");
+							setStateMessage("Deleted "+ progress +"/"+manageContent.size(), "red", -1);
 						}
 						return null;
 					}
 
 					@Override
 					protected void done(){
-						state.setText("<html><font color='green'>Delete Done</font></html>");
+						setStateMessage("Delete Done", "green", 4);
 						enableManageButtons(true);
 						manageSize.setText("empty list");
 						manageShownContent.removeAllItems();
@@ -905,7 +888,24 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		anonPatientTable.addMouseListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies, queryOrthanc));
 		anonPatientTable.putClientProperty("terminateEditOnFocusLost", true);
 
-		anonStudiesTable = new JTable(modeleAnonStudies);
+		anonStudiesTable = new JTable(modeleAnonStudies) {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public boolean editCellAt(int row, int column, EventObject e) {
+				  boolean edit = super.editCellAt(row, column, e);
+				  if (edit && column==0 ) {
+					System.out.println("ici");
+					//SK NE MARCHE PAS
+					PatientAnon patient=(PatientAnon) this.getValueAt(row, 5);
+					Study2Anon editingStudy=patient.getAnonymizeStudy((String) getValueAt(row, 2));
+					String newStudyDesc=(String) this.getValueAt(row, 0);
+					editingStudy.setNewStudyDescription(newStudyDesc);
+					
+				  }
+				  return edit;
+			}
+		};
 		anonStudiesTable.getTableHeader().setToolTipText("Click on the description cells to change their values");
 		anonStudiesTable.getColumnModel().getColumn(0).setMinWidth(200);
 		anonStudiesTable.getColumnModel().getColumn(1).setMinWidth(80);
@@ -916,6 +916,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		anonStudiesTable.getColumnModel().getColumn(3).setMaxWidth(0);
 		anonStudiesTable.setPreferredScrollableViewportSize(new Dimension(430,130));
 		anonStudiesTable.setDefaultRenderer(Date.class, new DateRenderer());
+		
+		anonPatientTable.addFocusListener(tableFocusAnon);
+		anonStudiesTable.addFocusListener(tableFocusAnon);
 
 		displayAnonTool = new JButton("Anonymize");
 		displayAnonTool.addActionListener(new ActionListener() {
@@ -969,24 +972,30 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				//If request for patient Table Add all studies in Anon
-				if(lastTableFocus==tableauPatients) {
+				if(lastTableFocusMain==tableauPatients) {
 					int[] selectedRows=tableauPatients.getSelectedRows();
 					for(int row:selectedRows) {
 						int modelRow=tableauPatients.convertRowIndexToModel(row);
 						Patient patient=modelePatients.getPatient(modelRow);
-						patient.storeChildStudies(queryOrthanc);
-						patient.selectAllChildStudies();
-						modeleAnonPatients.addPatient(patient);	
+						//Conversion into a PatientAnon object to store the future anonymized name / id ...
+						PatientAnon patientAnon=new PatientAnon(patient);
+						patientAnon.storeChildStudies(queryOrthanc);
+						patientAnon.addAllChildStudiesToAnonymizeList();
+						modeleAnonPatients.addPatient(patientAnon);	
 					}
 					
 					
 				//Else Add Selected study
-				}else {
+				}else if(lastTableFocusMain==tableauStudies) {
 					int[] selectedRows=tableauStudies.getSelectedRows();
 					for(int row:selectedRows) {
 						int modelRow=tableauStudies.convertRowIndexToModel(row);
 						modeleAnonPatients.addStudy(modeleStudies.getStudy(modelRow));
-					}
+						
+					}	
+				}
+				else {
+					setStateMessage("Selection to Anonymize only possible from Patient Or Study table", "orange",4);
 					
 				}
 			}
@@ -996,7 +1005,17 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		removeFromAnonList.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-//AFAIRE
+				if(lastTableFocusAnon==anonPatientTable) {
+					//Erase patient row in reverse order to avoid index change problems
+					int[] rows =anonPatientTable.getSelectedRows();
+					Arrays.sort(rows);
+				    for (int i = rows.length - 1; i >= 0; i--) {
+				    	modeleAnonPatients.removePatient(lastTableFocusAnon.convertRowIndexToModel(anonPatientTable.getSelectedRow()));
+						
+				    }
+				}else if(lastTableFocusAnon==anonStudiesTable)  {
+					//modeleAnonPatients
+				}
 			}
 		});
 		
@@ -1678,8 +1697,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 								//Create the JSON to send
 								JSONArray sentStudiesArray=new JSONArray();
 								//For each study populate the array with studies details of send process
-								for(Study study : modeleExportStudies.getStudiesList()){
-									StringBuilder statistics=connexionHttp.makeGetConnectionAndStringBuilder("/studies/"+study.getId()+"/statistics/");
+								for(Study2 study : modeleExportStudies.getExportStudies()){
+									StringBuilder statistics=connexionHttp.makeGetConnectionAndStringBuilder("/studies/"+study.getOrthancId()+"/statistics/");
 									JSONObject stats = null;
 									try {
 										stats = (JSONObject) parser.parse(statistics.toString());
@@ -1688,7 +1707,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 									}
 									JSONObject studyObject=new JSONObject();
 									studyObject.put("visitName", study.getStudyDescription());
-									studyObject.put("StudyInstanceUID", study.getNewStudyInstanceUID());
+									// study.getNewStudyInstanceUID()
+									studyObject.put("StudyInstanceUID", "");
 									studyObject.put("patientNumber", study.getPatientName());
 									studyObject.put("instanceNumber", Integer.valueOf(stats.get("CountInstances").toString()));
 									sentStudiesArray.add(studyObject);
@@ -1699,9 +1719,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 								//If everything OK, says validated and remove anonymized studies from local
 								if(validateOk) {
 									stateExports.setText("<html><font color= 'green'>Step 3/3 : Deleting local study </font></html>");
-									for(Study study : modeleExportStudies.getStudiesList()){
+									for(Study2 study : modeleExportStudies.getExportStudies()){
 										//deleted anonymized and sent study
-										connexionHttp.makeDeleteConnection("/studies/"+study.getId());
+										connexionHttp.makeDeleteConnection("/studies/"+study.getOrthancId());
 									}
 									// empty the export table
 									modeleExportStudies.clear();
@@ -2378,7 +2398,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.getContentPane().add(tabbedPane);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.getRootPane().setDefaultButton(search);
-		this.addWindowListener(new CloseWindowAdapter(this, this.zipContent, this.modeleAnonStudies.getStudyList(), this.modeleExportStudies.getOrthancIds(), monitoring, runOrthanc));
+		this.addWindowListener(new CloseWindowAdapter(this, zipContent, modeleAnonPatients, modeleExportStudies, monitoring, runOrthanc));
 		pack();
 		
 	}
@@ -2447,7 +2467,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	private void addToToolList(ArrayList<String> zipContent, JComboBox<Object> zipShownContent, ArrayList<String > zipShownContentList, JLabel zipSize){
 
 		//On recupere la table qui a eu le dernier focus pour la selection
-		JTable tableau =  lastTableFocus;
+		JTable tableau =  lastTableFocusMain;
 		int[] selectedLines=tableau.getSelectedRows();
 		boolean duplicate = false;
 		if(tableau.equals(tableauPatients)){
@@ -2746,27 +2766,49 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
         });
 	}
 	
-	public static void setRenderer(JTable table) {
-		table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
-			private static final long serialVersionUID = 1L;
+	public static void toogleScRenderer(JTable table, boolean activate, int scColumn) {
+		if(activate) {
+			table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
+				private static final long serialVersionUID = 1L;
 
-			@Override
-			public Component getTableCellRendererComponent(JTable table,
-					Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-				
-				boolean status = (boolean) table.getModel().getValueAt(row, 3);
-				if (status & !isSelected) {
-					setBackground(Color.RED);
-					setForeground(Color.black);
-				}else if(isSelected){
-					super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-				}else{
-					super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-				}
-				return this;
-			}   
-		});
+				@Override
+				public Component getTableCellRendererComponent(JTable table,
+						Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+					
+					boolean status = (boolean) table.getModel().getValueAt(row, scColumn);
+					System.out.println(status);
+					if (status & !isSelected) {
+						setBackground(Color.RED);
+						setForeground(Color.black);
+					}else if(isSelected){
+						super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+					}else{
+						super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+					}
+					return this;
+				}   
+			});
+			
+		}else {
+			table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer());
+		}
 		
+		
+		
+	}
+	
+	
+	public void setStateMessage(String message, String color, int seconds) {
+		state.setText("<html><font color='"+color+"'>"+message+"</font></html>");
+		if(seconds !=(-1)) {
+			Timer timer=new Timer();
+			timer.schedule(new TimerTask() {
+				  @Override
+				  public void run() {
+					  state.setText("");
+				  }
+				}, seconds*1000);
+		}
 		
 	}
 	

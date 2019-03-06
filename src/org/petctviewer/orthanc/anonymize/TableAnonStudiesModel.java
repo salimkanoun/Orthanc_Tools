@@ -17,26 +17,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Set;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.petctviewer.orthanc.setup.OrthancRestApis;
-
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
+
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class TableAnonStudiesModel extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Study description*", "Study date", "studyOrthancId", "Patient id", "studyObject"};
+	private String[] entetes = {"Study description*", "Study date", "studyOrthancId", "Patient id", "studyObject", "patientAnon"};
 	private Class<?>[] typeEntetes = {String.class, Date.class, String.class, String.class, Study2.class};
 	//private ArrayList<Study> shownStudies = new ArrayList<Study>();
 	//private ArrayList<Study> studies = new ArrayList<Study>();
@@ -45,10 +38,13 @@ public class TableAnonStudiesModel extends DefaultTableModel{
 	//private HashMap<String, String> newDescriptions = new HashMap<String, String>();
 	//private String url;
 	private OrthancRestApis connexionHttp;
+	
+	private PatientAnon patientAnon;
 
 	public TableAnonStudiesModel(OrthancRestApis connexionHttp){
-		super(0,5);
+		super(0,6);
 		this.connexionHttp=connexionHttp;
+		
 	}
 
 	@Override
@@ -67,6 +63,10 @@ public class TableAnonStudiesModel extends DefaultTableModel{
 		}
 		return false;
 	}
+	
+	
+	
+	
 	
 	public ArrayList<Study2> getStudyList(){
 		ArrayList<Study2> studies=new ArrayList<Study2>();
@@ -227,12 +227,19 @@ public class TableAnonStudiesModel extends DefaultTableModel{
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
-	public void addStudies(ArrayList<Study2> studiesOrthancID) {
-		
-		for(Study2 study:studiesOrthancID) {
+	public void addStudies(PatientAnon patientAnon) {
+		HashMap<String, Study2Anon> studiesAnonmyze=patientAnon.getAnonymizeStudies();
+		Set<String> keys=studiesAnonmyze.keySet();
+		for(String studyID: keys) {
+			Study2Anon anonStudy=studiesAnonmyze.get(studyID);
 			//"Study description*", "Study date", "studyOrthancId", "Patient id", "studyObject"
-			this.addRow(new Object[] {study.getStudyDescription(), study.getDate(), study.getOrthancId(), study.getPatientID(), study});
+			this.addRow(new Object[] {anonStudy.getStudyDescription(), anonStudy.getDate(), anonStudy.getOrthancId(), anonStudy.getPatientID(), anonStudy, patientAnon });
 		}
+	}
+		
+	public void refresh() {
+		this.addStudies(patientAnon);
+	}
 		
 		/*
 		DateFormat parser = new SimpleDateFormat("yyyyMMdd");
@@ -264,7 +271,6 @@ public class TableAnonStudiesModel extends DefaultTableModel{
 				}
 			}
 		}*/
-	}
 	
 	/*
 	private String[] getStudyDescriptionAndUID(String orthancUID) {
