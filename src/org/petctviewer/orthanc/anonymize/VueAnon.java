@@ -119,7 +119,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	private JLabel state = new JLabel();
 	private DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
 	private DateFormat dfZip = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
-	public JFrame gui=this;
+	public VueAnon gui=this;
 	private JSONParser parser=new JSONParser();
 	
 	//Objet de connexion aux restFul API, prend les settings des registery et etabli les connexion a la demande
@@ -519,7 +519,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		menuItemModifyPatients.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					new Modify("patients",(String)tableauPatients.getValueAt(tableauPatients.getSelectedRow(),2), gui, connexionHttp, state);
+					new Modify("patients",(String)tableauPatients.getValueAt(tableauPatients.getSelectedRow(),2), gui, connexionHttp);
 				}
 			});
 		
@@ -559,7 +559,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		menuItemModifyStudy.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					new Modify("studies",(String)tableauStudies.getValueAt(tableauStudies.getSelectedRow(),3), gui, connexionHttp, state);
+					new Modify("studies",(String)tableauStudies.getValueAt(tableauStudies.getSelectedRow(),3), gui, connexionHttp);
 				}
 			});
 		
@@ -602,7 +602,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		menuItemModifySeries.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					new Modify("series",(String)tableauSeries.getValueAt(tableauSeries.getSelectedRow(),4), gui, connexionHttp, state);
+					new Modify("series",(String)tableauSeries.getValueAt(tableauSeries.getSelectedRow(),4), gui, connexionHttp);
 				}
 			});
 		

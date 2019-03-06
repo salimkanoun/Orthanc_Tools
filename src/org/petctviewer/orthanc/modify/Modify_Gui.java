@@ -37,6 +37,7 @@ import javax.swing.table.DefaultTableModel;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
+import org.petctviewer.orthanc.anonymize.VueAnon;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -67,9 +68,10 @@ public class Modify_Gui extends JDialog {
 	private JTable table_SharedTags;
 	private JButton btnShowTags;
 	private JSpinner spinner_instanceNumber;
-	private JLabel state;
 	
 	private Modify modify;
+	
+	private VueAnon guiParent;
 	
 	//Build modification list Replace and Remove
 	JSONObject queryReplace=new JSONObject();
@@ -81,10 +83,10 @@ public class Modify_Gui extends JDialog {
 	 * @param guiParent
 	 * @param state
 	 */
-	public Modify_Gui(Modify modify, JFrame guiParent, JLabel state) {
+	public Modify_Gui(Modify modify, VueAnon guiParent) {
 		super(guiParent, "Modify", true);
 		this.modify=modify;
-		this.state=state;
+		this.guiParent=guiParent;
 		makegui();
 	}
 	
@@ -122,14 +124,15 @@ public class Modify_Gui extends JDialog {
 
 						if (query !=null) {
 							dispose();
-							state.setText("<html><font color='red'>Modifying...</font></html>");
+							guiParent.setStateMessage("Modifying...", "red", -1);
 							modify.sendQuery(query);
 						}
 						return null;
 					}
 					@Override
 					protected void done() {
-						state.setText("<html><font color='green'>Modified DICOM created (refresh list)</font></html>");
+						guiParent.setStateMessage("Modified DICOM created (refresh list)", "green", -1);
+						//SK Tenter le refresh Auto
 					}
 				};
 				
