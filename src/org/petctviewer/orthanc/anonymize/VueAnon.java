@@ -2776,7 +2776,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 						Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 					
 					boolean status = (boolean) table.getModel().getValueAt(row, scColumn);
-					System.out.println(status);
 					if (status & !isSelected) {
 						setBackground(Color.RED);
 						setForeground(Color.black);

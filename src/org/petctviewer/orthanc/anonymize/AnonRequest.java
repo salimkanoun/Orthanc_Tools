@@ -34,7 +34,7 @@ public class AnonRequest {
 
 	private ArrayList<Tags> tags = new ArrayList<Tags>();
 	private boolean keepPrivateTags;
-	private String newUID;
+	private String newOrthancID;
 	private String newPatientUID;
 	private String newPatientName;
 	private String newPatientID;
@@ -132,7 +132,7 @@ public class AnonRequest {
 		StringBuilder sb=connexionHttp.makePostConnectionAndStringBuilder("/studies/" + id +"/anonymize", query);
 		JsonParser parser =new JsonParser();
 		JsonObject answer=(JsonObject) parser.parse(sb.toString());
-		newUID=answer.get("ID").getAsString();
+		newOrthancID=answer.get("ID").getAsString();
 		newPatientUID=answer.get("PatientID").getAsString();
 	}
 	
@@ -168,8 +168,8 @@ public class AnonRequest {
 		return this.newPatientUID;
 	}
 
-	public String getNewUID(){
-		return this.newUID;
+	public String getOrthancID(){
+		return this.newOrthancID;
 	}
 	
 	public String getNewPatientName(){
