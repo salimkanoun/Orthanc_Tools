@@ -1,7 +1,9 @@
-package org.petctviewer.orthanc.anonymize;
+package org.petctviewer.orthanc.anonymize.datastorage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import org.petctviewer.orthanc.anonymize.QueryOrthancData;
 
 public class Patient {
 	

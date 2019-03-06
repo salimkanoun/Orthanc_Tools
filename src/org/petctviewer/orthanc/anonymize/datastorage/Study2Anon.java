@@ -1,4 +1,4 @@
-package org.petctviewer.orthanc.anonymize;
+package org.petctviewer.orthanc.anonymize.datastorage;
 
 import java.util.ArrayList;
 import java.util.Date;

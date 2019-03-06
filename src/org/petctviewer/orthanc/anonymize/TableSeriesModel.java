@@ -20,6 +20,8 @@ package org.petctviewer.orthanc.anonymize;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 
+import org.petctviewer.orthanc.anonymize.datastorage.Serie;
+import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class TableSeriesModel extends DefaultTableModel{

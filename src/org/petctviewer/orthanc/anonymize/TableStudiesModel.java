@@ -22,6 +22,7 @@ import java.util.Date;
 
 import javax.swing.table.DefaultTableModel;
 
+import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 
@@ -52,6 +53,10 @@ public class TableStudiesModel extends DefaultTableModel{
 	
 	public Study2 getStudy(int row) {
 		return (Study2) this.getValueAt(row, 4);
+	}
+	
+	public boolean isCellEditable(int row, int col){
+		return false;
 	}
 
 	/*

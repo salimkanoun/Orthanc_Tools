@@ -23,6 +23,8 @@ import java.util.ArrayList;
 
 import javax.swing.JTable;
 
+import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
+
 public class TableAnonPatientsMouseListener extends MouseAdapter {
 
 	private JTable tableau;

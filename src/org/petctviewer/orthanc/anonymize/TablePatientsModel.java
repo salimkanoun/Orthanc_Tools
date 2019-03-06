@@ -22,6 +22,7 @@ import java.util.Date;
 
 import javax.swing.table.DefaultTableModel;
 
+import org.petctviewer.orthanc.anonymize.datastorage.Patient;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class TablePatientsModel extends DefaultTableModel{

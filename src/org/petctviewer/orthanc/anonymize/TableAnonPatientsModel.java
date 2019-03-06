@@ -21,6 +21,8 @@ import java.util.ArrayList;
 
 import javax.swing.table.DefaultTableModel;
 
+import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
+import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class TableAnonPatientsModel extends DefaultTableModel{

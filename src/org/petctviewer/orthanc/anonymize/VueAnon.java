@@ -73,8 +73,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.RowSorter;
-import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
@@ -92,6 +90,14 @@ import org.json.simple.parser.JSONParser;
 import org.petctviewer.orthanc.Jsonsettings.SettingsGUI;
 import org.petctviewer.orthanc.OTP.CTP;
 import org.petctviewer.orthanc.OTP.CTP_Gui;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Anonymize_Btn;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_Zip;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Read_Series;
+import org.petctviewer.orthanc.anonymize.controllers.Tab_Change_Listener;
+import org.petctviewer.orthanc.anonymize.datastorage.Patient;
+import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
+import org.petctviewer.orthanc.anonymize.datastorage.Study2;
+import org.petctviewer.orthanc.anonymize.datastorage.Study2Anon;
 import org.petctviewer.orthanc.anonymize.gui.AboutBoxFrame;
 import org.petctviewer.orthanc.anonymize.gui.DateRenderer;
 import org.petctviewer.orthanc.export.ExportZip;
@@ -112,13 +118,13 @@ import ij.ImagePlus;
 import ij.plugin.PlugIn;
 
 
-public class VueAnon extends JFrame implements PlugIn, ActionListener{
+public class VueAnon extends JFrame implements PlugIn {
 	private static final long serialVersionUID = 1L;
 	
 	protected JTabbedPane tabbedPane;
-	private JLabel state = new JLabel();
+	public JLabel state = new JLabel();
 	private DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
-	private DateFormat dfZip = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
+
 	public VueAnon gui=this;
 	private JSONParser parser=new JSONParser();
 	
@@ -130,7 +136,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	// Tables (p1)
 	private JTable tableauPatients;
 	private JTable tableauStudies;
-	private JTable tableauSeries;
+	public JTable tableauSeries;
 	private TablePatientsModel modelePatients;
 	private TableStudiesModel modeleStudies;
 	private TableSeriesModel modeleSeries;
@@ -148,9 +154,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	private JButton removeFromAnonList;
 	protected JButton importCTP;
 	private JButton queryCTPBtn;
-	private JButton exportZip = new JButton("Export list");
-	private JButton removeFromZip = new JButton("Remove from list");
-	private JButton addToZip = new JButton("Add to list");
+	public JButton exportZip = new JButton("Export list");
+	public JButton removeFromZip = new JButton("Remove from list");
+	public JButton addToZip = new JButton("Add to list");
 	private JLabel zipSize= new JLabel("");
 	private JLabel manageSize= new JLabel("");
 	private JTextField userInputFirstName = new JTextField();
@@ -160,20 +166,23 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	JButton removeFromManage = new JButton("Remove from List");
 	JButton deleteManage = new JButton("Delete list");
 	//End manage buttons
-	private JComboBox<Object> zipShownContent;
+	public JComboBox<Object> zipShownContent;
 	private JComboBox<Object> manageShownContent;
 	private ArrayList<String> manageShownContentList = new ArrayList<String>();
-	private ArrayList<String> zipShownContentList = new ArrayList<String>();
+	public ArrayList<String> zipShownContentList = new ArrayList<String>();
 	private JPanel oToolRight, oToolRightManage;
 	private JComboBox<String> listeAET;
-	private JComboBox<String> comboToolChooser;
+	public JComboBox<String> comboToolChooser;
 	private JPopupMenu popMenuPatients = new JPopupMenu();
 	private JPopupMenu popMenuStudies = new JPopupMenu();
 	private JPopupMenu popMenuSeries = new JPopupMenu();
-	private ArrayList<String> zipContent = new ArrayList<String>();
+	public ArrayList<String> zipContent = new ArrayList<String>();
 	private ArrayList<String> manageContent = new ArrayList<String>();
 	protected JPanel anonTablesPanel;
 	private int anonCount;
+	
+	//Read Image Button
+	public JButton btnReadSeries;
 	
 
 	// Tab Export (p2)
@@ -195,12 +204,12 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	// Tab Setup (p4)
 	private JComboBox<String> anonProfiles;
 	//RadioButton for each group in Array 0 for Keep, 1 for Clear
-	private JRadioButton[] settingsBodyCharButtons = new JRadioButton[2];
-	private JRadioButton[] settingDatesButtons = new JRadioButton[2];
-	private JRadioButton[] settingsBirthDateButtons = new JRadioButton[2];
-	private JRadioButton[] settingsPrivateTagButtons = new JRadioButton[2];
-	private JRadioButton[] settingsSecondaryCaptureButtons = new JRadioButton[2];
-	private JRadioButton[] settingsStudySerieDescriptionButtons = new JRadioButton[2];
+	public JRadioButton[] settingsBodyCharButtons = new JRadioButton[2];
+	public JRadioButton[] settingDatesButtons = new JRadioButton[2];
+	public JRadioButton[] settingsBirthDateButtons = new JRadioButton[2];
+	public JRadioButton[] settingsPrivateTagButtons = new JRadioButton[2];
+	public JRadioButton[] settingsSecondaryCaptureButtons = new JRadioButton[2];
+	public JRadioButton[] settingsStudySerieDescriptionButtons = new JRadioButton[2];
 	private JTextField centerCode;
 	private JTextField remoteServer;
 	private JTextField remotePort;
@@ -211,15 +220,15 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	
 	//CTP
 	protected JTextField addressFieldCTP;
-	protected JComboBox<String> listePeersCTP ;
+	public JComboBox<String> listePeersCTP ;
 	protected JButton exportCTP;
 	private String CTPUsername;
 	private String CTPPassword;
 	private boolean autoSendCTP=false;
 
 	// Settings preferences
-	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
-	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
+	public Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
+	//private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	
 	//Run Orthanc
 	private Run_Orthanc runOrthanc;
@@ -231,7 +240,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	//CustomListener
 	private AnonymizeListener anonymizeListener;
 
-	private boolean fijiEnvironement=false;
+	public boolean fijiEnvironement=false;
 	
 	public VueAnon() {
 		super("Orthanc Tools");
@@ -283,8 +292,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		modeleAnonStudies = new TableAnonStudiesModel(connexionHttp);
 		modeleAnonPatients = new TableAnonPatientsModel(connexionHttp);
 		
-		
-
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////// PANEL 1 : ANONYMIZATION ////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -313,7 +320,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			       }
 				}
 		});
-		inputType.setSelectedIndex(jpreferPerso.getInt("InputParameter", 0));
+		inputType.setSelectedIndex(jprefer.getInt("InputParameter", 0));
 		
 		JTextField userInput = new JTextField();
 		userInput.setToolTipText("Set your input accordingly to the field combobox on the left. ('*' stands for any character)");
@@ -377,7 +384,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 					state.setText("");
 					search.setEnabled(true);
 					search.setText("Search");
-					jpreferPerso.putInt("InputParameter", inputType.getSelectedIndex());
+					jprefer.putInt("InputParameter", inputType.getSelectedIndex());
 				}
 			}
 		});
@@ -813,34 +820,27 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		oToolRight.setVisible(false);
 		toolbox.add(oToolRight);
 		
-		
-		
 		//Manage Panel//
-		
 		oToolRightManage = new JPanel();
 		oToolRightManage.setLayout(new BoxLayout(oToolRightManage, BoxLayout.PAGE_AXIS));
 
-		
 		JPanel deletePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		JPanel deletePanelGrid = new JPanel(new GridLayout(2,1));
 		
 		JPanel deletePanelComboButton = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		manageShownContent=new JComboBox<Object>(manageContent.toArray());
 		manageShownContent.setPreferredSize(new Dimension(297,27));
-		
 	
 		deletePanelComboButton.add(manageShownContent);
 		deletePanelComboButton.add(addManage);
 		deletePanelComboButton.add(removeFromManage);
 		deletePanelComboButton.add(manageSize);
 		
-		
 		JPanel metadataPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JButton metadata = new JButton("Metadata");
 		metadata.setEnabled(false);
 		metadataPanel.add(deleteManage);
 		metadataPanel.add(metadata);
-		
 		
 		deletePanelGrid.add(deletePanelComboButton);
 		deletePanelGrid.add(metadataPanel);
@@ -1065,7 +1065,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		
 		anonBtn = new JButton("Anonymize");
 		anonBtn.setPreferredSize(new Dimension(120,27));
-		anonBtn.addActionListener(this);
+		anonBtn.addActionListener(new Controller_Anonymize_Btn(this));
 		
 		//Label to show the currently selected profile in the main panel
 		JLabel profileLabel = new JLabel();
@@ -1086,108 +1086,13 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		anonBtnPanelRight.add(anonBtn);
 		anonBtnPanelRight.add(profileLabel);
 		
-		
 		anonTablesPanel.add(anonBtnPanelRight);
 		anonTablesPanel.setVisible(false);
 		addToAnon.setVisible(false);
 		anonDetailed.add(anonTablesPanel, BorderLayout.WEST);
 
-		exportZip.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				if (!zipContent.isEmpty()){
-					JFileChooser chooser = new JFileChooser();
-					chooser.setDialogTitle("Export to...");
-					chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-					chooser.setAcceptAllFileFilterUsed(false);
-					chooser.setCurrentDirectory(new File(jprefer.get("zipLocation", System.getProperty("user.dir"))));
-					if (comboToolChooser.getSelectedItem().equals("Image with Viewer (iso)")) {
-						chooser.setSelectedFile(new File(zipShownContentList.get(0).replaceAll("/", "_")+"_image.iso")); 
-					}
-					else chooser.setSelectedFile(new File(dfZip.format(new Date()) + ".zip")); 
-
-					if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-						jprefer.put("zipLocation", chooser.getSelectedFile().toPath().toString());
-						
-							SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-							@Override
-							protected Void doInBackground() throws Exception {
-								
-								ExportZip convertzip=new ExportZip(connexionHttp);
-								exportZip.setText("Generating Zip...");
-								state.setText("Generating Zip...");
-								activateExport(false);
-								
-								if ( comboToolChooser.getSelectedItem().equals("ZIP File") || comboToolChooser.getSelectedItem().equals("DICOMDIR Zip") ) {	
-									convertzip.setConvertZipAction(chooser.getSelectedFile().getAbsolutePath().toString() , zipContent, false);
-									if (comboToolChooser.getSelectedItem().equals("ZIP File")) convertzip.generateZip(false);
-									if (comboToolChooser.getSelectedItem().equals("DICOMDIR Zip")) convertzip.generateZip(true);
-								//If include the viewer	
-								} else {
-									String viewerString=jpreferPerso.get("viewerDistribution", "empty");
-									
-									if( viewerString.equals("empty") || ! new File(viewerString).exists() ) {
-										JOptionPane.showMessageDialog(gui,"Viewer not available, please download it in the setup tab");
-										throw new Exception("No Available Viewer");
-									}
-									
-									convertzip.setConvertZipAction("Viewer", zipContent, true);
-									convertzip.generateZip(true);
-									File tempImageZip=convertzip.getGeneratedZipFile();
-									File packageViewer=new File(viewerString);
-									ExportZipAndViewer zip=new ExportZipAndViewer(tempImageZip, chooser.getSelectedFile(), packageViewer);
-									
-									if( comboToolChooser.getSelectedItem().equals("Image with Viewer (zip)") ) {
-										zip.ZipAndViewerToZip();
-									}else if( comboToolChooser.getSelectedItem().equals("Image with Viewer (iso)") ) {
-										zip.generateIsoFile();
-										
-									}
-								
-								}
-								return null;
-							}
-							
-							@Override
-							protected void done() {
-								try {
-									this.get();
-									state.setText("<html><font color='green'>The data have successfully been exported to zip</font></html>");
-								} catch (Exception e) {
-									e.printStackTrace();
-									state.setText("<html><font color='red'>Zip Export Failure</font></html>");
-								}
-							
-								//Reactivate component after export
-								exportZip.setText("Export list");
-								//empty exported list
-								activateExport(true);
-								zipShownContent.removeAllItems();
-								zipShownContentList.removeAll(zipShownContentList);
-								zipContent.removeAll(zipContent);	
-								//Close export tool
-								openCloseExportTool(false);
-								pack();
-							}
-							
-							private void activateExport(boolean activate){
-								exportZip.setEnabled(activate);
-								addToZip.setEnabled(activate);
-								removeFromZip.setEnabled(activate);
-								comboToolChooser.setEnabled(activate);
-							}
-							
-							
-						};
-						worker.execute();
-						pack();
-					
-					}	
-				}
-
-			}
-		});
+		exportZip.addActionListener(new Controller_Export_Zip(this));
+		
 		/////////////////////////////// ADDING COMPONENTS ////////////////
 		JPanel p1 = new JPanel(new FlowLayout());
 		GridBagConstraints c = new GridBagConstraints();
@@ -1212,80 +1117,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		c.gridy = 0;
 		panelTableauSeries.add(jscp3, BorderLayout.CENTER);
 		JPanel panelButton=new JPanel();
-		JButton btnReadSeries=new JButton("Open Images");
-		btnReadSeries.addActionListener(new ActionListener() {
-
-			@SuppressWarnings("unchecked")
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				int[] selectedListes=tableauSeries.getSelectedRows();
-				
-				if(selectedListes.length==0) {
-					JOptionPane.showMessageDialog(gui, "Select Series to read", "No series", JOptionPane.ERROR_MESSAGE);
-				}
-				List<String> ids=new ArrayList<String>();
-				ArrayList<ImagePlus> imagestacks=new ArrayList<ImagePlus>();
-				
-				boolean ct = false;
-				boolean pet = false;
-				
-				for( int line : selectedListes) {
-					ids.add((String) tableauSeries.getValueAt(line, 4));
-					if(tableauSeries.getValueAt(line, 1).equals("PT")) pet=true;
-					if(tableauSeries.getValueAt(line, 1).equals("CT")) ct=true;
-					
-				}
-				
-				boolean startViewer=(pet && ct && fijiEnvironement);
-				
-				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-					
-					@SuppressWarnings("rawtypes")
-					@Override
-					protected Void doInBackground() {
-
-						for(int i=0; i<ids.size(); i++) {
-							btnReadSeries.setText("Reading Series");
-							state.setText("<html><font color='red'>Reading Series "+(i+1)+"/"+ids.size()+"</font></html>");
-							Read_Orthanc reader=new Read_Orthanc(connexionHttp);
-							ImagePlus ip=reader.readSerie(ids.get(i));
-							ip.show();
-							imagestacks.add(ip);
-							
-						}
-						
-						if(startViewer) {
-							Class Run_Pet_Ct = null;
-							try {
-								Run_Pet_Ct = Class.forName("Run_Pet_Ct");
-							} catch (ClassNotFoundException e1) {
-								e1.printStackTrace();
-							}
-							try {
-								Constructor cs=Run_Pet_Ct.getDeclaredConstructor(ArrayList.class);
-								cs.newInstance(imagestacks);
-							} catch (Exception e) {
-								e.printStackTrace();
-							} 
-							
-						}
-						
-						return null;
-					}
-
-					@Override
-					public void done(){
-						btnReadSeries.setText("Open Images");
-						state.setText("<html><font color='green'>Reading done</font></html>");
-					
-					}
-				};
-				
-				worker.execute();
-
-			}
-
-		});
+		btnReadSeries=new JButton("Open Images");
+		btnReadSeries.addActionListener(new Controller_Read_Series(this));
+		
 		panelButton.add(btnReadSeries);
 		panelTableauSeries.add(panelButton, BorderLayout.EAST);
 		tablesPanel.add(panelTableauSeries,c);
@@ -1374,9 +1208,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		popMenuExportStudies.add(menuItemEmptyList);
 		addPopUpMenuListener(popMenuExportStudies, tableauExportStudies);
 
-		//sorterExportStudies.setSortKeys(sortKeysStudies);
-		//sorterExportStudies.sort();
-		//this.tableauExportStudies.setRowSorter(sorterExportStudies);
+
 		tableauExportStudies.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
 		this.tableauExportStudies.addMouseListener(new MouseAdapter() {
@@ -1437,9 +1269,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 		popMenuExportSeries.add(menuItemExportSeriesDelete);
 		popMenuExportSeries.add(menuItemExportSeriesDeleteAllSc);
-		//sorterExportSeries.setSortKeys(sortKeysSeries);
-		//sorterExportSeries.sort();
-		//this.tableauExportSeries.setRowSorter(sorterExportSeries);
 
 		tableExportPanel.add(new JScrollPane(this.tableauExportStudies));
 		tableExportPanel.add(new JScrollPane(this.tableauExportSeries));
@@ -1643,7 +1472,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+		
 					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 						
 						boolean sendOk;
@@ -2139,8 +1968,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				chooser.setDialogTitle("Select folder for CD/DVD output");
 				chooser.setSelectedFile(new File("ImageJ.zip"));
 				chooser.setDialogTitle("Dowload Viewer to...");
-				if (! jpreferPerso.get("viewerDistribution", "empty").equals("empty") ) {
-					chooser.setSelectedFile(new File (jpreferPerso.get("viewerDistribution", "empty")));
+				if (! jprefer.get("viewerDistribution", "empty").equals("empty") ) {
+					chooser.setSelectedFile(new File (jprefer.get("viewerDistribution", "empty")));
 				}
 				chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				chooser.setAcceptAllFileFilterUsed(false);
@@ -2163,16 +1992,14 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 						@Override
 						protected void done(){
 							// Enregistre la destination du fichier dans le registery
-							jpreferPerso.put("viewerDistribution", chooser.getSelectedFile().toString());
+							jprefer.put("viewerDistribution", chooser.getSelectedFile().toString());
 							viewerDistribution.setBackground(null);
 						}
 					};
 					worker.execute();
 				}
-				
 
-				}
-				
+			}
 			
 		});
 		
@@ -2248,105 +2075,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		tabbedPane = new JTabbedPane();
-		tabbedPane.addChangeListener(new ChangeListener() {
-
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				//////////// Filling the user preferences In Registery ////////////
-				if(anonProfiles.getSelectedItem().equals("Custom")){
-					for(int i = 0; i < 2; i++){
-						
-						if(settingsBodyCharButtons[i].isSelected()){
-							if(jprefer.getInt("bodyCharac", 0) != i){
-								jprefer.putInt("bodyCharac", i);
-							}
-						}
-						
-						if(settingDatesButtons[i].isSelected()){
-							if(jprefer.getInt("Dates", 0) != i){
-								jprefer.putInt("Dates", i);
-							}
-						}
-						
-						if(settingsBirthDateButtons[i].isSelected()){
-							if(jprefer.getInt("BD", 0) != i){
-								jprefer.putInt("BD", i);
-							}
-						}
-						
-						if(settingsPrivateTagButtons[i].isSelected()){
-							if(jprefer.getInt("PT", 0) != i){
-								jprefer.putInt("PT", i);
-							}
-						}
-						
-						if(settingsPrivateTagButtons[i].isSelected()){
-							if(jprefer.getInt("PT", 0) != i){
-								jprefer.putInt("PT", i);
-							}
-						}
-						
-						if(settingsPrivateTagButtons[i].isSelected()){
-							if(jprefer.getInt("PT", 0) != i){
-								jprefer.putInt("PT", i);
-							}
-						}
-						
-						if(settingsSecondaryCaptureButtons[i].isSelected()){
-							if(jprefer.getInt("SC", 0) != i){
-								jprefer.putInt("SC", i);
-							}
-						}
-						
-						if(settingsStudySerieDescriptionButtons[i].isSelected()){
-							if(jprefer.getInt("DESC", 0) != i){
-								jprefer.putInt("DESC", i);
-							}
-						}
-						
-					}
-					
-				}
-				jprefer.put("profileAnon", anonProfiles.getSelectedItem().toString());
-				jprefer.put("centerCode", centerCode.getText());
-				jprefer.put("CTPAddress", addressFieldCTP.getText());
-				
-				// Putting the export preferences in the anon plugin registry
-				if(remoteServer.getText() != null){
-					jprefer.put("remoteServer", remoteServer.getText());
-				}
-				if(remotePort.getText() != null){
-					jprefer.put("remotePort", remotePort.getText());
-				}
-				if(servUsername.getText() != null){
-					jprefer.put("servUsername", servUsername.getText());
-				}
-				if(new String(servPassword.getPassword()) != null){
-					jprefer.put("servPassword", new String(servPassword.getPassword()));
-				}
-				if(remoteFilePath.getText() != null){
-					jprefer.put("remoteFilePath", remoteFilePath.getText());
-				}
-				jprefer.put("exportType", exportType.getSelectedItem().toString());
-				
-				if(addressFieldCTP.getText().equals("http://") || addressFieldCTP.getText().equals("https://") || addressFieldCTP.getText().isEmpty()){
-					exportCTP.setVisible(false);
-					queryCTPBtn.setVisible(false);
-				}else {
-					exportCTP.setVisible(true);
-					queryCTPBtn.setVisible(true);
-				}
-				
-				if(remoteServer.getText().length() == 0){
-					exportBtn.setEnabled(false);
-				}else{
-					exportBtn.setEnabled(true);
-				}
-				//Save Peer position
-				jprefer.putInt("CTPPeer", listePeersCTP.getSelectedIndex());
-				pack();
-			}
-		});
+		tabbedPane.addChangeListener(new Tab_Change_Listener(this));
 
 		p1.add(mainPanel);
 		tabbedPane.add("Main", p1);
@@ -2389,7 +2118,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		
 	}
 	
-	private void openCloseExportTool(boolean open) {
+	public void openCloseExportTool(boolean open) {
 		if (open) {
 			oToolRight.setVisible(true);
 			displayExportTool.setText("Close Export Tool");
@@ -2506,179 +2235,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		}
 	}
 
-	public void actionPerformed(ActionEvent arg0) {
-		/*
-		anonCount = 0;
-		
-		SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-			int dialogResult=JOptionPane.YES_OPTION;
-			@Override
-			protected Void doInBackground() {
-
-				//Disable the anons button during anonymization
-				enableAnonButton(false);
-
-				anonBtn.setText("Anonymizing");
-				
-				Choice bodyCharChoice=Choice.CLEAR,
-						datesChoice=Choice.CLEAR,
-						bdChoice=Choice.CLEAR,
-						ptChoice=Choice.CLEAR,
-						scChoice=Choice.CLEAR,
-						descChoice =Choice.CLEAR;
-				
-				// Change Choice to Keep if position 0 is selected
-				if(settingsBodyCharButtons[0].isSelected()) bodyCharChoice = Choice.KEEP;
-				if(settingDatesButtons[0].isSelected()) datesChoice = Choice.KEEP;
-				if(settingsBirthDateButtons[0].isSelected()) bdChoice = Choice.KEEP;
-				if(settingsPrivateTagButtons[0].isSelected()) ptChoice = Choice.KEEP;
-				if(settingsSecondaryCaptureButtons[0].isSelected()) scChoice = Choice.KEEP;
-				if(settingsStudySerieDescriptionButtons[0].isSelected()) descChoice = Choice.KEEP;			
-			
-
-				int i = 0;
-				int j = 0;
-				try {
-					
-					if(anonProfiles.getSelectedItem().equals("Full clearing")){
-						if(modeleAnonStudies.getModalities().contains("NM") || 
-								modeleAnonStudies.getModalities().contains("PT")){
-							dialogResult = JOptionPane.showConfirmDialog (gui, 
-									"Full clearing is not recommended for NM or PT modalities."
-											+ "Are you sure you want to anonymize ?",
-											"Warning anonymizing PT/NM",
-											JOptionPane.WARNING_MESSAGE,
-											JOptionPane.YES_NO_OPTION);
-						}
-					}
-					if(modeleAnonStudies.getModalities().contains("US")){
-						JOptionPane.showMessageDialog (gui, 
-								"DICOM files with the US modality may have hard printed informations, "
-										+ "you may want to check your files.",
-										"Warning anonymizing US",
-										JOptionPane.WARNING_MESSAGE);
-					}
-					
-					// Checking if several anonymized patients have the same ID or not
-					boolean similarIDs = false;
-					ArrayList<String> newIDs = new ArrayList<String>();
-					for(int n = 0; n < anonPatientTable.getRowCount(); n++){
-						String newID = modeleAnonPatients.getPatient(anonPatientTable.convertRowIndexToModel(n)).getNewID();
-						if(newID != "" && !newIDs.contains(newID)){
-							newIDs.add(newID);
-						}else if(newIDs.contains(newID)){
-							similarIDs = true;
-						}
-					}
-					if(similarIDs){
-						dialogResult = JOptionPane.showConfirmDialog (gui, 
-								"You have defined 2 or more identical IDs for anonymized patients, which is not recommended."
-										+ " Are you sure you want to anonymize ?",
-										"Warning similar IDs",
-										JOptionPane.WARNING_MESSAGE,
-										JOptionPane.YES_NO_OPTION);
-					}
-					
-					if(dialogResult == JOptionPane.YES_OPTION){
-
-						String substituteName = "A-" + jprefer.get("centerCode", "12345");
-
-						SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmm");
-						String substituteID = "A-" + df.format(new Date());
-
-						for(String patientID : modeleAnonStudies.getPatientIDs()){
-							String newName = modeleAnonPatients.getPatient(anonPatientTable.convertRowIndexToModel(j)).getNewName();
-							String newID = modeleAnonPatients.getPatient(anonPatientTable.convertRowIndexToModel(j)).getNewID();
-							String newStudyID = "";
-							if((newName == null || newName.equals("")) || (newID == null || newID.equals(""))){
-								anonCount++;
-							}
-							if(newName == null || newName.equals("")){
-								newName = substituteName + "^" + anonCount;
-								modeleAnonPatients.setValueAt(newName, anonPatientTable.convertRowIndexToModel(j), 3);
-							}
-
-							if(newID == null || newID.equals("")){
-								newID = substituteID + "^" + anonCount;
-								modeleAnonPatients.setValueAt(newID, anonPatientTable.convertRowIndexToModel(j), 4);
-							}
-
-							for(String uid : modeleAnonStudies.getOldOrthancUIDsWithID(patientID)){
-								String newDesc = modeleAnonStudies.getNewDesc(uid);
-								AnonRequest quAnon;
-								quAnon = new AnonRequest(connexionHttp, bodyCharChoice, datesChoice, bdChoice, ptChoice, scChoice, descChoice, newName, newID, newDesc);
-								state.setText("<html>Anonymization state - " + (i+1) + "/" + modeleAnonStudies.getStudies().size() + 
-										" <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
-								quAnon.sendQuery(uid);
-								modeleAnonStudies.addNewUid(quAnon.getNewUID());
-								i++;
-								newStudyID = quAnon.getNewUID();
-								//Add anonymized study in export list
-								modeleExportStudies.addStudy(newStudyID);
-							}
-
-							j++;
-						}
-						
-						if(settingsSecondaryCaptureButtons[1].isSelected()){
-							modeleAnonStudies.removeScAndSr();
-						}
-						
-						//Empty list
-						modeleAnonStudies.empty();
-						modeleAnonPatients.clear();
-						
-						
-					}
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-				return null;
-			}
-
-			@Override
-			protected void done(){
-				
-				//Re-enable anon button
-				enableAnonButton(true);
-				anonBtn.setText("Anonymize");
-				if(dialogResult == JOptionPane.YES_OPTION){
-					state.setText("<html><font color='green'>The data has successfully been anonymized.</font></html>");
-					openCloseAnonTool(false);
-					pack();
-					tabbedPane.setSelectedIndex(1);
-					modeleAnonPatients.clear();
-					modeleAnonStudies.empty();
-					
-				}
-				if(tableauExportStudies.getRowCount() > 0){
-					tableauExportStudies.setRowSelectionInterval(tableauExportStudies.getRowCount() - 1, tableauExportStudies.getRowCount() - 1);
-				}
-				modeleExportSeries.clear();
-				try {
-					if(modeleExportStudies.getRowCount() > 0){
-						String studyID = (String)tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(), 5);
-						modeleExportSeries.addSerie(studyID);
-						tableauExportSeries.setRowSelectionInterval(0,0);
-					}
-				} catch (Exception e1) {
-					// IGNORE
-				}
-				//Si fonction a ete fait avec le CTP on fait l'envoi auto A l'issue de l'anon
-				if(autoSendCTP) {
-					exportCTP.doClick();
-					autoSendCTP=false;
-				}
-				if(anonymizeListener!=null) {
-					anonymizeListener.AnonymizationDone();
-				}
-			}
-		};
-		if(!modeleAnonStudies.getOldOrthancUIDs().isEmpty()){
-				worker.execute();
-		}
-		*/
-	}
+	
 	
 	
 	public void enableAnonButton(boolean enable) {
@@ -2777,6 +2334,49 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				}, seconds*1000);
 		}
 		
+	}
+	
+	public String getComboToolChooserSeletedItem() {
+		return (String) comboToolChooser.getSelectedItem();
+	}
+	 
+	//Getters Setup Tab
+	public String getSelectedAnonProfile() {
+		return (String) anonProfiles.getSelectedItem();
+	}
+	
+	public String getCenterCode() {
+		return centerCode.getText();
+	}
+	
+	public String getCTPaddress() {
+		return addressFieldCTP.getText();
+	}
+	
+	public String[] getExportRemoteServer() {
+		String[] remoteServerParameter=new String[6];
+		remoteServerParameter[0]=remoteServer.getText();
+		remoteServerParameter[1]=remotePort.getText();
+		remoteServerParameter[2]=servUsername.getText();
+		remoteServerParameter[3]= new String(servPassword.getPassword());
+		remoteServerParameter[4]= remoteFilePath.getText();
+		remoteServerParameter[5]= exportType.getSelectedItem().toString();
+		
+		return remoteServerParameter;
+	}
+	
+	public void showRemoteExportBtn(boolean show) {
+		exportBtn.setVisible(show);
+		exportBtn.setVisible(show);
+	}
+	
+	public String getExportRemotePort() {
+		return remotePort.getText();
+	}
+	
+	public void showCTPButtons(boolean show) {
+		exportCTP.setVisible(show);
+		queryCTPBtn.setVisible(show);
 	}
 	
 	// LAUNCHERS

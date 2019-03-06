@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 
+import org.petctviewer.orthanc.anonymize.datastorage.Patient;
+import org.petctviewer.orthanc.anonymize.datastorage.Serie;
+import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import com.google.gson.JsonArray;
