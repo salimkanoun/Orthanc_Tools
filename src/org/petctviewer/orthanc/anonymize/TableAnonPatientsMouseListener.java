@@ -39,7 +39,7 @@ public class TableAnonPatientsMouseListener extends MouseAdapter {
 	}
 
 	@Override
-	public void mouseClicked(MouseEvent event) {
+	public void mousePressed(MouseEvent event) {
 		if(this.modeleAnonPatient.getRowCount() != 0){
 			// We clear the details
 			this.modeleAnonStudies.clear();

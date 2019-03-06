@@ -977,7 +977,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 						modeleAnonPatients.addStudy(modeleStudies.getStudy(modelRow));
 						
 					}		
-					modeleAnonStudies.addStudies(modeleAnonPatients.getPatient(anonPatientTable.convertColumnIndexToModel(anonPatientTable.getSelectedRow())));
+					//modeleAnonStudies.addStudies(modeleAnonPatients.getPatient(anonPatientTable.convertColumnIndexToModel(anonPatientTable.getSelectedRow())));
 				}
 				else {
 					setStateMessage("Selection to Anonymize only possible from Patient Or Study table", "orange",4);
