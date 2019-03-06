@@ -124,7 +124,7 @@ import ij.plugin.PlugIn;
 public class VueAnon extends JFrame implements PlugIn {
 	private static final long serialVersionUID = 1L;
 	
-	protected JTabbedPane tabbedPane;
+	public JTabbedPane tabbedPane;
 	public JLabel state = new JLabel();
 	private DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
 
@@ -153,7 +153,7 @@ public class VueAnon extends JFrame implements PlugIn {
 	private JButton displayExportTool;
 	private JButton displayManageTool;
 	private JButton addToAnon;
-	protected JButton anonBtn;
+	public JButton anonBtn;
 	private JButton removeFromAnonList;
 	protected JButton importCTP;
 	private JButton queryCTPBtn;
@@ -182,7 +182,6 @@ public class VueAnon extends JFrame implements PlugIn {
 	public ArrayList<String> zipContent = new ArrayList<String>();
 	private ArrayList<String> manageContent = new ArrayList<String>();
 	protected JPanel anonTablesPanel;
-	private int anonCount;
 	
 	//Read Image Button
 	public JButton btnReadSeries;
@@ -2102,7 +2101,7 @@ public class VueAnon extends JFrame implements PlugIn {
 		
 	}
 	
-	protected void openCloseAnonTool(boolean open) {
+	public void openCloseAnonTool(boolean open) {
 		if (open) {
 			oToolRight.setVisible(false);
 			anonTablesPanel.setVisible(true);

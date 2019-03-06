@@ -2,10 +2,16 @@ package org.petctviewer.orthanc.anonymize.controllers;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+
+import javax.swing.SwingWorker;
 
 import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.apache.commons.lang3.StringUtils;
 import org.petctviewer.orthanc.anonymize.AnonRequest;
 import org.petctviewer.orthanc.anonymize.Tags.Choice;
 import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
@@ -15,13 +21,64 @@ import org.petctviewer.orthanc.setup.OrthancRestApis;
 public class Controller_Anonymize_Btn implements ActionListener {
 	
 	private VueAnon vue;
+	private int anonCount;
 	
 	public Controller_Anonymize_Btn(VueAnon vue) {
 		this.vue=vue;
 	}
-
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		SwingWorker<Void,Void> worker=new SwingWorker<Void,Void>() {
+
+			@Override
+			protected Void doInBackground() throws Exception {
+				vue.enableAnonButton(false);
+				anonimyze();
+				return null;
+			}
+			
+			@Override
+			protected void done() {
+				try {
+					get();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				vue.enableAnonButton(true);
+				vue.anonBtn.setText("Anonymize");
+				vue.setStateMessage("The data has successfully been anonymized.", "green", 4);
+				vue.enableAnonButton(true);
+				vue.openCloseAnonTool(false);
+				vue.pack();
+				vue.tabbedPane.setSelectedIndex(1);
+				//SK Avant de faire le Clear Faire Passer les lignes à l'Export
+				vue.modeleAnonPatients.clear();
+				vue.modeleAnonStudies.clear();
+				
+				//Si fonction a ete fait avec le CTP on fait l'envoi auto A l'issue de l'anon
+//				if(autoSendCTP) {
+//					exportCTP.doClick();
+//					autoSendCTP=false;
+//				}
+//				if(anonymizeListener!=null) {
+//					anonymizeListener.AnonymizationDone();
+//				}
+				return;
+			}
+			
+			
+		};
+		//Sk Avant de Lancer faire check Modalites
+		worker.execute();
+	}
+
+	public void anonimyze() {
+		
 		//Storage of Anon Setting
 		Choice bodyCharChoice=Choice.CLEAR,
 				datesChoice=Choice.CLEAR,
@@ -36,16 +93,45 @@ public class Controller_Anonymize_Btn implements ActionListener {
 		if(vue.settingsBirthDateButtons[0].isSelected()) bdChoice = Choice.KEEP;
 		if(vue.settingsPrivateTagButtons[0].isSelected()) ptChoice = Choice.KEEP;
 		if(vue.settingsSecondaryCaptureButtons[0].isSelected()) scChoice = Choice.KEEP;
-		if(vue.settingsStudySerieDescriptionButtons[0].isSelected()) descChoice = Choice.KEEP;		
+		if(vue.settingsStudySerieDescriptionButtons[0].isSelected()) descChoice = Choice.KEEP;
 		
+		anonCount=0;
+		int totalAnonStudyList=calculateTotalNbOfSeries();
 		for(int i=0 ; i<vue.anonPatientTable.getRowCount(); i++) {
+			
 			PatientAnon patientAnon=(PatientAnon) vue.anonPatientTable.getValueAt(i, 6);
-			//SK ICI RECUPERER LES DATA DE LA TABLE PATIENT ET FAIRE LE FILL SI EMPTY
 			//CHECK DES MODALITE A FAIRE
 			HashMap<String, Study2Anon> studyAnon=patientAnon.getAnonymizeStudies();
 			Set<String> studyIds=studyAnon.keySet();
 			for(String studyId : studyIds) {
+				
+				vue.setStateMessage("Anonymizing study "+(anonCount+1)+"/"+totalAnonStudyList, "red", -1);
+				
 				Study2Anon studyToAnon = (Study2Anon) studyAnon.get(studyId);
+				//Get the New ID
+				String newPatientName;
+				String newPatientId;
+				//Prepare Substitute if new PatientName/ ID are not Filled
+				String substituteName = "A-" + vue.jprefer.get("centerCode", "12345");
+				SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmm");
+				String substituteID = "A-" + df.format(new Date());
+				
+				if(StringUtils.isEmpty((String) vue.anonPatientTable.getValueAt(i, 3))) {
+					newPatientName = substituteName + "^" + anonCount;
+					vue.anonPatientTable.setValueAt(newPatientName, i, 3);
+				}else {
+					newPatientName=(String) vue.anonPatientTable.getValueAt(i, 3);
+				}
+				
+				if(StringUtils.isEmpty((String) vue.anonPatientTable.getValueAt(i, 4))) {
+					newPatientId = substituteID + "^" + anonCount;
+					vue.anonPatientTable.setValueAt(newPatientId, i, 4);
+				}else {
+					newPatientId=(String) vue.anonPatientTable.getValueAt(i, 4);
+				}
+				
+				patientAnon.setNewPatientName(newPatientName);
+				patientAnon.setNewPatientId(newPatientId);
 				//Prepare the Anon Request
 				AnonRequest anonRequest= new AnonRequest(vue.connexionHttp, bodyCharChoice, datesChoice, bdChoice, 
 						ptChoice, scChoice, descChoice, 
@@ -59,12 +145,7 @@ public class Controller_Anonymize_Btn implements ActionListener {
 					//A FAIRE
 					//modeleAnonStudies.removeScAndSr();
 				}
-				
-				
-				//Empty list dans le DONE
-				//vue.modeleAnonStudies.clear();
-				//vue.modeleAnonPatients.clear();
-				
+				anonCount++;
 			}
 		}
 		
@@ -72,8 +153,21 @@ public class Controller_Anonymize_Btn implements ActionListener {
 		//vue.modeleAnonPatients
 		
 	}
+	
+	private int calculateTotalNbOfSeries() {
+		int total=0;
+		for(int i=0 ; i<vue.anonPatientTable.getRowCount(); i++) {
+			PatientAnon patientAnon=(PatientAnon) vue.anonPatientTable.getValueAt(i, 6);
+			HashMap<String, Study2Anon> studyAnon=patientAnon.getAnonymizeStudies();
+			Set<String> studyIds=studyAnon.keySet();
+			total+=studyIds.size();
+		}
+		return total;
+	}
 
 }
+
+
 
 
 //public void actionPerformed(ActionEvent arg0) {
