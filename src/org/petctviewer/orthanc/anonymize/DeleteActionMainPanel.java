@@ -18,13 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 package org.petctviewer.orthanc.anonymize;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.text.ParseException;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.SwingWorker;
@@ -42,8 +38,7 @@ public class DeleteActionMainPanel extends AbstractAction{
 	private JTable tableauSeries;
 	private JTable tableauStudies;
 	private JTable tableauPatients;
-	private JLabel state;
-	private JFrame frame;
+	private VueAnon vue;
 	private JButton searchBtn;
 	OrthancRestApis connexion;
 	
@@ -62,7 +57,7 @@ public class DeleteActionMainPanel extends AbstractAction{
 	 * @param searchBtn
 	 */
 	public DeleteActionMainPanel(OrthancRestApis connexion, String level, TableStudiesModel modeleStudies, JTable tableauStudies, TableSeriesModel modeleSeries, 
-			JTable tableauSeries, TablePatientsModel modelePatients, JTable tableauPatients, JLabel state, JFrame frame, JButton searchBtn){
+			JTable tableauSeries, TablePatientsModel modelePatients, JTable tableauPatients, VueAnon vue, JButton searchBtn){
 		this.connexion=connexion;
 		this.level = level;
 		this.modelePatients = modelePatients;
@@ -71,14 +66,14 @@ public class DeleteActionMainPanel extends AbstractAction{
 		this.tableauPatients = tableauPatients;
 		this.tableauStudies = tableauStudies;
 		this.tableauSeries = tableauSeries;
-		this.state = state;
-		this.frame = frame;
+		this.vue = vue;
 		this.searchBtn = searchBtn;
 	}
-
+	
+	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-
+		
 		if(level.equals("Study")){
 			this.url="/studies/" + modeleStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 3);
 		}else if(level.equals("Serie")){
@@ -86,117 +81,47 @@ public class DeleteActionMainPanel extends AbstractAction{
 		}else{
 			this.url="/patients/" + modelePatients.getValueAt(tableauPatients.convertRowIndexToModel(tableauPatients.getSelectedRow()), 2);
 		}
-
+		
 		SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-			int dialogResult = JOptionPane.NO_OPTION;
-			int selectedRow = 0;
-			String patientName = "";
-			String patientID = "";
-			String patientUID = "";
-			String studyUID = "";
+			
 			@Override
 			protected Void doInBackground() {
-
-				patientName = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 0).toString();
-				patientID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 1).toString();
-				patientUID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 2).toString();
-				if(level.equals("Serie")){
-					studyUID = tableauStudies.getValueAt(tableauStudies.getSelectedRow(), 3).toString();
-				}
-				if(!level.equals("Serie")){
-					String txtLabel = "";
-					// SETTING THE DIALOG FOR STUDY
-					if(level.equals("Study")){
-						selectedRow = tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow());
-						dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete this study (" 
-								+modeleStudies.getValueAt(selectedRow, 1) 
-								+") ?","Warning deleting study",JOptionPane.YES_NO_OPTION);
-						txtLabel = " study (" + modeleStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 1);
-					}// SETTING THE DIALOG FOR PATIENT
-					else{
-						selectedRow = tableauPatients.convertRowIndexToModel(tableauPatients.getSelectedRow());
-						dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete this patient ("
-								+ modelePatients.getValueAt(selectedRow, 0) 
-								+ ") ?","Warning deleting patient",JOptionPane.YES_NO_OPTION);
-						txtLabel =  " patient (" + modelePatients.getValueAt(tableauPatients.convertRowIndexToModel(tableauPatients.getSelectedRow()), 0);
-					}// YES OPTION
-					if(dialogResult == JOptionPane.YES_OPTION){
-						state.setText("<html>Deleting a" + txtLabel + ") <font color='red'> <br>"
-								+ "(Do not use the toolbox while the current operation is not done)</font></html>");
-						connexion.makeDeleteConnection(url);
-					}
-				}else{// DELETING SERIE WITHOUT DIALOG
-					selectedRow = tableauSeries.convertRowIndexToModel(tableauSeries.getSelectedRow());
-					state.setText("<html>Deleting a serie (" + modeleSeries.getValueAt(selectedRow, 1) + ") <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
-					connexion.makeDeleteConnection(url);
-				}
-				frame.pack();
+				
+				vue.setStateMessage("Deleting a" + level + " (Do not use the toolbox while the current operation is not done", "red", -1);
+				connexion.makeDeleteConnection(url);
 				return null;
+				
 			}
+			
 			@Override
 			protected void done(){
-				// Checking whether or not the deleted element was the last one so that 
-				// we can delete the other levels
-				try {
-					if(dialogResult == JOptionPane.YES_OPTION || level.equals("Serie")){
-						if(level.equals("Study")){
-							modeleSeries.clear();
-							if(tableauStudies.getRowCount() > 1){
-								modeleStudies.clear();
-								modeleStudies.addStudy(patientName, patientID, patientUID);
-							}else{
-								modeleStudies.clear();
-								if(tableauPatients.getRowCount() > 1){
-									modelePatients.clear();
-									searchBtn.doClick();
-								}else{
-									modelePatients.clear();										
-								}
-							}
-							state.setText("<html><font color='green'>The study has been deleted</font></html>");
-						}else if(level.equals("Serie")){
-							if(tableauSeries.getRowCount() > 1){
-								modeleSeries.clear();
-								modeleSeries.addSerie(studyUID);
-							}else{
-								modeleSeries.clear();
-								if(tableauStudies.getRowCount() > 1){
-									modeleStudies.clear();
-									modeleStudies.addStudy(patientName, patientID, patientUID);
-								}else{
-									modeleStudies.clear();
-									if(tableauPatients.getRowCount() > 1){
-										modelePatients.clear();
-										searchBtn.doClick();
-									}else{
-										modelePatients.clear();										
-									}
-								}
-							}
-							state.setText("<html><font color='green'>The serie has been deleted</font></html>");
-						}else{
-							modeleSeries.clear();
-							modeleStudies.clear();
-							if(tableauPatients.getRowCount() > 1){
-								modelePatients.clear();
-								searchBtn.doClick();
-							}else{
-								modelePatients.clear();	
-							}
-							searchBtn.doClick();
-							state.setText("<html><font color='green'>The patient has been deleted</font></html>");
-						}
-					}
+				//SK QUAND LA DERNIERE STUDY OU SERIE EST EFFACE UPDATE EST NON GERER, PEUT ETRE BESOIN D EXCEPTIOn
+				if(level.equals("Study")){
+					modeleStudies.clear();
+				}else if(level.equals("Serie")){
+					modeleSeries.clear();
+				}else{
+					searchBtn.doClick();
 				}
-				catch (IOException e) {
-					e.printStackTrace();
-				} catch (ParseException e) {
-					e.printStackTrace();
-				}
-				frame.pack();
+				vue.setStateMessage("Delete Done ", "green", 4);
+				
 			}
+			
 		};
-		worker.execute();
+		
+	
+		boolean confirmation=false;
+		if(!level.equals("Serie")) {
+			int answer= JOptionPane.showConfirmDialog (null, "Are you sure you want to delete this "+level, "Delete", JOptionPane.WARNING_MESSAGE); 
+			confirmation=(answer==JOptionPane.YES_OPTION);
+		}else {
+			confirmation=true;
+		}
+		
+		if(confirmation) {
+			worker.execute();
+		}
+			
 	}
 	
 }

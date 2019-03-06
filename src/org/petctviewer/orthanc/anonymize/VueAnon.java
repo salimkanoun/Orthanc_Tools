@@ -279,7 +279,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		//On set les objets necessaires
 		modelePatients = new TablePatientsModel(connexionHttp);
 		modeleStudies = new TableStudiesModel(connexionHttp);
-		modeleSeries = new TableSeriesModel(connexionHttp);
+		modeleSeries = new TableSeriesModel(connexionHttp, this);
 		modeleExportStudies = new TableExportStudiesModel(connexionHttp);
 		modeleExportSeries = new TableExportSeriesModel(connexionHttp);
 		modeleAnonStudies = new TableAnonStudiesModel(connexionHttp);
@@ -527,7 +527,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		
 		JMenuItem menuItemDeletePatients = new JMenuItem("Delete this patient");
 		menuItemDeletePatients.addActionListener(new DeleteActionMainPanel(connexionHttp, "Patient", this.modeleStudies, this.tableauStudies, 
-				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this.state, this, search));
+				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, search));
 
 		popMenuPatients.add(menuItemModifyPatients);
 		popMenuPatients.addSeparator();
@@ -568,7 +568,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		
 		JMenuItem menuItemDeleteStudy = new JMenuItem("Delete this study");
 		menuItemDeleteStudy.addActionListener(new DeleteActionMainPanel(connexionHttp, "Study", this.modeleStudies, this.tableauStudies, 
-				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this.state, this, search));
+				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, search));
 		
 		popMenuStudies.add(menuItemModifyStudy);
 		popMenuStudies.addSeparator();
@@ -636,7 +636,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		});
 		JMenuItem menuItemDeleteSeries = new JMenuItem("Delete this serie");
 		menuItemDeleteSeries.addActionListener(new DeleteActionMainPanel(connexionHttp, "Serie", this.modeleStudies, this.tableauStudies, 
-				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this.state, this, search));
+				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, search));
 
 		popMenuSeries.add(menuItemModifySeries);
 		popMenuSeries.addSeparator();

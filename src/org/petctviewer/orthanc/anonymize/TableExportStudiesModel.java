@@ -63,8 +63,10 @@ public class TableExportStudiesModel extends DefaultTableModel{
 		
 		for(Study2 study :studies) {
 			this.addRow(new Object[] {study.getPatientName(),study.getPatientID(),study.getDate(), study.getStudyDescription(), study.getAccession(), study.getOrthancId(), study});	
-		}
+		}	
+			
 		
+	
 	}
 	
 	public void removeStudy(String studyOrthancID) {

@@ -31,6 +31,7 @@ public class TableStudiesModel extends DefaultTableModel{
 	private String[] entetes = {"Study date", "Study description", "Accession number", "ID", "studyObject"};
 	private final Class<?>[] columnClasses = new Class<?>[] {Date.class, String.class, String.class, String.class, Study2.class};
 	private OrthancRestApis connexionHttp;
+	private String patientOrthancId;
 
 	public TableStudiesModel(OrthancRestApis connexionHttp){
 		super(0,5);
@@ -57,14 +58,18 @@ public class TableStudiesModel extends DefaultTableModel{
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
 	public void addStudy(String patientOrthancId) {
-		
+		this.patientOrthancId=patientOrthancId;
 		QueryOrthancData queryStudies = new QueryOrthancData(connexionHttp);
 		
 		ArrayList<Study2> studies=queryStudies.getStudiesOfPatient(patientOrthancId);
 		
-		for(Study2 study :studies) {
-			this.addRow(new Object[] {study.getDate(), study.getStudyDescription(), study.getAccession(), study.getOrthancId(), study});
-			
+		if(studies.size()==0) {
+			clear();
+		}else{
+			for(Study2 study :studies) {
+				this.addRow(new Object[] {study.getDate(), study.getStudyDescription(), study.getAccession(), study.getOrthancId(), study});
+				
+			}
 		}
 		
 	}
@@ -73,6 +78,10 @@ public class TableStudiesModel extends DefaultTableModel{
 	 */
 	public void clear(){
 		this.setRowCount(0);
+	}
+	
+	public void refresh() {
+		addStudy(patientOrthancId);
 	}
 	
 	public ArrayList<String> getOrthancIds(){

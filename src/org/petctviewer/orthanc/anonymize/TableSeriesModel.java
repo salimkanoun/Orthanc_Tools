@@ -17,6 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 
 import org.petctviewer.orthanc.setup.OrthancRestApis;
@@ -24,15 +25,17 @@ import org.petctviewer.orthanc.setup.OrthancRestApis;
 public class TableSeriesModel extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Serie description", "Modality", "Instances", "Secondary capture", "ID", "Serie Num", "SeriesObj"};
+	private String[] entetes = {"Serie description", "Modality", "Instances", "Secondary capture", "Orthanc Id", "Serie Num", "SeriesObj"};
 	private Class<?>[] classEntetes = {String.class, String.class, Integer.class, Boolean.class, String.class, String.class, Serie.class};
 	private OrthancRestApis connexionHttp;
 	private String studyOrthancID;
+	private VueAnon gui;
 
-	public TableSeriesModel(OrthancRestApis connexionHttp){
+	public TableSeriesModel(OrthancRestApis connexionHttp, VueAnon gui){
 		super(0,7);
 		//Recupere les settings
 		this.connexionHttp=connexionHttp;
+		this.gui=gui;
 	}
 
 	@Override
@@ -55,14 +58,35 @@ public class TableSeriesModel extends DefaultTableModel{
 		return false;
 	}
 
+	/**
+	 * Remove all Secondary capture, called form right click on serie Table
+	 */
 	public void removeAllSecondaryCaptures() {
-		for(int i=0; i<this.getRowCount(); i++) {
-			if ((Boolean) this.getValueAt(i, 3)) {
-				connexionHttp.makeDeleteConnection("/series/"+this.getValueAt(i, 4));
+		SwingWorker<Void,Void> worker=new SwingWorker<Void,Void>() {
+
+			@Override
+			protected Void doInBackground() throws Exception {
+				for(int i=0; i<getRowCount(); i++) {
+					if ((Boolean) getValueAt(i, 3)) {
+						gui.setStateMessage("Deleting SC "+getValueAt(i, 0), "red", -1);
+						connexionHttp.makeDeleteConnection("/series/"+getValueAt(i, 4));
+					}
+				}
+				return null;
+				
 			}
-		}
-		//refresh the table
-		addSerie(studyOrthancID);
+			
+			@Override
+			protected void done() {
+				//refresh the table
+				refresh();
+				gui.setStateMessage("Sec Capture Deletion Done", "green", -1);
+			}
+			
+		};
+		
+		worker.execute();
+		
 	}
 
 	public void addSerie(String studyOrthancID) {
@@ -88,6 +112,10 @@ public class TableSeriesModel extends DefaultTableModel{
 	 */
 	public void clear(){
 		this.setRowCount(0);
+	}
+	
+	public void refresh() {
+		addSerie(studyOrthancID);
 	}
 	
 }

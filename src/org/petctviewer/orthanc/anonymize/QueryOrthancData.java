@@ -106,10 +106,15 @@ public class QueryOrthancData {
 	
 	public ArrayList<Study2>  getStudiesOfPatient(String patientOrthancID) {
 		
+		ArrayList<Study2> studies=new ArrayList<Study2>();
+		
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/patients/"+patientOrthancID);
+		if(sb==null) {
+			return studies;
+		}
 		JsonObject patientData=(JsonObject) parserJson.parse(sb.toString());
 		JsonArray studyIdArray=patientData.get("Studies").getAsJsonArray();
-		ArrayList<Study2> studies=new ArrayList<Study2>();
+		
 		
 		Iterator<JsonElement> iterator = studyIdArray.iterator();
 		while(iterator.hasNext()) {
