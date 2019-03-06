@@ -1,4 +1,4 @@
-package org.petctviewer.orthanc.anonymize;
+package org.petctviewer.orthanc.anonymize.listeners;
 
 public interface AnonymizeListener {
 	

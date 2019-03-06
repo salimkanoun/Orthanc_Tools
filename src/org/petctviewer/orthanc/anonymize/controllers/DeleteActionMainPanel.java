@@ -15,9 +15,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package org.petctviewer.orthanc.anonymize;
+package org.petctviewer.orthanc.anonymize.controllers;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -25,12 +26,14 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.SwingWorker;
 
+import org.petctviewer.orthanc.anonymize.TablePatientsModel;
+import org.petctviewer.orthanc.anonymize.TableSeriesModel;
+import org.petctviewer.orthanc.anonymize.TableStudiesModel;
+import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
-public class DeleteActionMainPanel extends AbstractAction{
+public class DeleteActionMainPanel implements ActionListener{
 
-	private static final long serialVersionUID = 1L;
-	private String url;
 	private String level;
 	private TableSeriesModel modeleSeries;
 	private TableStudiesModel modeleStudies;
@@ -40,7 +43,7 @@ public class DeleteActionMainPanel extends AbstractAction{
 	private JTable tableauPatients;
 	private VueAnon vue;
 	private JButton searchBtn;
-	OrthancRestApis connexion;
+	private OrthancRestApis connexion;
 	
 	/**
 	 * Gere le delete du main panel
@@ -73,19 +76,20 @@ public class DeleteActionMainPanel extends AbstractAction{
 	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		
-		if(level.equals("Study")){
-			this.url="/studies/" + modeleStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 3);
-		}else if(level.equals("Serie")){
-			this.url="/series/" + modeleSeries.getValueAt(tableauSeries.convertRowIndexToModel(tableauSeries.getSelectedRow()), 4);
-		}else{
-			this.url="/patients/" + modelePatients.getValueAt(tableauPatients.convertRowIndexToModel(tableauPatients.getSelectedRow()), 2);
-		}
-		
+
 		SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 			
 			@Override
 			protected Void doInBackground() {
+				
+				String url=null;
+				if(level.equals("Study")){
+					url="/studies/" + modeleStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 3);
+				}else if(level.equals("Serie")){
+					url="/series/" + modeleSeries.getValueAt(tableauSeries.convertRowIndexToModel(tableauSeries.getSelectedRow()), 4);
+				}else{
+					url="/patients/" + modelePatients.getValueAt(tableauPatients.convertRowIndexToModel(tableauPatients.getSelectedRow()), 2);
+				}
 				
 				vue.setStateMessage("Deleting a" + level + " (Do not use the toolbox while the current operation is not done", "red", -1);
 				connexion.makeDeleteConnection(url);
@@ -109,8 +113,9 @@ public class DeleteActionMainPanel extends AbstractAction{
 			
 		};
 		
-	
+		//Ask User confirmation for delete, if confirmed start the deletion in another thread
 		boolean confirmation=false;
+		
 		if(!level.equals("Serie")) {
 			int answer= JOptionPane.showConfirmDialog (null, "Are you sure you want to delete this "+level, "Delete", JOptionPane.WARNING_MESSAGE); 
 			confirmation=(answer==JOptionPane.YES_OPTION);

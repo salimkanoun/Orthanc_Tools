@@ -1,4 +1,4 @@
-package org.petctviewer.orthanc.anonymize.controllers;
+package org.petctviewer.orthanc.anonymize.listeners;
 
 import java.util.prefs.Preferences;
 

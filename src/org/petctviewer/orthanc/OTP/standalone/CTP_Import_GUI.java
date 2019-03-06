@@ -15,8 +15,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
-import org.petctviewer.orthanc.anonymize.AnonymizeListener;
 import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.anonymize.listeners.AnonymizeListener;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.importdicom.ImportListener;
 
