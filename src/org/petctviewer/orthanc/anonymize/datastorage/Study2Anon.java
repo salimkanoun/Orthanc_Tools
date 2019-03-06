@@ -6,6 +6,7 @@ import java.util.Date;
 public class Study2Anon extends Study2 {
 	
 	private String newStudyDescription=null;
+	private String newAnonymizedStudyOrthancId=null;
 
 	public Study2Anon(String studyDescription, Date date, String accession, String StudyOrthancId, String patientName,
 			String patientID, String patientOrthancId, ArrayList<Serie> childSeries) {
@@ -22,6 +23,11 @@ public class Study2Anon extends Study2 {
 		}
 		
 	}
+	
+	public void setNewAnonymizedStudyOrthancId(String orthancId) {
+		this.newAnonymizedStudyOrthancId=orthancId;
+	}
+	
 	public Study2Anon(Study2 study) {
 		super(study.getStudyDescription(), study.getDate(), study.getAccession(), study.getOrthancId(), study.getPatientName(),
 				study.getPatientID(), study.getParentPatientId(), study.childSeries);
@@ -37,6 +43,10 @@ public class Study2Anon extends Study2 {
 		}else {
 			return newStudyDescription;
 		}
+	}
+	
+	public String getNewAnonymizedOrthancStudyId() {
+		return newAnonymizedStudyOrthancId;
 	}
 
 }

@@ -143,12 +143,12 @@ public class VueAnon extends JFrame implements PlugIn {
 	private TablePatientsModel modelePatients;
 	private TableStudiesModel modeleStudies;
 	private TableSeriesModel modeleSeries;
-	protected TableAnonPatientsModel modeleAnonPatients;
-	protected TableAnonStudiesModel modeleAnonStudies;
+	public TableAnonPatientsModel modeleAnonPatients;
+	public TableAnonStudiesModel modeleAnonStudies;
 
 	// Orthanc toolbox (p1)
-	protected JTable anonPatientTable;
-	protected JTable anonStudiesTable;
+	public JTable anonPatientTable;
+	public JTable anonStudiesTable;
 	private JButton displayAnonTool;
 	private JButton displayExportTool;
 	private JButton displayManageTool;

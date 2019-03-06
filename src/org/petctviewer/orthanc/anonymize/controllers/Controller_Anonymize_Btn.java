@@ -2,8 +2,15 @@ package org.petctviewer.orthanc.anonymize.controllers;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Set;
 
 import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.anonymize.AnonRequest;
+import org.petctviewer.orthanc.anonymize.Tags.Choice;
+import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
+import org.petctviewer.orthanc.anonymize.datastorage.Study2Anon;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class Controller_Anonymize_Btn implements ActionListener {
 	
@@ -15,7 +22,54 @@ public class Controller_Anonymize_Btn implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
+		//Storage of Anon Setting
+		Choice bodyCharChoice=Choice.CLEAR,
+				datesChoice=Choice.CLEAR,
+				bdChoice=Choice.CLEAR,
+				ptChoice=Choice.CLEAR,
+				scChoice=Choice.CLEAR,
+				descChoice =Choice.CLEAR;
+		
+		//Get Current Settings
+		if(vue.settingsBodyCharButtons[0].isSelected()) bodyCharChoice = Choice.KEEP;
+		if(vue.settingDatesButtons[0].isSelected()) datesChoice = Choice.KEEP;
+		if(vue.settingsBirthDateButtons[0].isSelected()) bdChoice = Choice.KEEP;
+		if(vue.settingsPrivateTagButtons[0].isSelected()) ptChoice = Choice.KEEP;
+		if(vue.settingsSecondaryCaptureButtons[0].isSelected()) scChoice = Choice.KEEP;
+		if(vue.settingsStudySerieDescriptionButtons[0].isSelected()) descChoice = Choice.KEEP;		
+		
+		for(int i=0 ; i<vue.anonPatientTable.getRowCount(); i++) {
+			PatientAnon patientAnon=(PatientAnon) vue.anonPatientTable.getValueAt(i, 6);
+			//SK ICI RECUPERER LES DATA DE LA TABLE PATIENT ET FAIRE LE FILL SI EMPTY
+			//CHECK DES MODALITE A FAIRE
+			HashMap<String, Study2Anon> studyAnon=patientAnon.getAnonymizeStudies();
+			Set<String> studyIds=studyAnon.keySet();
+			for(String studyId : studyIds) {
+				Study2Anon studyToAnon = (Study2Anon) studyAnon.get(studyId);
+				//Prepare the Anon Request
+				AnonRequest anonRequest= new AnonRequest(vue.connexionHttp, bodyCharChoice, datesChoice, bdChoice, 
+						ptChoice, scChoice, descChoice, 
+						patientAnon.getNewPatientName(), patientAnon.getNewPatientId(), studyToAnon.getNewStudyDescription());
+				//Start the Anonymization
+				anonRequest.sendQuery(studyId);
+				//Store the new Anonymized Study ID
+				studyToAnon.setNewAnonymizedStudyOrthancId(anonRequest.getNewOrthancID());
+				
+				if(vue.settingsSecondaryCaptureButtons[1].isSelected()){
+					//A FAIRE
+					//modeleAnonStudies.removeScAndSr();
+				}
+				
+				
+				//Empty list dans le DONE
+				//vue.modeleAnonStudies.clear();
+				//vue.modeleAnonPatients.clear();
+				
+			}
+		}
+		
+	
+		//vue.modeleAnonPatients
 		
 	}
 

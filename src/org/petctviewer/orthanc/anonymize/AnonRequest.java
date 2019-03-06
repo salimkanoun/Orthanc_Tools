@@ -35,7 +35,6 @@ public class AnonRequest {
 	private ArrayList<Tags> tags = new ArrayList<Tags>();
 	private boolean keepPrivateTags;
 	private String newOrthancID;
-	private String newPatientUID;
 	private String newPatientName;
 	private String newPatientID;
 	private OrthancRestApis connexionHttp;
@@ -133,7 +132,6 @@ public class AnonRequest {
 		JsonParser parser =new JsonParser();
 		JsonObject answer=(JsonObject) parser.parse(sb.toString());
 		newOrthancID=answer.get("ID").getAsString();
-		newPatientUID=answer.get("PatientID").getAsString();
 	}
 	
 	private String buildQuery(){
@@ -163,12 +161,8 @@ public class AnonRequest {
 	 * Getters of new anonymized dicom
 	 * 
 	 */
-	
-	public String getNewPatientUID(){
-		return this.newPatientUID;
-	}
 
-	public String getOrthancID(){
+	public String getNewOrthancID(){
 		return this.newOrthancID;
 	}
 	
@@ -176,7 +170,7 @@ public class AnonRequest {
 		return this.newPatientName;
 	}
 	
-	public String getNewNewPatientID(){
+	public String getNewPatientID(){
 		return this.newPatientID;
 	}
 
