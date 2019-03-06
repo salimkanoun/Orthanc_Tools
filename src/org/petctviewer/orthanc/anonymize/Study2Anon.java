@@ -10,8 +10,18 @@ public class Study2Anon extends Study2 {
 	public Study2Anon(String studyDescription, Date date, String accession, String StudyOrthancId, String patientName,
 			String patientID, String patientOrthancId, ArrayList<Serie> childSeries) {
 		super(studyDescription, date, accession, StudyOrthancId, patientName, patientID, patientOrthancId, childSeries);
+		
 	}
 	
+	@Override
+	public String getStudyDescription() {
+		if(newStudyDescription==null) {
+			return studyDescription;
+		}else {
+			return newStudyDescription;
+		}
+		
+	}
 	public Study2Anon(Study2 study) {
 		super(study.getStudyDescription(), study.getDate(), study.getAccession(), study.getOrthancId(), study.getPatientName(),
 				study.getPatientID(), study.getParentPatientId(), study.childSeries);

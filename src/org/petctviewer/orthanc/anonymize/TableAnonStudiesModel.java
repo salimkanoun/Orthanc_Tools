@@ -64,10 +64,6 @@ public class TableAnonStudiesModel extends DefaultTableModel{
 		return false;
 	}
 	
-	
-	
-	
-	
 	public ArrayList<Study2> getStudyList(){
 		ArrayList<Study2> studies=new ArrayList<Study2>();
 		
@@ -228,6 +224,8 @@ public class TableAnonStudiesModel extends DefaultTableModel{
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
 	public void addStudies(PatientAnon patientAnon) {
+		this.patientAnon=patientAnon;
+		clear();
 		HashMap<String, Study2Anon> studiesAnonmyze=patientAnon.getAnonymizeStudies();
 		Set<String> keys=studiesAnonmyze.keySet();
 		for(String studyID: keys) {
@@ -238,6 +236,7 @@ public class TableAnonStudiesModel extends DefaultTableModel{
 	}
 		
 	public void refresh() {
+		this.setRowCount(0);
 		this.addStudies(patientAnon);
 	}
 		

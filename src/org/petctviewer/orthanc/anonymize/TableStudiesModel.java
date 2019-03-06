@@ -81,6 +81,7 @@ public class TableStudiesModel extends DefaultTableModel{
 	}
 	
 	public void refresh() {
+		clear();
 		addStudy(patientOrthancId);
 	}
 	

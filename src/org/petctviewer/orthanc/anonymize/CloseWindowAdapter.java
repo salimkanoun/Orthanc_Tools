@@ -48,7 +48,7 @@ public class CloseWindowAdapter extends WindowAdapter{
 	@Override
 	public void windowClosing(WindowEvent e) {
 		if(zipContent.size()>0 || patientAnonList.getRowCount()>0 || exportlist.getRowCount()>0 || monitoring.isRunningMonitoringService()){
-			int PromptResult = JOptionPane.showConfirmDialog(null,"Are you sure you want to exit?","Orthanc Tools",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
+			int PromptResult = JOptionPane.showConfirmDialog(mainFrame,"Are you sure you want to exit?","Orthanc Tools",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
 			if(PromptResult==JOptionPane.YES_OPTION) {
 				closeAll();
 			}

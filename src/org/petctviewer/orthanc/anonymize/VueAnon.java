@@ -186,8 +186,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	private JTable tableauExportSeries;
 	private TableExportStudiesModel modeleExportStudies;
 	private TableExportSeriesModel modeleExportSeries;
-	//private TableRowSorter<TableExportStudiesModel> sorterExportStudies;
-	//private TableRowSorter<TableExportSeriesModel> sorterExportSeries;
 	private StringBuilder remoteFileName;
 	
 
@@ -600,13 +598,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.tableauSeries.setPreferredScrollableViewportSize(new Dimension(530,267));
 		this.tableauSeries.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
-		List<RowSorter.SortKey> sortKeysSeries = new ArrayList<>();
-		sortKeysSeries.add(new RowSorter.SortKey(1, SortOrder.ASCENDING));
-		sortKeysSeries.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
-		//sorterSeries.setSortKeys(sortKeysSeries);
-		//sorterSeries.sort();
-		//this.tableauSeries.setRowSorter(sorterSeries);
-
 		JMenuItem menuItemModifySeries = new JMenuItem("Show tags / Modify");
 		menuItemModifySeries.addActionListener(new ActionListener() {
 				@Override
@@ -647,10 +638,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		addPopUpMenuListener(popMenuSeries, tableauSeries);
 		
 		this.tableauSeries.setComponentPopupMenu(popMenuSeries);
-
-		
-		
-		
 
 		/////////////////////////////////////////////////////////////////////////////
 		///////////////////////// ORTHANC TOOLBOX ///////////////////////////////////
@@ -751,7 +738,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				// Liste des orthanc ID A supprimer qu'on va delete un a un
-				
 				ArrayList<String> deleteSeries=new ArrayList<String>();
 				ArrayList<String> deleteStudies=new ArrayList<String>();
 				ArrayList<String> deletePatients=new ArrayList<String>();
@@ -897,7 +883,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				  if (edit && column==0 ) {
 					System.out.println("ici");
 					//SK NE MARCHE PAS
-					PatientAnon patient=(PatientAnon) this.getValueAt(row, 5);
+					PatientAnon patient=(PatientAnon) modeleAnonPatients.getValueAt(anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 6);
 					Study2Anon editingStudy=patient.getAnonymizeStudy((String) getValueAt(row, 2));
 					String newStudyDesc=(String) this.getValueAt(row, 0);
 					editingStudy.setNewStudyDescription(newStudyDesc);
@@ -967,7 +953,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		});
 
 		addToAnon = new JButton("Add to anonymization list");
-		
+
 		addToAnon.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -982,9 +968,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 						patientAnon.storeChildStudies(queryOrthanc);
 						patientAnon.addAllChildStudiesToAnonymizeList();
 						modeleAnonPatients.addPatient(patientAnon);	
-					}
-					
-					
+					}	
 				//Else Add Selected study
 				}else if(lastTableFocusMain==tableauStudies) {
 					int[] selectedRows=tableauStudies.getSelectedRows();
@@ -992,7 +976,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 						int modelRow=tableauStudies.convertRowIndexToModel(row);
 						modeleAnonPatients.addStudy(modeleStudies.getStudy(modelRow));
 						
-					}	
+					}		
+					modeleAnonStudies.addStudies(modeleAnonPatients.getPatient(anonPatientTable.convertColumnIndexToModel(anonPatientTable.getSelectedRow())));
 				}
 				else {
 					setStateMessage("Selection to Anonymize only possible from Patient Or Study table", "orange",4);
@@ -1010,11 +995,16 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 					int[] rows =anonPatientTable.getSelectedRows();
 					Arrays.sort(rows);
 				    for (int i = rows.length - 1; i >= 0; i--) {
-				    	modeleAnonPatients.removePatient(lastTableFocusAnon.convertRowIndexToModel(anonPatientTable.getSelectedRow()));
-						
+				    	modeleAnonPatients.removePatient(lastTableFocusAnon.convertRowIndexToModel(anonPatientTable.getSelectedRow()));						
 				    }
+				    modeleAnonStudies.clear();
 				}else if(lastTableFocusAnon==anonStudiesTable)  {
-					//modeleAnonPatients
+					PatientAnon patient=(PatientAnon)anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), anonPatientTable.convertColumnIndexToView(6));
+					patient.removeOrthancIDfromAnonymize((String)anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), anonStudiesTable.convertRowIndexToView(2)));
+					modeleAnonStudies.refresh();
+					if(patient.getAnonymizeStudies().size()==0) {
+						modeleAnonPatients.removePatient(anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()));
+					}
 				}
 			}
 		});
@@ -1420,29 +1410,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.tableauExportSeries.setPreferredScrollableViewportSize(new Dimension(460,267));
 		
 		tableauExportSeries.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-		//SK A REVOIR COLORATION DES CAPTURE SECONDAIRES SUREMENT A INTEGRER DANS LE MODELE DE LA TABLE ELLE MEME
-//		tableauExportSeries.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
-//			private static final long serialVersionUID = 1L;
-//
-//			@Override
-//			public Component getTableCellRendererComponent(JTable table,
-//					Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-//
-//				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-//
-//				boolean status = (boolean)table.getModel().getValueAt(tableauExportSeries.convertRowIndexToModel(row), 3);
-//				if (status & !isSelected) {
-//					setBackground(Color.RED);
-//					setForeground(Color.black);
-//				}else if(isSelected){
-//					setBackground(tableauExportStudies.getSelectionBackground());
-//				}else{
-//					setBackground(tableauExportStudies.getBackground());
-//				}
-//				return this;
-//			}   
-//		});
 
 		JPopupMenu popMenuExportSeries = new JPopupMenu();
 		addPopUpMenuListener(popMenuExportSeries , tableauExportSeries);
@@ -2766,6 +2733,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
         });
 	}
 	
+	//SK A revoir ne MARCHE PAS
 	public static void toogleScRenderer(JTable table, boolean activate, int scColumn) {
 		if(activate) {
 			table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
@@ -2775,8 +2743,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				public Component getTableCellRendererComponent(JTable table,
 						Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 					
-					boolean status = (boolean) table.getModel().getValueAt(row, scColumn);
-					if (status & !isSelected) {
+					boolean status = (boolean) table.getModel().getValueAt(row, 3);
+					if (status && !isSelected) {
 						setBackground(Color.RED);
 						setForeground(Color.black);
 					}else if(isSelected){
