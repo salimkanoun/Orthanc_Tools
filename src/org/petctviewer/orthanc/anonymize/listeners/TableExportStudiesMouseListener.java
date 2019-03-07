@@ -20,11 +20,13 @@ public class TableExportStudiesMouseListener implements ListSelectionListener {
 
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
-		if(tableauExportStudies.getSelectedRow() != -1){
-			String studyID = (String) tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(), 5);
-			modeleExportSeries.addSerie(studyID);
-		}	
-		
+		if(!e.getValueIsAdjusting()) {
+			if(tableauExportStudies.getSelectedRow() != -1){
+				System.out.println("iciSelectedStudy");
+				String studyID = (String) tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(), 5);
+				modeleExportSeries.addSerie(studyID);
+			}	
+		}
 	}
 
 }

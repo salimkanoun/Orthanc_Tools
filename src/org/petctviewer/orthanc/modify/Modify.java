@@ -19,8 +19,6 @@ package org.petctviewer.orthanc.modify;
 
 import java.io.IOException;
 
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 import org.json.simple.JSONArray;

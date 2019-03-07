@@ -27,20 +27,17 @@ import javax.swing.table.DefaultTableModel;
 import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2Anon;
-import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class TableAnonStudiesModel extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
 	private String[] entetes = {"Study description*", "Study date", "studyOrthancId", "Patient id", "studyObject", "patientAnon"};
 	private Class<?>[] typeEntetes = {String.class, Date.class, String.class, String.class, Study2.class};
-	private OrthancRestApis connexionHttp;
 	
 	private PatientAnon patientAnon;
 
-	public TableAnonStudiesModel(OrthancRestApis connexionHttp){
+	public TableAnonStudiesModel(){
 		super(0,6);
-		this.connexionHttp=connexionHttp;
 		
 	}
 

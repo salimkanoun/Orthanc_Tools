@@ -130,10 +130,10 @@ public class TableExportSeriesModel extends DefaultTableModel{
 		this.studyOrthancID=studyOrthancID;
 		clear();
 		QueryOrthancData querySeries = new QueryOrthancData(connexionHttp);
-		
+		System.out.println("iciaddSeries");
 		Study2 study =querySeries.getStudyDetails(studyOrthancID,true);
 		for(Serie serie:study.getSeries()) {
-			this.addRow(new String[] {serie.getSerieDescription(), serie.getModality(), String.valueOf(serie.getNbInstances()), String.valueOf(serie.isSecondaryCapture()), serie.getFistInstanceId(), serie.getSeriesNumber()});
+			addRow(new String[] {serie.getSerieDescription(), serie.getModality(), String.valueOf(serie.getNbInstances()), String.valueOf(serie.isSecondaryCapture()), serie.getFistInstanceId(), serie.getSeriesNumber()});
 		}
 	}
 	

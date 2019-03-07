@@ -47,18 +47,21 @@ public class TablePatientsMouseListener implements ListSelectionListener {
 
 	@Override
 	public void valueChanged(ListSelectionEvent arg0) {
-		this.modeleStudies.clear();
-		this.modeleSeries.clear();
+		if(!arg0.getValueIsAdjusting()) {
+			this.modeleStudies.clear();
+			this.modeleSeries.clear();
 
-		try {
-			if(this.modele.getRowCount() != 0 && tableau.getSelectedRow() != -1){
-				String patientOrthancID = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 2);
-				this.modeleStudies.addStudy(patientOrthancID);
+			try {
+				if(this.modele.getRowCount() != 0 && tableau.getSelectedRow() != -1){
+					String patientOrthancID = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 2);
+					this.modeleStudies.addStudy(patientOrthancID);
+				}
+			}catch (Exception e1) {
+				e1.printStackTrace();
 			}
-		}catch (Exception e1) {
-			e1.printStackTrace();
+			frame.pack();
 		}
-		frame.pack();
+		
 		
 	}
 

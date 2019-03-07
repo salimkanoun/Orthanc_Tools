@@ -44,17 +44,21 @@ public class TableStudiesMouseListener implements ListSelectionListener {
 
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
-		// We clear the details
-				this.modeleSeries.clear();
-				try {
-					if(this.modele.getRowCount() != 0){
-						String studyID = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 3);
-						this.modeleSeries.addSerie(studyID);
-					}
-				} catch (Exception e1) {
-					//ignore
+		if(!e.getValueIsAdjusting()) {
+			// We clear the details
+			this.modeleSeries.clear();
+			try {
+				if(this.modele.getRowCount() != 0){
+					String studyID = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 3);
+					this.modeleSeries.addSerie(studyID);
 				}
-				frame.pack();
+			} catch (Exception e1) {
+				//ignore
+			}
+			frame.pack();
+			
+		}
+		
 		
 	}
 	

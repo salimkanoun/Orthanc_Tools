@@ -1,14 +1,10 @@
 package org.petctviewer.orthanc.OTP;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,13 +72,17 @@ public class OTP {
 		jsonPost.addProperty("username", username);
 		jsonPost.addProperty("password", password);
 		jsonPost.addProperty("studyName", studyName);
-		
+		System.out.println(jsonPost);
 		JsonArray visits = null;
 		String answser=makePostConnection("/Rest_Api/get-visits.php", jsonPost.toString());
 		System.out.println(answser);
 		System.out.println(answser==null);
-		
+		//SK A GERER COTE SERVEUR POUR AVOIR TOUJOURS UNE REPONSE EN JSON
+		try {
 		visits=parser.parse(answser).getAsJsonArray();
+		}catch (Exception e){
+			e.printStackTrace();
+		}
 		
 		List<String> visitsList=new ArrayList<String>();
 		if (visits !=null) {
@@ -161,6 +161,7 @@ public class OTP {
 				String output;
 				while ((output = br.readLine()) != null) {
 					sb.append(output);
+					System.out.println(output);
 				}
 				conn.disconnect();
 			}

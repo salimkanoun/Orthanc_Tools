@@ -43,7 +43,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.EventObject;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.prefs.Preferences;
@@ -283,7 +282,7 @@ public class VueAnon extends JFrame {
 		modeleSeries = new TableSeriesModel(connexionHttp, this);
 		modeleExportStudies = new TableExportStudiesModel();
 		modeleExportSeries = new TableExportSeriesModel(connexionHttp);
-		modeleAnonStudies = new TableAnonStudiesModel(connexionHttp);
+		modeleAnonStudies = new TableAnonStudiesModel();
 		modeleAnonPatients = new TableAnonPatientsModel(connexionHttp);
 		
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -868,19 +867,29 @@ public class VueAnon extends JFrame {
 		anonPatientTable.getSelectionModel().addListSelectionListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies));
 		anonPatientTable.putClientProperty("terminateEditOnFocusLost", true);
 
-		
-		//override edditing stoped to store the new studyDescription value in the AnonPatient object
+		//override edditing stoped and Set Value At to store the new studyDescription value in the AnonPatient object
 		anonStudiesTable = new JTable(modeleAnonStudies) {
 			private static final long serialVersionUID = 1L;
+			
+			@Override
+			public void setValueAt(Object aValue, int row, int column) {
+				super.setValueAt(aValue, row, column);
+				if(column==0) {
+					storeNewStudyDescription(row);
+				}
+			}
 
 			@Override
 			public void editingStopped(ChangeEvent e) {
 				super.editingStopped(e);
-
+				storeNewStudyDescription(getSelectedRow());
+			
+			}
+			
+			private void storeNewStudyDescription(int row) {
 				PatientAnon patient=(PatientAnon) modeleAnonPatients.getValueAt(anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 6);
-				Study2Anon editingStudy=patient.getAnonymizeStudy((String) getValueAt(getSelectedRow(), 2));
-				String newStudyDesc=(String) this.getValueAt(getSelectedRow(), 0);
-				System.out.println(newStudyDesc);
+				Study2Anon editingStudy=patient.getAnonymizeStudy((String) getValueAt(row, 2));
+				String newStudyDesc=(String) this.getValueAt(row, 0);
 				editingStudy.setNewStudyDescription(newStudyDesc);
 			}
 		};
@@ -1202,7 +1211,7 @@ public class VueAnon extends JFrame {
 
 		tableauExportStudies.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
-		this.tableauExportStudies.getSelectionModel().addListSelectionListener(new TableExportStudiesMouseListener(anonPatientTable, modeleExportSeries) );
+		this.tableauExportStudies.getSelectionModel().addListSelectionListener(new TableExportStudiesMouseListener(tableauExportStudies, modeleExportSeries) );
 
 		this.tableauExportSeries = new JTable(modeleExportSeries);
 		this.tableauExportSeries.getTableHeader().setReorderingAllowed(false);

@@ -40,7 +40,12 @@ public class TableExportStudiesModel extends DefaultTableModel{
 	public int getColumnCount() {
 		return entetes.length;
 	}
-
+	
+	@Override
+	public boolean isCellEditable(int row, int col){
+		return false;
+	}
+	
 	@Override
 	public String getColumnName(int columnIndex){
 		return entetes[columnIndex];

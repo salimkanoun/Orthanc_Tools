@@ -40,17 +40,17 @@ public class TableAnonPatientsMouseListener implements ListSelectionListener {
 
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
-		if(this.modeleAnonPatient.getRowCount() != 0){
-			// We clear the details
-			this.modeleAnonStudies.clear();
-			
-			int selectedRow =this.tableau.getSelectedRow();
-			PatientAnon patientAnon=modeleAnonPatient.getPatient(selectedRow);
-			
-			this.modeleAnonStudies.addStudies(patientAnon);
-			
+		if(!e.getValueIsAdjusting()) {
+			if(this.modeleAnonPatient.getRowCount() != 0){
+				// We clear the details
+				this.modeleAnonStudies.clear();
+				
+				int selectedRow =this.tableau.getSelectedRow();
+				PatientAnon patientAnon=modeleAnonPatient.getPatient(selectedRow);
+				
+				this.modeleAnonStudies.addStudies(patientAnon);
+			}	
 		}
-		
 	}
 
 }
