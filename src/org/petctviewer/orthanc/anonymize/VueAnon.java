@@ -71,6 +71,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -867,24 +868,23 @@ public class VueAnon extends JFrame {
 		anonPatientTable.getSelectionModel().addListSelectionListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies));
 		anonPatientTable.putClientProperty("terminateEditOnFocusLost", true);
 
+		
+		//override edditing stoped to store the new studyDescription value in the AnonPatient object
 		anonStudiesTable = new JTable(modeleAnonStudies) {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public boolean editCellAt(int row, int column, EventObject e) {
-				  boolean edit = super.editCellAt(row, column, e);
-				  if (edit && column==0 ) {
-					System.out.println("ici");
-					//SK NE MARCHE PAS
-					PatientAnon patient=(PatientAnon) modeleAnonPatients.getValueAt(anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 6);
-					Study2Anon editingStudy=patient.getAnonymizeStudy((String) getValueAt(row, 2));
-					String newStudyDesc=(String) this.getValueAt(row, 0);
-					editingStudy.setNewStudyDescription(newStudyDesc);
-					
-				  }
-				  return edit;
+			public void editingStopped(ChangeEvent e) {
+				super.editingStopped(e);
+
+				PatientAnon patient=(PatientAnon) modeleAnonPatients.getValueAt(anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 6);
+				Study2Anon editingStudy=patient.getAnonymizeStudy((String) getValueAt(getSelectedRow(), 2));
+				String newStudyDesc=(String) this.getValueAt(getSelectedRow(), 0);
+				System.out.println(newStudyDesc);
+				editingStudy.setNewStudyDescription(newStudyDesc);
 			}
 		};
+
 		anonStudiesTable.getTableHeader().setToolTipText("Click on the description cells to change their values");
 		anonStudiesTable.getColumnModel().getColumn(0).setMinWidth(200);
 		anonStudiesTable.getColumnModel().getColumn(1).setMinWidth(80);
@@ -1041,9 +1041,11 @@ public class VueAnon extends JFrame {
 						String visitName=dialog.getVisitName();
 						anonPatientTable.setValueAt(patientNewName, anonPatientTable.getSelectedRow(), 3);
 						anonPatientTable.setValueAt(patientNewID, anonPatientTable.getSelectedRow(), 4);
+						//SK ICI VA POSER PROBLEME
+						//A Test si declanche le listener
 						anonStudiesTable.setValueAt(visitName, anonStudiesTable.getSelectedRow(), 0);
 						//If only One patient in the list, click the anonymize button to start the process
-						if (anonPatientTable.getRowCount()==1) {
+						if (anonPatientTable.getRowCount()==1 && anonStudiesTable.getRowCount()==1) {
 							anonBtn.doClick();
 						}
 					}
