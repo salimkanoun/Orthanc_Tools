@@ -36,7 +36,7 @@ public class Controller_Csv_Btn implements ActionListener {
 						anonymizedstudy.getPatientName(), anonymizedstudy.getPatientID(),
 						originStudy.getDate(), originStudy.getStudyDescription(), 
 						anonymizedstudy.getStudyDescription(), anonymizedstudy.getStatNbSeries(), 
-						anonymizedstudy.getNbInstance(), anonymizedstudy.getMbSize(), anonymizedstudy.getStudyInstanceUid());
+						anonymizedstudy.getStatNbInstance(), anonymizedstudy.getMbSize(), anonymizedstudy.getStudyInstanceUid());
 					
 		
 			}

@@ -113,6 +113,8 @@ import org.petctviewer.orthanc.setup.ConnectionSetup;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 import org.petctviewer.orthanc.setup.Run_Orthanc;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.michaelbaranov.microba.calendar.DatePicker;
 
 public class VueAnon extends JFrame {
@@ -1352,25 +1354,18 @@ public class VueAnon extends JFrame {
 								//Create CTP object to manage CTP communication
 								CTP ctp=new CTP(CTPUsername, CTPPassword, addressFieldCTP.getText());
 								//Create the JSON to send
-								JSONArray sentStudiesArray=new JSONArray();
+								JsonArray sentStudiesArray=new JsonArray();
 								//For each study populate the array with studies details of send process
 								for(Study2 study : modeleExportStudies.getAnonymizedStudy2Object()){
-									StringBuilder statistics=connexionHttp.makeGetConnectionAndStringBuilder("/studies/"+study.getOrthancId()+"/statistics/");
-									JSONObject stats = null;
-									try {
-										stats = (JSONObject) parser.parse(statistics.toString());
-									} catch (org.json.simple.parser.ParseException e) {
-										e.printStackTrace();
-									}
-									JSONObject studyObject=new JSONObject();
-									studyObject.put("visitName", study.getStudyDescription());
-									// study.getNewStudyInstanceUID()
-									studyObject.put("StudyInstanceUID", "");
-									studyObject.put("patientNumber", study.getPatientName());
-									studyObject.put("instanceNumber", Integer.valueOf(stats.get("CountInstances").toString()));
+									study.storeStudyStatistics(queryOrthanc);
+									//Creat Object to send to OTP
+									JsonObject studyObject=new JsonObject();
+									studyObject.addProperty("visitName", study.getStudyDescription());
+									studyObject.addProperty("StudyInstanceUID", study.getStudyInstanceUid());
+									studyObject.addProperty("patientNumber", study.getPatientName());
+									studyObject.addProperty("instanceNumber", study.getStatNbInstance());
 									sentStudiesArray.add(studyObject);
-									
-									
+
 								}
 								validateOk=ctp.validateUpload(sentStudiesArray);
 								//If everything OK, says validated and remove anonymized studies from local

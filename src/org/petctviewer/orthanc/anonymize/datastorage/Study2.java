@@ -85,7 +85,7 @@ public class Study2 {
 		return statNbSeries;
 	}
 	
-	public int getNbInstance() {
+	public int getStatNbInstance() {
 		return statNbInstance;
 	}
 	

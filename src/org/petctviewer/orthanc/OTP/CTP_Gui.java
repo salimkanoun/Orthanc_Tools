@@ -30,9 +30,10 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.petctviewer.orthanc.anonymize.VueAnon;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 @SuppressWarnings("serial")
 public class CTP_Gui extends JDialog {
@@ -124,21 +125,20 @@ public class CTP_Gui extends JDialog {
 									if(arg0.getStateChange() == ItemEvent.SELECTED && !comboBox_Visits.getSelectedItem().equals("None") ) {
 										
 										System.out.println("ici");
-										JSONArray patients=ctp.getAvailableImports((String) comboBox_Studies.getSelectedItem(), (String) comboBox_Visits.getSelectedItem());
+										JsonArray patients=ctp.getAvailableImports((String) comboBox_Studies.getSelectedItem(), (String) comboBox_Visits.getSelectedItem());
 										System.out.println(patients);
 										if (tablePatient.getModel().getRowCount()>0) modelTablePatient.setRowCount(0);
 										for (int i=0 ; i<patients.size() ; i++) {
-											JSONObject patient=(JSONObject) patients.get(i);
+											JsonObject patient=patients.get(i).getAsJsonObject();
 											System.out.println(patient);
-											String numeroPatient=(String) patient.get("numeroPatient");
-											
-											String firstName=(String) patient.get("firstName");
-											String lastName=(String) patient.get("lastName");
-											String patientSex=(String) patient.get("patientSex");
-											String patientDOB=(String) patient.get("patientDOB");
-											String investigatorName=(String) patient.get("investigatorName");
-											String country=(String) patient.get("country");
-											String centerNumber=(String) patient.get("centerNumber");
+											String numeroPatient=patient.get("numeroPatient").getAsString();
+											String firstName=patient.get("firstName").getAsString();
+											String lastName=patient.get("lastName").getAsString();
+											String patientSex=patient.get("patientSex").getAsString();
+											String patientDOB=patient.get("patientDOB").getAsString();
+											String investigatorName=patient.get("investigatorName").getAsString();
+											String country=patient.get("country").getAsString();
+											String centerNumber=patient.get("centerNumber").getAsString();
 											String acquisitionDate=(String) patient.get("acquisitionDate").toString().replaceAll("-", "/");
 											modelTablePatient.addRow(new Object[]{numeroPatient, lastName, firstName, patientSex , patientDOB, acquisitionDate});
 											//SK MANQUE ACQUISITION DATE DANS L API

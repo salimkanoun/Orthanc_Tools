@@ -11,17 +11,17 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.setup.HttpsTrustModifier;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class CTP {
 	private String username;
 	private String password;
 	private String serverAdress;
-	private JSONParser parser=new JSONParser();
+	private JsonParser parser=new JsonParser();
 	
 	public CTP(String username, String password, String serverAdress) {
 		this.username=username;
@@ -30,19 +30,16 @@ public class CTP {
 	}
 	
 	public boolean checkLogin() {
-		JSONObject jsonPost=new JSONObject();
-		jsonPost.put("username", username);
-		jsonPost.put("password", password);
+		JsonObject jsonPost=new JsonObject();
+		jsonPost.addProperty("username", username);
+		jsonPost.addProperty("password", password);
 		String answser=makePostConnection("/Rest_Api/check_login.php",jsonPost.toString());
 		System.out.println(answser);
-		JSONObject response = null;
-		try {
-			response=(JSONObject) parser.parse(answser);
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if(!response.get("login").equals("Allowed") ) {
+		JsonObject response = null;
+
+		response=parser.parse(answser).getAsJsonObject();
+
+		if(!response.get("login").getAsString().equals("Allowed") ) {
 			JOptionPane.showMessageDialog(null, response.get("login").toString(), "Login Error",  JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
@@ -51,48 +48,40 @@ public class CTP {
 		
 	}
 	
-	@SuppressWarnings("unchecked")
 	public String[] getAvailableStudies(){
-		JSONObject jsonPost=new JSONObject();
-		jsonPost.put("username", username);
-		jsonPost.put("password", password);
-		JSONArray studies = null;
-		try {
-			String answser=makePostConnection("/Rest_Api/get-studies.php",jsonPost.toString());
-			System.out.println(answser);
-			studies=(JSONArray) parser.parse(answser);
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		JsonObject jsonPost=new JsonObject();
+		jsonPost.addProperty("username", username);
+		jsonPost.addProperty("password", password);
+		
+		JsonArray studies = null;
+		String answser=makePostConnection("/Rest_Api/get-studies.php",jsonPost.toString());
+		System.out.println(answser);
+		studies=parser.parse(answser).getAsJsonArray();
+
 		List<String> studiesList=new ArrayList<String>();
 		for(int i=0; i<studies.size(); i++) {
-			studiesList.add((String) studies.get(i));
+			studiesList.add(studies.get(i).getAsString());
 		}
 		String[] studiesTable=new String[studies.size()];
 		studiesList.toArray(studiesTable);
 		return studiesTable;
 		
 	}
-	
-	@SuppressWarnings("unchecked")
+
 	public String[] getAvailableVisits(String studyName) {
-		JSONObject jsonPost=new JSONObject();
-		jsonPost.put("username", username);
-		jsonPost.put("password", password);
-		jsonPost.put("studyName", studyName);
-		JSONArray visits = null;
-		try {
-			String answser=makePostConnection("/Rest_Api/get-visits.php",jsonPost.toString());
-			visits=(JSONArray) parser.parse(answser);
-		} catch ( ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		JsonObject jsonPost=new JsonObject();
+		jsonPost.addProperty("username", username);
+		jsonPost.addProperty("password", password);
+		jsonPost.addProperty("studyName", studyName);
+		
+		JsonArray visits = null;
+		String answser=makePostConnection("/Rest_Api/get-visits.php",jsonPost.toString());
+		visits=parser.parse(answser).getAsJsonArray();
+		
 		List<String> visitsList=new ArrayList<String>();
 		if (visits !=null) {
 			for(int i=0; i<visits.size(); i++) {
-				visitsList.add((String) visits.get(i));
+				visitsList.add(visits.get(i).getAsString());
 			}
 			String[] visitsTable=new String[visitsList.size()];
 			visitsList.toArray(visitsTable);
@@ -104,58 +93,45 @@ public class CTP {
 		
 	}
 	
-	@SuppressWarnings("unchecked")
-	public JSONArray getAvailableImports(String studyName, String visitName) {
-		JSONObject jsonPost=new JSONObject();
-		jsonPost.put("username", username);
-		jsonPost.put("password", password);
-		jsonPost.put("studyName", studyName);
-		jsonPost.put("visit", visitName);
-		JSONArray visits = null;
-		try {
-			String answser=makePostConnection("/Rest_Api/get-possible-import.php", jsonPost.toString());
-			visits=(JSONArray) parser.parse(answser);
-		} catch ( ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (visits !=null) {	
+	public JsonArray getAvailableImports(String studyName, String visitName) {
+		JsonObject jsonPost=new JsonObject();
+		jsonPost.addProperty("username", username);
+		jsonPost.addProperty("password", password);
+		jsonPost.addProperty("studyName", studyName);
+		jsonPost.addProperty("visit", visitName);
+		
+		JsonArray visits = null;
+		String answser=makePostConnection("/Rest_Api/get-possible-import.php", jsonPost.toString());
+		visits=parser.parse(answser).getAsJsonArray();
+
+		if (visits.size() !=0) {	
 			return visits;
-		}
-		else {
+		} else {
 			return null;
 		}
 		
 	}
-	
-	@SuppressWarnings("unchecked")
-	public boolean validateUpload(JSONArray studiesArray) {
+
+	public boolean validateUpload(JsonArray studiesArray) {
 		
-		JSONObject jsonPost=new JSONObject();
-		jsonPost.put("username", username);
-		jsonPost.put("password", password);
-		jsonPost.put("studies", studiesArray);
+		JsonObject jsonPost=new JsonObject();
+		jsonPost.addProperty("username", username);
+		jsonPost.addProperty("password", password);
+		jsonPost.add("studies", studiesArray);
 		//SK A MODFIER COTE PLATEFORME POUR SUPPORTER L ENVOI MULTIPLE
 		System.out.println(jsonPost.toString());
 		
-		JSONObject visits = null;
-
+		JsonObject visits = null;
 		String answser=makePostConnection("/Rest_Api/validate-upload.php", jsonPost.toString());
 		System.out.println(answser);
-		try {
-			visits=(JSONObject) parser.parse(answser);
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
+		visits=parser.parse(answser).getAsJsonObject();
 			
-		return (boolean) visits.get("recivedConfirmation");
+		return visits.get("recivedConfirmation").getAsBoolean();
 		
 		
 	}
 	
-	
+	//SK DUPLICATE DE METHODE DANS CONNEXION HTTP  A VOIR
 	private String makePostConnection(String apiUrl, String post) {
 		URL url = null;
 		StringBuilder sb=new StringBuilder();
