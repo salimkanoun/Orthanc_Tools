@@ -127,6 +127,25 @@ public class QueryOrthancData {
 		return studies;
 	}
 	
+	public int[]  getStudyStatistics(String studyOrthancID) {
+		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/studies/" + studyOrthancID +"/statistics");
+		
+		if(sb==null) {
+			return null;
+		}
+		JsonObject statisticsAnswer=parserJson.parse(sb.toString()).getAsJsonObject();
+		int countSeries=statisticsAnswer.get("CountSeries").getAsInt();
+		int countInstances=statisticsAnswer.get("CountInstances").getAsInt();
+		int sizeMb=statisticsAnswer.get("DiskSizeMB").getAsInt();
+		
+		int[] statistics=new int[3];
+		statistics[0]=countSeries;
+		statistics[1]=countInstances;
+		statistics[2]=sizeMb;
+		
+		return statistics;
+	}
+	
 	public Study2 getStudyDetails(String studyOrthancID, boolean includeSerieLevel) {
 		
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/studies/"+studyOrthancID);
@@ -136,6 +155,7 @@ public class QueryOrthancData {
 		JsonObject studyData=(JsonObject) parserJson.parse(sb.toString());
 		JsonObject studyDetails = (JsonObject) studyData.get("MainDicomTags");
 		String accessionNumber=studyDetails.get("AccessionNumber").getAsString();
+		String studyInstanceUid=studyDetails.get("StudyInstanceUID").getAsString();
 		String studyDate=studyDetails.get("StudyDate").getAsString();
 		Date studyDateObject=null;
 		try {
@@ -164,7 +184,7 @@ public class QueryOrthancData {
 			}
 		}
 
-		Study2 study=new Study2(studyDescription, studyDateObject, accessionNumber, studyOrthancID, patientName, patientId, patientOrthancID, series);
+		Study2 study=new Study2(studyDescription, studyDateObject, accessionNumber, studyOrthancID, patientName, patientId, patientOrthancID,studyInstanceUid, series);
 		
 		return study;
 		

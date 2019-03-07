@@ -58,8 +58,9 @@ public class CSV {
 	}
 
 	public void addStudy(String oldPatientName, String oldPatientId, String newPatientName, String newPatientId,
-			String oldStudyDate, String oldStudyDesc, String newStudyDesc, String nbSeries, String nbInstances, 
-			String size, String studyInstanceUid){
+			Date oldStudyDate, String oldStudyDesc, String newStudyDesc, int nbSeries, int nbInstances, 
+			int size, String studyInstanceUid){
+		SimpleDateFormat df=new SimpleDateFormat("MMddyyyy");
 		content.append(oldPatientName);
 		content.append(',');
 		content.append(oldPatientId);
@@ -68,7 +69,7 @@ public class CSV {
 		content.append(',');
 		content.append(newPatientId);
 		content.append(',');
-		content.append(oldStudyDate);
+		content.append(df.format(oldStudyDate));
 		content.append(',');
 		content.append(oldStudyDesc);
 		content.append(',');

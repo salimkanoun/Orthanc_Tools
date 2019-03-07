@@ -32,7 +32,7 @@ public class Controller_Export_Zip implements ActionListener {
 			chooser.setDialogTitle("Export to...");
 			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			chooser.setAcceptAllFileFilterUsed(false);
-			chooser.setCurrentDirectory(new File(vue.jprefer.get("zipLocation", System.getProperty("user.dir"))));
+			chooser.setCurrentDirectory(new File(VueAnon.jprefer.get("zipLocation", System.getProperty("user.dir"))));
 			
 			// Get comboToolChooser Choice
 			String comboToolItem=vue.getComboToolChooserSeletedItem();
@@ -44,7 +44,7 @@ public class Controller_Export_Zip implements ActionListener {
 			}
 
 			if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-				vue.jprefer.put("zipLocation", chooser.getSelectedFile().toPath().toString());
+				VueAnon.jprefer.put("zipLocation", chooser.getSelectedFile().toPath().toString());
 			
 				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 					@Override
@@ -61,7 +61,7 @@ public class Controller_Export_Zip implements ActionListener {
 							if (comboToolItem.equals("DICOMDIR Zip")) convertzip.generateZip(true);
 						//If include the viewer	
 						} else {
-							String viewerString=vue.jprefer.get("viewerDistribution", "empty");
+							String viewerString=VueAnon.jprefer.get("viewerDistribution", "empty");
 							
 							if( viewerString.equals("empty") || ! new File(viewerString).exists() ) {
 								JOptionPane.showMessageDialog(vue,"Viewer not available, please download it in the setup tab");

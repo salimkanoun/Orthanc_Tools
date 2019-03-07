@@ -6,8 +6,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-
 import javax.swing.SwingWorker;
 
 import org.apache.commons.lang3.StringUtils;
@@ -114,7 +112,7 @@ public class Controller_Anonymize_Btn implements ActionListener {
 				String newPatientName;
 				String newPatientId;
 				//Prepare Substitute if new PatientName/ ID are not Filled
-				String substituteName = "A-" + vue.jprefer.get("centerCode", "12345");
+				String substituteName = "A-" + VueAnon.jprefer.get("centerCode", "12345");
 				SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmm");
 				String substituteID = "A-" + df.format(new Date());
 				
