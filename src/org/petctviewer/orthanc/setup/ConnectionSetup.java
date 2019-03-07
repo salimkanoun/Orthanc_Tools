@@ -46,10 +46,12 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
+import org.petctviewer.orthanc.anonymize.VueAnon;
+
 public class ConnectionSetup extends JDialog {
 	
 	private static final long serialVersionUID = 1L;
-	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
+	private Preferences jpreferPerso = VueAnon.jprefer;
 	private JDialog gui=this;
 	public boolean ok=false;
 

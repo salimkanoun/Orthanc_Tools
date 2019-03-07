@@ -29,6 +29,8 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
 
+import org.petctviewer.orthanc.anonymize.VueAnon;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -41,7 +43,7 @@ import com.google.gson.JsonParser;
  */
 public class OrthancRestApis {
 	
-	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
+	private Preferences jpreferPerso = VueAnon.jprefer;
 	private String fullAddress;
 	private String authentication;
 	private String orthancVersion;
@@ -180,7 +182,6 @@ public class OrthancRestApis {
 			os.flush();
 			conn.getResponseMessage();
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		

@@ -47,37 +47,34 @@ public class Select_Series extends JDialog {
 		contentPanel.add(scrollPane);
 		scrollPane.setViewportView(tableSeries);
 
-		{
-			JPanel buttonPane = new JPanel();
-			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
-			getContentPane().add(buttonPane, BorderLayout.SOUTH);
-			{
-				JButton closeButton = new JButton("Close");
-				closeButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent arg0) {
-						dispose();
-					}
-				});
-				{
-					JButton btnDeleteSelected = new JButton("Delete Selected");
-					btnDeleteSelected.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent arg0) {
-							int[] selectedRows=tableSeries.getSelectedRows();
-							for(int i=0; i<selectedRows.length; i++) {
-								connexionHttp.makeDeleteConnection("/series/"+tableSeries.getValueAt(selectedRows[i], 4));
-								
-							}
-							tableSeriesModel.clear();
-							tableSeriesModel.addSerie(studyUID);
-							
-						}
-					});
-					buttonPane.add(btnDeleteSelected);
-				}
-				closeButton.setActionCommand("Close");
-				buttonPane.add(closeButton);
+		
+		JPanel buttonPane = new JPanel();
+		buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		getContentPane().add(buttonPane, BorderLayout.SOUTH);
+		
+		JButton closeButton = new JButton("Close");
+		closeButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				dispose();
 			}
-		}
-	}
+		});
+		
+		JButton btnDeleteSelected = new JButton("Delete Selected");
+		btnDeleteSelected.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				int[] selectedRows=tableSeries.getSelectedRows();
+				for(int i=0; i<selectedRows.length; i++) {
+					connexionHttp.makeDeleteConnection("/series/"+tableSeries.getValueAt(selectedRows[i], 4));
+					
+				}
+				tableSeriesModel.clear();
+				tableSeriesModel.addSerie(studyUID);
+				
+			}
+		});
+		buttonPane.add(btnDeleteSelected);
+		
+		closeButton.setActionCommand("Close");
+		buttonPane.add(closeButton);
 
 }

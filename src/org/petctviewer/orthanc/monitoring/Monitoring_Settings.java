@@ -7,6 +7,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+
+import org.petctviewer.orthanc.anonymize.VueAnon;
+
 import java.awt.GridLayout;
 import java.awt.BorderLayout;
 import javax.swing.JButton;
@@ -19,7 +22,7 @@ import javax.swing.JCheckBox;
 @SuppressWarnings("serial")
 public class Monitoring_Settings extends JDialog {
 
-	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
+	private Preferences jprefer = VueAnon.jprefer;
 	private JTextField dbPort, dbName, dbUsername, dbadress;
 	private JPasswordField dbPassword ;
 

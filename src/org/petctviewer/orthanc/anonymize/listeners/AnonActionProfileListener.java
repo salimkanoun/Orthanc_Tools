@@ -25,6 +25,8 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JRadioButton;
 
+import org.petctviewer.orthanc.anonymize.VueAnon;
+
 /**
  * Listener when Anonymization profile (combobox)is changed, 
  * Set predifined profile or load custom profile
@@ -40,7 +42,7 @@ public class AnonActionProfileListener extends AbstractAction{
 	private JRadioButton[] settingsPrivateTagButtons; 
 	private JRadioButton[] settingsSecondaryCaptureButtons;
 	private JRadioButton[] settingsStudySerieDescriptionButtons;
-	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
+	private Preferences jprefer = VueAnon.jprefer;
 
 	public AnonActionProfileListener(JComboBox<String> anonProfiles, JLabel profileLabel, 
 			JRadioButton[] settingsBodyCharButtons,

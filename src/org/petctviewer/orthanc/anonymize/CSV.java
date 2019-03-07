@@ -99,7 +99,7 @@ public class CSV {
 	 */
 	private File fileChooser(){
 		
-		Preferences jpreferAnon = Preferences.userRoot().node("<unnamed>/anonPlugin");
+		Preferences jpreferAnon = VueAnon.jprefer;
 		DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
 		
 		JFileChooser chooser = new JFileChooser();

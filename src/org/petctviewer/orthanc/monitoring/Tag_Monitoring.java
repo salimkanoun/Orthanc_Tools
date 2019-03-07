@@ -11,11 +11,12 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class Tag_Monitoring {
 	
-	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
+	private Preferences jprefer = VueAnon.jprefer;
 	private OrthancRestApis parametre;
 	private String level;
 	private JSONParser parser=new JSONParser();

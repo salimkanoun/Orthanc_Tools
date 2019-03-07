@@ -18,7 +18,7 @@ public class Tab_Change_Listener implements ChangeListener {
 	@Override
 	public void stateChanged(ChangeEvent arg0) {
 		
-		Preferences jprefer=vue.jprefer;
+		Preferences jprefer=VueAnon.jprefer;
 		
 		String selectedAnonProfile=vue.getSelectedAnonProfile();
 		

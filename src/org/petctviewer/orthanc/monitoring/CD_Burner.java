@@ -44,6 +44,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.export.ExportZip;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
@@ -100,7 +101,6 @@ public class CD_Burner {
 					try {
 						updateProgress();
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					
@@ -502,16 +502,16 @@ public class CD_Burner {
 	
 	public void setCDPreference() {
 				//On prends les settings du registery
-				Preferences jPrefer = Preferences.userNodeForPackage(Burner_Settings.class);
-				jPrefer = jPrefer.node("CDburner");
-				burnerManifacturer=jPrefer.get("buernerManufacturer", "Epson");
-				fijiDirectory=jPrefer.get("fijiDirectory", null);
-				epsonDirectory=jPrefer.get("epsonDirectory", null);
-				labelFile=jPrefer.get("labelFile", null);
-				dateFormatChoix=jPrefer.get("DateFormat", null);
-				deleteStudies=jPrefer.getBoolean("deleteStudies", false);
-				suportType=jPrefer.get("suportType", "Auto");
-				monitoringTime=jPrefer.getInt("monitoringTime", 90);
+				Preferences jPrefer = VueAnon.jprefer;
+				jPrefer = jPrefer.node("Burner_CDburner");
+				burnerManifacturer=jPrefer.get("Burner_buernerManufacturer", "Epson");
+				fijiDirectory=jPrefer.get("Burner_fijiDirectory", null);
+				epsonDirectory=jPrefer.get("Burner_epsonDirectory", null);
+				labelFile=jPrefer.get("Burner_labelFile", null);
+				dateFormatChoix=jPrefer.get("Burner_DateFormat", null);
+				deleteStudies=jPrefer.getBoolean("Burner_deleteStudies", false);
+				suportType=jPrefer.get("Burner_suportType", "Auto");
+				monitoringTime=jPrefer.getInt("Burner_monitoringTime", 90);
 		
 				
 	}

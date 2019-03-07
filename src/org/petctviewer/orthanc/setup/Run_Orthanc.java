@@ -22,11 +22,12 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 
 import org.apache.commons.io.IOUtils;
+import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.monitoring.CD_Burner;
 
 public class Run_Orthanc {
 	
-	 private Preferences jprefer =Preferences.userRoot().node("<unnamed>/queryplugin");
+	 private Preferences jprefer =VueAnon.jprefer;
 	 private Process process;
 	 private Path file;
 	 private Thread orthancThread;

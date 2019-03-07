@@ -23,6 +23,9 @@ import javax.swing.JCheckBox;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
 import javax.swing.event.ChangeListener;
+
+import org.petctviewer.orthanc.anonymize.VueAnon;
+
 import javax.swing.event.ChangeEvent;
 
 @SuppressWarnings("serial")
@@ -184,25 +187,23 @@ public class AutoQueryOptions extends JDialog {
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				//Save in registery
-				Preferences jPrefer;
-				jPrefer = Preferences.userNodeForPackage(AutoQuery.class);
-				jPrefer = jPrefer.node("AutoQuery");
-				jPrefer.putInt("discard", getDiscard());
-				jPrefer.putInt("hour", getHour());
-				jPrefer.putInt("minutes", getMin());
-				jPrefer.putBoolean("useSeriesFilter", getUseSeriesFilter());
-				jPrefer.put("seriesDescriptionContains", serieDescriptionContains.getText());
-				jPrefer.put("seriesDescriptionExclude", serieDescriptionExclude.getText());
-				jPrefer.put("seriesNumberContains", serieNumberMatch.getText());
-				jPrefer.put("seriesNumberExclude", serieNumberExclude.getText());
-				jPrefer.putBoolean("useSeriesCRFilter", chckbxCr.isSelected());
-				jPrefer.putBoolean("useSeriesCTFilter", chckbxCt.isSelected());
-				jPrefer.putBoolean("useSeriesCMRFilter", chckbxCmr.isSelected());
-				jPrefer.putBoolean("useSeriesNMFilter", chckbxNm.isSelected());
-				jPrefer.putBoolean("useSeriesPTFilter", chckbxPt.isSelected());
-				jPrefer.putBoolean("useSeriesUSFilter", chckbxUs.isSelected());
-				jPrefer.putBoolean("useSeriesXAFilter", chckbxXa.isSelected());
-				jPrefer.putBoolean("useSeriesMGFilter", chckbxMg.isSelected());
+				Preferences jPrefer=VueAnon.jprefer;
+				jPrefer.putInt("AutoQuery_discard", getDiscard());
+				jPrefer.putInt("AutoQuery_hour", getHour());
+				jPrefer.putInt("AutoQuery_minutes", getMin());
+				jPrefer.putBoolean("AutoQuery_useSeriesFilter", getUseSeriesFilter());
+				jPrefer.put("AutoQuery_seriesDescriptionContains", serieDescriptionContains.getText());
+				jPrefer.put("AutoQuery_seriesDescriptionExclude", serieDescriptionExclude.getText());
+				jPrefer.put("AutoQuery_seriesNumberContains", serieNumberMatch.getText());
+				jPrefer.put("AutoQuery_seriesNumberExclude", serieNumberExclude.getText());
+				jPrefer.putBoolean("AutoQuery_useSeriesCRFilter", chckbxCr.isSelected());
+				jPrefer.putBoolean("AutoQuery_useSeriesCTFilter", chckbxCt.isSelected());
+				jPrefer.putBoolean("AutoQuery_useSeriesCMRFilter", chckbxCmr.isSelected());
+				jPrefer.putBoolean("AutoQuery_useSeriesNMFilter", chckbxNm.isSelected());
+				jPrefer.putBoolean("AutoQuery_useSeriesPTFilter", chckbxPt.isSelected());
+				jPrefer.putBoolean("AutoQuery_useSeriesUSFilter", chckbxUs.isSelected());
+				jPrefer.putBoolean("AutoQuery_useSeriesXAFilter", chckbxXa.isSelected());
+				jPrefer.putBoolean("AutoQuery_useSeriesMGFilter", chckbxMg.isSelected());
 				//dispose
 				dispose();
 			}
@@ -241,31 +242,30 @@ public class AutoQueryOptions extends JDialog {
 	}
 	
 	private void setOptionValuefromRegistery() {
-		Preferences jPrefer = Preferences.userNodeForPackage(AutoQuery.class);
-		jPrefer = jPrefer.node("AutoQuery");
-		discard=jPrefer.getInt("discard", 10);
+		Preferences jPrefer = VueAnon.jprefer;
+		discard=jPrefer.getInt("AutoQuery_discard", 10);
 		spinnerDiscard.setValue(discard);
-		hour=jPrefer.getInt("hour", 22);
+		hour=jPrefer.getInt("AutoQuery_hour", 22);
 		spinnerHour.setValue(hour);
-		min=jPrefer.getInt("minutes", 00);
+		min=jPrefer.getInt("AutoQuery_minutes", 00);
 		spinnerMin.setValue(min);
 		
 		//serie filter
-		chckbxSeriesFilter.setSelected(jPrefer.getBoolean("useSeriesFilter", false));
+		chckbxSeriesFilter.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesFilter", false));
 		unactivateSeriesFiler(!chckbxSeriesFilter.isSelected());
-		serieDescriptionContains.setText(jPrefer.get("seriesDescriptionContains", ""));
-		serieDescriptionExclude.setText(jPrefer.get("seriesDescriptionExclude", ""));
-		serieNumberMatch.setText(jPrefer.get("seriesNumberContains", ""));
-		serieNumberExclude.setText(jPrefer.get("seriesNumberExclude", ""));
+		serieDescriptionContains.setText(jPrefer.get("AutoQuery_seriesDescriptionContains", ""));
+		serieDescriptionExclude.setText(jPrefer.get("AutoQuery_seriesDescriptionExclude", ""));
+		serieNumberMatch.setText(jPrefer.get("AutoQuery_seriesNumberContains", ""));
+		serieNumberExclude.setText(jPrefer.get("AutoQuery_seriesNumberExclude", ""));
 		
-		chckbxCr.setSelected(jPrefer.getBoolean("useSeriesCRFilter", false));
-		chckbxCt.setSelected(jPrefer.getBoolean("useSeriesCTFilter", false));
-		chckbxCmr.setSelected(jPrefer.getBoolean("useSeriesCMRFilter", false));
-		chckbxNm.setSelected(jPrefer.getBoolean("useSeriesNMFilter", false));
-		chckbxPt.setSelected(jPrefer.getBoolean("useSeriesPTFilter", false));
-		chckbxUs.setSelected(jPrefer.getBoolean("useSeriesUSFilter", false));
-		chckbxXa.setSelected(jPrefer.getBoolean("useSeriesXAFilter", false));
-		chckbxMg.setSelected(jPrefer.getBoolean("useSeriesMGFilter", false));	
+		chckbxCr.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesCRFilter", false));
+		chckbxCt.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesCTFilter", false));
+		chckbxCmr.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesCMRFilter", false));
+		chckbxNm.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesNMFilter", false));
+		chckbxPt.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesPTFilter", false));
+		chckbxUs.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesUSFilter", false));
+		chckbxXa.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesXAFilter", false));
+		chckbxMg.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesMGFilter", false));	
 	}
 	
 	protected void unactivateSeriesFiler(boolean unactivate) {

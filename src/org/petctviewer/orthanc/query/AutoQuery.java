@@ -36,6 +36,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
+import org.petctviewer.orthanc.anonymize.VueAnon;
 
 public class AutoQuery  {
 
@@ -60,27 +61,26 @@ public class AutoQuery  {
 		aetRetrieve=api.getLocalAet();
 
 		//Get Jprefer Value
-		jPrefer = Preferences.userNodeForPackage(AutoQuery.class);
-		jPrefer = jPrefer.node("AutoQuery");
+		jPrefer = VueAnon.jprefer;
 		//dicard value
-		discard=jPrefer.getInt("discard", 10);
+		discard=jPrefer.getInt("AutoQuery_discard", 10);
 		//time value
-		fTEN_PM=jPrefer.getInt("hour", 22);
-		fZERO_MINUTES=jPrefer.getInt("minutes", 00);
+		fTEN_PM=jPrefer.getInt("AutoQuery_hour", 22);
+		fZERO_MINUTES=jPrefer.getInt("AutoQuery_minutes", 00);
 		//serie filter
-		chckbxSeriesFilter=jPrefer.getBoolean("useSeriesFilter", false);
-		serieDescriptionContains=jPrefer.get("seriesDescriptionContains", "").toLowerCase();
-		serieDescriptionExclude=jPrefer.get("seriesDescriptionExclude", "").toLowerCase();
-		serieNumberMatch=jPrefer.get("seriesNumberContains", "");
-		serieNumberExclude=jPrefer.get("seriesNumberExclude", "");
-		chckbxCr=jPrefer.getBoolean("useSeriesCRFilter", false);
-		chckbxCt=jPrefer.getBoolean("useSeriesCTFilter", false);
-		chckbxCmr=jPrefer.getBoolean("useSeriesCMRFilter", false);
-		chckbxNm=jPrefer.getBoolean("useSeriesNMFilter", false);
-		chckbxPt=jPrefer.getBoolean("useSeriesPTFilter", false);
-		chckbxUs=jPrefer.getBoolean("useSeriesUSFilter", false);
-		chckbxXa=jPrefer.getBoolean("useSeriesXAFilter", false);
-		chckbxMg=jPrefer.getBoolean("useSeriesMGFilter", false);
+		chckbxSeriesFilter=jPrefer.getBoolean("AutoQuery_useSeriesFilter", false);
+		serieDescriptionContains=jPrefer.get("AutoQuery_seriesDescriptionContains", "").toLowerCase();
+		serieDescriptionExclude=jPrefer.get("AutoQuery_seriesDescriptionExclude", "").toLowerCase();
+		serieNumberMatch=jPrefer.get("AutoQuery_seriesNumberContains", "");
+		serieNumberExclude=jPrefer.get("AutoQuery_seriesNumberExclude", "");
+		chckbxCr=jPrefer.getBoolean("AutoQuery_useSeriesCRFilter", false);
+		chckbxCt=jPrefer.getBoolean("AutoQuery_useSeriesCTFilter", false);
+		chckbxCmr=jPrefer.getBoolean("AutoQuery_useSeriesCMRFilter", false);
+		chckbxNm=jPrefer.getBoolean("AutoQuery_useSeriesNMFilter", false);
+		chckbxPt=jPrefer.getBoolean("AutoQuery_useSeriesPTFilter", false);
+		chckbxUs=jPrefer.getBoolean("AutoQuery_useSeriesUSFilter", false);
+		chckbxXa=jPrefer.getBoolean("AutoQuery_useSeriesXAFilter", false);
+		chckbxMg=jPrefer.getBoolean("AutoQuery_useSeriesMGFilter", false);
 		
 		
 	}

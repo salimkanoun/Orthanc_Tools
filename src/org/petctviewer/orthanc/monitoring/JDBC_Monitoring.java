@@ -23,11 +23,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.prefs.Preferences;
 
+import org.petctviewer.orthanc.anonymize.VueAnon;
+
 public class JDBC_Monitoring<accessionNumber> {
 
 	private Connection connection;
 	
-	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
+	private Preferences jprefer = VueAnon.jprefer;
 		
 
 	public JDBC_Monitoring() {

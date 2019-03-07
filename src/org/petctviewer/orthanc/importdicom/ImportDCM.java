@@ -50,6 +50,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
+import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import com.google.gson.JsonObject;
@@ -58,7 +59,7 @@ import com.google.gson.JsonParser;
 public class ImportDCM extends JDialog {
 	
 	private static final long serialVersionUID = 1L;
-	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
+	private Preferences jprefer = VueAnon.jprefer;
 	private JLabel state;
 	private OrthancRestApis connexion;
 	private JDialog gui;
@@ -74,7 +75,7 @@ public class ImportDCM extends JDialog {
 		this.gui=this;
 		JPanel mainPanel = new JPanel(new GridBagLayout());
 		JLabel labelPath = new JLabel("DICOM files path");
-		JTextField path = new JTextField(jpreferPerso.get("filesLocation", System.getProperty("user.dir")));
+		JTextField path = new JTextField(jprefer.get("filesLocation", System.getProperty("user.dir")));
 		path.setMinimumSize(new Dimension(250, 27));
 		path.setMaximumSize(new Dimension(250, 27));
 		path.setEditable(false);
@@ -84,14 +85,14 @@ public class ImportDCM extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser chooser = new JFileChooser();
-				chooser.setCurrentDirectory(new java.io.File(jpreferPerso.get("filesLocation", System.getProperty("user.dir"))));
+				chooser.setCurrentDirectory(new java.io.File(jprefer.get("filesLocation", System.getProperty("user.dir"))));
 				chooser.setDialogTitle("Export zip to...");
 				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				chooser.setAcceptAllFileFilterUsed(false);
 				if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 					path.setText(chooser.getSelectedFile().toPath().toString());
 					gui.pack();
-					jpreferPerso.put("filesLocation", path.getText());
+					jprefer.put("filesLocation", path.getText());
 				}
 			}
 		});
@@ -110,7 +111,7 @@ public class ImportDCM extends JDialog {
 						@Override
 						protected Void doInBackground() throws Exception { 
 							
-							importFiles(Paths.get(jpreferPerso.get("filesLocation", System.getProperty("user.dir"))));
+							importFiles(Paths.get(jprefer.get("filesLocation", System.getProperty("user.dir"))));
 							return null;
 						}
 						

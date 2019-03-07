@@ -46,6 +46,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
+import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.query.QueryRetrieve;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
@@ -100,8 +101,7 @@ public class Monitoring_GUI extends JFrame {
 	 * Create the frame.
 	 */
 	public Monitoring_GUI(OrthancRestApis parametre) {
-		jPrefer = Preferences.userNodeForPackage(Burner_Settings.class);
-		jPrefer = jPrefer.node("CDburner");
+		jPrefer = VueAnon.jprefer;
 		this.parametre=parametre;
 		this.gui=this;
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

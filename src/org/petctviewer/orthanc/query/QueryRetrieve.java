@@ -212,7 +212,7 @@ public class QueryRetrieve {
 		queryDetails.addProperty("AccessionNumber", accessionNumber);
 		
 		query.add("Query", queryDetails);
-		System.out.println(aet+query.toString());
+		
 		String ID = null;
 		//Send the query to Orthanc and get it's ID to fetch answers
 		StringBuilder response=connexion.makePostConnectionAndStringBuilder("/modalities/" + aet + "/query/", query.toString());

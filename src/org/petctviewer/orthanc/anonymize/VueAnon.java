@@ -81,6 +81,7 @@ import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.petctviewer.orthanc.Orthanc_Tools;
 import org.petctviewer.orthanc.Jsonsettings.SettingsGUI;
 import org.petctviewer.orthanc.OTP.CTP;
 import org.petctviewer.orthanc.OTP.CTP_Gui;
@@ -117,7 +118,7 @@ import com.michaelbaranov.microba.calendar.DatePicker;
 import ij.plugin.PlugIn;
 
 
-public class VueAnon extends JFrame implements PlugIn {
+public class VueAnon extends JFrame {
 	private static final long serialVersionUID = 1L;
 	
 	public JTabbedPane tabbedPane;
@@ -219,14 +220,13 @@ public class VueAnon extends JFrame implements PlugIn {
 	//CTP
 	protected JTextField addressFieldCTP;
 	public JComboBox<String> listePeersCTP ;
-	protected JButton exportCTP;
+	public JButton exportCTP;
 	private String CTPUsername;
 	private String CTPPassword;
-	private boolean autoSendCTP=false;
+	public boolean autoSendCTP=false;
 
 	// Settings preferences
-	public Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
-	//private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
+	public static Preferences jprefer = Preferences.userNodeForPackage(Orthanc_Tools.class);
 	
 	//Run Orthanc
 	private Run_Orthanc runOrthanc;
@@ -236,7 +236,7 @@ public class VueAnon extends JFrame implements PlugIn {
 	private JTable lastTableFocusAnon;
 	
 	//CustomListener
-	private AnonymizeListener anonymizeListener;
+	public AnonymizeListener anonymizeListener;
 
 	public boolean fijiEnvironement=false;
 	
@@ -2368,18 +2368,6 @@ public class VueAnon extends JFrame implements PlugIn {
 		queryCTPBtn.setVisible(show);
 	}
 	
-	// LAUNCHERS
-	public static void main(String... args){
-		VueAnon anon=new VueAnon();
-		anon.setLocationRelativeTo(null);
-		anon.setVisible(true);
-	}
 
-	@Override
-	public void run(String string) {
-		setLocationRelativeTo(null);
-		this.setVisible(true);
-		fijiEnvironement=true;
-	}
 	
 }

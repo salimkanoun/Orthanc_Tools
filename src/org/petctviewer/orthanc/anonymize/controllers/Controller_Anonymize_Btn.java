@@ -3,7 +3,6 @@ package org.petctviewer.orthanc.anonymize.controllers;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
@@ -11,11 +10,11 @@ import java.util.concurrent.ExecutionException;
 
 import javax.swing.SwingWorker;
 
-import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.apache.commons.lang3.StringUtils;
 import org.petctviewer.orthanc.anonymize.AnonRequest;
 import org.petctviewer.orthanc.anonymize.QueryOrthancData;
 import org.petctviewer.orthanc.anonymize.Tags.Choice;
+import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2Anon;
@@ -27,7 +26,6 @@ public class Controller_Anonymize_Btn implements ActionListener {
 	private VueAnon vue;
 	private int anonCount;
 	private QueryOrthancData queryOrthanc;
-	private ArrayList<Study_Anonymized> anonymizedstudies;
 	public Controller_Anonymize_Btn(VueAnon vue, OrthancRestApis connexion) {
 		this.vue=vue;
 		queryOrthanc=new QueryOrthancData(connexion);
@@ -48,13 +46,10 @@ public class Controller_Anonymize_Btn implements ActionListener {
 			protected void done() {
 				try {
 					get();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ExecutionException e) {
-					// TODO Auto-generated catch block
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
+				
 				vue.enableAnonButton(true);
 				vue.anonBtn.setText("Anonymize");
 				vue.setStateMessage("The data has successfully been anonymized.", "green", 4);
@@ -62,18 +57,19 @@ public class Controller_Anonymize_Btn implements ActionListener {
 				vue.openCloseAnonTool(false);
 				vue.pack();
 				vue.tabbedPane.setSelectedIndex(1);
-				//SK Avant de faire le Clear Faire Passer les lignes à l'Export
+				//Clear Anon List
 				vue.modeleAnonPatients.clear();
 				vue.modeleAnonStudies.clear();
 				
 				//Si fonction a ete fait avec le CTP on fait l'envoi auto A l'issue de l'anon
-//				if(autoSendCTP) {
-//					exportCTP.doClick();
-//					autoSendCTP=false;
-//				}
-//				if(anonymizeListener!=null) {
-//					anonymizeListener.AnonymizationDone();
-//				}
+				if(vue.autoSendCTP) {
+					vue.exportCTP.doClick();
+					vue.autoSendCTP=false;
+				}
+				
+				if(vue.anonymizeListener!=null) {
+					vue.anonymizeListener.AnonymizationDone();
+				}
 				return;
 			}
 			

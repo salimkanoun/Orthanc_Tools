@@ -78,6 +78,7 @@ import javax.swing.text.DefaultCaret;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.anonymize.gui.DateRenderer;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
@@ -129,7 +130,7 @@ public class VueQuery extends JFrame {
 	private JButton retrieveH;
 	
 	// Tab Setup
-	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
+	private Preferences jprefer = VueAnon.jprefer;
 	
 	//Working status
 	private boolean working;
@@ -756,7 +757,7 @@ public class VueQuery extends JFrame {
 			public void itemStateChanged(ItemEvent arg0) {
 				if (arg0.getStateChange()==ItemEvent.SELECTED) {
 					//On sauve dans le registery chaque changement de selection pour le prochain lancement
-					jpreferPerso.putInt("retrieveSelection", comboBox_RetrieveAet.getSelectedIndex());
+					jprefer.putInt("retrieveSelection", comboBox_RetrieveAet.getSelectedIndex());
 				}
 				
 			}});
@@ -1035,24 +1036,24 @@ public class VueQuery extends JFrame {
 	private void applyPreferences() {
 		
 		if(distantAets.length > 0){
-			if(jpreferPerso.getInt("SearchAET", 99) < distantAets.length){
-				queryAET.setSelectedIndex(jpreferPerso.getInt("SearchAET", 99));
+			if(jprefer.getInt("SearchAET", 99) < distantAets.length){
+				queryAET.setSelectedIndex(jprefer.getInt("SearchAET", 99));
 			}else{
 				queryAET.setSelectedIndex(0);	
 			}
 		}
 		
 		if(distantAets.length > 0){
-			if(jpreferPerso.getInt("HistoryAET", 0) < distantAets.length){
-				queryAETH.setSelectedIndex(jpreferPerso.getInt("HistoryAET", 0));
+			if(jprefer.getInt("HistoryAET", 0) < distantAets.length){
+				queryAETH.setSelectedIndex(jprefer.getInt("HistoryAET", 0));
 			}else{
 				queryAETH.setSelectedIndex(0);
 			}
 		}
 		
-		searchingParam.setSelectedIndex(jpreferPerso.getInt("InputParameter", 0));
+		searchingParam.setSelectedIndex(jprefer.getInt("InputParameter", 0));
 		
-		if ((jpreferPerso.getInt("retrieveSelection", 0) <= comboBox_RetrieveAet.getItemCount()) && (comboBox_RetrieveAet.getItemCount() !=0) ) comboBox_RetrieveAet.setSelectedIndex(jpreferPerso.getInt("retrieveSelection", 0));
+		if ((jprefer.getInt("retrieveSelection", 0) <= comboBox_RetrieveAet.getItemCount()) && (comboBox_RetrieveAet.getItemCount() !=0) ) comboBox_RetrieveAet.setSelectedIndex(jprefer.getInt("retrieveSelection", 0));
 		
 
 		
@@ -1072,9 +1073,9 @@ public class VueQuery extends JFrame {
 			state.setText(null);
 
 			// Saving search parameters
-			jpreferPerso.putInt("InputParameter", searchingParam.getSelectedIndex());
-			jpreferPerso.putInt("SearchAET", queryAET.getSelectedIndex());
-			jpreferPerso.putInt("HistoryAET", queryAETH.getSelectedIndex());
+			jprefer.putInt("InputParameter", searchingParam.getSelectedIndex());
+			jprefer.putInt("SearchAET", queryAET.getSelectedIndex());
+			jprefer.putInt("HistoryAET", queryAETH.getSelectedIndex());
 
 			// Making a DateFormat for the query
 			DateFormat df = new SimpleDateFormat("yyyyMMdd");

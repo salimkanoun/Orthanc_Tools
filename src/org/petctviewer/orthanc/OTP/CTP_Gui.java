@@ -32,6 +32,7 @@ import javax.swing.table.DefaultTableModel;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.petctviewer.orthanc.anonymize.VueAnon;
 
 @SuppressWarnings("serial")
 public class CTP_Gui extends JDialog {
@@ -44,7 +45,7 @@ public class CTP_Gui extends JDialog {
 	private JComboBox<String> comboBox_Studies, comboBox_Visits;
 	private CTP ctp;
 	private JTable tableDetailsPatient;
-	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
+	private Preferences jprefer = VueAnon.jprefer;
 	
 	//Selected patient
 	private String patientAnonName;

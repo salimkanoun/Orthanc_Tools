@@ -24,6 +24,9 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+
+import org.petctviewer.orthanc.anonymize.VueAnon;
+
 import java.awt.GridLayout;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -84,8 +87,7 @@ public class Burner_Settings extends JDialog {
 	 */
 	public Burner_Settings() {
 		dialogSettings=this;
-		jPrefer = Preferences.userNodeForPackage(Burner_Settings.class);
-		jPrefer = jPrefer.node("CDburner");
+		jPrefer = VueAnon.jprefer;
 		setCDPreference();
 		
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -236,22 +238,22 @@ public class Burner_Settings extends JDialog {
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						//On sauve dans le registery
-						jPrefer.put("buernerManufacturer", (String) comboBoxBurnerManufacturer.getSelectedItem());
-						if (epsonDirectory!=null) jPrefer.put("epsonDirectory", epsonDirectory);
-						if (fijiDirectory!=null) jPrefer.put("fijiDirectory", fijiDirectory);
-						if (labelFile!=null) jPrefer.put("labelFile", labelFile);
-						if (deleteStudies!=null) jPrefer.putBoolean("deleteStudies", deleteStudies);
-						jPrefer.put("suportType", comboBoxSupportType.getSelectedItem().toString());
+						jPrefer.put("Burner_buernerManufacturer", (String) comboBoxBurnerManufacturer.getSelectedItem());
+						if (epsonDirectory!=null) jPrefer.put("Burner_epsonDirectory", epsonDirectory);
+						if (fijiDirectory!=null) jPrefer.put("Burner_fijiDirectory", fijiDirectory);
+						if (labelFile!=null) jPrefer.put("Burner_labelFile", labelFile);
+						if (deleteStudies!=null) jPrefer.putBoolean("Burner_deleteStudies", deleteStudies);
+						jPrefer.put("Burner_suportType", comboBoxSupportType.getSelectedItem().toString());
 						//On ajoute la string du format date
-						jPrefer.put("DateFormat", buttonGroup.getSelection().getActionCommand());
-						jPrefer.putInt("monitoringTime", (int) spinnerTiming.getValue());
+						jPrefer.put("Burner_DateFormat", buttonGroup.getSelection().getActionCommand());
+						jPrefer.putInt("Burner_monitoringTime", (int) spinnerTiming.getValue());
 						//on dispose 
 						dispose();
 					}
 				});
 				{
 					JCheckBox chckbxDeleteSentStudies = new JCheckBox("Delete Sent Studies");
-					chckbxDeleteSentStudies.setSelected(jPrefer.getBoolean("deleteStudies", false));
+					chckbxDeleteSentStudies.setSelected(jPrefer.getBoolean("Burner_deleteStudies", false));
 					chckbxDeleteSentStudies.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent arg0) {
 							if (chckbxDeleteSentStudies.isSelected()) {
@@ -295,14 +297,14 @@ public class Burner_Settings extends JDialog {
 	
 	public void setCDPreference() {
 		//On prends les settings du registery
-		burnerManifacturer=jPrefer.get("buernerManufacturer", "Epson");
-		fijiDirectory=jPrefer.get("fijiDirectory", null);
-		epsonDirectory=jPrefer.get("epsonDirectory", null);
-		labelFile=jPrefer.get("labelFile", null);
-		dateFormatChoix=jPrefer.get("DateFormat", null);
-		deleteStudies=jPrefer.getBoolean("deleteStudies", false);
-		suportType=jPrefer.get("suportType", "Auto");
-		monitoringTime=jPrefer.getInt("monitoringTime", 90);
+		burnerManifacturer=jPrefer.get("Burner_buernerManufacturer", "Epson");
+		fijiDirectory=jPrefer.get("Burner_fijiDirectory", null);
+		epsonDirectory=jPrefer.get("Burner_epsonDirectory", null);
+		labelFile=jPrefer.get("Burner_labelFile", null);
+		dateFormatChoix=jPrefer.get("Burner_DateFormat", null);
+		deleteStudies=jPrefer.getBoolean("Burner_deleteStudies", false);
+		suportType=jPrefer.get("Burner_suportType", "Auto");
+		monitoringTime=jPrefer.getInt("Burner_monitoringTime", 90);
 
 		
 	}
