@@ -22,3 +22,10 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 	}
 
 }
+
+
+//SK TO DO
+//Renderer SC
+//Modality Check Anon
+//SC Deletion Anon
+//Tester toutes les fonctions!
