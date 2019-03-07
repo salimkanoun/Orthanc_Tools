@@ -214,7 +214,6 @@ public class VueQuery extends JFrame {
 		tablePatients = new JTable(modeleTablePatients);
 		tablePatients.setRowSorter(sorter);
 		tablePatients.getTableHeader().setReorderingAllowed(false);
-		this.
 
 		// We configure the columns
 		tablePatients.getColumnModel().getColumn(0).setMinWidth(170);
