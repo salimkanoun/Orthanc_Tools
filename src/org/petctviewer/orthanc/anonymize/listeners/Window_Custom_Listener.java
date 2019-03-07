@@ -31,17 +31,17 @@ import org.petctviewer.orthanc.setup.Run_Orthanc;
 
 public class Window_Custom_Listener implements WindowListener{
 
-	private VueAnon mainFrame;
+	private VueAnon gui;
 	private ArrayList<String>  zipContent;
 	private TableAnonPatientsModel patientAnonList;
 	private TableExportStudiesModel exportlist;
 	private Monitoring_GUI monitoring;
 	private Run_Orthanc runOrthanc;
 
-	public Window_Custom_Listener(VueAnon mainFrame, ArrayList<String> zipContent, 
+	public Window_Custom_Listener(VueAnon vue, ArrayList<String> zipContent, 
 			TableAnonPatientsModel patientAnonList, TableExportStudiesModel exportlist, Monitoring_GUI monitoring, Run_Orthanc runOrthanc){
 		this.exportlist = exportlist;
-		this.mainFrame = mainFrame;
+		this.gui = vue;
 		this.zipContent = zipContent;
 		this.patientAnonList = patientAnonList;
 		this.monitoring=monitoring;
@@ -51,7 +51,7 @@ public class Window_Custom_Listener implements WindowListener{
 	@Override
 	public void windowClosing(WindowEvent e) {
 		if(zipContent.size()>0 || patientAnonList.getRowCount()>0 || exportlist.getRowCount()>0 || monitoring.isRunningMonitoringService()){
-			int PromptResult = JOptionPane.showConfirmDialog(mainFrame,"Are you sure you want to exit?","Orthanc Tools",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
+			int PromptResult = JOptionPane.showConfirmDialog(gui,"Are you sure you want to exit?","Orthanc Tools",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
 			if(PromptResult==JOptionPane.YES_OPTION) {
 				closeAll();
 			}
@@ -63,9 +63,9 @@ public class Window_Custom_Listener implements WindowListener{
 	private void closeAll() {
 		if (monitoring.isRunningMonitoringService())  monitoring.closeAllMonitoringServices();
 		if(runOrthanc.getIsStarted()) {
-			runOrthanc.stopOrthanc(mainFrame.connexionHttp);
+			runOrthanc.stopOrthanc(gui.getOrthancApisConnexion());
 		}
-		mainFrame.dispose();
+		gui.dispose();
 	}
 
 	@Override
@@ -75,31 +75,26 @@ public class Window_Custom_Listener implements WindowListener{
 
 	@Override
 	public void windowClosed(WindowEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void windowDeactivated(WindowEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void windowDeiconified(WindowEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void windowIconified(WindowEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void windowOpened(WindowEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 }

@@ -39,7 +39,6 @@ public class Controller_Read_Series implements ActionListener {
 			ids.add((String) vue.tableauSeries.getValueAt(line, 4));
 			if(vue.tableauSeries.getValueAt(line, 1).equals("PT")) pet=true;
 			if(vue.tableauSeries.getValueAt(line, 1).equals("CT")) ct=true;
-			
 		}
 		
 		boolean startViewer=(pet && ct && vue.fijiEnvironement);
@@ -50,14 +49,14 @@ public class Controller_Read_Series implements ActionListener {
 			@Override
 			protected Void doInBackground() {
 
+				vue.enableReadButton(false);
+				
 				for(int i=0; i<ids.size(); i++) {
-					vue.btnReadSeries.setText("Reading Series");
 					vue.setStateMessage("Reading Series"+(i+1)+"/"+ids.size(), "red", -1);
-					Read_Orthanc reader=new Read_Orthanc(vue.connexionHttp);
+					Read_Orthanc reader=new Read_Orthanc(vue.getOrthancApisConnexion());
 					ImagePlus ip=reader.readSerie(ids.get(i));
 					ip.show();
 					imagestacks.add(ip);
-					
 				}
 				
 				if(startViewer) {
@@ -82,8 +81,8 @@ public class Controller_Read_Series implements ActionListener {
 
 			@Override
 			public void done(){
-				vue.btnReadSeries.setText("Open Images");
-				vue.setStateMessage("Reading Done", "gree", 4);
+				vue.enableReadButton(true);
+				vue.setStateMessage("Reading Done", "green", 4);
 			
 			}
 		};

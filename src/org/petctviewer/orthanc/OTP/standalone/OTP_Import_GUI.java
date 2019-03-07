@@ -24,7 +24,7 @@ public class OTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 	//SK DEFINITION DES PEERS A TENTER EN API
 	private static final long serialVersionUID = 1L;
 	private ImportDCM importFrame;
-	OTP_Import_GUI importGUI=this;
+	private OTP_Import_GUI importGUI=this;
 	
 	
 	public OTP_Import_GUI() {
@@ -47,14 +47,15 @@ public class OTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 		listePeers.setVisible(false);
 		listeAETExport.setVisible(false);
 		
-		addressFieldCTP.setText("https://kanoun.fr/");
+		setCTPaddress("https://kanoun.fr/");
+		
 		queryCTPBtn.setVisible(true);
 		
 		importCTP.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				importFrame=new ImportDCM(importGUI.connexionHttp, gui);
+				importFrame=new ImportDCM(getOrthancApisConnexion(), importGUI);
 				importFrame.setImportListener(importGUI);
 				importFrame.setModal(true);
 				importFrame.setVisible(true);
@@ -102,9 +103,9 @@ public class OTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Select_Series selectSeriesDialog=new Select_Series(connexionHttp, (String)anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 2), gui);
+				Select_Series selectSeriesDialog=new Select_Series(getOrthancApisConnexion(), (String)anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 2), importGUI);
 				selectSeriesDialog.pack();
-				selectSeriesDialog.setLocationRelativeTo(gui);
+				selectSeriesDialog.setLocationRelativeTo(importGUI);
 				selectSeriesDialog.setVisible(true);
 				
 			}
@@ -125,7 +126,7 @@ public class OTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 	@Override
 	public void ImportFinished(HashMap<String, HashMap<String, String>> importedStudy) {
 		
-		QueryOrthancData queryOrthanc=new QueryOrthancData(connexionHttp);
+		QueryOrthancData queryOrthanc=new QueryOrthancData(getOrthancApisConnexion());
 		
 		HashMap<String, HashMap<String, String>> importedstudy=importFrame.getImportedStudy();
 		

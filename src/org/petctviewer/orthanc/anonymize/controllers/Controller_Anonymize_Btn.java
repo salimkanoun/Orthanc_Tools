@@ -133,7 +133,7 @@ public class Controller_Anonymize_Btn implements ActionListener {
 				patientAnon.setNewPatientName(newPatientName);
 				patientAnon.setNewPatientId(newPatientId);
 				//Prepare the Anon Request
-				AnonRequest anonRequest= new AnonRequest(vue.connexionHttp, bodyCharChoice, datesChoice, bdChoice, 
+				AnonRequest anonRequest= new AnonRequest(vue.getOrthancApisConnexion(), bodyCharChoice, datesChoice, bdChoice, 
 						ptChoice, scChoice, descChoice, 
 						patientAnon.getNewPatientName(), patientAnon.getNewPatientId(), studyToAnon.getNewStudyDescription());
 				//Start the Anonymization

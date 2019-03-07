@@ -50,10 +50,9 @@ public class Controller_Export_Zip implements ActionListener {
 					@Override
 					protected Void doInBackground() throws Exception {
 						
-						ExportZip convertzip=new ExportZip(vue.connexionHttp);
-						vue.exportZip.setText("Generating Zip...");
-						vue.state.setText("Generating Zip...");
-						activateExport(false);
+						ExportZip convertzip=new ExportZip(vue.getOrthancApisConnexion());
+						vue.setStateMessage("Generating Zip...", "red", -1);
+						vue.activateExport(false);
 						
 						if ( comboToolItem.equals("ZIP File") || comboToolItem.equals("DICOMDIR Zip") ) {	
 							convertzip.setConvertZipAction(chooser.getSelectedFile().getAbsolutePath().toString() , vue.zipContent, false);
@@ -97,9 +96,8 @@ public class Controller_Export_Zip implements ActionListener {
 						}
 					
 						//Reactivate component after export
-						vue.exportZip.setText("Export list");
+						vue.activateExport(true);
 						//empty exported list
-						activateExport(true);
 						vue.zipShownContent.removeAllItems();
 						vue.zipShownContentList.removeAll(vue.zipShownContentList);
 						vue.zipContent.removeAll(vue.zipContent);	
@@ -108,12 +106,7 @@ public class Controller_Export_Zip implements ActionListener {
 						vue.pack();
 					}
 					
-					private void activateExport(boolean activate){
-						vue.exportZip.setEnabled(activate);
-						vue.addToZip.setEnabled(activate);
-						vue.removeFromZip.setEnabled(activate);
-						vue.comboToolChooser.setEnabled(activate);
-					}
+					
 					
 					
 			};
