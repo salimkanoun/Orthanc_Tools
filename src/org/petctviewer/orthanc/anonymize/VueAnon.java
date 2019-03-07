@@ -864,7 +864,6 @@ public class VueAnon extends JFrame {
 		anonPatientTable.getColumnModel().getColumn(5).setMinWidth(0);
 		anonPatientTable.getColumnModel().getColumn(5).setMaxWidth(0);
 		anonPatientTable.setPreferredScrollableViewportSize(new Dimension(440,130));
-		anonPatientTable.getSelectionModel().addListSelectionListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies));
 		anonPatientTable.putClientProperty("terminateEditOnFocusLost", true);
 
 		//override edditing stoped and Set Value At to store the new studyDescription value in the AnonPatient object
@@ -883,7 +882,7 @@ public class VueAnon extends JFrame {
 			public void editingStopped(ChangeEvent e) {
 				super.editingStopped(e);
 				storeNewStudyDescription(getSelectedRow());
-			
+				
 			}
 			
 			private void storeNewStudyDescription(int row) {
@@ -894,6 +893,9 @@ public class VueAnon extends JFrame {
 			}
 		};
 
+		anonPatientTable.getSelectionModel().addListSelectionListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies, anonStudiesTable));
+		
+		
 		anonStudiesTable.getTableHeader().setToolTipText("Click on the description cells to change their values");
 		anonStudiesTable.getColumnModel().getColumn(0).setMinWidth(200);
 		anonStudiesTable.getColumnModel().getColumn(1).setMinWidth(80);

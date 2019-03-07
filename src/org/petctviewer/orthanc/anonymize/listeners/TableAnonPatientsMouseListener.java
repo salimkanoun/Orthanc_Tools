@@ -27,13 +27,14 @@ import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
 
 public class TableAnonPatientsMouseListener implements ListSelectionListener {
 
-	private JTable tableau;
+	private JTable tableAnonPatient, tableAnonStudies;
 	private TableAnonPatientsModel modeleAnonPatient;
 	private TableAnonStudiesModel modeleAnonStudies;
 
-	public TableAnonPatientsMouseListener(JTable tableau, TableAnonPatientsModel modeleAnonPatient, 
-			TableAnonStudiesModel modeleAnonStudies) {
-		this.tableau = tableau;
+	public TableAnonPatientsMouseListener(JTable tableAnonPatient, TableAnonPatientsModel modeleAnonPatient, 
+			TableAnonStudiesModel modeleAnonStudies, JTable tableAnonStudies) {
+		this.tableAnonPatient = tableAnonPatient;
+		this.tableAnonStudies = tableAnonStudies;
 		this.modeleAnonPatient = modeleAnonPatient;
 		this.modeleAnonStudies = modeleAnonStudies;
 	}
@@ -41,12 +42,18 @@ public class TableAnonPatientsMouseListener implements ListSelectionListener {
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		if(!e.getValueIsAdjusting()) {
-			if(this.modeleAnonPatient.getRowCount() != 0){
+			if(this.modeleAnonPatient.getRowCount() != 0 && this.tableAnonPatient.getSelectedRow() !=(-1)){
+				//SK BUG//
+				//tableAnonStudies.changeSelection(tableAnonStudies.getSelectedRow(), 1, false, false);
+				if(tableAnonStudies.isEditing()) {
+					System.out.println("editing");
+					tableAnonStudies.getCellEditor().cancelCellEditing();
+				}
 				// We clear the details
 				this.modeleAnonStudies.clear();
-				
-				int selectedRow =this.tableau.getSelectedRow();
+				int selectedRow =this.tableAnonPatient.getSelectedRow();
 				PatientAnon patientAnon=modeleAnonPatient.getPatient(selectedRow);
+				
 				
 				this.modeleAnonStudies.addStudies(patientAnon);
 			}	
