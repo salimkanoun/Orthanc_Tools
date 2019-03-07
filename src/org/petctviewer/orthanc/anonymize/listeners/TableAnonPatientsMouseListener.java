@@ -17,16 +17,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize.listeners;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
 import javax.swing.JTable;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import org.petctviewer.orthanc.anonymize.TableAnonPatientsModel;
 import org.petctviewer.orthanc.anonymize.TableAnonStudiesModel;
 import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
 
-public class TableAnonPatientsMouseListener extends MouseAdapter {
+public class TableAnonPatientsMouseListener implements ListSelectionListener {
 
 	private JTable tableau;
 	private TableAnonPatientsModel modeleAnonPatient;
@@ -40,7 +39,7 @@ public class TableAnonPatientsMouseListener extends MouseAdapter {
 	}
 
 	@Override
-	public void mousePressed(MouseEvent event) {
+	public void valueChanged(ListSelectionEvent e) {
 		if(this.modeleAnonPatient.getRowCount() != 0){
 			// We clear the details
 			this.modeleAnonStudies.clear();
@@ -51,7 +50,7 @@ public class TableAnonPatientsMouseListener extends MouseAdapter {
 			this.modeleAnonStudies.addStudies(patientAnon);
 			
 		}
-
+		
 	}
 
 }

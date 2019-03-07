@@ -34,12 +34,9 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -48,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.EventObject;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.prefs.Preferences;
@@ -76,8 +72,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -109,20 +103,17 @@ import org.petctviewer.orthanc.anonymize.listeners.TablePatientsMouseListener;
 import org.petctviewer.orthanc.anonymize.listeners.TableStudiesMouseListener;
 import org.petctviewer.orthanc.anonymize.listeners.Window_Custom_Listener;
 import org.petctviewer.orthanc.export.ExportZip;
-import org.petctviewer.orthanc.export.ExportZipAndViewer;
 import org.petctviewer.orthanc.export.SendFilesToRemote;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.modify.Modify;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.VueQuery;
-import org.petctviewer.orthanc.reader.Read_Orthanc;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 import org.petctviewer.orthanc.setup.Run_Orthanc;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
 
-import ij.ImagePlus;
 import ij.plugin.PlugIn;
 
 
@@ -525,7 +516,7 @@ public class VueAnon extends JFrame implements PlugIn {
 
 		this.tableauPatients.setDefaultRenderer(Date.class, new DateRenderer());
 		this.tableauPatients.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		this.tableauPatients.addMouseListener(new TablePatientsMouseListener(
+		this.tableauPatients.getSelectionModel().addListSelectionListener(new TablePatientsMouseListener(
 				this, this.tableauPatients, this.modelePatients, this.modeleStudies, this.modeleSeries, 
 				tableauPatients.getSelectionModel()));
 
@@ -566,7 +557,7 @@ public class VueAnon extends JFrame implements PlugIn {
 		this.tableauStudies.setPreferredScrollableViewportSize(new Dimension(410,267));
 		this.tableauStudies.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
-		this.tableauStudies.addMouseListener(new TableStudiesMouseListener(this, this.tableauStudies, this.modeleStudies, this.modeleSeries, tableauStudies.getSelectionModel()));
+		this.tableauStudies.getSelectionModel().addListSelectionListener(new TableStudiesMouseListener(this, this.tableauStudies, this.modeleStudies, this.modeleSeries, tableauStudies.getSelectionModel()));
 		this.tableauStudies.setDefaultRenderer(Date.class, new DateRenderer());
 		
 		JMenuItem menuItemModifyStudy = new JMenuItem("Show tags / Modify");
@@ -878,7 +869,7 @@ public class VueAnon extends JFrame implements PlugIn {
 		anonPatientTable.getColumnModel().getColumn(5).setMinWidth(0);
 		anonPatientTable.getColumnModel().getColumn(5).setMaxWidth(0);
 		anonPatientTable.setPreferredScrollableViewportSize(new Dimension(440,130));
-		anonPatientTable.addMouseListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies));
+		anonPatientTable.getSelectionModel().addListSelectionListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies));
 		anonPatientTable.putClientProperty("terminateEditOnFocusLost", true);
 
 		anonStudiesTable = new JTable(modeleAnonStudies) {
@@ -1218,7 +1209,7 @@ public class VueAnon extends JFrame implements PlugIn {
 
 		tableauExportStudies.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
-		this.tableauExportStudies.addMouseListener(new TableExportStudiesMouseListener(anonPatientTable, modeleExportSeries) );
+		this.tableauExportStudies.getSelectionModel().addListSelectionListener(new TableExportStudiesMouseListener(anonPatientTable, modeleExportSeries) );
 
 		this.tableauExportSeries = new JTable(modeleExportSeries);
 		this.tableauExportSeries.getTableHeader().setReorderingAllowed(false);

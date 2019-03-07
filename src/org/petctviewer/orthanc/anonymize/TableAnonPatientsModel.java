@@ -31,12 +31,10 @@ public class TableAnonPatientsModel extends DefaultTableModel{
 	private String[] entetes = {"Old name", "Old ID", "Old OrthancId", "New name*", "New ID*", "New OrthancId", "patientAnonObject"};
 	private Class<?>[] classEntetes = {String.class, String.class, String.class, String.class, String.class, String.class, PatientAnon.class};
 	private OrthancRestApis connexion;
-	//private TableAnonStudiesModel modelAnonStudies;
 	
-	public TableAnonPatientsModel(OrthancRestApis connexion/*, TableAnonStudiesModel modelAnonStudies*/){
+	public TableAnonPatientsModel(OrthancRestApis connexion){
 		super(0,7);
 		this.connexion=connexion;
-		//this.modelAnonStudies=modelAnonStudies;
 	}
 
 

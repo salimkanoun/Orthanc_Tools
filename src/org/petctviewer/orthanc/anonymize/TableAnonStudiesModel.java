@@ -34,12 +34,6 @@ public class TableAnonStudiesModel extends DefaultTableModel{
 
 	private String[] entetes = {"Study description*", "Study date", "studyOrthancId", "Patient id", "studyObject", "patientAnon"};
 	private Class<?>[] typeEntetes = {String.class, Date.class, String.class, String.class, Study2.class};
-	//private ArrayList<Study> shownStudies = new ArrayList<Study>();
-	//private ArrayList<Study> studies = new ArrayList<Study>();
-	//private ArrayList<String> listeOldOrthancUIDs = new ArrayList<String>();
-	//private ArrayList<String> listeNewOrthancUIDs = new ArrayList<String>();
-	//private HashMap<String, String> newDescriptions = new HashMap<String, String>();
-	//private String url;
 	private OrthancRestApis connexionHttp;
 	
 	private PatientAnon patientAnon;
@@ -191,37 +185,6 @@ public class TableAnonStudiesModel extends DefaultTableModel{
 	public void removeStudy(int rowIndex){
 		
 	}
-
-
-	// This method removes completely a study, and give its UID in order to remove it
-	// in the patient's data
-	public String removeStudy(int rowIndex){
-		Study shownStudy = this.shownStudies.get(rowIndex);
-		// To avoid java.util.ConcurrentModificationException we create a list of elements to remove
-		Study studyToRemove = null;
-		String uidToRemove = "";
-		for(Study s : this.studies){
-			if(s.equals(shownStudy)){
-				studyToRemove = s;
-				uidToRemove = s.getId();
-			}
-		}
-		this.studies.remove(studyToRemove);
-		this.shownStudies.remove(rowIndex);
-		this.listeOldOrthancUIDs.remove(uidToRemove);
-		this.newDescriptions.clear();
-		fireTableRowsDeleted(rowIndex, rowIndex);
-		return uidToRemove;
-	}
-
-	public ArrayList<Study> getStudies(){
-		return this.studies;
-	}
-
-	public ArrayList<Study> getShownStudies(){
-		return this.shownStudies;
-	}
-	*/
 	
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
@@ -243,89 +206,6 @@ public class TableAnonStudiesModel extends DefaultTableModel{
 		this.addStudies(patientAnon);
 	}
 		
-		/*
-		DateFormat parser = new SimpleDateFormat("yyyyMMdd");
-		for(String uid : listeUIDs){
-			Date studyDate = null;
-			String[] separatedResponse=getStudyDescriptionAndUID(uid);
-			try{
-				studyDate=parser.parse("19000101");
-				studyDate=parser.parse(separatedResponse[2]);
-			}catch(ParseException e){
-				e.printStackTrace();
-			}
-			
-			// We insert dummy dates and accession numbers which won't be useful for the anonymization
-			Study s = new Study(separatedResponse[0], studyDate , "0", uid, separatedResponse[1], patientName, patientID, null);
-			if(newDescriptions.containsKey(uid)){
-				s.setStudyDescription(newDescriptions.get(uid));
-			}
-			if(!this.studies.contains(s)){
-				this.studies.add(s);
-				this.listeOldOrthancUIDs.add(uid);
-			}
-			
-			for(Study study : this.studies){
-				if(study.getPatientID().equals(patientID) && !shownStudies.contains(study)){
-					shownStudies.add(study);
-					fireTableRowsInserted(shownStudies.size() - 1, shownStudies.size() - 1);
-					fireTableDataChanged();
-				}
-			}
-		}*/
-	
-	/*
-	private String[] getStudyDescriptionAndUID(String orthancUID) {
-		String[] studyDescriptionAndUID=new String[3];
-		try {
-			//SK Utiliser les contains key pour le parsing COMME DANS CET EXEMPLE
-			StringBuilder answer=this.connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + orthancUID);
-			JSONParser parser=new JSONParser();
-			JSONObject responseJson=(JSONObject) parser.parse(answer.toString());
-			JSONObject responsemaintag=(JSONObject) responseJson.get("MainDicomTags");
-			
-			String studyDescription;
-			String studyDate;
-			String studyInstanceUID;
-			
-			if (responsemaintag.containsKey("StudyDescription")) studyDescription =responsemaintag.get("StudyDescription").toString(); else studyDescription="";
-			if (responsemaintag.containsKey("StudyDate")) studyDate=responsemaintag.get("StudyDate").toString(); else studyDate="";
-			if (responsemaintag.containsKey("StudyInstanceUID")) studyInstanceUID=responsemaintag.get("StudyInstanceUID").toString(); else studyInstanceUID="";
-			
-			studyDescriptionAndUID[0]=studyDescription;
-			studyDescriptionAndUID[1]=studyInstanceUID;
-			studyDescriptionAndUID[2]=studyDate;
-		} catch ( org.json.simple.parser.ParseException e) {e.printStackTrace();}
-		
-		return studyDescriptionAndUID;
-	}
-*/
-	
-	/*
-	 * This method empties completely the studies list
-	 */
-	/*
-	public void empty(){
-		if(this.getRowCount() !=0){
-			this.studies.removeAll(this.studies);
-			this.shownStudies.removeAll(this.shownStudies);
-			this.listeOldOrthancUIDs.removeAll(this.listeOldOrthancUIDs);
-			this.newDescriptions.clear();
-			fireTableRowsDeleted(0, 0);
-		}
-	}
-*/
-	/*
-	public void addNewUid(String uid){
-		if(!this.listeNewOrthancUIDs.contains(uid)){
-			this.listeNewOrthancUIDs.add(uid);
-		}
-	}
-
-	public void removeFromList(String uid){
-		this.listeNewOrthancUIDs.remove(uid);
-	}
-*/
 	/*
 	 * This method clears the series list
 	 */
@@ -333,37 +213,4 @@ public class TableAnonStudiesModel extends DefaultTableModel{
 		this.setRowCount(0);
 	}
 	
-	
-	/*
-	/**
-	 * retrieve list series IDs of a given study
-	 * @param sourceList
-	 * @param level
-	 * @param pattern
-	 * @return
-	 * @throws IOException
-	 */
-/*
-	private ArrayList<String> fillListIDs(ArrayList<String> sourceList, String level, String pattern) throws IOException{
-		ArrayList<String> list = new ArrayList<String>();
-		for(String uid : sourceList){
-			this.url="/"+ level + "/" + uid;
-			StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder(url);
-			JSONParser parser=new JSONParser();
-				try {
-					JSONObject json=(JSONObject) parser.parse(sb.toString());
-					JSONArray jsonArray=(JSONArray) json.get(pattern);
-					for (int i=0; i<jsonArray.size(); i++){
-						list.add(jsonArray.get(i).toString());
-					} 
-				}catch (org.json.simple.parser.ParseException e) {
-					
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			
-		return list;
-	}
-	*/
 }

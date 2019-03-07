@@ -17,19 +17,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize.listeners;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
 import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import org.petctviewer.orthanc.anonymize.TablePatientsModel;
 import org.petctviewer.orthanc.anonymize.TableSeriesModel;
 import org.petctviewer.orthanc.anonymize.TableStudiesModel;
 
 
-public class TablePatientsMouseListener extends MouseAdapter {
+public class TablePatientsMouseListener implements ListSelectionListener {
 
 	private JFrame frame;
 	private JTable tableau;
@@ -47,7 +46,7 @@ public class TablePatientsMouseListener extends MouseAdapter {
 	}
 
 	@Override
-	public void mouseClicked(MouseEvent event) {
+	public void valueChanged(ListSelectionEvent arg0) {
 		this.modeleStudies.clear();
 		this.modeleSeries.clear();
 
@@ -60,6 +59,7 @@ public class TablePatientsMouseListener extends MouseAdapter {
 			e1.printStackTrace();
 		}
 		frame.pack();
+		
 	}
 
 	

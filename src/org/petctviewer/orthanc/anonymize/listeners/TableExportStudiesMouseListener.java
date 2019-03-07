@@ -1,14 +1,13 @@
 
 package org.petctviewer.orthanc.anonymize.listeners;
 
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-
 import javax.swing.JTable;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import org.petctviewer.orthanc.anonymize.TableExportSeriesModel;
 
-public class TableExportStudiesMouseListener implements MouseListener {
+public class TableExportStudiesMouseListener implements ListSelectionListener {
 
 	JTable tableauExportStudies;
 	TableExportSeriesModel modeleExportSeries;
@@ -18,36 +17,13 @@ public class TableExportStudiesMouseListener implements MouseListener {
 		this.modeleExportSeries=modeleExportSeries;
 	}
 	
-	@Override
-	public void mouseClicked(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
-	public void mouseEntered(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mouseExited(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mousePressed(MouseEvent arg0) {
+	public void valueChanged(ListSelectionEvent e) {
 		if(tableauExportStudies.getSelectedRow() != -1){
 			String studyID = (String) tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(), 5);
 			modeleExportSeries.addSerie(studyID);
 		}	
-		
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 

@@ -17,17 +17,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize.listeners;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import org.petctviewer.orthanc.anonymize.TableSeriesModel;
 import org.petctviewer.orthanc.anonymize.TableStudiesModel;
 
 
-public class TableStudiesMouseListener extends MouseAdapter {
+public class TableStudiesMouseListener implements ListSelectionListener {
 	
 	private JFrame frame;
 	private JTable tableau;
@@ -43,18 +43,19 @@ public class TableStudiesMouseListener extends MouseAdapter {
 	}
 
 	@Override
-	public void mouseClicked(MouseEvent event) {
+	public void valueChanged(ListSelectionEvent e) {
 		// We clear the details
-		this.modeleSeries.clear();
-		try {
-			if(this.modele.getRowCount() != 0){
-				String studyID = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 3);
-				this.modeleSeries.addSerie(studyID);
-			}
-		} catch (Exception e1) {
-			//ignore
-		}
-		frame.pack();
+				this.modeleSeries.clear();
+				try {
+					if(this.modele.getRowCount() != 0){
+						String studyID = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 3);
+						this.modeleSeries.addSerie(studyID);
+					}
+				} catch (Exception e1) {
+					//ignore
+				}
+				frame.pack();
+		
 	}
 	
 	
