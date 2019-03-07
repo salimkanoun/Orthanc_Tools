@@ -15,18 +15,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package org.petctviewer.orthanc.anonymize;
+package org.petctviewer.orthanc.anonymize.listeners;
 
-import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
 
+import org.petctviewer.orthanc.anonymize.TableAnonPatientsModel;
+import org.petctviewer.orthanc.anonymize.TableExportStudiesModel;
+import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.setup.Run_Orthanc;
 
-public class CloseWindowAdapter extends WindowAdapter{
+public class Window_Custom_Listener implements WindowListener{
 
 	private VueAnon mainFrame;
 	private ArrayList<String>  zipContent;
@@ -35,7 +38,7 @@ public class CloseWindowAdapter extends WindowAdapter{
 	private Monitoring_GUI monitoring;
 	private Run_Orthanc runOrthanc;
 
-	public CloseWindowAdapter(VueAnon mainFrame, ArrayList<String> zipContent, 
+	public Window_Custom_Listener(VueAnon mainFrame, ArrayList<String> zipContent, 
 			TableAnonPatientsModel patientAnonList, TableExportStudiesModel exportlist, Monitoring_GUI monitoring, Run_Orthanc runOrthanc){
 		this.exportlist = exportlist;
 		this.mainFrame = mainFrame;
@@ -63,5 +66,40 @@ public class CloseWindowAdapter extends WindowAdapter{
 			runOrthanc.stopOrthanc(mainFrame.connexionHttp);
 		}
 		mainFrame.dispose();
+	}
+
+	@Override
+	public void windowActivated(WindowEvent arg0) {
+		
+	}
+
+	@Override
+	public void windowClosed(WindowEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeactivated(WindowEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeiconified(WindowEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowIconified(WindowEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowOpened(WindowEvent arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 }

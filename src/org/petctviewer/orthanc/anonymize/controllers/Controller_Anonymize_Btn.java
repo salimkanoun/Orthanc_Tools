@@ -3,6 +3,7 @@ package org.petctviewer.orthanc.anonymize.controllers;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
@@ -13,18 +14,23 @@ import javax.swing.SwingWorker;
 import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.apache.commons.lang3.StringUtils;
 import org.petctviewer.orthanc.anonymize.AnonRequest;
+import org.petctviewer.orthanc.anonymize.QueryOrthancData;
 import org.petctviewer.orthanc.anonymize.Tags.Choice;
 import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
+import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2Anon;
+import org.petctviewer.orthanc.anonymize.datastorage.Study_Anonymized;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class Controller_Anonymize_Btn implements ActionListener {
 	
 	private VueAnon vue;
 	private int anonCount;
-	
-	public Controller_Anonymize_Btn(VueAnon vue) {
+	private QueryOrthancData queryOrthanc;
+	private ArrayList<Study_Anonymized> anonymizedstudies;
+	public Controller_Anonymize_Btn(VueAnon vue, OrthancRestApis connexion) {
 		this.vue=vue;
+		queryOrthanc=new QueryOrthancData(connexion);
 	}
 	
 	@Override
@@ -100,7 +106,7 @@ public class Controller_Anonymize_Btn implements ActionListener {
 		for(int i=0 ; i<vue.anonPatientTable.getRowCount(); i++) {
 			
 			PatientAnon patientAnon=(PatientAnon) vue.anonPatientTable.getValueAt(i, 6);
-			//CHECK DES MODALITE A FAIRE
+			//SK CHECK DES MODALITE A FAIRE
 			HashMap<String, Study2Anon> studyAnon=patientAnon.getAnonymizeStudies();
 			Set<String> studyIds=studyAnon.keySet();
 			for(String studyId : studyIds) {
@@ -140,6 +146,10 @@ public class Controller_Anonymize_Btn implements ActionListener {
 				anonRequest.sendQuery(studyId);
 				//Store the new Anonymized Study ID
 				studyToAnon.setNewAnonymizedStudyOrthancId(anonRequest.getNewOrthancID());
+				Study2 anonymizedStudy=queryOrthanc.getStudyDetails(anonRequest.getNewOrthancID(), true);
+				//Create object with the Anonymized Study and old study object
+				Study_Anonymized anonymizedStudyResult=new Study_Anonymized(anonymizedStudy, studyToAnon);
+				vue.modeleExportStudies.addStudy(anonymizedStudyResult);
 				
 				if(vue.settingsSecondaryCaptureButtons[1].isSelected()){
 					//A FAIRE

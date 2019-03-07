@@ -103,6 +103,11 @@ import org.petctviewer.orthanc.anonymize.gui.DateRenderer;
 import org.petctviewer.orthanc.anonymize.listeners.AnonActionProfileListener;
 import org.petctviewer.orthanc.anonymize.listeners.AnonymizeListener;
 import org.petctviewer.orthanc.anonymize.listeners.Tab_Change_Listener;
+import org.petctviewer.orthanc.anonymize.listeners.TableAnonPatientsMouseListener;
+import org.petctviewer.orthanc.anonymize.listeners.TableExportStudiesMouseListener;
+import org.petctviewer.orthanc.anonymize.listeners.TablePatientsMouseListener;
+import org.petctviewer.orthanc.anonymize.listeners.TableStudiesMouseListener;
+import org.petctviewer.orthanc.anonymize.listeners.Window_Custom_Listener;
 import org.petctviewer.orthanc.export.ExportZip;
 import org.petctviewer.orthanc.export.ExportZipAndViewer;
 import org.petctviewer.orthanc.export.SendFilesToRemote;
@@ -195,8 +200,8 @@ public class VueAnon extends JFrame implements PlugIn {
 	protected JComboBox<String> listeAETExport;
 	private JTable tableauExportStudies;
 	private JTable tableauExportSeries;
-	private TableExportStudiesModel modeleExportStudies;
-	private TableExportSeriesModel modeleExportSeries;
+	public TableExportStudiesModel modeleExportStudies;
+	public TableExportSeriesModel modeleExportSeries;
 	private StringBuilder remoteFileName;
 	
 
@@ -289,7 +294,7 @@ public class VueAnon extends JFrame implements PlugIn {
 		modelePatients = new TablePatientsModel(connexionHttp);
 		modeleStudies = new TableStudiesModel(connexionHttp);
 		modeleSeries = new TableSeriesModel(connexionHttp, this);
-		modeleExportStudies = new TableExportStudiesModel(connexionHttp);
+		modeleExportStudies = new TableExportStudiesModel();
 		modeleExportSeries = new TableExportSeriesModel(connexionHttp);
 		modeleAnonStudies = new TableAnonStudiesModel(connexionHttp);
 		modeleAnonPatients = new TableAnonPatientsModel(connexionHttp);
@@ -873,7 +878,7 @@ public class VueAnon extends JFrame implements PlugIn {
 		anonPatientTable.getColumnModel().getColumn(5).setMinWidth(0);
 		anonPatientTable.getColumnModel().getColumn(5).setMaxWidth(0);
 		anonPatientTable.setPreferredScrollableViewportSize(new Dimension(440,130));
-		anonPatientTable.addMouseListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies, queryOrthanc));
+		anonPatientTable.addMouseListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies));
 		anonPatientTable.putClientProperty("terminateEditOnFocusLost", true);
 
 		anonStudiesTable = new JTable(modeleAnonStudies) {
@@ -1067,7 +1072,7 @@ public class VueAnon extends JFrame implements PlugIn {
 		
 		anonBtn = new JButton("Anonymize");
 		anonBtn.setPreferredSize(new Dimension(120,27));
-		anonBtn.addActionListener(new Controller_Anonymize_Btn(this));
+		anonBtn.addActionListener(new Controller_Anonymize_Btn(this, connexionHttp));
 		
 		//Label to show the currently selected profile in the main panel
 		JLabel profileLabel = new JLabel();
@@ -1213,16 +1218,7 @@ public class VueAnon extends JFrame implements PlugIn {
 
 		tableauExportStudies.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
-		this.tableauExportStudies.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent event) {
-				if(tableauExportStudies.getSelectedRow() != -1){
-					modeleExportSeries.clear();
-					String studyID = (String)tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(), 5);
-					modeleExportSeries.addSerie(studyID);
-				}	
-			}
-		});
+		this.tableauExportStudies.addMouseListener(new TableExportStudiesMouseListener(anonPatientTable, modeleExportSeries) );
 
 		this.tableauExportSeries = new JTable(modeleExportSeries);
 		this.tableauExportSeries.getTableHeader().setReorderingAllowed(false);
@@ -1495,7 +1491,7 @@ public class VueAnon extends JFrame implements PlugIn {
 								//Create the JSON to send
 								JSONArray sentStudiesArray=new JSONArray();
 								//For each study populate the array with studies details of send process
-								for(Study2 study : modeleExportStudies.getExportStudies()){
+								for(Study2 study : modeleExportStudies.getAnonymizedStudy2Object()){
 									StringBuilder statistics=connexionHttp.makeGetConnectionAndStringBuilder("/studies/"+study.getOrthancId()+"/statistics/");
 									JSONObject stats = null;
 									try {
@@ -1517,7 +1513,7 @@ public class VueAnon extends JFrame implements PlugIn {
 								//If everything OK, says validated and remove anonymized studies from local
 								if(validateOk) {
 									stateExports.setText("<html><font color= 'green'>Step 3/3 : Deleting local study </font></html>");
-									for(Study2 study : modeleExportStudies.getExportStudies()){
+									for(Study2 study : modeleExportStudies.getAnonymizedStudy2Object()){
 										//deleted anonymized and sent study
 										connexionHttp.makeDeleteConnection("/studies/"+study.getOrthancId());
 									}
@@ -2096,7 +2092,7 @@ public class VueAnon extends JFrame implements PlugIn {
 		this.getContentPane().add(tabbedPane);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.getRootPane().setDefaultButton(search);
-		this.addWindowListener(new CloseWindowAdapter(this, zipContent, modeleAnonPatients, modeleExportStudies, monitoring, runOrthanc));
+		this.addWindowListener(new Window_Custom_Listener(this, zipContent, modeleAnonPatients, modeleExportStudies, monitoring, runOrthanc));
 		pack();
 		
 	}

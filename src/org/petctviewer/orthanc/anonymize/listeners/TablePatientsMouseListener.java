@@ -15,44 +15,52 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package org.petctviewer.orthanc.anonymize;
+package org.petctviewer.orthanc.anonymize.listeners;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+
 import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 
+import org.petctviewer.orthanc.anonymize.TablePatientsModel;
+import org.petctviewer.orthanc.anonymize.TableSeriesModel;
+import org.petctviewer.orthanc.anonymize.TableStudiesModel;
 
-public class TableStudiesMouseListener extends MouseAdapter {
-	
+
+public class TablePatientsMouseListener extends MouseAdapter {
+
 	private JFrame frame;
 	private JTable tableau;
-	private TableStudiesModel modele;
+	private TablePatientsModel modele;
+	private TableStudiesModel modeleStudies;
 	private TableSeriesModel modeleSeries;
 
-	public TableStudiesMouseListener(JFrame frame, JTable tableau, TableStudiesModel modele,
-			TableSeriesModel modeleSeries, ListSelectionModel listSelection) {
+	public TablePatientsMouseListener(JFrame frame, JTable tableau, TablePatientsModel modele, TableStudiesModel modeleStudies, TableSeriesModel modeleSeries, 
+			ListSelectionModel listSelection) {
 		this.frame = frame;
 		this.tableau = tableau;
 		this.modele = modele;
+		this.modeleStudies = modeleStudies;
 		this.modeleSeries = modeleSeries;
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent event) {
-		// We clear the details
+		this.modeleStudies.clear();
 		this.modeleSeries.clear();
+
 		try {
-			if(this.modele.getRowCount() != 0){
-				String studyID = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 3);
-				this.modeleSeries.addSerie(studyID);
+			if(this.modele.getRowCount() != 0 && tableau.getSelectedRow() != -1){
+				String patientOrthancID = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 2);
+				this.modeleStudies.addStudy(patientOrthancID);
 			}
-		} catch (Exception e1) {
-			//ignore
+		}catch (Exception e1) {
+			e1.printStackTrace();
 		}
 		frame.pack();
 	}
-	
+
 	
 }

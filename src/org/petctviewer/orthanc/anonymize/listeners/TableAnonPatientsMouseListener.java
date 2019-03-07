@@ -15,14 +15,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package org.petctviewer.orthanc.anonymize;
+package org.petctviewer.orthanc.anonymize.listeners;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 
 import javax.swing.JTable;
 
+import org.petctviewer.orthanc.anonymize.TableAnonPatientsModel;
+import org.petctviewer.orthanc.anonymize.TableAnonStudiesModel;
 import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
 
 public class TableAnonPatientsMouseListener extends MouseAdapter {
@@ -30,14 +31,12 @@ public class TableAnonPatientsMouseListener extends MouseAdapter {
 	private JTable tableau;
 	private TableAnonPatientsModel modeleAnonPatient;
 	private TableAnonStudiesModel modeleAnonStudies;
-	private QueryOrthancData queryOrthanc;
 
 	public TableAnonPatientsMouseListener(JTable tableau, TableAnonPatientsModel modeleAnonPatient, 
-			TableAnonStudiesModel modeleAnonStudies, QueryOrthancData queryOrthanc) {
+			TableAnonStudiesModel modeleAnonStudies) {
 		this.tableau = tableau;
 		this.modeleAnonPatient = modeleAnonPatient;
 		this.modeleAnonStudies = modeleAnonStudies;
-		this.queryOrthanc=queryOrthanc;
 	}
 
 	@Override

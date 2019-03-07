@@ -23,19 +23,17 @@ import java.util.Date;
 import javax.swing.table.DefaultTableModel;
 
 import org.petctviewer.orthanc.anonymize.datastorage.Study2;
-import org.petctviewer.orthanc.setup.OrthancRestApis;
+import org.petctviewer.orthanc.anonymize.datastorage.Study_Anonymized;
 
 public class TableExportStudiesModel extends DefaultTableModel{
 
 	private static final long serialVersionUID = 1L;
-	private String[] entetes = {"Patient name", "Patient ID", "Study date", "Study description", "Accession number", "ID", "studyObject"};
-	private final Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, Date.class, String.class, String.class, String.class, Study2.class};
-	private OrthancRestApis connexionHttp;
+	private String[] entetes = {"Patient name", "Patient ID", "Study date", "Study description", "Accession number", "orthancStudyID", "studyObject"};
+	private final Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, Date.class, String.class, String.class, String.class, Study_Anonymized.class};
 
-	public TableExportStudiesModel(OrthancRestApis connexionHttp){
+	public TableExportStudiesModel(){
 		super(0,7);
 		//Recupere les settings
-		this.connexionHttp=connexionHttp;
 	}
 
 	@Override
@@ -56,17 +54,10 @@ public class TableExportStudiesModel extends DefaultTableModel{
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
-	public void addStudy(String studyOrthancID) {
+	public void addStudy(Study_Anonymized studyAnonymized) {
 		
-		QueryOrthancData queryStudies = new QueryOrthancData(connexionHttp);
-		
-		ArrayList<Study2> studies=queryStudies.getStudiesOfPatient(studyOrthancID);
-		
-		for(Study2 study :studies) {
-			this.addRow(new Object[] {study.getPatientName(),study.getPatientID(),study.getDate(), study.getStudyDescription(), study.getAccession(), study.getOrthancId(), study});	
-		}	
-			
-		
+		Study2 study=studyAnonymized.getAnonymizedStudy();
+		this.addRow(new Object[] {study.getPatientName(),study.getPatientID(),study.getDate(), study.getStudyDescription(), study.getAccession(), study.getOrthancId(), study});	
 	
 	}
 	
@@ -88,10 +79,19 @@ public class TableExportStudiesModel extends DefaultTableModel{
 		return studyIds;
 	}
 	
-	public ArrayList<Study2> getExportStudies(){
+	public ArrayList<Study_Anonymized> getAnonymizedObject(){
+		ArrayList<Study_Anonymized> studies=new ArrayList<Study_Anonymized>();
+		for (int i=0; i<this.getRowCount(); i++) {
+			studies.add((Study_Anonymized) getValueAt(i, 6));
+		}
+		return studies;
+	}
+	
+	public ArrayList<Study2> getAnonymizedStudy2Object(){
 		ArrayList<Study2> studies=new ArrayList<Study2>();
 		for (int i=0; i<this.getRowCount(); i++) {
-			studies.add((Study2) getValueAt(i, 6));
+			Study_Anonymized anonymized=(Study_Anonymized) getValueAt(i, 6);
+			studies.add(anonymized.getAnonymizedStudy());
 		}
 		return studies;
 	}
