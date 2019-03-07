@@ -29,3 +29,4 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 //Modality Check Anon
 //SC Deletion Anon
 //Tester toutes les fonctions!
+//Reoganiser le package Query
