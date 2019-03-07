@@ -3,9 +3,6 @@ package org.petctviewer.orthanc.OTP.standalone;
 import java.awt.MouseInfo;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -15,7 +12,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
+import org.petctviewer.orthanc.anonymize.QueryOrthancData;
 import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.anonymize.listeners.AnonymizeListener;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.importdicom.ImportListener;
@@ -27,8 +26,10 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 	private ImportDCM importFrame;
 	CTP_Import_GUI importGUI=this;
 	
+	
 	public CTP_Import_GUI() {
 		super("OrthancCTP.json");
+		
 		this.setAnonymizeListener(this);
 		//Make a simplified version of Orthanc Tools
 		tablesPanel.setVisible(false);
@@ -100,7 +101,7 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Select_Series selectSeriesDialog=new Select_Series(connexionHttp, modeleAnonStudies.getShownStudies().get(anonStudiesTable.getSelectedRow()).getId() );
+				Select_Series selectSeriesDialog=new Select_Series(connexionHttp, (String)anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 2), gui);
 				selectSeriesDialog.pack();
 				selectSeriesDialog.setLocationRelativeTo(gui);
 				selectSeriesDialog.setVisible(true);
@@ -110,9 +111,6 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 		});
 		
 		anonStudiesTable.setComponentPopupMenu(popMenuSelectSeries);
-		
-				
-		
 
 		this.revalidate();
 		this.pack();
@@ -125,30 +123,19 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 
 	@Override
 	public void ImportFinished(HashMap<String, HashMap<String, String>> importedStudy) {
+		
+		QueryOrthancData queryOrthanc=new QueryOrthancData(connexionHttp);
+		
 		HashMap<String, HashMap<String, String>> importedstudy=importFrame.getImportedStudy();
 		
 		Set<String> keys=importedstudy.keySet();
 		String[] keysArray=new String[keys.size()];
 		keys.toArray(keysArray);
 		
+		modeleAnonPatients.clear();
 		for (int i=0; i<keysArray.length; i++) {
-			String patientName=importedstudy.get(keysArray[i]).get("patientName");
-			String patientID=importedstudy.get(keysArray[i]).get("patientID");
-			String patientOrthancId=importedstudy.get(keysArray[i]).get("patientOrthancID");
-			
-			ArrayList<String> studyID=new ArrayList<String>();
-			studyID.add(keysArray[i]);
-
-			try {
-				//modeleAnonPatients.clear();
-				modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientOrthancId, studyID);
-				modeleAnonStudies.clear();
-				modeleAnonStudies.addStudies(patientName, patientID, studyID);
-				anonPatientTable.addRowSelectionInterval(0, 0);
-			} catch (IOException | ParseException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+			Study2 study=queryOrthanc.getStudyDetails(keysArray[i], true);
+			modeleAnonPatients.addStudy(study);
 		}
 		
 		importFrame.dispose();

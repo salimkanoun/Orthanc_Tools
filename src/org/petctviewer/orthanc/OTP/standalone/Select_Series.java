@@ -25,8 +25,8 @@ public class Select_Series extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public Select_Series(OrthancRestApis connexionHttp, String studyUID) {
-		TableSeriesModel tableSeriesModel=new TableSeriesModel(connexionHttp);
+	public Select_Series(OrthancRestApis connexionHttp, String studyUID, VueAnon vue) {
+		TableSeriesModel tableSeriesModel=new TableSeriesModel(connexionHttp, vue);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		tableSeriesModel.addSerie(studyUID);
 		
@@ -36,7 +36,7 @@ public class Select_Series extends JDialog {
 		tableSeries.getColumnModel().getColumn(4).setMinWidth(0);
 		tableSeries.getColumnModel().getColumn(3).setMaxWidth(0);
 		tableSeries.getColumnModel().getColumn(4).setMaxWidth(0);
-		VueAnon.setRenderer(tableSeries);
+		//VueAnon.setRenderer(tableSeries);
 		
 		getContentPane().setLayout(new BorderLayout());
 		JPanel contentPanel = new JPanel();
@@ -62,6 +62,7 @@ public class Select_Series extends JDialog {
 		JButton btnDeleteSelected = new JButton("Delete Selected");
 		btnDeleteSelected.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				
 				int[] selectedRows=tableSeries.getSelectedRows();
 				for(int i=0; i<selectedRows.length; i++) {
 					connexionHttp.makeDeleteConnection("/series/"+tableSeries.getValueAt(selectedRows[i], 4));
@@ -77,4 +78,5 @@ public class Select_Series extends JDialog {
 		closeButton.setActionCommand("Close");
 		buttonPane.add(closeButton);
 
+	}
 }
