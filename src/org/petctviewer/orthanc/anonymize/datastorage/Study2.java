@@ -12,6 +12,8 @@ public class Study2 {
 	protected String StudyOrthancId;
 	protected String patientName;
 	protected String patientID;
+	protected Date birthDate;
+	protected String sex;
 	protected String patientOrthancId;
 	protected String studyInstanceUID;
 	protected ArrayList<Serie> childSeries;
@@ -20,13 +22,15 @@ public class Study2 {
 	protected int statMbSize;
 	
 	public Study2(String studyDescription, Date date, String accession,
-			String StudyOrthancId, String patientName, String patientID, String patientOrthancId, String studyInstanceUID, ArrayList<Serie> childSeries) {
+			String StudyOrthancId, String patientName, String patientID, Date birthDate, String sex, String patientOrthancId, String studyInstanceUID, ArrayList<Serie> childSeries) {
 		this.studyDescription = studyDescription;
 		this.date = date;
 		this.accession = accession;
 		this.StudyOrthancId = StudyOrthancId;
 		this.patientName = patientName;
 		this.patientID = patientID;
+		this.birthDate=birthDate;
+		this.sex=sex;
 		this.studyInstanceUID=studyInstanceUID;
 		this.childSeries=childSeries;
 		this.patientOrthancId=patientOrthancId;
@@ -54,6 +58,14 @@ public class Study2 {
 
 	public String getPatientID() {
 		return patientID;
+	}
+	
+	public Date getPatientDob() {
+		return birthDate;
+	}
+	
+	public String getPatientSex() {
+		return sex;
 	}
 	
 	public String getParentPatientId() {

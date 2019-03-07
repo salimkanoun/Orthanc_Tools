@@ -64,7 +64,7 @@ public class TableAnonPatientsModel extends DefaultTableModel{
 		ArrayList<PatientAnon> patients=new ArrayList<PatientAnon>();
 		
 		for(int i=0; i<this.getRowCount(); i++) {
-			PatientAnon patient=(PatientAnon) getValueAt(i, 2);
+			PatientAnon patient=(PatientAnon) getValueAt(i, 6);
 			patients.add(patient);
 		}
 		

@@ -36,7 +36,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 @SuppressWarnings("serial")
-public class CTP_Gui extends JDialog {
+public class OTP_Gui extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
 	private JTextField CTP_Username;
@@ -44,7 +44,7 @@ public class CTP_Gui extends JDialog {
 	private JTable tablePatient;
 	private DefaultTableModel modelTablePatient;
 	private JComboBox<String> comboBox_Studies, comboBox_Visits;
-	private CTP ctp;
+	private OTP ctp;
 	private JTable tableDetailsPatient;
 	private Preferences jprefer = VueAnon.jprefer;
 	
@@ -56,7 +56,7 @@ public class CTP_Gui extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public CTP_Gui(String CTPAddress) {
+	public OTP_Gui(String CTPAddress) {
 		setBounds(100, 100, 450, 300);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -181,7 +181,7 @@ public class CTP_Gui extends JDialog {
 							comboBox_Studies.removeAllItems();
 							comboBox_Visits.removeAllItems();
 							if (tablePatient.getModel().getRowCount()>0) modelTablePatient.setRowCount(0);							
-							ctp=new CTP(CTP_Username.getText(), new String(CTP_Password.getPassword()), CTPAddress );
+							ctp=new OTP(CTP_Username.getText(), new String(CTP_Password.getPassword()), CTPAddress );
 							
 							boolean checklogin=ctp.checkLogin();
 							if(checklogin) {

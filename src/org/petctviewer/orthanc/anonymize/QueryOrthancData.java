@@ -17,6 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -169,6 +170,25 @@ public class QueryOrthancData {
 		JsonObject patientDetails = (JsonObject) studyData.get("PatientMainDicomTags");
 		String patientName=patientDetails.get("PatientName").getAsString();
 		String patientId=patientDetails.get("PatientID").getAsString();
+		String patientSex="N/A";
+		if(patientDetails.has("PatientSex")) {
+			patientSex=patientDetails.get("PatientSex").getAsString();
+		}
+		Date patientDob=null;
+		try {
+			patientDob = format.parse("19000101");
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(patientDetails.has("PatientBirthDate")) {
+			try {
+				patientDob=format.parse(patientDetails.get("PatientBirthDate").getAsString());
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		String patientOrthancID=studyData.get("ParentPatient").getAsString();
 		
 		ArrayList<Serie> series=null;
@@ -184,7 +204,7 @@ public class QueryOrthancData {
 			}
 		}
 
-		Study2 study=new Study2(studyDescription, studyDateObject, accessionNumber, studyOrthancID, patientName, patientId, patientOrthancID,studyInstanceUid, series);
+		Study2 study=new Study2(studyDescription, studyDateObject, accessionNumber, studyOrthancID, patientName, patientId, patientDob, patientSex, patientOrthancID,studyInstanceUid, series);
 		
 		return study;
 		

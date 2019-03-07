@@ -77,13 +77,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.petctviewer.orthanc.Orthanc_Tools;
 import org.petctviewer.orthanc.Jsonsettings.SettingsGUI;
-import org.petctviewer.orthanc.OTP.CTP;
-import org.petctviewer.orthanc.OTP.CTP_Gui;
+import org.petctviewer.orthanc.OTP.OTP;
+import org.petctviewer.orthanc.OTP.OTP_Gui;
 import org.petctviewer.orthanc.anonymize.controllers.Controller_Anonymize_Btn;
 import org.petctviewer.orthanc.anonymize.controllers.Controller_Csv_Btn;
 import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_Zip;
@@ -125,7 +122,6 @@ public class VueAnon extends JFrame {
 	private DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
 
 	public VueAnon gui=this;
-	private JSONParser parser=new JSONParser();
 	
 	//Objet de connexion aux restFul API, prend les settings des registery et etabli les connexion a la demande
 	public OrthancRestApis connexionHttp;
@@ -152,7 +148,7 @@ public class VueAnon extends JFrame {
 	public JButton anonBtn;
 	private JButton removeFromAnonList;
 	protected JButton importCTP;
-	private JButton queryCTPBtn;
+	protected JButton queryCTPBtn;
 	public JButton exportZip = new JButton("Export list");
 	public JButton removeFromZip = new JButton("Remove from list");
 	public JButton addToZip = new JButton("Add to list");
@@ -1020,18 +1016,14 @@ public class VueAnon extends JFrame {
 					// Si pas de study selectionnees on selectionne de force le 1er
 					if (anonStudiesTable.getSelectedRow()==-1) anonStudiesTable.setRowSelectionInterval(0, 0);
 					//On genere l'objet qui gere le CTP
-					CTP_Gui dialog = new CTP_Gui(addressFieldCTP.getText());
+					OTP_Gui dialog = new OTP_Gui(addressFieldCTP.getText());
+					Study2 studyAnon=(Study2) anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 4);
 					//On prepare les donnees locales dans l'objet
-					String patientName=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 0);
-					//String patientID=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 1);
-					Date patientDOB=(Date) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 6);
-					String patientSex=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 7);
-					if (patientSex.equals("")) patientSex="N/A";
-					//String studyDescription=(String) anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 0);
-					Date studyDate=(Date) anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 1);
-					//SK Si pas de date on injecte la date du jour ? ou on passe la string ici et on gere ds le CTP?
-					if (studyDate==null) studyDate=new Date();
-					if (patientDOB==null) patientDOB=new Date();
+					String patientName=studyAnon.getPatientName();
+					String patientSex=studyAnon.getPatientSex();
+					Date studyDate=studyAnon.getDate();
+					Date patientDOB=studyAnon.getPatientDob();
+					
 					//envoi des donnes dans objet GUI pour CTP
 					dialog.setStudyLocalValue(patientName, df.format(studyDate), patientSex, df.format(patientDOB));
 					dialog.pack();
@@ -1341,7 +1333,6 @@ public class VueAnon extends JFrame {
 						boolean sendOk;
 						boolean validateOk=false;
 						
-						@SuppressWarnings("unchecked")
 						@Override
 						protected Void doInBackground() {
 							//Send DICOM to CTP selected Peer
@@ -1352,7 +1343,7 @@ public class VueAnon extends JFrame {
 							if (sendOk) {
 								stateExports.setText("<html><font color= 'green'>Step 2/3 : Validating upload</font></html>");
 								//Create CTP object to manage CTP communication
-								CTP ctp=new CTP(CTPUsername, CTPPassword, addressFieldCTP.getText());
+								OTP ctp=new OTP(CTPUsername, CTPPassword, addressFieldCTP.getText());
 								//Create the JSON to send
 								JsonArray sentStudiesArray=new JsonArray();
 								//For each study populate the array with studies details of send process

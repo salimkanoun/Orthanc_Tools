@@ -6,6 +6,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,13 +20,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-public class CTP {
+public class OTP {
 	private String username;
 	private String password;
 	private String serverAdress;
 	private JsonParser parser=new JsonParser();
 	
-	public CTP(String username, String password, String serverAdress) {
+	public OTP(String username, String password, String serverAdress) {
 		this.username=username;
 		this.password=password;
 		this.serverAdress=serverAdress;
@@ -75,7 +78,10 @@ public class CTP {
 		jsonPost.addProperty("studyName", studyName);
 		
 		JsonArray visits = null;
-		String answser=makePostConnection("/Rest_Api/get-visits.php",jsonPost.toString());
+		String answser=makePostConnection("/Rest_Api/get-visits.php", jsonPost.toString());
+		System.out.println(answser);
+		System.out.println(answser==null);
+		
 		visits=parser.parse(answser).getAsJsonArray();
 		
 		List<String> visitsList=new ArrayList<String>();
@@ -142,18 +148,13 @@ public class CTP {
 			conn.setDoOutput(true);
 			conn.setRequestMethod("POST");
 			if((serverAdress != null && serverAdress.contains("https")) ){
-				try{
-					HttpsTrustModifier.Trust(conn);
-				}catch (Exception e){
-					
-				}
+				HttpsTrustModifier.Trust(conn);		
 			}
 			OutputStream os = conn.getOutputStream();
 			os.write(post.getBytes());
 			os.flush();
 			conn.getResponseMessage();
-			
-			
+
 			if (conn !=null) {
 				BufferedReader br = new BufferedReader(new InputStreamReader(
 				(conn.getInputStream())));
@@ -163,8 +164,10 @@ public class CTP {
 				}
 				conn.disconnect();
 			}
-		} catch ( IOException ex) { };
-		
+		} catch (Exception ex) { 
+			ex.printStackTrace();
+		};
+		System.out.println(sb.length());
 		return sb.toString();
 	}
 

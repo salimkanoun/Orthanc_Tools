@@ -19,15 +19,15 @@ import org.petctviewer.orthanc.anonymize.listeners.AnonymizeListener;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.importdicom.ImportListener;
 
-public class CTP_Import_GUI extends VueAnon implements ImportListener, AnonymizeListener {
+public class OTP_Import_GUI extends VueAnon implements ImportListener, AnonymizeListener {
 	
 	//SK DEFINITION DES PEERS A TENTER EN API
 	private static final long serialVersionUID = 1L;
 	private ImportDCM importFrame;
-	CTP_Import_GUI importGUI=this;
+	OTP_Import_GUI importGUI=this;
 	
 	
-	public CTP_Import_GUI() {
+	public OTP_Import_GUI() {
 		super("OrthancCTP.json");
 		
 		this.setAnonymizeListener(this);
@@ -48,6 +48,7 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 		listeAETExport.setVisible(false);
 		
 		addressFieldCTP.setText("https://kanoun.fr/");
+		queryCTPBtn.setVisible(true);
 		
 		importCTP.addActionListener(new ActionListener() {
 
@@ -149,7 +150,7 @@ public class CTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 	}
 	
 	public static void main(String[] args) {
-		CTP_Import_GUI ctpImport=new CTP_Import_GUI();
+		OTP_Import_GUI ctpImport=new OTP_Import_GUI();
 		ctpImport.setVisible(true);
 	}
 
