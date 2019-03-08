@@ -122,7 +122,7 @@ public class QueryOrthancData {
 		
 		Iterator<JsonElement> iterator = studyIdArray.iterator();
 		while(iterator.hasNext()) {
-			Study2 study=getStudyDetails(iterator.next().getAsString(), false);
+			Study2 study=getStudyDetails(iterator.next().getAsString(), true);
 			studies.add(study);
 		}
 		return studies;
@@ -175,20 +175,16 @@ public class QueryOrthancData {
 			patientSex=patientDetails.get("PatientSex").getAsString();
 		}
 		Date patientDob=null;
-		try {
-			patientDob = format.parse("19000101");
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		if(patientDetails.has("PatientBirthDate")) {
 			try {
+				patientDob = format.parse("19000101");
 				patientDob=format.parse(patientDetails.get("PatientBirthDate").getAsString());
-			} catch (ParseException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
 		}
+		
 		String patientOrthancID=studyData.get("ParentPatient").getAsString();
 		
 		ArrayList<Serie> series=null;
@@ -210,17 +206,28 @@ public class QueryOrthancData {
 		
 	}
 	
-	public Serie getSeriesDetails(String seriesOrthancID) {
+	private Serie getSeriesDetails(String seriesOrthancID) {
 		
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/series/"+seriesOrthancID);
 		JsonObject serieData=(JsonObject) parserJson.parse(sb.toString());
 		
 		JsonObject seriesDetails = (JsonObject) serieData.get("MainDicomTags");
-		String modality = seriesDetails.get("Modality").getAsString();
 		int nbOfSlice= serieData.get("Instances").getAsJsonArray().size();
-		String seriesDescription= seriesDetails.get("SeriesDescription").getAsString();
-		String seriesNumber= seriesDetails.get("SeriesNumber").getAsString();
 		
+		String modality ="";
+		if(seriesDetails.has("Modality")) {
+			modality=seriesDetails.get("Modality").getAsString();
+		}
+		
+		String seriesDescription="" ;
+		if(seriesDetails.has("SeriesDescription")) {
+			seriesDescription=seriesDetails.get("SeriesDescription").getAsString();
+		}
+		
+		String seriesNumber="";
+		if(seriesDetails.has("SeriesNumber")) {
+			seriesNumber= seriesDetails.get("SeriesNumber").getAsString();
+		}
 		String parentStudyOrthancID= serieData.get("ParentStudy").getAsString();
 		
 		StringBuilder sb2=connexion.makeGetConnectionAndStringBuilder("/instances/"+serieData.get("Instances").getAsJsonArray().get(0).getAsString()+"/metadata/SopClassUid");

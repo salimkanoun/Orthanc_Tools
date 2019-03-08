@@ -91,6 +91,7 @@ import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2Anon;
 import org.petctviewer.orthanc.anonymize.gui.AboutBoxFrame;
+import org.petctviewer.orthanc.anonymize.gui.Custom_Cell_Renderer;
 import org.petctviewer.orthanc.anonymize.gui.DateRenderer;
 import org.petctviewer.orthanc.anonymize.listeners.AnonActionProfileListener;
 import org.petctviewer.orthanc.anonymize.listeners.AnonymizeListener;
@@ -592,25 +593,21 @@ public class VueAnon extends JFrame {
 
 		this.tableauSeries.getTableHeader().setReorderingAllowed(false);
 		this.tableauSeries.getColumnModel().getColumn(0).setMinWidth(260);
-		this.tableauSeries.getColumnModel().getColumn(0).setMaxWidth(260);
-		this.tableauSeries.getColumnModel().getColumn(0).setResizable(false);
 		this.tableauSeries.getColumnModel().getColumn(1).setMinWidth(100);
-		this.tableauSeries.getColumnModel().getColumn(1).setMaxWidth(100);
-		this.tableauSeries.getColumnModel().getColumn(1).setResizable(false);
 		this.tableauSeries.getColumnModel().getColumn(2).setMinWidth(100);
-		this.tableauSeries.getColumnModel().getColumn(2).setMaxWidth(100);
-		this.tableauSeries.getColumnModel().getColumn(2).setResizable(false);
 		this.tableauSeries.getColumnModel().getColumn(3).setMinWidth(0);
 		this.tableauSeries.getColumnModel().getColumn(3).setMaxWidth(0);
 		this.tableauSeries.getColumnModel().getColumn(3).setResizable(false);
+		this.tableauSeries.getColumnModel().getColumn(3).setCellRenderer(new Custom_Cell_Renderer());
 		this.tableauSeries.getColumnModel().getColumn(4).setMinWidth(0);
 		this.tableauSeries.getColumnModel().getColumn(4).setMaxWidth(0);
 		this.tableauSeries.getColumnModel().getColumn(4).setResizable(false);
 		this.tableauSeries.getColumnModel().getColumn(5).setMinWidth(70);
-		this.tableauSeries.getColumnModel().getColumn(5).setMaxWidth(70);
-		this.tableauSeries.getColumnModel().getColumn(5).setResizable(false);
-		this.tableauSeries.setPreferredScrollableViewportSize(new Dimension(530,267));
+		this.tableauSeries.getColumnModel().getColumn(6).setMinWidth(0);
+		this.tableauSeries.getColumnModel().getColumn(6).setMaxWidth(0);
+		this.tableauSeries.setPreferredScrollableViewportSize(new Dimension(580,267));
 		this.tableauSeries.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		this.tableauSeries.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
 		JMenuItem menuItemModifySeries = new JMenuItem("Show tags / Modify");
 		menuItemModifySeries.addActionListener(new ActionListener() {
@@ -627,7 +624,19 @@ public class VueAnon extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				activated=!activated;
-				toogleScRenderer(tableauSeries, activated, 3);
+				if(activated) {
+					tableauSeries.getColumnModel().getColumn(3).setMaxWidth(50);
+					tableauSeries.getColumnModel().getColumn(3).setMinWidth(50);
+					menuItemAllSopClass.setText("Undetect all secondary captures");
+					
+				} else {
+					tableauSeries.getColumnModel().getColumn(3).setMinWidth(0);
+					tableauSeries.getColumnModel().getColumn(3).setMaxWidth(0);
+					menuItemAllSopClass.setText("Detect all secondary captures");
+				}
+				
+				//
+				//toogleScRenderer(tableauSeries, activated, 3);
 			}
 		});
 		

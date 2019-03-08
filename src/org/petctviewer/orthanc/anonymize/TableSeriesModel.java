@@ -27,10 +27,10 @@ import org.petctviewer.orthanc.setup.OrthancRestApis;
 public class TableSeriesModel extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Serie description", "Modality", "Instances", "Secondary capture", "Orthanc Id", "Serie Num", "SeriesObj"};
+	private String[] entetes = {"Serie description", "Modality", "Instances", "SC", "Orthanc Id", "Serie Num", "SeriesObj"};
 	private Class<?>[] classEntetes = {String.class, String.class, Integer.class, Boolean.class, String.class, String.class, Serie.class};
 	private OrthancRestApis connexionHttp;
-	private String studyOrthancID;
+	private Study2 currentStudy;
 	private VueAnon gui;
 
 	public TableSeriesModel(OrthancRestApis connexionHttp, VueAnon gui){
@@ -91,12 +91,30 @@ public class TableSeriesModel extends DefaultTableModel{
 		
 	}
 
+	
+	public void addSerie(Study2 study) {
+		this.currentStudy=study;
+		clear();
+		
+		for(Serie serie:study.getSeries()) {
+			this.addRow(new Object[] {serie.getSerieDescription(), 
+				serie.getModality(), 
+				serie.getNbInstances(), 
+				serie.isSecondaryCapture(), 
+				serie.getId(), 
+				serie.getSeriesNumber(), serie});
+			
+		}
+
+	}
+	
+	
 	public void addSerie(String studyOrthancID) {
-		this.studyOrthancID=studyOrthancID;
 		clear();
 		QueryOrthancData querySeries = new QueryOrthancData(connexionHttp);
-		
 		Study2 study =querySeries.getStudyDetails(studyOrthancID, true);
+		
+		this.currentStudy=study;
 		for(Serie serie:study.getSeries()) {
 			this.addRow(new Object[] {serie.getSerieDescription(), 
 				serie.getModality(), 
@@ -117,7 +135,7 @@ public class TableSeriesModel extends DefaultTableModel{
 	}
 	
 	public void refresh() {
-		addSerie(studyOrthancID);
+		addSerie(currentStudy);
 	}
 	
 }

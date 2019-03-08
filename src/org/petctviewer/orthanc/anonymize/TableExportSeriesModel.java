@@ -20,7 +20,7 @@ package org.petctviewer.orthanc.anonymize;
 import javax.swing.table.DefaultTableModel;
 
 import org.petctviewer.orthanc.anonymize.datastorage.Serie;
-import org.petctviewer.orthanc.anonymize.datastorage.Study2;
+import org.petctviewer.orthanc.anonymize.datastorage.Study_Anonymized;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class TableExportSeriesModel extends DefaultTableModel{
@@ -30,7 +30,7 @@ public class TableExportSeriesModel extends DefaultTableModel{
 	private Class<?>[] classEntetes = {String.class, String.class, Integer.class, Boolean.class, String.class, String.class, Serie.class};
 	private OrthancRestApis connexionHttp;
 	//Store the current StudyOrthanc ID the Series came from (for refresh)
-	private String studyOrthancID;
+	private Study_Anonymized currentStudy;
 
 	public TableExportSeriesModel(OrthancRestApis connexionHttp){
 		super(0,7);
@@ -112,7 +112,7 @@ public class TableExportSeriesModel extends DefaultTableModel{
 			}
 		}
 		//Refresh the Table by quering again Orthanc
-		this.addSerie(studyOrthancID);
+		this.addSerie(currentStudy);
 
 	}
 	
@@ -126,19 +126,12 @@ public class TableExportSeriesModel extends DefaultTableModel{
 		
 	}
 
-	public void addSerie(String studyOrthancID) {
-		this.studyOrthancID=studyOrthancID;
+	public void addSerie(Study_Anonymized studyAnonymized) {
+		this.currentStudy=studyAnonymized;
 		clear();
-		QueryOrthancData querySeries = new QueryOrthancData(connexionHttp);
-		System.out.println("iciaddSeries");
-		Study2 study =querySeries.getStudyDetails(studyOrthancID,true);
-		for(Serie serie:study.getSeries()) {
+		for(Serie serie:studyAnonymized.getAnonymizedStudy().getSeries()) {
 			addRow(new String[] {serie.getSerieDescription(), serie.getModality(), String.valueOf(serie.getNbInstances()), String.valueOf(serie.isSecondaryCapture()), serie.getFistInstanceId(), serie.getSeriesNumber()});
 		}
-	}
-	
-	public String getStudyOriginID() {
-		return studyOrthancID;
 	}
 
 	/*
@@ -148,5 +141,10 @@ public class TableExportSeriesModel extends DefaultTableModel{
 		this.setRowCount(0);
 		
 	}
+	
+	public String getStudyOriginID() {
+		return currentStudy.getOriginalStudy().getOrthancId();
+	}
+
 
 }

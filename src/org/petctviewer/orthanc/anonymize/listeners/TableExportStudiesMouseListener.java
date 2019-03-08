@@ -6,6 +6,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.petctviewer.orthanc.anonymize.TableExportSeriesModel;
+import org.petctviewer.orthanc.anonymize.datastorage.Study_Anonymized;
 
 public class TableExportStudiesMouseListener implements ListSelectionListener {
 
@@ -22,9 +23,10 @@ public class TableExportStudiesMouseListener implements ListSelectionListener {
 	public void valueChanged(ListSelectionEvent e) {
 		if(!e.getValueIsAdjusting()) {
 			if(tableauExportStudies.getSelectedRow() != -1){
-				System.out.println("iciSelectedStudy");
-				String studyID = (String) tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(), 5);
-				modeleExportSeries.addSerie(studyID);
+				System.out.println(tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(),6).getClass());
+				Study_Anonymized studyAnonymized =
+						(Study_Anonymized) tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(),6) ;
+				modeleExportSeries.addSerie(studyAnonymized);
 			}	
 		}
 	}

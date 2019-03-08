@@ -28,7 +28,7 @@ import org.petctviewer.orthanc.anonymize.datastorage.Study_Anonymized;
 public class TableExportStudiesModel extends DefaultTableModel{
 
 	private static final long serialVersionUID = 1L;
-	private String[] entetes = {"Patient name", "Patient ID", "Study date", "Study description", "Accession number", "orthancStudyID", "studyObject"};
+	private String[] entetes = {"Patient name", "Patient ID", "Study date", "Study description", "Accession number", "orthancStudyID", "studyAnonObject"};
 	private final Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, Date.class, String.class, String.class, String.class, Study_Anonymized.class};
 
 	public TableExportStudiesModel(){
@@ -62,7 +62,7 @@ public class TableExportStudiesModel extends DefaultTableModel{
 	public void addStudy(Study_Anonymized studyAnonymized) {
 		
 		Study2 study=studyAnonymized.getAnonymizedStudy();
-		this.addRow(new Object[] {study.getPatientName(),study.getPatientID(),study.getDate(), study.getStudyDescription(), study.getAccession(), study.getOrthancId(), study});	
+		this.addRow(new Object[] {study.getPatientName(),study.getPatientID(),study.getDate(), study.getStudyDescription(), study.getAccession(), study.getOrthancId(), studyAnonymized});	
 	
 	}
 	

@@ -25,6 +25,7 @@ import javax.swing.event.ListSelectionListener;
 
 import org.petctviewer.orthanc.anonymize.TableSeriesModel;
 import org.petctviewer.orthanc.anonymize.TableStudiesModel;
+import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 
 
 public class TableStudiesMouseListener implements ListSelectionListener {
@@ -49,11 +50,11 @@ public class TableStudiesMouseListener implements ListSelectionListener {
 			this.modeleSeries.clear();
 			try {
 				if(this.modele.getRowCount() != 0){
-					String studyID = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 3);
-					this.modeleSeries.addSerie(studyID);
+					Study2 study = (Study2)this.tableau.getValueAt(this.tableau.getSelectedRow(), 4);
+					this.modeleSeries.addSerie(study);
 				}
 			} catch (Exception e1) {
-				//ignore
+				e1.printStackTrace();
 			}
 			frame.pack();
 			
