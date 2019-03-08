@@ -3,6 +3,7 @@ package org.petctviewer.orthanc.anonymize.datastorage;
 import java.util.ArrayList;
 import java.util.Date;
 import org.petctviewer.orthanc.anonymize.QueryOrthancData;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class Study2 {
 
@@ -76,6 +77,10 @@ public class Study2 {
 		return childSeries;
 	}
 	
+	public void setSeries(ArrayList<Serie> series) {
+		childSeries=series;
+	}
+	
 	public int numberOfSeries() {
 		return childSeries.size();
 	}
@@ -103,6 +108,22 @@ public class Study2 {
 	
 	public int getMbSize() {
 		return statMbSize;
+	}
+	
+	public void refreshChildSeries(QueryOrthancData queryOrthanc) {
+		Study2 tempstudy=queryOrthanc.getStudyDetails(this.StudyOrthancId, true);
+		this.setSeries(tempstudy.getSeries());
+		
+	}
+	
+	public void deleteAllSc(OrthancRestApis connexion) {
+		for (Serie serie : childSeries) {
+			boolean sc=serie.isSecondaryCapture();
+			if(sc) {
+				connexion.makeDeleteConnection(serie.getId());
+			}
+		}
+		
 	}
 	
 

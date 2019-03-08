@@ -140,21 +140,21 @@ public class Controller_Anonymize_Btn implements ActionListener {
 				anonRequest.sendQuery(studyId);
 				//Store the new Anonymized Study ID
 				studyToAnon.setNewAnonymizedStudyOrthancId(anonRequest.getNewOrthancID());
+				
 				Study2 anonymizedStudy=queryOrthanc.getStudyDetails(anonRequest.getNewOrthancID(), true);
+				
+				if(vue.settingsSecondaryCaptureButtons[1].isSelected()){
+					anonymizedStudy.deleteAllSc(vue.getOrthancApisConnexion());
+					anonymizedStudy.refreshChildSeries(queryOrthanc);
+				}
+				
 				//Create object with the Anonymized Study and old study object
 				Study_Anonymized anonymizedStudyResult=new Study_Anonymized(anonymizedStudy, studyToAnon);
 				vue.modeleExportStudies.addStudy(anonymizedStudyResult);
 				
-				if(vue.settingsSecondaryCaptureButtons[1].isSelected()){
-					//A FAIRE
-					//modeleAnonStudies.removeScAndSr();
-				}
 				anonCount++;
 			}
 		}
-		
-	
-		//vue.modeleAnonPatients
 		
 	}
 	

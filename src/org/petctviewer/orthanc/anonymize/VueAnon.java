@@ -285,7 +285,7 @@ public class VueAnon extends JFrame {
 		modeleStudies = new TableStudiesModel(connexionHttp);
 		modeleSeries = new TableSeriesModel(connexionHttp, this);
 		modeleExportStudies = new TableExportStudiesModel();
-		modeleExportSeries = new TableExportSeriesModel(connexionHttp);
+		modeleExportSeries = new TableExportSeriesModel(connexionHttp, queryOrthanc);
 		modeleAnonStudies = new TableAnonStudiesModel();
 		modeleAnonPatients = new TableAnonPatientsModel(connexionHttp);
 		
@@ -1263,7 +1263,22 @@ public class VueAnon extends JFrame {
 		menuItemExportSeriesDelete.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				modeleExportSeries.removeRow(tableauExportSeries.getSelectedRow());
+				SwingWorker<Void, Void> worker = new SwingWorker<Void,Void>() {
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						modeleExportSeries.removeSerie(tableauExportSeries.getSelectedRow(), gui);
+						return null;
+					}
+					
+					@Override
+					protected void done() {
+						modeleExportSeries.refresh();
+					}
+					
+				};
+				worker.execute();
+				
 			}
 		});
 

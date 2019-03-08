@@ -29,12 +29,14 @@ public class TableExportSeriesModel extends DefaultTableModel{
 	private String[] entetes = {"Serie description*", "Modality", "Instances", "Secondary capture", "ID", "Serie Number", "serieObject"};
 	private Class<?>[] classEntetes = {String.class, String.class, Integer.class, Boolean.class, String.class, String.class, Serie.class};
 	private OrthancRestApis connexionHttp;
+	private QueryOrthancData queryOrthanc;
 	//Store the current StudyOrthanc ID the Series came from (for refresh)
 	private Study_Anonymized currentStudy;
 
-	public TableExportSeriesModel(OrthancRestApis connexionHttp){
+	public TableExportSeriesModel(OrthancRestApis connexionHttp, QueryOrthancData queryOrthanc){
 		super(0,7);
 		this.connexionHttp=connexionHttp;
+		this.queryOrthanc=queryOrthanc;
 	
 	}
 
@@ -116,12 +118,15 @@ public class TableExportSeriesModel extends DefaultTableModel{
 
 	}
 	
-	public void removeSerie(int selectedRow) {
+	public void removeSerie(int selectedRow, VueAnon vue) {
 		Serie serie= (Serie) this.getValueAt(selectedRow,7);
 		String url="/series/" + serie.getId();
+		vue.setStateExportMessage("Deleting "+serie.getSerieDescription(), "red", -1);
 		boolean success=connexionHttp.makeDeleteConnection(url);
-		if(!success) {
-			System.out.println("Error Erasing "+serie.getSerieDescription());
+		if(success) {
+			vue.setStateExportMessage("Deleted suceeded", "green", 4);
+		}else {
+			vue.setStateExportMessage("Delete Failed", "red", -1);
 		}
 		
 	}
@@ -132,6 +137,16 @@ public class TableExportSeriesModel extends DefaultTableModel{
 		for(Serie serie:studyAnonymized.getAnonymizedStudy().getSeries()) {
 			addRow(new String[] {serie.getSerieDescription(), serie.getModality(), String.valueOf(serie.getNbInstances()), String.valueOf(serie.isSecondaryCapture()), serie.getFistInstanceId(), serie.getSeriesNumber()});
 		}
+	}
+	
+	public void refresh() {
+		currentStudy.getAnonymizedStudy().refreshChildSeries(queryOrthanc);
+		addSerie(currentStudy);
+	}
+	
+	public void deleteAllSc() {
+		currentStudy.getAnonymizedStudy().deleteAllSc(connexionHttp);
+		this.refresh();
 	}
 
 	/*
