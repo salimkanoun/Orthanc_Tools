@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package org.petctviewer.orthanc.query;
+package org.petctviewer.orthanc.query.autoquery;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,28 +37,26 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.query.QueryRetrieve;
+import org.petctviewer.orthanc.query.StudyDetails;
 
 public class AutoQuery  {
 
-	protected QueryRetrieve api;
-	protected String[] availableAets;
-	protected String aetRetrieve;
+	private QueryRetrieve api;
 	private Preferences jPrefer;
 	
-	protected long fONCE_PER_DAY=1000*60*60*24;
-	protected int fTEN_PM=22;
-	protected int fZERO_MINUTES=00;
-	protected int discard=10;
-	protected String serieDescriptionContains, serieDescriptionExclude, serieNumberExclude, serieNumberMatch;
-	protected boolean chckbxCr , chckbxCt, chckbxCmr, chckbxNm, chckbxPt, chckbxUs, chckbxXa , chckbxMg, chckbxSeriesFilter;
+	public long fONCE_PER_DAY=1000*60*60*24;
+	public int fTEN_PM=22;
+	public int fZERO_MINUTES=00;
+	public int discard=10;
+	public String serieDescriptionContains, serieDescriptionExclude, serieNumberExclude, serieNumberMatch;
+	public boolean chckbxCr , chckbxCt, chckbxCmr, chckbxNm, chckbxPt, chckbxUs, chckbxXa , chckbxMg, chckbxSeriesFilter;
+	
 	private DateFormat df = new SimpleDateFormat("yyyyMMdd");
 	
 	
 	public AutoQuery(QueryRetrieve rest) {
 		api=rest;
-
-		availableAets=api.getAets();
-		aetRetrieve=api.getLocalAet();
 
 		//Get Jprefer Value
 		jPrefer = VueAnon.jprefer;
@@ -159,7 +157,7 @@ public class AutoQuery  {
 	 * Date programmation
 	 * @return
 	 */
-	protected Date tenPM() {
+	public Date getStartTime() {
 		
 		Calendar currentDate = new GregorianCalendar();
         
@@ -199,7 +197,7 @@ public class AutoQuery  {
 	 * @param table
 	 * @throws IOException
 	 */
-	protected void csvReading(File file, JTable table) throws IOException {
+	public void csvReading(File file, JTable table) throws IOException {
 		
   	  CSVFormat csvFileFormat = CSVFormat.EXCEL.withFirstRecordAsHeader().withIgnoreEmptyLines();
   	  CSVParser csvParser=CSVParser.parse(file, StandardCharsets.UTF_8,  csvFileFormat);

@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package org.petctviewer.orthanc.query;
+package org.petctviewer.orthanc.query.autoquery;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -28,13 +28,14 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
+import org.petctviewer.orthanc.Orthanc_Tools;
+import org.petctviewer.orthanc.query.StudyDetails;
+
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -129,7 +130,7 @@ public class AutoQueryResultTableDialog extends JDialog {
 					
 				}
 				//On ecrit le CSV
-				writeCSV(csv.toString(), fileChooser.getSelectedFile().getAbsolutePath().toString());
+				Orthanc_Tools.writeCSV(csv.toString(), fileChooser.getSelectedFile());
 			
 				}
 			}
@@ -189,26 +190,11 @@ public class AutoQueryResultTableDialog extends JDialog {
 		csv.append(nom+","+prenom+","+id+","+accession+","+dateFrom+","+dateTo+","+modality+","+studyDescription+"\n");
 	}
 	
-	protected static void writeCSV(String csv, String path) {
-		File f = new File(path);
-
-		// On ecrit les CSV
-		PrintWriter pw = null;
-		try {
-			pw = new PrintWriter(f);
-			pw.write(csv);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			pw.close();
-		}
-	}
-	
-	protected JTable getTable() {
+	public JTable getTable() {
 		return this.table;
 	}
 	
-	protected boolean isValidate() {
+	public boolean isValidate() {
 		return validate;
 	}
 

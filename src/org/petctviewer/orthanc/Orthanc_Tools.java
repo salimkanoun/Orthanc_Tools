@@ -1,5 +1,9 @@
 package org.petctviewer.orthanc;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+
 import org.petctviewer.orthanc.anonymize.VueAnon;
 
 import ij.plugin.PlugIn;
@@ -19,6 +23,19 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 		setLocationRelativeTo(null);
 		this.setVisible(true);
 		fijiEnvironement=true;
+	}
+
+	public static void writeCSV(String text, File file) {
+		// On ecrit les CSV
+		PrintWriter pw = null;
+		try {
+			pw = new PrintWriter(file);
+			pw.write(text);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			pw.close();
+		}
 	}
 
 }

@@ -1,5 +1,5 @@
 
-package org.petctviewer.orthanc.query;
+package org.petctviewer.orthanc.query.autoquery;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -86,8 +86,8 @@ public class AutoQueryOptions extends JDialog {
 		chckbxSeriesFilter = new JCheckBox("Series Filter");
 		chckbxSeriesFilter.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent arg0) {
-				if (chckbxSeriesFilter.isSelected()) unactivateSeriesFiler(false);
-				else if (!chckbxSeriesFilter.isSelected()) unactivateSeriesFiler(true);
+				if (chckbxSeriesFilter.isSelected()) activateSeriesFiler(true);
+				else if (!chckbxSeriesFilter.isSelected()) activateSeriesFiler(false);
 			}
 		});
 		Series_Filter.add(chckbxSeriesFilter, BorderLayout.NORTH);
@@ -252,7 +252,7 @@ public class AutoQueryOptions extends JDialog {
 		
 		//serie filter
 		chckbxSeriesFilter.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesFilter", false));
-		unactivateSeriesFiler(!chckbxSeriesFilter.isSelected());
+		activateSeriesFiler(chckbxSeriesFilter.isSelected());
 		serieDescriptionContains.setText(jPrefer.get("AutoQuery_seriesDescriptionContains", ""));
 		serieDescriptionExclude.setText(jPrefer.get("AutoQuery_seriesDescriptionExclude", ""));
 		serieNumberMatch.setText(jPrefer.get("AutoQuery_seriesNumberContains", ""));
@@ -268,35 +268,19 @@ public class AutoQueryOptions extends JDialog {
 		chckbxMg.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesMGFilter", false));	
 	}
 	
-	protected void unactivateSeriesFiler(boolean unactivate) {
-		if (unactivate) {
-			serieDescriptionContains.setEnabled(false);
-			serieDescriptionExclude.setEnabled(false);
-			serieNumberExclude.setEnabled(false);
-			serieNumberMatch.setEnabled(false);
-			chckbxCr.setEnabled(false);
-			chckbxCt.setEnabled(false);
-			chckbxCmr.setEnabled(false);
-			chckbxNm.setEnabled(false);
-			chckbxPt.setEnabled(false);
-			chckbxUs.setEnabled(false);
-			chckbxXa.setEnabled(false);
-			chckbxMg.setEnabled(false);
-		}
-		else {
-			serieDescriptionContains.setEnabled(true);
-			serieDescriptionExclude.setEnabled(true);
-			serieNumberExclude.setEnabled(true);
-			serieNumberMatch.setEnabled(true);
-			chckbxCr.setEnabled(true);
-			chckbxCt.setEnabled(true);
-			chckbxCmr.setEnabled(true);
-			chckbxNm.setEnabled(true);
-			chckbxPt.setEnabled(true);
-			chckbxUs.setEnabled(true);
-			chckbxXa.setEnabled(true);
-			chckbxMg.setEnabled(true);
-		}
+	protected void activateSeriesFiler(boolean activate) {
+		serieDescriptionContains.setEnabled(activate);
+		serieDescriptionExclude.setEnabled(activate);
+		serieNumberExclude.setEnabled(activate);
+		serieNumberMatch.setEnabled(activate);
+		chckbxCr.setEnabled(activate);
+		chckbxCt.setEnabled(activate);
+		chckbxCmr.setEnabled(activate);
+		chckbxNm.setEnabled(activate);
+		chckbxPt.setEnabled(activate);
+		chckbxUs.setEnabled(activate);
+		chckbxXa.setEnabled(activate);
+		chckbxMg.setEnabled(activate);
 		
 	}
 

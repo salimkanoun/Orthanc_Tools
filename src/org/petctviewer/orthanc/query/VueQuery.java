@@ -78,8 +78,12 @@ import javax.swing.text.DefaultCaret;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.petctviewer.orthanc.Orthanc_Tools;
 import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.anonymize.gui.DateRenderer;
+import org.petctviewer.orthanc.query.autoquery.AutoQuery;
+import org.petctviewer.orthanc.query.autoquery.AutoQueryOptions;
+import org.petctviewer.orthanc.query.autoquery.AutoQueryResultTableDialog;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
@@ -841,7 +845,7 @@ public class VueQuery extends JFrame {
 				    }};
 				    
 					timerDaily=new Timer();
-					timerDaily.scheduleAtFixedRate(task, autoQuery.tenPM(), autoQuery.fONCE_PER_DAY);
+					timerDaily.scheduleAtFixedRate(task, autoQuery.getStartTime(), autoQuery.fONCE_PER_DAY);
 					btnScheduleDaily.setBackground(Color.ORANGE);
 					timerOnDaily=true;
 					info.setText("Daily scheduled "+ autoQuery.fTEN_PM+"H");
@@ -864,8 +868,8 @@ public class VueQuery extends JFrame {
 				if(!timerOn) {
 					//On calcule la difference de temps entre maintenant et le scheduler
 					Date now=new Date();
-					long difference =  autoQuery.tenPM().getTime() - now.getTime();
-					info.setText("Retrieve Sheduled at " + autoQuery.tenPM().toString());
+					long difference =  autoQuery.getStartTime().getTime() - now.getTime();
+					info.setText("Retrieve Sheduled at " + autoQuery.getStartTime().toString());
 					//On cree le Timer
 					if (difference>0) {
 						TimerTask task=new TimerTask() {
@@ -1247,7 +1251,7 @@ public class VueQuery extends JFrame {
 				csvReport.setSelectedFile(new File("Report_AutoRetrieve_"+df.format(new Date())+".csv"));
 				int ok=csvReport.showSaveDialog(null);
 				if (ok==JFileChooser.APPROVE_OPTION ) {
-					AutoQueryResultTableDialog.writeCSV(textAreaConsole.getText(), csvReport.getSelectedFile().getAbsolutePath().toString());
+					Orthanc_Tools.writeCSV(textAreaConsole.getText(), csvReport.getSelectedFile());
 					}
 			}
 		});
