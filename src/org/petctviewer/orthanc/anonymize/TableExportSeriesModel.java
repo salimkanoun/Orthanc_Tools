@@ -103,7 +103,7 @@ public class TableExportSeriesModel extends DefaultTableModel{
 	public void removeAllSecondaryCaptures() {
 		
 		for(int i=0; i<this.getRowCount(); i++){
-			Serie serie= (Serie) this.getValueAt(i, 7);
+			Serie serie= (Serie) this.getValueAt(i, 6);
 			if(serie.isSecondaryCapture()){
 				String url="/series/" + serie.getId();
 				boolean success=connexionHttp.makeDeleteConnection(url);

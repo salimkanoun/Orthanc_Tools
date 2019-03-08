@@ -120,7 +120,7 @@ public class Study2 {
 		for (Serie serie : childSeries) {
 			boolean sc=serie.isSecondaryCapture();
 			if(sc) {
-				connexion.makeDeleteConnection(serie.getId());
+				connexion.makeDeleteConnection("/series/"+serie.getId());
 			}
 		}
 		
