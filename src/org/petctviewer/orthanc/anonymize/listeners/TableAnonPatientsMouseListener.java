@@ -17,6 +17,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize.listeners;
 
+import java.awt.event.ItemListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
 import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -25,7 +29,7 @@ import org.petctviewer.orthanc.anonymize.TableAnonPatientsModel;
 import org.petctviewer.orthanc.anonymize.TableAnonStudiesModel;
 import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
 
-public class TableAnonPatientsMouseListener implements ListSelectionListener {
+public class TableAnonPatientsMouseListener implements MouseListener, ListSelectionListener {
 
 	private JTable tableAnonPatient, tableAnonStudies;
 	private TableAnonPatientsModel modeleAnonPatient;
@@ -40,24 +44,52 @@ public class TableAnonPatientsMouseListener implements ListSelectionListener {
 	}
 
 	@Override
-	public void valueChanged(ListSelectionEvent e) {
-		if(!e.getValueIsAdjusting()) {
-			if(this.modeleAnonPatient.getRowCount() != 0 && this.tableAnonPatient.getSelectedRow() !=(-1)){
-				//SK BUG//
-				//tableAnonStudies.changeSelection(tableAnonStudies.getSelectedRow(), 1, false, false);
-				if(tableAnonStudies.isEditing()) {
-					System.out.println("editing");
-					tableAnonStudies.getCellEditor().cancelCellEditing();
-				}
-				// We clear the details
-				this.modeleAnonStudies.clear();
-				int selectedRow =this.tableAnonPatient.getSelectedRow();
-				PatientAnon patientAnon=modeleAnonPatient.getPatient(selectedRow);
-				
-				
-				this.modeleAnonStudies.addStudies(patientAnon);
-			}	
+	public void mouseClicked(MouseEvent arg0) {
+
+		// TODO Auto-generated method stub
+		
+	}
+
+	/**
+	 * Terminate edition of Study description to trigger the setvalueAt and store the new value
+	 */
+	@Override
+	public void mouseEntered(MouseEvent arg0) {
+		if(tableAnonStudies.isEditing()) {
+			tableAnonStudies.getCellEditor().stopCellEditing();
 		}
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent arg0) {
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void valueChanged(ListSelectionEvent e) {
+
+		if(this.modeleAnonPatient.getRowCount() != 0 && this.tableAnonPatient.getSelectedRow() !=(-1)){
+			// We clear the details
+			this.modeleAnonStudies.clear();
+			int selectedRow =this.tableAnonPatient.getSelectedRow();
+			PatientAnon patientAnon=modeleAnonPatient.getPatient(selectedRow);
+			
+			this.modeleAnonStudies.addStudies(patientAnon);
+		}	
+		
 	}
 
 }

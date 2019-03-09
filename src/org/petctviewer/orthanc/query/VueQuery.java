@@ -40,6 +40,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
@@ -555,7 +556,7 @@ public class VueQuery extends JFrame {
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
-					}
+				}
 
 			}
 		});
@@ -606,25 +607,28 @@ public class VueQuery extends JFrame {
 					}
 				};
 
-			workerCsvRetrieve.execute();
+				workerCsvRetrieve.execute();
 			
-			}
+				}
 			}
 				
 		});
+		
 		panel.add(btnResultsToCsv);
+		
 		btnRemove.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (table.getSelectedRow()!=-1) {
 					DefaultTableModel model = (DefaultTableModel) table.getModel();
 					int[] rows = table.getSelectedRows();
-					   for(int i=0;i<rows.length;i++){
-						   model.removeRow(rows[i]-i);
-					   }
+					Arrays.sort(rows);
+					for(int i=(rows.length-1);i>=0;i--){
+						model.removeRow(rows[i]);
+					}
 				}
 			}
-		}
-		);
+		});
+		
 		btnAddPatient.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 			DefaultTableModel model = (DefaultTableModel) table.getModel();
@@ -763,7 +767,8 @@ public class VueQuery extends JFrame {
 					jprefer.putInt("retrieveSelection", comboBox_RetrieveAet.getSelectedIndex());
 				}
 				
-			}});
+			}
+		});
 		
 		JLabel lblRetrieveFrom = new JLabel("Retrieve From :");
 		Panel_Top.add(lblRetrieveFrom);
@@ -1155,8 +1160,6 @@ public class VueQuery extends JFrame {
 		modeleTableSeriesHistory = new ModelTableSeries(rest); // model for the details JTable (tableauDetails) in the history tab
 	}
 
-
-
 	/*
 	 * This class defines the action on pop menu, that is, displaying the patient's history.
 	 */
@@ -1340,19 +1343,16 @@ public class VueQuery extends JFrame {
 					
 			}
 			return null;
-		}
-			
-		@Override
-		protected void done(){
-			info.setText("<html><font color='green'>Done, see Console for details</font></html>");
-			btnSchedule_1.setEnabled(true);
-			working=false;
-			btnStart.setText("Start Retrieve");
-		}
-		
-		
+			}
+				
+			@Override
+			protected void done(){
+				info.setText("<html><font color='green'>Done, see Console for details</font></html>");
+				btnSchedule_1.setEnabled(true);
+				working=false;
+				btnStart.setText("Start Retrieve");
+			}
 
-	
 		};
 
 	}

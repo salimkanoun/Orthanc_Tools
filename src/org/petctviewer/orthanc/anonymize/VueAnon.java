@@ -70,7 +70,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -497,9 +496,9 @@ public class VueAnon extends JFrame {
 		};
 		
 		//Add Focus listener to tables
-		this.tableauPatients.addFocusListener(tableFocus);
-		this.tableauStudies.addFocusListener(tableFocus);
-		this.tableauSeries.addFocusListener(tableFocus);
+		tableauPatients.addFocusListener(tableFocus);
+		tableauStudies.addFocusListener(tableFocus);
+		tableauSeries.addFocusListener(tableFocus);
 		tableauPatients.setAutoCreateRowSorter(true);
 		tableauStudies.setAutoCreateRowSorter(true);
 		tableauSeries.setAutoCreateRowSorter(true);
@@ -634,9 +633,6 @@ public class VueAnon extends JFrame {
 					tableauSeries.getColumnModel().getColumn(3).setMaxWidth(0);
 					menuItemAllSopClass.setText("Detect all secondary captures");
 				}
-				
-				//
-				//toogleScRenderer(tableauSeries, activated, 3);
 			}
 		});
 		
@@ -897,27 +893,19 @@ public class VueAnon extends JFrame {
 			public void setValueAt(Object aValue, int row, int column) {
 				super.setValueAt(aValue, row, column);
 				if(column==0) {
-					storeNewStudyDescription(row);
+					storeNewStudyDescription(row, aValue);
 				}
 			}
 
-			@Override
-			public void editingStopped(ChangeEvent e) {
-				super.editingStopped(e);
-				storeNewStudyDescription(getSelectedRow());
-				
-			}
-			
-			private void storeNewStudyDescription(int row) {
+			private void storeNewStudyDescription(int row, Object studyDescription) {
 				PatientAnon patient=(PatientAnon) modeleAnonPatients.getValueAt(anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 6);
 				Study2Anon editingStudy=patient.getAnonymizeStudy((String) getValueAt(row, 2));
-				String newStudyDesc=(String) this.getValueAt(row, 0);
-				editingStudy.setNewStudyDescription(newStudyDesc);
+				editingStudy.setNewStudyDescription((String) studyDescription);
 			}
 		};
 
+		anonPatientTable.addMouseListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies, anonStudiesTable));
 		anonPatientTable.getSelectionModel().addListSelectionListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies, anonStudiesTable));
-		
 		
 		anonStudiesTable.getTableHeader().setToolTipText("Click on the description cells to change their values");
 		anonStudiesTable.getColumnModel().getColumn(0).setMinWidth(200);
@@ -929,6 +917,7 @@ public class VueAnon extends JFrame {
 		anonStudiesTable.getColumnModel().getColumn(3).setMaxWidth(0);
 		anonStudiesTable.setPreferredScrollableViewportSize(new Dimension(430,130));
 		anonStudiesTable.setDefaultRenderer(Date.class, new DateRenderer());
+		anonStudiesTable.putClientProperty("terminateEditOnFocusLost", true);
 		
 		anonPatientTable.addFocusListener(tableFocusAnon);
 		anonStudiesTable.addFocusListener(tableFocusAnon);
