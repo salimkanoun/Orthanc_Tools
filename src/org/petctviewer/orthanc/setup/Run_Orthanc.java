@@ -45,7 +45,7 @@ public class Run_Orthanc {
 		//SK AJOUTER ORTHANC TRANSFERS
 		if(System.getProperty("os.name").toLowerCase().startsWith("win")) {
 			if (System.getProperty("os.arch").contains("86")){
-				resourceName="Orthanc_Standalone/Orthanc-1.5.1-Release_32.exe";
+				resourceName="Orthanc_Standalone/Orthanc-1.5.6-Release_32.exe";
 				fileExecName="Orthanc-1.5.1-Release_32.exe";
 				resourceLibName.add("OrthancWebViewer-2.4_32.dll");
 			}else {
@@ -58,9 +58,10 @@ public class Run_Orthanc {
 			fileExecName="Orthanc-1.5.1-ReleaseMac";
 			resourceLibName.add("libOsimisWebViewer.dylib");
 		} else if (System.getProperty("os.name").toLowerCase().startsWith("linux")){
-			resourceName="Orthanc_Standalone/Orthanc-1.5.1-ReleaseLinux";
+			resourceName="Orthanc_Standalone/Orthanc-1.5.6-ReleaseLinux";
 			fileExecName="Orthanc-1.5.1-ReleaseLinux";
 			resourceLibName.add("libOrthancWebViewer.so");
+			resourceLibName.add("libOrthancTransfers.so");
 		}
 	}
 	
