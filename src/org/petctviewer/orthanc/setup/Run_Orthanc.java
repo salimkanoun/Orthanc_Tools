@@ -3,7 +3,6 @@ package org.petctviewer.orthanc.setup;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
-import java.awt.GridLayout;
 import java.awt.Image;
 import java.io.BufferedReader;
 import java.io.File;
