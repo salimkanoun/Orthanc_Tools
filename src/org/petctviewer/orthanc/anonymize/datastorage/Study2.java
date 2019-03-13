@@ -126,5 +126,17 @@ public class Study2 {
 		
 	}
 	
+	public ArrayList<String> getModalitiesInStudy() {
+		ArrayList<String> modalities=new ArrayList<String>();
+		
+		for (Serie serie : childSeries) {
+			String modality=serie.getModality();
+			if(!modalities.contains(modality)) {
+				modalities.add(modality);
+			}
+		}
+		return modalities;
+	}
+	
 
 }
