@@ -65,6 +65,7 @@ public class QueryRetrieve {
 			String indexContent = getIndexContent(idQuery,answer);
 			JsonObject contentJson= (JsonObject) parserJson.parse(indexContent);
 
+			//SK peut etre ici faire safety check ?
 			String patientName=contentJson.get("0010,0010").getAsJsonObject().get("Value").getAsString();
 			String patientID=contentJson.get("0010,0020").getAsJsonObject().get("Value").getAsString();
 			String studyInstanceUID=contentJson.get("0020,000d").getAsJsonObject().get("Value").getAsString();
