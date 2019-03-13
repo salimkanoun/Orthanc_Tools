@@ -21,6 +21,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 import org.apache.commons.io.IOUtils;
 import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.monitoring.CD_Burner;
@@ -44,15 +48,11 @@ public class Run_Orthanc {
 	public Run_Orthanc() {
 		//SK AJOUTER ORTHANC TRANSFERS
 		if(System.getProperty("os.name").toLowerCase().startsWith("win")) {
-			if (System.getProperty("os.arch").contains("86")){
-				resourceName="Orthanc_Standalone/Orthanc-1.5.6-Release_32.exe";
-				fileExecName="Orthanc-1.5.1-Release_32.exe";
-				resourceLibName.add("OrthancWebViewer-2.4_32.dll");
-			}else {
-				resourceName="Orthanc_Standalone/Orthanc-1.5.1-Release.exe";
-				fileExecName="Orthanc-1.5.1-Release.exe";
-				resourceLibName.add("OrthancWebViewer.dll");
-			}
+			resourceName="Orthanc_Standalone/Orthanc-1.5.6-Release_32.exe";
+			fileExecName="Orthanc-1.5.6-Release_32.exe";
+			resourceLibName.add("OrthancWebViewer.dll");
+			resourceLibName.add("OrthancTransfers.dll");
+		//Still to Update	
 		} else if (System.getProperty("os.name").toLowerCase().startsWith("mac")){
 			resourceName="Orthanc_Standalone/Orthanc-1.5.1-ReleaseMac";
 			fileExecName="Orthanc-1.5.1-ReleaseMac";
@@ -115,8 +115,12 @@ public class Run_Orthanc {
 	 * Start orthanc locally
 	 */
 	public void startOrthanc() {
+		
         orthancThread=new Thread(new Runnable() {
+        	JFrame splashScreen;
+        	
 			public void run() {
+					showSplashScreen(true);
 				 	if ( ! System.getProperty("os.name").toLowerCase().startsWith("win")) {
 				 		Set<PosixFilePermission> perms = new HashSet<>();
 				 		 	perms.add(PosixFilePermission.OWNER_READ);
@@ -158,6 +162,7 @@ public class Run_Orthanc {
 							 System.out.println(line);
 							 if (line.contains("Orthanc has started")) {
 								 isStarted=true;
+								 showSplashScreen(false);
 							 }
 						 }
 					
@@ -166,13 +171,33 @@ public class Run_Orthanc {
 					e.printStackTrace();
 				}	
 			} 	
+			
+			public void showSplashScreen(boolean show) {
+				if (show) {
+					splashScreen= new JFrame();
+					JPanel mainPanel=new JPanel();
+					JLabel mainLabel=new JLabel("Starting Orthanc");
+					mainPanel.add(mainLabel);
+					splashScreen.add(mainPanel);
+					splashScreen.pack();
+					splashScreen.setLocationRelativeTo(null);
+					splashScreen.setVisible(true);
+					
+				}else {
+					splashScreen.dispose();
+				}
+				
+			}
         });
         
         orthancThread.start();
         
-       if(!isStarted) {
+       int loop=0;
+       while(!isStarted && loop<10) {
     	   try {
-    		   Thread.sleep(2000);
+    		   System.out.println(loop);
+    		   Thread.sleep(1000);
+    		   loop++;
     	   } catch (InterruptedException e) {
     		   e.printStackTrace();
     	   }
