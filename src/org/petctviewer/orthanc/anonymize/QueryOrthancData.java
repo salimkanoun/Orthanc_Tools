@@ -154,25 +154,46 @@ public class QueryOrthancData {
 		
 		JsonObject studyData=(JsonObject) parserJson.parse(sb.toString());
 		JsonObject studyDetails = (JsonObject) studyData.get("MainDicomTags");
-		String accessionNumber=studyDetails.get("AccessionNumber").getAsString();
+		
+		String accessionNumber="N/A";
+		if(studyDetails.has("AccessionNumber")) {
+			accessionNumber=studyDetails.get("AccessionNumber").getAsString();
+		}
+		
 		String studyInstanceUid=studyDetails.get("StudyInstanceUID").getAsString();
+		
 		String studyDate=studyDetails.get("StudyDate").getAsString();
 		Date studyDateObject=null;
 		try {
+			studyDateObject=format.parse("19000101");
 			studyDateObject=format.parse(studyDate);
 		} catch (java.text.ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		String studyDescription=studyDetails.get("StudyDescription").getAsString();
+		
+		String studyDescription="N/A";
+		if(studyDetails.has("StudyDescription")){
+			studyDescription=studyDetails.get("StudyDescription").getAsString();
+		}
 		
 		JsonObject patientDetails = (JsonObject) studyData.get("PatientMainDicomTags");
-		String patientName=patientDetails.get("PatientName").getAsString();
-		String patientId=patientDetails.get("PatientID").getAsString();
+		
+		String patientName="N/A";
+		if(patientDetails.has("PatientName")) {
+			patientName=patientDetails.get("PatientName").getAsString();
+		}
+		
+		String patientId="N/A";
+		if(patientDetails.has("PatientID")) {
+			patientId=patientDetails.get("PatientID").getAsString();
+		}
+		
 		String patientSex="N/A";
 		if(patientDetails.has("PatientSex")) {
 			patientSex=patientDetails.get("PatientSex").getAsString();
 		}
+		
 		Date patientDob=null;
 		if(patientDetails.has("PatientBirthDate")) {
 			try {
@@ -213,17 +234,17 @@ public class QueryOrthancData {
 		JsonObject seriesDetails = (JsonObject) serieData.get("MainDicomTags");
 		int nbOfSlice= serieData.get("Instances").getAsJsonArray().size();
 		
-		String modality ="";
+		String modality ="N/A";
 		if(seriesDetails.has("Modality")) {
 			modality=seriesDetails.get("Modality").getAsString();
 		}
 		
-		String seriesDescription="" ;
+		String seriesDescription="N/A" ;
 		if(seriesDetails.has("SeriesDescription")) {
 			seriesDescription=seriesDetails.get("SeriesDescription").getAsString();
 		}
 		
-		String seriesNumber="";
+		String seriesNumber="N/A";
 		if(seriesDetails.has("SeriesNumber")) {
 			seriesNumber= seriesDetails.get("SeriesNumber").getAsString();
 		}

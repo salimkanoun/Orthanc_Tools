@@ -52,6 +52,7 @@ public class Read_Orthanc {
 				StringBuilder sop=connexion.makeGetConnectionAndStringBuilder("/instances/"+instanceIDList.get(i).getAsString()+"/metadata/SopClassUid");
 				//If it is a screen capture change the boolean
 				if(sop.toString().startsWith("1.2.840.10008.5.1.4.1.1.7")) screenCapture=true;
+				if(sop.toString().equals("1.2.840.10008.5.1.4.1.1.6.1")) screenCapture=true;
 			}
 			
 			ImageProcessor ip=readCompressed(instanceIDList.get(i).getAsString(), screenCapture);
@@ -75,6 +76,26 @@ public class Read_Orthanc {
 		imp2.setStack(stackSorted);
 		updateCalibration(imp2);
 		imp2.setProperty("Info", imp2.getStack().getSliceLabel(1));
+		
+		//Parse Metadata to create Title
+		String patientName="";
+		if(getDicomValue(imp2.getInfoProperty(), "0010,0010")!=null) {
+			patientName=getDicomValue(imp2.getInfoProperty(), "0010,0010");
+		}
+		
+		String studyDate="";
+		if(getDicomValue(imp2.getInfoProperty(), "0008,0022")!=null) {
+			studyDate=getDicomValue(imp2.getInfoProperty(), "0008,0022");
+		}else if(getDicomValue(imp2.getInfoProperty(), "0008,0020")!=null){
+			studyDate=getDicomValue(imp2.getInfoProperty(), "0008,0020");
+		}
+		
+		String serieDescription="";
+		if(getDicomValue(imp2.getInfoProperty(), "0008,103E")!=null) {
+			serieDescription=getDicomValue(imp2.getInfoProperty(), "0008,103E");
+		}
+		
+		imp2.setTitle(patientName+"-"+studyDate+"-"+serieDescription);
 		
 		return imp2;
 		
@@ -191,8 +212,6 @@ public class Read_Orthanc {
 		img.getCalibration().pixelWidth = spacing[0];
 		img.getCalibration().pixelHeight = spacing[1];
 		img.getCalibration().setUnit("mm");
-		
-		img.setTitle(getDicomValue(meta, "0010,0010")+"-"+getDicomValue(meta, "0008,0022")+"-"+getDicomValue(meta, "0008,103E"));
 	}
 	
 	private String getDicomValue( String meta, String key1) {
