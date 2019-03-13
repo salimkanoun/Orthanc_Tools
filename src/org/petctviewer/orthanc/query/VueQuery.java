@@ -1044,16 +1044,18 @@ public class VueQuery extends JFrame {
 	private void applyPreferences() {
 		
 		if(distantAets.length > 0){
+			int searchAetPosition = jprefer.getInt("SearchAET", 0);
 			if(jprefer.getInt("SearchAET", 99) < distantAets.length){
-				queryAET.setSelectedIndex(jprefer.getInt("SearchAET", 99));
+				queryAET.setSelectedIndex(searchAetPosition);
 			}else{
 				queryAET.setSelectedIndex(0);	
 			}
 		}
 		
 		if(distantAets.length > 0){
-			if(jprefer.getInt("HistoryAET", 0) < distantAets.length){
-				queryAETH.setSelectedIndex(jprefer.getInt("HistoryAET", 0));
+			int searchHistoryPosition = jprefer.getInt("HistoryAET", 0);
+			if(searchHistoryPosition < distantAets.length){
+				queryAETH.setSelectedIndex(searchHistoryPosition);
 			}else{
 				queryAETH.setSelectedIndex(0);
 			}
@@ -1091,17 +1093,17 @@ public class VueQuery extends JFrame {
 			StringBuilder modalities = new StringBuilder();
 
 			// We append a StringBuilder with every selected modalities.
-			// We append "\\\\" in order to get the double \ which allows for multiple modalities in the query
+			// We append "\\" which allows for multiple modalities in the query
 			for(Component c : checkboxes.getComponents()){
 				if(c instanceof JCheckBox){
 					if(((JCheckBox) c).isSelected()){
 						modalities.append((((JCheckBox) c).getText()));
-						modalities.append("\\\\");
+						modalities.append("\\");
 					}
 				}
 			}
 			
-			// If the checkbox is the last chosen checkbox, we delete the '\\\\' at the end
+			// If the checkbox is the last chosen checkbox, we delete the '\\' at the end
 			if(modalities.length() != 0 && modalities.charAt(modalities.length() - 1) == '\\'){
 				modalities.deleteCharAt(modalities.length() - 1);
 				if(modalities.charAt(modalities.length() - 1) == '\\'){

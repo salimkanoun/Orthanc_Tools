@@ -78,11 +78,11 @@ public class FilterAction extends AbstractAction {
 			if(c instanceof JCheckBox){
 				if(((JCheckBox) c).isSelected()){
 					if((((JCheckBox) c).getText()) == "CT-PT"){
-						modalities.append("CT\\\\PT");
-						modalities.append("\\\\");
+						modalities.append("CT\\PT");
+						modalities.append("\\");
 					}else{
 						modalities.append((((JCheckBox) c).getText()));
-						modalities.append("\\\\");
+						modalities.append("\\");
 					}
 				}
 			}
@@ -98,7 +98,7 @@ public class FilterAction extends AbstractAction {
 		// We clear the tables completely before any queries
 		modeleH.clear();
 		modeleDetailsH.clear();
-
+		System.out.println(modalities);
 		// We make the query, based on the user's input
 		if(modalities.toString().length() == 0){
 			modalities.append("*");
