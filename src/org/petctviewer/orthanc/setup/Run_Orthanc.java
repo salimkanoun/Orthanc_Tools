@@ -1,6 +1,10 @@
 package org.petctviewer.orthanc.setup;
 
 
+import java.awt.BorderLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.Image;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -118,7 +123,7 @@ public class Run_Orthanc {
 		
         orthancThread=new Thread(new Runnable() {
         	JFrame splashScreen;
-        	
+        	JLabel openStatus;
 			public void run() {
 					showSplashScreen(true);
 				 	if ( ! System.getProperty("os.name").toLowerCase().startsWith("win")) {
@@ -175,9 +180,18 @@ public class Run_Orthanc {
 			public void showSplashScreen(boolean show) {
 				if (show) {
 					splashScreen= new JFrame();
-					JPanel mainPanel=new JPanel();
-					JLabel mainLabel=new JLabel("Starting Orthanc");
-					mainPanel.add(mainLabel);
+					JPanel mainPanel=new JPanel(new BorderLayout());
+					JLabel imageLabel=new JLabel();
+					Image image = new ImageIcon(ClassLoader.getSystemResource("logos/orthanc-logo.png")).getImage();
+					ImageIcon incon=new ImageIcon(image);
+					imageLabel.setIcon(incon);
+					JLabel openStatus=new JLabel("Starting Orthanc");
+					openStatus.setFont(new Font("TimesRoman", Font.PLAIN, 30));
+					openStatus.setHorizontalAlignment(JLabel.CENTER);
+					
+					mainPanel.add(imageLabel, BorderLayout.CENTER);
+					mainPanel.add(openStatus, BorderLayout.SOUTH);
+					
 					splashScreen.add(mainPanel);
 					splashScreen.pack();
 					splashScreen.setLocationRelativeTo(null);
@@ -190,18 +204,25 @@ public class Run_Orthanc {
 			}
         });
         
-        orthancThread.start();
+       orthancThread.start();
+       
         
        int loop=0;
        while(!isStarted && loop<10) {
     	   try {
     		   System.out.println(loop);
+    		  
     		   Thread.sleep(1000);
     		   loop++;
     	   } catch (InterruptedException e) {
     		   e.printStackTrace();
     	   }
        }
+       
+       if(loop==10) {
+    	   System.exit(0);
+       }
+       
 
 	}
 	
