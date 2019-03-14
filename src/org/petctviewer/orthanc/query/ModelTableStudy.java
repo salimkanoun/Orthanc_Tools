@@ -51,7 +51,6 @@ public class ModelTableStudy extends DefaultTableModel{
 	 */
 	public void addPatient(String patientName, String patientID, String studyDate, String modality, 
 			String studyDescription, String accessionNumber, String aet) {
-		System.out.println(modality);
 		patients = rest.getStudiesResults("Study", patientName, patientID, studyDate, modality, studyDescription, accessionNumber, aet);
 		updateTable();
 
