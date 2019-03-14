@@ -2083,13 +2083,13 @@ public class VueAnon extends JFrame {
 	 * Add studies to export list (for AutoQuery result import)
 	 * @param study
 	 */
-	private void importStudiesInExportList(Study2[] study){
+	public void importStudiesInExportList(Study2[] study){
 		//Clear previous list
 		zipShownContent.removeAllItems();
 		zipContent.clear();
 		//Add new studies
 		for (int i=0; i<study.length; i++){
-			String date = "Study - " + df.format(study[i]) + "  " + study[i].getStudyDescription();
+			String date = "Study - " + df.format(study[i].getDate()) + "  " + study[i].getStudyDescription();
 			String id = study[i].getOrthancId();
 			if(!zipContent.contains(id)){
 				zipShownContent.addItem(date);
@@ -2098,7 +2098,7 @@ public class VueAnon extends JFrame {
 		}
 	}
 	
-	private void importStudiesInAnonList(Study2[] study) {
+	public void importStudiesInAnonList(Study2[] study) {
 		modeleAnonPatients.clear();
 		for (int i=0; i<study.length; i++){
 			modeleAnonPatients.addStudy(study[i]);

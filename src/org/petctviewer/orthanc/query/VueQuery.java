@@ -1206,6 +1206,7 @@ public class VueQuery extends JFrame {
 				Study2[] studyArray=new Study2[studiesRecieves.size()];
 				studiesRecieves.toArray(studyArray);
 				resultGui.addStudy(studyArray);
+				resultGui.setLocationRelativeTo(gui);
 				resultGui.pack();
 				resultGui.setVisible(true);
 				info.setText("<html><font color='green'>Done, see Console for details</font></html>");
