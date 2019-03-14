@@ -31,7 +31,6 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
-import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 
 import org.apache.commons.csv.CSVFormat;
@@ -147,16 +146,26 @@ public class AutoQuery  {
 	public void retrieveQuery(StudyDetails[] results, String aetRetrieve) {
 	
 		updatePreferences();
-		
-		
 		retrievedStudies=new ArrayList<JsonObject>();
+		
+		if(results.length==0) {
+			System.out.println("Empty result");
+			return;
+		}
 		
 		if (results.length<=discard){
 			int studiesRetrievedSuccess=0;
 			for (int i=0; i<results.length; i++) {
 				JsonObject answer=null;
 				try {
-					answer=queryRetrieve.retrieve(results[i].getQueryID(), results[i].getAnswerNumber(), aetRetrieve );
+					
+					if(this.chckbxSeriesFilter) {
+						filterSerie(results[i], aetRetrieve);
+					}else {
+						answer=queryRetrieve.retrieve(results[i].getQueryID(), results[i].getAnswerNumber(), aetRetrieve );
+					}
+				
+					
 					System.out.println(answer);
 					studiesRetrievedSuccess++;
 				} catch (Exception e) {
@@ -285,7 +294,7 @@ public class AutoQuery  {
 	
 	
 	//SK DOIT REJOINDRE AUTO QUERY !
-	private int filterSerie(StudyDetails[] studyResults, String destinationAet) {
+	private int filterSerie(StudyDetails studyResults, String destinationAet) throws Exception {
 		//counter to log number of series retrieved
 		int serieCountRevtrieved=0;
 		
@@ -328,83 +337,85 @@ public class AutoQuery  {
 			serieNumberExcludeArray=serieNumberExclude.split(";");
 		}
 		
-		//On scann tous les results la 1ere dimension contient l'ID de la query et la deuxime le nombre de reponse study a scanner
-		for (int i=0 ; i<studyResults.length; i++) {
+		//On scann tous les results la 1ere dimension contient l'ID de la query et la deuxime le nombre de reponse study a scanner	
+		SerieDetails[] seriesDetails=queryRetrieve.getSeriesAnswers(studyResults.getStudyInstanceUID(), studyResults.getSourceAet());
+		//On verifie qu'un parameter est bien defini
+		if (!StringUtils.isEmpty(seriesModalities) || !StringUtils.isEmpty(serieDescriptionContains) || !StringUtils.isEmpty(serieNumberMatch)  || !StringUtils.isEmpty(serieDescriptionExclude) || !StringUtils.isEmpty(serieNumberExclude)) {
+		
+		//Alors on boucle les reponse	
+		ArrayList<JsonObject> answers=new ArrayList<JsonObject>();
+		
+		for (int k=0; k<seriesDetails.length ; k++) {
+				//On definit le candidat:
+				String seriesDescription=seriesDetails[k].getSeriesDescription().toLowerCase();
+				String modality=seriesDetails[k].getModality();
+				String seriesNumber=seriesDetails[k].getSeriesNumber();
 			
-			SerieDetails[] seriesDetails=queryRetrieve.getSeriesAnswers(studyResults[i].getStudyInstanceUID(), studyResults[i].getSourceAet());
-			//On verifie qu'un parameter est bien defini
-			if (!StringUtils.isEmpty(seriesModalities) || !StringUtils.isEmpty(serieDescriptionContains) || !StringUtils.isEmpty(serieNumberMatch)  || !StringUtils.isEmpty(serieDescriptionExclude) || !StringUtils.isEmpty(serieNumberExclude)) {
-			//Alors on boucle les reponse	
-			for (int k=0; k<seriesDetails.length ; k++) {
-					//On definit le candidat:
-					String seriesDescription=seriesDetails[k].getSeriesDescription().toLowerCase();
-					String modality=seriesDetails[k].getModality();
-					String seriesNumber=seriesDetails[k].getSeriesNumber();
+				JsonObject asnwerSeries = null;
+				if ( ! ((!StringUtils.isEmpty(serieDescriptionExclude) && StringUtils.indexOfAny(seriesDescription,serieDescriptionExcludeArray )!=(-1) ) || (!StringUtils.isEmpty(serieNumberExclude) && (StringUtils.indexOfAny(seriesNumber ,serieNumberExcludeArray)) !=(-1) ) )  ) {
 					
-					if ( ! ((!StringUtils.isEmpty(serieDescriptionExclude) && StringUtils.indexOfAny(seriesDescription,serieDescriptionExcludeArray )!=(-1) ) || (!StringUtils.isEmpty(serieNumberExclude) && (StringUtils.indexOfAny(seriesNumber ,serieNumberExcludeArray)) !=(-1) ) )  ) {
+					//Si on a defini un contains ou un modalitie on prend que si existe un match
+					if ( (!StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.contains(seriesModalities.toString(), modality)) || (!StringUtils.isEmpty(serieDescriptionContains) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray))!=-1) || ( !StringUtils.isEmpty(serieNumberMatch) && (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)))  ) {
 						
-						//Si on a defini un contains ou un modalitie on prend que si existe un match
-						if ( (!StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.contains(seriesModalities.toString(), modality)) || (!StringUtils.isEmpty(serieDescriptionContains) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray))!=-1) || ( !StringUtils.isEmpty(serieNumberMatch) && (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)))  ) {
-							
-							// Une condition match
-							
-							//si plus d'un filtre active on verifie que ca passe les autre filtres
-							if (nombreFiltre>1) {
-								//Si 3 filtre on demande le perfect match et on retrieve
-								if (nombreFiltre==3) {
-									if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
-										info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-										queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  destinationAet);
+						// Une condition match
+						
+						//si plus d'un filtre active on verifie que ca passe les autre filtres
+						if (nombreFiltre>1) {
+							//Si 3 filtre on demande le perfect match et on retrieve
+							if (nombreFiltre==3) {
+								if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
+									asnwerSeries=queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  destinationAet);
+									serieCountRevtrieved++;
+								}
+							}
+							//Si deux filtre il faut chercher le match des deux conditions
+							else if (nombreFiltre==2) {
+								if (!filtreSerieDescription) {
+									if ( StringUtils.contains(seriesModalities.toString(), modality) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
+										asnwerSeries=queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  destinationAet);
 										serieCountRevtrieved++;
 									}
 								}
-								//Si deux filtre il faut chercher le match des deux conditions
-								else if (nombreFiltre==2) {
-									if (!filtreSerieDescription) {
-										if ( StringUtils.contains(seriesModalities.toString(), modality) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
-											info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-											queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  destinationAet);
-											serieCountRevtrieved++;
-										}
+								else if (!filtreSerieNumber) {
+									if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) ){
+										asnwerSeries=queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  destinationAet);
+										serieCountRevtrieved++;
 									}
-									else if (!filtreSerieNumber) {
-										if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) ){
-											info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-											queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  destinationAet);
-											serieCountRevtrieved++;
-										}
-										
+									
+								}
+								else if (!filtreSerieModality) {
+									if ( (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
+										asnwerSeries=queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  destinationAet);
+										serieCountRevtrieved++;
 									}
-									else if (!filtreSerieModality) {
-										if ( (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
-											info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-											queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  destinationAet);
-											serieCountRevtrieved++;
-										}
-										
-									}
+									
 								}
 							}
-							//Si un seul filtre on retrieve la serie qui a matche
-							else {
-								info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1) + " Query "+(i+1)+"/"+table.getRowCount());
-								queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  destinationAet);
-								serieCountRevtrieved++;
-							}
-
-							
-							
 						}
-						//Si on a pas defini de contains ou de modalitie on telecharge tout ce qui n'est pas exclu
-						else if ( StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.isEmpty(serieDescriptionContains) && StringUtils.isEmpty(autoQuery.serieNumberMatch) ) {
-							info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1)+" Query "+(i+1)+"/"+table.getRowCount());
-							queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(), destinationAet);
+						//Si un seul filtre on retrieve la serie qui a matche
+						else {
+							asnwerSeries=queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  destinationAet);
 							serieCountRevtrieved++;
 						}
+						
+					}
+					//Si on a pas defini de contains ou de modalitie on telecharge tout ce qui n'est pas exclu
+					else if ( StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.isEmpty(serieDescriptionContains) && StringUtils.isEmpty(serieNumberMatch) ) {
+						asnwerSeries=queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(), destinationAet);
+						serieCountRevtrieved++;
 					}
 				}
+				
+				if(asnwerSeries!=null) {
+					//info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1)+" Query "+(i+1)+"/"+table.getRowCount());
+					answers.add(asnwerSeries);
+				}
+				
 			}
+		
+		
 		}
+		
 		
 		return serieCountRevtrieved;
 		

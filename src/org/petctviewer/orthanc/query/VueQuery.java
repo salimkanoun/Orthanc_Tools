@@ -86,7 +86,6 @@ import org.petctviewer.orthanc.query.autoquery.AutoQuery;
 import org.petctviewer.orthanc.query.autoquery.gui.AutoQueryOptions;
 import org.petctviewer.orthanc.query.autoquery.gui.AutoQueryShowResultDialog;
 import org.petctviewer.orthanc.query.autoquery.gui.Daily_Retrieve_Gui;
-import org.petctviewer.orthanc.query.datastorage.SerieDetails;
 import org.petctviewer.orthanc.query.datastorage.StudyDetails;
 import org.petctviewer.orthanc.query.listeners.ChangeTabListener;
 import org.petctviewer.orthanc.query.listeners.FilterAction;
@@ -743,25 +742,8 @@ public class VueQuery extends JFrame {
 								}
 								
 								textAreaConsole.append("found "+ results.length +" studies,");
-								
-								//On retrieve toutes les studies 
-								if (autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
-									try {
-										filterSerie(results,null);
-									} catch (Exception e) {
-										e.printStackTrace();
-									}
-								}
-								else if (!autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
-									autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString());
-									textAreaConsole.append("Retrieved \n");
-								}
-								else if(results.length>autoQuery.discard) {
-									textAreaConsole.append("Discarded (over limits) \n");
-								}
-								else if(results.length==0) {
-									textAreaConsole.append("Empty results \n");
-								}
+								autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString());
+								ArrayList<Study2> studiesRecieves=autoQuery.recievedStudiesAsStudiesObject();
 								
 						    }};
 						    
@@ -1200,7 +1182,8 @@ public class VueQuery extends JFrame {
 					//On retrieve toutes les studies 
 					if (results!=null) {
 						textAreaConsole.append(results.length+" Studies match,");
-						// If using Serie filter
+						autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString());
+						/*// If using Serie filter
 						if (autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
 							info.setText("Analyzing Serie from Query "+(i+1)+"/"+table.getRowCount());
 							int seriesRetrived=filterSerie(results,workerAutoRetrieve);
@@ -1211,7 +1194,7 @@ public class VueQuery extends JFrame {
 							info.setText("Retrieve "+(i+1)+" From "+table.getRowCount());
 							autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString());
 							textAreaConsole.append(results[1] + " studies Retrieved \n");
-						}
+						}*/
 						//SK A CONTINUER ICI
 						//SK RISQUE DE STUDY DUPLIQUEE SI RETRIEVE AU NIVEAU SERIES
 						ArrayList<Study2> studiesRecieves=autoQuery.recievedStudiesAsStudiesObject();
