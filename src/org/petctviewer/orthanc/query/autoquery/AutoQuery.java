@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -38,7 +39,9 @@ import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.query.QueryRetrieve;
-import org.petctviewer.orthanc.query.StudyDetails;
+import org.petctviewer.orthanc.query.datastorage.StudyDetails;
+
+import com.google.gson.JsonObject;
 
 public class AutoQuery  {
 
@@ -53,6 +56,8 @@ public class AutoQuery  {
 	public boolean chckbxCr , chckbxCt, chckbxCmr, chckbxNm, chckbxPt, chckbxUs, chckbxXa , chckbxMg, chckbxSeriesFilter;
 	
 	private DateFormat df = new SimpleDateFormat("yyyyMMdd");
+	
+	private ArrayList<JsonObject> retrievedStudies;
 	
 	
 	public AutoQuery(QueryRetrieve rest) {
@@ -133,18 +138,21 @@ public class AutoQuery  {
 	 * @param discard
 	 * @throws IOException
 	 */
-	public void retrieveQuery(StudyDetails[] results, String aetRetrieve, int discard, int queryNumberList) {
+	public void retrieveQuery(StudyDetails[] results, String aetRetrieve, int discard) {
 	
+		retrievedStudies=new ArrayList<JsonObject>();
 		if (results.length<=discard){
 			int studiesRetrievedSuccess=0;
 			for (int i=0; i<results.length; i++) {
+				JsonObject answer=null;
 				try {
-					api.retrieve(results[i].getQueryID(), results[i].getAnswerNumber(), aetRetrieve );
+					answer=api.retrieve(results[i].getQueryID(), results[i].getAnswerNumber(), aetRetrieve );
 					studiesRetrievedSuccess++;
 				} catch (Exception e) {
 					System.out.println( "Error During Retrieve Patient ID"+results[i].getPatientID() +" Study Date "+ results[i].getStudyDate() );
 					e.printStackTrace();
 				}
+				retrievedStudies.add(answer);
 			}
 			System.out.println( studiesRetrievedSuccess + " studies Retrieved");
 		}

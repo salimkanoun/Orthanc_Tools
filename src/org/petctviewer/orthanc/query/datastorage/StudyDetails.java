@@ -16,7 +16,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  */
 
 
-package org.petctviewer.orthanc.query;
+package org.petctviewer.orthanc.query.datastorage;
 
 import java.util.Date;
 

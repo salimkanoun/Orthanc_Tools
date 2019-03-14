@@ -49,7 +49,6 @@ import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -83,8 +82,15 @@ import org.petctviewer.orthanc.Orthanc_Tools;
 import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.anonymize.gui.DateRenderer;
 import org.petctviewer.orthanc.query.autoquery.AutoQuery;
-import org.petctviewer.orthanc.query.autoquery.AutoQueryOptions;
-import org.petctviewer.orthanc.query.autoquery.AutoQueryResultTableDialog;
+import org.petctviewer.orthanc.query.autoquery.gui.AutoQueryOptions;
+import org.petctviewer.orthanc.query.autoquery.gui.AutoQueryShowResultDialog;
+import org.petctviewer.orthanc.query.autoquery.gui.Daily_Retrieve_Gui;
+import org.petctviewer.orthanc.query.datastorage.SerieDetails;
+import org.petctviewer.orthanc.query.datastorage.StudyDetails;
+import org.petctviewer.orthanc.query.listeners.ChangeTabListener;
+import org.petctviewer.orthanc.query.listeners.FilterAction;
+import org.petctviewer.orthanc.query.listeners.Retrieve_Action;
+import org.petctviewer.orthanc.query.listeners.TableStudyMouseListener;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
@@ -94,6 +100,7 @@ public class VueQuery extends JFrame {
 	private static final long serialVersionUID = 1L;
 	// Instancie la classe rest qui fournit les services de connexion et input
 	private QueryRetrieve rest;
+	private JFrame gui;
 	
 	private JTabbedPane tabbedPane;
 	
@@ -144,14 +151,14 @@ public class VueQuery extends JFrame {
 	SwingWorker<Void,Void> workerCsvRetrieve, workerRetrieve, worker ;
 	
 	//AutoQuery
-	private JTextField studyDescription;
+	
 	private JTable table;
 	private DateFormat df = new SimpleDateFormat("yyyyMMdd");
-	private JComboBox<String> comboBox_RetrieveAet, comboBox_NameIDAcc;
+	private JComboBox<String> comboBox_RetrieveAet;
 	private JComboBox<String> Aet_Retrieve;
-	private JCheckBox chckbxCr , chckbxCt , chckbxCmr ,chckbxNm , chckbxPt ,chckbxUs ,chckbxXa ,chckbxMg ,chckbxToday;
-	private JTextField textFieldNameIDAcc;
-	private JButton btnScheduleDaily, btnSchedule_1 ;
+	private JButton btnScheduleDaily;
+	
+	private JButton btnSchedule_1 ;
 	private JLabel info;
 	private AutoQuery autoQuery;
 	private JTextArea textAreaConsole;
@@ -529,20 +536,22 @@ public class VueQuery extends JFrame {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		
 		autoQuery=new AutoQuery(rest);
-		JPanel Panel_Center = new JPanel();
-		Panel_Center.setLayout(new GridLayout(2, 0, 0, 0));
+		JPanel Panel_Center = new JPanel(new BorderLayout());
+		JPanel panelTableBatch = new JPanel(new GridLayout(1, 1));
 		
 		JPanel panel_Batch = new JPanel();
 		panel_Batch.setBorder(new LineBorder(new Color(0, 0, 0)));
-		Panel_Center.add(panel_Batch);
+		panelTableBatch.add(panel_Batch);
 		panel_Batch.setLayout(new BorderLayout(0, 0));
 		
 		JPanel Batch_Panel = new JPanel();
 		panel_Batch.add(Batch_Panel, BorderLayout.SOUTH);
 		Batch_Panel.setLayout(new BorderLayout(0, 0));
 		
-		JPanel panel = new JPanel();
-		Batch_Panel.add(panel, BorderLayout.SOUTH);
+		JPanel panelButtonTableInteraction = new JPanel(new GridLayout(0,1));
+		JPanel panelButtonTable = new JPanel();
+		panelButtonTable.add(panelButtonTableInteraction);
+		Panel_Center.add(panelButtonTable, BorderLayout.EAST);
 		
 		JButton btnImportCsv = new JButton("Import CSV");
 		btnImportCsv.addActionListener(new ActionListener() {
@@ -560,14 +569,14 @@ public class VueQuery extends JFrame {
 
 			}
 		});
-		panel.add(btnImportCsv);
+		panelButtonTableInteraction.add(btnImportCsv);
 		
 		JButton btnAddPatient = new JButton("Add Patient");
 		btnAddPatient.setToolTipText("Date format YYYY/MM/DD or YYYYMMDD, Modality Format CT\\\\PT\\\\NM");
-		panel.add(btnAddPatient);
+		panelButtonTableInteraction.add(btnAddPatient);
 		
 		JButton btnRemove = new JButton("Remove");
-		panel.add(btnRemove);
+		panelButtonTableInteraction.add(btnRemove);
 		
 		JButton btnResultsToCsv = new JButton("Show Results");
 		btnResultsToCsv.addActionListener(new ActionListener() {
@@ -614,7 +623,7 @@ public class VueQuery extends JFrame {
 				
 		});
 		
-		panel.add(btnResultsToCsv);
+		panelButtonTableInteraction.add(btnResultsToCsv);
 		
 		btnRemove.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -637,7 +646,7 @@ public class VueQuery extends JFrame {
 		});
 		
 		JScrollPane scrollPane = new JScrollPane();
-		panel_Batch.add(scrollPane, BorderLayout.CENTER);
+		Panel_Center.add(scrollPane, BorderLayout.CENTER);
 		
 		table = new JTable();
 		table.setPreferredScrollableViewportSize(new Dimension(450, 150));
@@ -654,106 +663,6 @@ public class VueQuery extends JFrame {
 		
 		JLabel lblBatchImport = new JLabel("Batch Retrieve");
 		Batch_Title.add(lblBatchImport);
-		
-		JPanel panel_AutoRetrieve = new JPanel();
-		panel_AutoRetrieve.setBorder(new LineBorder(new Color(0, 0, 0)));
-		Panel_Center.add(panel_AutoRetrieve);
-		panel_AutoRetrieve.setLayout(new BorderLayout(0, 0));
-		
-		JPanel AutoRetrieve_Title = new JPanel();
-		AutoRetrieve_Title.setBorder(new LineBorder(Color.GRAY));
-		panel_AutoRetrieve.add(AutoRetrieve_Title, BorderLayout.NORTH);
-		
-		JLabel lblAutoquery = new JLabel("Auto-Retrieve");
-		AutoRetrieve_Title.add(lblAutoquery);
-		
-		JPanel AutoRetrieve_Panel = new JPanel();
-		panel_AutoRetrieve.add(AutoRetrieve_Panel, BorderLayout.CENTER);
-		AutoRetrieve_Panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		
-		comboBox_NameIDAcc = new JComboBox<String>();
-		comboBox_NameIDAcc.setModel(new DefaultComboBoxModel<String>(new String[] {"Name", "ID", "Accession"}));
-		
-		AutoRetrieve_Panel.add(comboBox_NameIDAcc);
-		
-		textFieldNameIDAcc = new JTextField();
-		textFieldNameIDAcc.setText("*");
-		textFieldNameIDAcc.setToolTipText("Name Format : LastName^FirstName");
-		AutoRetrieve_Panel.add(textFieldNameIDAcc);
-		textFieldNameIDAcc.setColumns(10);
-		
-		JLabel lblDate = new JLabel("Date :");
-		AutoRetrieve_Panel.add(lblDate);
-		
-		JPanel Panel_Date = new JPanel();
-		AutoRetrieve_Panel.add(Panel_Date);
-		
-		
-		DatePicker from = new DatePicker(new Date(), new SimpleDateFormat("MM-dd-yyyy"));
-		from.setBorder(new EmptyBorder(0, 5, 0 ,0));
-		from.setToolTipText("Date format : MM-dd-yyyy");
-		DatePicker to = new DatePicker(new Date(), new SimpleDateFormat("MM-dd-yyyy"));
-		to.setBorder(new EmptyBorder(0, 5, 0 ,0));
-		to.setToolTipText("Date format : MM-dd-yyyy");
-		Panel_Date.setLayout(new GridLayout(0, 2, 0, 0));
-		
-		JLabel lblFrom = new JLabel("From ");
-		Panel_Date.add(lblFrom);
-		
-		Panel_Date.add(from);
-		
-		JLabel lblTo = new JLabel("To");
-		Panel_Date.add(lblTo);
-		Panel_Date.add(to);
-		
-		chckbxToday = new JCheckBox("Today");
-		chckbxToday.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if (chckbxToday.isSelected()==false) {btnScheduleDaily.setEnabled(false); from.setEnabled(true); to.setEnabled(true);};
-				if (chckbxToday.isSelected()==true) {btnScheduleDaily.setEnabled(true); from.setEnabled(false); to.setEnabled(false);};
-			}
-		});
-		
-		Panel_Date.add(chckbxToday);
-		
-		JLabel lblStudyDescription = new JLabel("Study Description :");
-		AutoRetrieve_Panel.add(lblStudyDescription);
-		
-		studyDescription = new JTextField();
-		studyDescription.setText("*");
-		AutoRetrieve_Panel.add(studyDescription);
-		studyDescription.setColumns(10);
-		
-		JLabel lblModality = new JLabel("Modality :");
-		AutoRetrieve_Panel.add(lblModality);
-		
-		JPanel panel_2 = new JPanel();
-		AutoRetrieve_Panel.add(panel_2);
-		panel_2.setLayout(new GridLayout(2, 4, 0, 0));
-		
-		chckbxCr = new JCheckBox("CR");
-		panel_2.add(chckbxCr);
-		
-		chckbxCt = new JCheckBox("CT");
-		panel_2.add(chckbxCt);
-		
-		chckbxCmr = new JCheckBox("CMR");
-		panel_2.add(chckbxCmr);
-		
-		chckbxNm = new JCheckBox("NM");
-		panel_2.add(chckbxNm);
-		
-		chckbxPt = new JCheckBox("PT");
-		panel_2.add(chckbxPt);
-		
-		chckbxUs = new JCheckBox("US");
-		panel_2.add(chckbxUs);
-		
-		chckbxXa = new JCheckBox("XA");
-		panel_2.add(chckbxXa);
-		
-		chckbxMg = new JCheckBox("MG");
-		panel_2.add(chckbxMg);
 		
 		JPanel Panel_Top = new JPanel();
 		
@@ -800,60 +709,69 @@ public class VueQuery extends JFrame {
 		panel_Bottom.add(btnStart);
 		
 		btnScheduleDaily = new JButton("Daily Schedule");
-		btnScheduleDaily.setEnabled(false);
 		btnScheduleDaily.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				//On defini le task
 				if(!timerOnDaily) {
-					TimerTask task=new TimerTask() {
-				    public void run() {
-				    	showConsoleFrame();
-				    	//Ne marchera que pour le jour J (sans prendre en compte le calendar)
-						//On construit la string modalities
-						StringBuilder modalities=sbModalitiesAutoQuery();
-						
-						StudyDetails[] results=null;
-						
-						if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "Name")) {
-							results=autoQuery.sendQuery(textFieldNameIDAcc.getText(),"*",df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),"*", comboBox_RetrieveAet.getSelectedItem().toString());
-						}
-						else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "ID")) {
-							results=autoQuery.sendQuery("*",textFieldNameIDAcc.getText(),df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),"*", comboBox_RetrieveAet.getSelectedItem().toString());
-						}
-						else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "Accession")) {
-							results=autoQuery.sendQuery("*","*",df.format(new Date()),df.format(new Date()),modalities.toString(),studyDescription.getText(),textFieldNameIDAcc.getText(), comboBox_RetrieveAet.getSelectedItem().toString());
-						}
-						
-						textAreaConsole.append("found "+ results.length +" studies,");
-						
-						//On retrieve toutes les studies 
-						if (autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
-							try {
-								filterSerie(results,null);
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-						}
-						else if (!autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
-							autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery. discard, 1);
-							textAreaConsole.append("Retrieved \n");
-						}
-						else if(results.length>autoQuery.discard) {
-							textAreaConsole.append("Discarded (over limits) \n");
-						}
-						else if(results.length==0) {
-							textAreaConsole.append("Empty results \n");
-						}
-						
-						
-				    	
-				    }};
-				    
-					timerDaily=new Timer();
-					timerDaily.scheduleAtFixedRate(task, autoQuery.getStartTime(), autoQuery.fONCE_PER_DAY);
-					btnScheduleDaily.setBackground(Color.ORANGE);
-					timerOnDaily=true;
-					info.setText("Daily scheduled "+ autoQuery.fTEN_PM+"H");
+					
+					Daily_Retrieve_Gui dailyInterface= new Daily_Retrieve_Gui();
+					dailyInterface.pack();
+					dailyInterface.setLocationRelativeTo(gui);
+					dailyInterface.setModal(true);
+					dailyInterface.setVisible(true);
+					if(dailyInterface.validate) {
+						TimerTask task=new TimerTask() {
+						    public void run() {
+						    	showConsoleFrame();
+						    	//Ne marchera que pour le jour J (sans prendre en compte le calendar)
+								//On construit la string modalities
+								String modalities=dailyInterface.GetModalitiesString();
+								String queryOptions=dailyInterface.getSelectedComboBoxQueryOption();
+								String reseachString=dailyInterface.getResearchTextParam();
+								String studyDescParam=dailyInterface.getStudyDescriptionParam();
+								StudyDetails[] results=null;
+								
+								if (StringUtils.equals(queryOptions, "Name")) {
+									results=autoQuery.sendQuery(reseachString,"*",df.format(new Date()),df.format(new Date()),modalities,studyDescParam,"*", comboBox_RetrieveAet.getSelectedItem().toString());
+								}
+								else if (StringUtils.equals(queryOptions, "ID")) {
+									results=autoQuery.sendQuery("*",reseachString,df.format(new Date()),df.format(new Date()),modalities,studyDescParam,"*", comboBox_RetrieveAet.getSelectedItem().toString());
+								}
+								else if (StringUtils.equals(queryOptions, "Accession")) {
+									results=autoQuery.sendQuery("*","*",df.format(new Date()),df.format(new Date()),modalities,studyDescParam,reseachString, comboBox_RetrieveAet.getSelectedItem().toString());
+								}
+								
+								textAreaConsole.append("found "+ results.length +" studies,");
+								
+								//On retrieve toutes les studies 
+								if (autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
+									try {
+										filterSerie(results,null);
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
+								}
+								else if (!autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
+									autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery. discard);
+									textAreaConsole.append("Retrieved \n");
+								}
+								else if(results.length>autoQuery.discard) {
+									textAreaConsole.append("Discarded (over limits) \n");
+								}
+								else if(results.length==0) {
+									textAreaConsole.append("Empty results \n");
+								}
+								
+						    }};
+						    
+							timerDaily=new Timer();
+							timerDaily.scheduleAtFixedRate(task, autoQuery.getStartTime(), autoQuery.fONCE_PER_DAY);
+							btnScheduleDaily.setBackground(Color.ORANGE);
+							timerOnDaily=true;
+							info.setText("Daily scheduled "+ autoQuery.fTEN_PM+"H");
+					}
+					
+					
 				} else {
 					timerDaily.cancel();
 					timerDaily.purge();
@@ -861,7 +779,6 @@ public class VueQuery extends JFrame {
 					timerOnDaily=false;
 					info.setText("Daily cancelled");
 				}
-
 				
 			}
 		});
@@ -1187,26 +1104,13 @@ public class VueQuery extends JFrame {
 	}
 	
 	
-	protected StringBuilder sbModalitiesAutoQuery() {
-		StringBuilder modalities=new StringBuilder();
-		if (chckbxCr.isSelected()) modalities.append("\\\\CR") ;
-		if (chckbxCt.isSelected()) modalities.append("\\\\CT") ;
-		if (chckbxCmr.isSelected()) modalities.append("\\\\CMR") ;
-		if (chckbxNm.isSelected()) modalities.append("\\\\NM") ;
-		if (chckbxPt.isSelected()) modalities.append("\\\\PT") ;
-		if (chckbxUs.isSelected()) modalities.append("\\\\US") ;
-		if (chckbxXa.isSelected()) modalities.append("\\\\XA") ;
-		if (chckbxMg.isSelected()) modalities.append("\\\\MG") ;
-		if (modalities.length()==0) modalities.append("*"); else modalities.delete(0, 2);
-		return modalities;
-		
-	}
+	
 	/**
 	 * AutoQuery :Appelle la dialog d'affichage des resultat et recup�re les resultat valid�s pour l'injecter dans la table de la main frame
 	 * @param patientArray
 	 */
 	private void showResultTable(ArrayList<StudyDetails> studyArray) {
-		AutoQueryResultTableDialog resultDialog=new AutoQueryResultTableDialog();
+		AutoQueryShowResultDialog resultDialog=new AutoQueryShowResultDialog();
 		resultDialog.setModal(true);
 		resultDialog.populateTable(studyArray);
 		resultDialog.pack();
@@ -1304,7 +1208,7 @@ public class VueQuery extends JFrame {
 							textAreaConsole.append("over limits, discarded,");
 						} else {
 							info.setText("Retrieve "+(i+1)+" From "+table.getRowCount());
-							autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery.discard, i);
+							autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery.discard);
 							textAreaConsole.append(results[1] + " studies Retrieved \n");
 						}
 						
@@ -1314,35 +1218,6 @@ public class VueQuery extends JFrame {
 					}	
 				}
 			
-			} else {
-				//On construit la string modalities
-				StringBuilder modalities=sbModalitiesAutoQuery();
-				StudyDetails[] results=null;
-				
-				//Requette selon la comboBox pour name, id, accession
-				if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "Name")) {
-					results=autoQuery.sendQuery(textFieldNameIDAcc.getText(),"*",df.format(from.getDate()),df.format(to.getDate()),modalities.toString(),studyDescription.getText(),"*", comboBox_RetrieveAet.getSelectedItem().toString());
-				}
-				else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "ID")) {
-					results=autoQuery.sendQuery("*",textFieldNameIDAcc.getText(),df.format(from.getDate()),df.format(to.getDate()),modalities.toString(),studyDescription.getText(),"*", comboBox_RetrieveAet.getSelectedItem().toString());
-				}
-				else if (StringUtils.equals(comboBox_NameIDAcc.getSelectedItem().toString(), "Accession")) {
-					results=autoQuery.sendQuery("*","*",df.format(from.getDate()),df.format(to.getDate()),modalities.toString(),studyDescription.getText(),textFieldNameIDAcc.getText(), comboBox_RetrieveAet.getSelectedItem().toString());
-				}
-				
-				textAreaConsole.append("found "+results.length+" studies,");
-				
-				if (autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
-					filterSerie(results,workerAutoRetrieve);
-				}
-				else if (!autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
-					autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery. discard, 1);
-					textAreaConsole.append("Retrieved \n");
-				}
-				else if(results.length>autoQuery.discard) {
-					textAreaConsole.append("Discarded (over limits) \n");
-				}
-					
 			}
 			return null;
 			}

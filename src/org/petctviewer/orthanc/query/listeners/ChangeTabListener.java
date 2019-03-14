@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package org.petctviewer.orthanc.query;
+package org.petctviewer.orthanc.query.listeners;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;

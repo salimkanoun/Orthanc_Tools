@@ -1,10 +1,15 @@
-package org.petctviewer.orthanc.query;
+package org.petctviewer.orthanc.query.listeners;
 
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.JTable;
 import javax.swing.SwingWorker;
+
+import org.petctviewer.orthanc.query.QueryRetrieve;
+import org.petctviewer.orthanc.query.VueQuery;
+import org.petctviewer.orthanc.query.datastorage.SerieDetails;
+import org.petctviewer.orthanc.query.datastorage.StudyDetails;
 
 public class Retrieve_Action extends AbstractAction{
 	
@@ -13,7 +18,7 @@ public class Retrieve_Action extends AbstractAction{
 	private boolean main;
 	private QueryRetrieve rest;
 	
-	Retrieve_Action(VueQuery gui, boolean main){
+	public Retrieve_Action(VueQuery gui, boolean main){
 		this.main=main;
 		this.gui=gui;
 		this.rest=gui.getRestObject();	

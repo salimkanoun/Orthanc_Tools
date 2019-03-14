@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package org.petctviewer.orthanc.query.autoquery;
+package org.petctviewer.orthanc.query.autoquery.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -29,7 +29,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 import org.petctviewer.orthanc.Orthanc_Tools;
-import org.petctviewer.orthanc.query.StudyDetails;
+import org.petctviewer.orthanc.query.datastorage.StudyDetails;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 
 @SuppressWarnings("serial")
-public class AutoQueryResultTableDialog extends JDialog {
+public class AutoQueryShowResultDialog extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
 	private JTable table;
@@ -54,7 +54,7 @@ public class AutoQueryResultTableDialog extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public AutoQueryResultTableDialog() {
+	public AutoQueryShowResultDialog() {
 		
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));

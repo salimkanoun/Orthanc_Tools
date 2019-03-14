@@ -21,6 +21,8 @@ import java.util.Date;
 
 import javax.swing.table.DefaultTableModel;
 
+import org.petctviewer.orthanc.query.datastorage.StudyDetails;
+
 public class ModelTableStudy extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 

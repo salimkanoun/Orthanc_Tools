@@ -20,6 +20,9 @@ package org.petctviewer.orthanc.query;
 
 import javax.swing.table.DefaultTableModel;
 
+import org.petctviewer.orthanc.query.datastorage.SerieDetails;
+import org.petctviewer.orthanc.query.datastorage.StudyDetails;
+
 public class ModelTableSeries extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 

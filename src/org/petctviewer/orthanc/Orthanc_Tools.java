@@ -43,7 +43,7 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 
 //SK TO DO
 //Renderer SC =>OK tester sur deux table main et export
-//Modality Check Anon
+//Modality Check Anon  => A priori OK a tester
 //SC Deletion Anon => A priori OK a tester
 //Tester toutes les fonctions!
 //Reoganiser le package Query

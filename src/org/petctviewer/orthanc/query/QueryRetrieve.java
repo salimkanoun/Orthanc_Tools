@@ -21,6 +21,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.petctviewer.orthanc.query.datastorage.SerieDetails;
+import org.petctviewer.orthanc.query.datastorage.StudyDetails;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import com.google.gson.JsonArray;
@@ -80,7 +82,7 @@ public class QueryRetrieve {
 				e.printStackTrace();
 			}
 			
-			patients[i] = new StudyDetails(patientName, patientID, studyDateParsed, studyDescription2, modality , accessionNumber2, studyInstanceUID, aet, idQuery,answer);
+			patients[i] = new StudyDetails(patientName, patientID, studyDateParsed, studyDescription2, modality, accessionNumber2, studyInstanceUID, aet, idQuery,answer);
 			
 		}
 		
@@ -143,11 +145,13 @@ public class QueryRetrieve {
 	/*
 	 * This method retrieves an query answer, depending on its query ID / number 
 	 */
-	public void retrieve(String queryID, int answer, String retrieveAET) throws Exception {
+	public JsonObject retrieve(String queryID, int answer, String retrieveAET) throws Exception {
 		StringBuilder sb=connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve/", retrieveAET);
 		if(sb==null) {
 			throw new Exception("Retrieved Failed");
 		}
+		JsonObject response=parserJson.parse(sb.toString()).getAsJsonObject();
+		return response;
 	}
 	
 	/*

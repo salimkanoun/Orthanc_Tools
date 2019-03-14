@@ -1,5 +1,5 @@
 
-package org.petctviewer.orthanc.query.autoquery;
+package org.petctviewer.orthanc.query.autoquery.gui;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;

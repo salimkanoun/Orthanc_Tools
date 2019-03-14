@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package org.petctviewer.orthanc.query;
+package org.petctviewer.orthanc.query.listeners;
 
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
@@ -24,6 +24,10 @@ import java.awt.event.MouseEvent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+
+import org.petctviewer.orthanc.query.ModelTableSeries;
+import org.petctviewer.orthanc.query.ModelTableStudy;
+import org.petctviewer.orthanc.query.datastorage.StudyDetails;
 
 public class TableStudyMouseListener extends MouseAdapter {
 

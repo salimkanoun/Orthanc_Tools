@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package org.petctviewer.orthanc.query;
+package org.petctviewer.orthanc.query.listeners;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -27,6 +27,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import org.petctviewer.orthanc.query.ModelTableSeries;
+import org.petctviewer.orthanc.query.ModelTableStudy;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
 
