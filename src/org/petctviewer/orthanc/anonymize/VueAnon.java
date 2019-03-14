@@ -169,8 +169,6 @@ public class VueAnon extends JFrame {
 	//End manage buttons
 	public JComboBox<String> zipShownContent;
 	private JComboBox<String> manageShownContent;
-	//private ArrayList<String> manageShownContentList = new ArrayList<String>();
-	//public ArrayList<String> zipShownContentList = new ArrayList<String>();
 	private JPanel oToolRight, oToolRightManage;
 	private JComboBox<String> listeAET;
 	public JComboBox<String> comboToolChooser;
@@ -188,7 +186,7 @@ public class VueAnon extends JFrame {
 	// Tab Export (p2)
 	private JLabel stateExports = new JLabel("");
 	protected JButton peerExport,csvReport, exportToZip, exportBtn, dicomStoreExport;
-	protected JComboBox<String> listePeers ;
+	protected JComboBox<String> listePeers;
 	protected JComboBox<String> listeAETExport;
 	private JTable tableauExportStudies;
 	private JTable tableauExportSeries;
