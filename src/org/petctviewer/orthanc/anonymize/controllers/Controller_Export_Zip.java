@@ -38,7 +38,7 @@ public class Controller_Export_Zip implements ActionListener {
 			String comboToolItem=vue.getComboToolChooserSeletedItem();
 			
 			if (comboToolItem.equals("Image with Viewer (iso)")) {
-				chooser.setSelectedFile(new File(vue.zipShownContentList.get(0).replaceAll("/", "_")+"_image.iso")); 
+				chooser.setSelectedFile(new File(vue.zipShownContent.getItemAt(0).replaceAll("/", "_")+"_image.iso")); 
 			}else {
 				chooser.setSelectedFile(new File(dfZip.format(new Date()) + ".zip")); 
 			}
@@ -99,7 +99,6 @@ public class Controller_Export_Zip implements ActionListener {
 						vue.activateExport(true);
 						//empty exported list
 						vue.zipShownContent.removeAllItems();
-						vue.zipShownContentList.removeAll(vue.zipShownContentList);
 						vue.zipContent.removeAll(vue.zipContent);	
 						//Close export tool
 						vue.openCloseExportTool(false);

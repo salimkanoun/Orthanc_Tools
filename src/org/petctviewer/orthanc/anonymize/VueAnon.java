@@ -167,10 +167,10 @@ public class VueAnon extends JFrame {
 	private JButton removeFromManage = new JButton("Remove from List");
 	private JButton deleteManage = new JButton("Delete list");
 	//End manage buttons
-	public JComboBox<Object> zipShownContent;
-	private JComboBox<Object> manageShownContent;
-	private ArrayList<String> manageShownContentList = new ArrayList<String>();
-	public ArrayList<String> zipShownContentList = new ArrayList<String>();
+	public JComboBox<String> zipShownContent;
+	private JComboBox<String> manageShownContent;
+	//private ArrayList<String> manageShownContentList = new ArrayList<String>();
+	//public ArrayList<String> zipShownContentList = new ArrayList<String>();
 	private JPanel oToolRight, oToolRightManage;
 	private JComboBox<String> listeAET;
 	public JComboBox<String> comboToolChooser;
@@ -298,6 +298,9 @@ public class VueAnon extends JFrame {
 		zipSize= new JLabel("");
 		manageSize= new JLabel("");
 		userInputSearch = new JTextField();
+		
+		zipShownContent= new JComboBox<String>();
+		manageShownContent= new JComboBox<String>();
 		
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////// PANEL 1 : ANONYMIZATION ////////////////////////////////////////////////////
@@ -668,9 +671,7 @@ public class VueAnon extends JFrame {
 		ortToolbox.setBorder(new EmptyBorder(0, 0, 0, 50));
 		labelAndAnon.add(ortToolbox);
 		labelAndAnon.add(this.state);
-		zipShownContent = new JComboBox<Object> (zipContent.toArray());
-		zipShownContent.setPreferredSize(new Dimension(297,27));
-
+		
 		oToolRight = new JPanel();
 		oToolRight.setLayout(new BoxLayout(oToolRight, BoxLayout.PAGE_AXIS));
 
@@ -702,7 +703,6 @@ public class VueAnon extends JFrame {
 							if(success) {
 								state.setText("<html><font color='green'>The data have successfully been stored.</font></html>");
 								zipShownContent.removeAllItems();
-								zipShownContentList.removeAll(zipShownContentList);
 								zipContent.removeAll(zipContent);
 							}else {
 								setStateMessage("DICOM Send Failed", "red", -1);
@@ -724,7 +724,7 @@ public class VueAnon extends JFrame {
 		removeFromZip.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				removeFromToolList(zipContent, zipShownContent, zipShownContentList, zipSize, state);
+				removeFromToolList(zipContent, zipShownContent, zipSize, state);
 					
 			}
 		});
@@ -732,7 +732,7 @@ public class VueAnon extends JFrame {
 		removeFromManage.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				removeFromToolList(manageContent, manageShownContent, manageShownContentList, manageSize, state);
+				removeFromToolList(manageContent, manageShownContent, manageSize, state);
 			}
 		});
 		
@@ -740,7 +740,7 @@ public class VueAnon extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				//Ajout dans la tool list		
-				addToToolList(zipContent,zipShownContent, zipShownContentList, zipSize);
+				addToToolList(zipContent,zipShownContent, zipSize);
 			}
 		});
 		
@@ -748,7 +748,7 @@ public class VueAnon extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				//Ajout dans la tool list
-				addToToolList(manageContent,manageShownContent, manageShownContentList, manageSize);
+				addToToolList(manageContent,manageShownContent, manageSize);
 			}
 		});
 		
@@ -762,13 +762,13 @@ public class VueAnon extends JFrame {
 				ArrayList<String> deletePatients=new ArrayList<String>();
 				
 				for (int i=0; i<manageContent.size(); i++){
-					if (manageShownContentList.get(i).contains("Study -")){
+					if (manageShownContent.getItemAt(i).contains("Study -")){
 						deleteStudies.add("/studies/"+manageContent.get(i));
 					}
-					else if (manageShownContentList.get(i).contains("Serie -")){
+					else if (manageShownContent.getItemAt(i).contains("Serie -")){
 						deleteSeries.add("/series/"+manageContent.get(i));
 					}
-					else if (manageShownContentList.get(i).contains("Patient -")){
+					else if (manageShownContent.getItemAt(i).contains("Patient -")){
 						deletePatients.add("/patients/"+manageContent.get(i));
 					}
 				}
@@ -802,7 +802,6 @@ public class VueAnon extends JFrame {
 						enableManageButtons(true);
 						manageSize.setText("empty list");
 						manageShownContent.removeAllItems();
-						manageShownContentList.removeAll(manageShownContentList);
 						manageContent.removeAll(manageContent);
 						search.doClick();
 					}
@@ -840,8 +839,6 @@ public class VueAnon extends JFrame {
 		JPanel deletePanelGrid = new JPanel(new GridLayout(2,1));
 		
 		JPanel deletePanelComboButton = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		manageShownContent=new JComboBox<Object>(manageContent.toArray());
-		manageShownContent.setPreferredSize(new Dimension(297,27));
 	
 		deletePanelComboButton.add(manageShownContent);
 		deletePanelComboButton.add(addManage);
@@ -2031,7 +2028,7 @@ public class VueAnon extends JFrame {
 	}
 	
 	// Ajoute seletion a la tool list
-	private void addToToolList(ArrayList<String> zipContent, JComboBox<Object> zipShownContent, ArrayList<String > zipShownContentList, JLabel zipSize){
+	private void addToToolList(ArrayList<String> zipContent, JComboBox<String> zipShownContent, JLabel zipSize){
 
 		//On recupere la table qui a eu le dernier focus pour la selection
 		JTable tableau =  lastTableFocusMain;
@@ -2043,7 +2040,6 @@ public class VueAnon extends JFrame {
 				String id = tableauPatients.getValueAt(selectedLines[i], 2).toString();
 				if(!zipContent.contains(id)){
 					zipShownContent.addItem(name);
-					zipShownContentList.add(name);
 					zipContent.add(id);
 				}else{
 					duplicate=true;
@@ -2057,7 +2053,6 @@ public class VueAnon extends JFrame {
 				String id = tableauStudies.getValueAt(selectedLines[i], 3).toString();
 				if(!zipContent.contains(id)){
 					zipShownContent.addItem(date);
-					zipShownContentList.add(date);
 					zipContent.add(id);
 				}else{
 				duplicate=true;
@@ -2071,7 +2066,6 @@ public class VueAnon extends JFrame {
 				String id = tableauSeries.getValueAt(selectedLines[i], 4).toString();
 				if(!zipContent.contains(id)){
 					zipShownContent.addItem(desc);
-					zipShownContentList.add(desc);
 					zipContent.add(id);
 				}else{
 					duplicate=true;
@@ -2087,15 +2081,38 @@ public class VueAnon extends JFrame {
 	
 	}
 	
+	/**
+	 * Add studies to export list (for AutoQuery result import)
+	 * @param study
+	 */
+	private void importStudiesInExportList(Study2[] study){
+		//Clear previous list
+		zipShownContent.removeAllItems();
+		zipContent.clear();
+		//Add new studies
+		for (int i=0; i<study.length; i++){
+			String date = "Study - " + df.format(study[i]) + "  " + study[i].getStudyDescription();
+			String id = study[i].getOrthancId();
+			if(!zipContent.contains(id)){
+				zipShownContent.addItem(date);
+				zipContent.add(id);
+			}
+		}
+	}
+	
+	private void importStudiesInAnonList(Study2[] study) {
+		modeleAnonPatients.clear();
+		for (int i=0; i<study.length; i++){
+			modeleAnonPatients.addStudy(study[i]);
+		}
+		
+	}
+	
 	// remove ligne active a la tool list
-	private void removeFromToolList(ArrayList<String> zipContent, JComboBox<Object> zipShownContent, ArrayList<String> zipShownContentList, JLabel zipSize, JLabel state){
+	private void removeFromToolList(ArrayList<String> zipContent, JComboBox<String> zipShownContent, JLabel zipSize, JLabel state){
 		if(!zipContent.isEmpty()){
 			zipContent.remove(zipShownContent.getSelectedIndex());
-			zipShownContentList.remove(zipShownContent.getSelectedIndex());
-			zipShownContent.removeAllItems();
-			for(String s : zipShownContentList){
-			zipShownContent.addItem(s);
-			}
+			zipShownContent.removeItemAt(zipShownContent.getSelectedIndex());
 			if(zipContent.size() >= 1){
 				zipSize.setText(zipContent.size() + " element(s)");
 			}else{
