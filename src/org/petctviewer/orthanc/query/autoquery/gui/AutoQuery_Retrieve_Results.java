@@ -72,14 +72,17 @@ public class AutoQuery_Retrieve_Results extends JFrame {
 		panel_main_south.add(btnToExport);
 	}
 	
-	public void addStudy(Study2 study) {
-		tableModel.addRow(new Object[] {study.getPatientName(), study.getPatientID(), study.getDate(),study.getStudyDescription(), study});
+	public void addStudy(Study2[] study) {
+		for(int i=0; i<study.length; i++) {
+			tableModel.addRow(new Object[] {study[i].getPatientName(), study[i].getPatientID(), study[i].getDate(),study[i].getStudyDescription(), study[i]});
+			
+		}
 	}
 	
 	public class tableResultModel extends DefaultTableModel{
 		private static final long serialVersionUID = 1L;
 		private String[] titles= {"PatientName", "PatientID", "StudyDate", "StudyDescription", "studyObject"};
-		private Class<?>[] classColumn= {String.class, String.class, String.class,Date.class, Study2.class};
+		private Class<?>[] classColumn= {String.class, String.class, Date.class,String.class, Study2.class};
 		
 		public tableResultModel(){
 			super(0,5);

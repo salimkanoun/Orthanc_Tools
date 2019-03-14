@@ -404,7 +404,7 @@ public class VueAnon extends JFrame {
 				SwingUtilities.invokeLater(new Runnable () {
 					@Override
 					public void run() {
-						VueQuery query=new VueQuery(connexionHttp);
+						VueQuery query=new VueQuery(connexionHttp, gui);
 						query.pack();
 						query.setLocationRelativeTo(gui);
 						query.setVisible(true);

@@ -85,6 +85,7 @@ import org.petctviewer.orthanc.anonymize.gui.DateRenderer;
 import org.petctviewer.orthanc.query.autoquery.AutoQuery;
 import org.petctviewer.orthanc.query.autoquery.gui.AutoQueryOptions;
 import org.petctviewer.orthanc.query.autoquery.gui.AutoQueryShowResultDialog;
+import org.petctviewer.orthanc.query.autoquery.gui.AutoQuery_Retrieve_Results;
 import org.petctviewer.orthanc.query.autoquery.gui.Daily_Retrieve_Gui;
 import org.petctviewer.orthanc.query.datastorage.StudyDetails;
 import org.petctviewer.orthanc.query.listeners.ChangeTabListener;
@@ -101,6 +102,7 @@ public class VueQuery extends JFrame {
 	// Instancie la classe rest qui fournit les services de connexion et input
 	private QueryRetrieve rest;
 	private JFrame gui;
+	private VueAnon vueAnon;
 	
 	private JTabbedPane tabbedPane;
 	
@@ -179,10 +181,10 @@ public class VueQuery extends JFrame {
 	private JTable lastFocusMain;
 	private JTable lastFocusHistory;
     
-	public VueQuery(OrthancRestApis http) {
+	public VueQuery(OrthancRestApis http, VueAnon vueAnon) {
 		
 		super("Orthanc queries");
-		
+		this.vueAnon=vueAnon;
 		rest=new QueryRetrieve(http);
 		this.setResizable(true);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -742,7 +744,8 @@ public class VueQuery extends JFrame {
 								}
 								
 								textAreaConsole.append("found "+ results.length +" studies,");
-								autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString());
+								autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(),textAreaConsole);
+								//SK CONTINUER ICI
 								ArrayList<Study2> studiesRecieves=autoQuery.recievedStudiesAsStudiesObject();
 								
 						    }};
@@ -1163,13 +1166,16 @@ public class VueQuery extends JFrame {
 		
 		workerAutoRetrieve =new SwingWorker<Void,Void>(){
 
+			ArrayList<Study2> studiesRecieves=new ArrayList<Study2>();
+			
 			@Override
-			protected Void doInBackground() throws Exception  {
+			protected Void doInBackground()  {
 			showConsoleFrame();
 			textAreaConsole.append("Retrieved AET,"+comboBox_RetrieveAet.getSelectedItem().toString()+"\n");
 			btnSchedule_1.setEnabled(false);
 			
 			if (table.getRowCount()!=0) {
+				
 				for (int i=0; i<table.getRowCount(); i++) {
 					if (isCancelled()) return null;
 					textAreaConsole.append("Query "+(i+1)+ "/" + table.getRowCount()+",");
@@ -1181,23 +1187,9 @@ public class VueQuery extends JFrame {
 					textAreaConsole.append("["+ name.toString() + "_"+ table.getValueAt(i, 2).toString()+ "_"+ table.getValueAt(i, 4).toString().replaceAll("/", "") + "_" +table.getValueAt(i, 5).toString().replaceAll("/", "")+"_"+table.getValueAt(i, 6).toString()+"_"+table.getValueAt(i, 7).toString()+"_"+table.getValueAt(i, 3).toString()+"],");
 					//On retrieve toutes les studies 
 					if (results!=null) {
-						textAreaConsole.append(results.length+" Studies match,");
-						autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString());
-						/*// If using Serie filter
-						if (autoQuery.chckbxSeriesFilter && results.length<=autoQuery.discard) {
-							info.setText("Analyzing Serie from Query "+(i+1)+"/"+table.getRowCount());
-							int seriesRetrived=filterSerie(results,workerAutoRetrieve);
-							textAreaConsole.append("Downloaded " + seriesRetrived + " series \n");
-						} else if (autoQuery.chckbxSeriesFilter && results.length>autoQuery.discard) {
-							textAreaConsole.append("over limits, discarded,");
-						} else {
-							info.setText("Retrieve "+(i+1)+" From "+table.getRowCount());
-							autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString());
-							textAreaConsole.append(results[1] + " studies Retrieved \n");
-						}*/
-						//SK A CONTINUER ICI
-						//SK RISQUE DE STUDY DUPLIQUEE SI RETRIEVE AU NIVEAU SERIES
-						ArrayList<Study2> studiesRecieves=autoQuery.recievedStudiesAsStudiesObject();
+						autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), textAreaConsole);
+						studiesRecieves.addAll(autoQuery.recievedStudiesAsStudiesObject());
+						System.out.println(studiesRecieves.size());
 					} else { 
 						info.setText("Empty Results");
 						textAreaConsole.append("empty Results,");
@@ -1210,6 +1202,12 @@ public class VueQuery extends JFrame {
 				
 			@Override
 			protected void done(){
+				AutoQuery_Retrieve_Results resultGui=new AutoQuery_Retrieve_Results(vueAnon);
+				Study2[] studyArray=new Study2[studiesRecieves.size()];
+				studiesRecieves.toArray(studyArray);
+				resultGui.addStudy(studyArray);
+				resultGui.pack();
+				resultGui.setVisible(true);
 				info.setText("<html><font color='green'>Done, see Console for details</font></html>");
 				btnSchedule_1.setEnabled(true);
 				working=false;

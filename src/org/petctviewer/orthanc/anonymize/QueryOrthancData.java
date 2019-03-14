@@ -274,11 +274,8 @@ public class QueryOrthancData {
 		query.addProperty("Expand", true);
 		
 		JsonObject queryDetails=new JsonObject();
-		
 		queryDetails.addProperty("StudyInstanceUID", studyInstanceUID);
-		
 		query.add("Query", queryDetails);
-		System.out.println(query);
 		
 		StringBuilder sb=connexion.makePostConnectionAndStringBuilder("/tools/find?expand", query.toString());
 		JsonObject studyAnswer=parserJson.parse(sb.toString()).getAsJsonArray().get(0).getAsJsonObject();

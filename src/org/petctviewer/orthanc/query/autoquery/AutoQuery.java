@@ -31,6 +31,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.table.DefaultTableModel;
 
 import org.apache.commons.csv.CSVFormat;
@@ -143,9 +144,11 @@ public class AutoQuery  {
 	 * @param discard
 	 * @throws IOException
 	 */
-	public void retrieveQuery(StudyDetails[] results, String aetRetrieve) {
+	public void retrieveQuery(StudyDetails[] results, String aetRetrieve, JTextArea textAreaConsole) {
 	
 		updatePreferences();
+		
+		textAreaConsole.append(results.length+" Studies match,");
 		retrievedStudies=new ArrayList<JsonObject>();
 		
 		if(results.length==0) {
@@ -161,13 +164,13 @@ public class AutoQuery  {
 					
 					if(this.chckbxSeriesFilter) {
 						//ICI RECUPERER L ARRAY LISTE DES STUDYUID?
-						filterSerie(results[i], aetRetrieve);
+						ArrayList<JsonObject> series=filterSerie(results[i], aetRetrieve);
+						textAreaConsole.append("Downloaded " + series.size() + " series \n");
+						answer=series.get(0);
 					}else {
 						answer=queryRetrieve.retrieve(results[i].getQueryID(), results[i].getAnswerNumber(), aetRetrieve );
 					}
-				
 					
-					System.out.println(answer);
 					studiesRetrievedSuccess++;
 				} catch (Exception e) {
 					System.out.println( "Error During Retrieve Patient ID"+results[i].getPatientID() +" Study Date "+ results[i].getStudyDate() );
@@ -175,10 +178,10 @@ public class AutoQuery  {
 				}
 				retrievedStudies.add(answer);
 			}
-			System.out.println( studiesRetrievedSuccess + " studies Retrieved");
+			textAreaConsole.append(studiesRetrievedSuccess + " studies Retrieved \n");
 		}
 		else {
-			System.out.println("Discarted because Study Query answers over discard limit");
+			textAreaConsole.append("over limits, discarded,");
 		}
 	}
 	
@@ -286,10 +289,7 @@ public class AutoQuery  {
 			}
 		}
 		
-		
-		
 		return studies;
-		
 		
 	}
 	
