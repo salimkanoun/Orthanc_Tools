@@ -36,9 +36,15 @@ import com.google.gson.JsonParser;
 public class QueryOrthancData {
 	private JsonParser parserJson = new JsonParser();
 	private OrthancRestApis connexion;
+	private SimpleDateFormat format =new SimpleDateFormat("yyyyMMdd");
 	
 	public QueryOrthancData(OrthancRestApis connexion) {
 		this.connexion=connexion;
+	}
+	
+	public static void main(String[] arg) {
+		QueryOrthancData ici=new QueryOrthancData(new OrthancRestApis(null));
+		ici.getStudyObjbyStudyInstanceUID("");
 	}
 	
 	public ArrayList<Patient> findPatients(String inputType, String input, String date, String studyDesc) {
@@ -150,7 +156,6 @@ public class QueryOrthancData {
 		
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/studies/"+studyOrthancID);
 		
-		SimpleDateFormat format =new SimpleDateFormat("yyyyMMdd");
 		
 		JsonObject studyData=(JsonObject) parserJson.parse(sb.toString());
 		JsonObject studyDetails = (JsonObject) studyData.get("MainDicomTags");
@@ -257,6 +262,93 @@ public class QueryOrthancData {
 		Serie serie=new Serie(seriesDescription, modality, nbOfSlice, seriesOrthancID, parentStudyOrthancID, serieData.get("Instances").getAsJsonArray().get(0).getAsString() , seriesNumber, sopClassUid);
 		
 		return serie;
+	}
+	
+	/**
+	 * For AutoQuery
+	 */
+	public Study2 getStudyObjbyStudyInstanceUID(String studyInstanceUID) {
+
+		JsonObject query=new JsonObject();
+		query.addProperty("Level", "Study");
+		query.addProperty("Expand", true);
+		
+		JsonObject queryDetails=new JsonObject();
+		
+		queryDetails.addProperty("StudyInstanceUID", studyInstanceUID);
+		
+		query.add("Query", queryDetails);
+		System.out.println(query);
+		
+		StringBuilder sb=connexion.makePostConnectionAndStringBuilder("/tools/find?expand", query.toString());
+		JsonObject studyAnswer=parserJson.parse(sb.toString()).getAsJsonArray().get(0).getAsJsonObject();
+		Study2 study=answerToStudyObject(studyAnswer);
+		
+		return study;
+		
+		
+	}
+	
+	private Study2 answerToStudyObject(JsonObject studyData) {
+		
+		String studyOrthancID=studyData.get("ID").getAsString();
+		JsonObject studyDetails = (JsonObject) studyData.get("MainDicomTags");
+		
+		String accessionNumber="N/A";
+		if(studyDetails.has("AccessionNumber")) {
+			accessionNumber=studyDetails.get("AccessionNumber").getAsString();
+		}
+		
+		String studyInstanceUid=studyDetails.get("StudyInstanceUID").getAsString();
+		
+		String studyDate=studyDetails.get("StudyDate").getAsString();
+		Date studyDateObject=null;
+		try {
+			studyDateObject=format.parse("19000101");
+			studyDateObject=format.parse(studyDate);
+		} catch (java.text.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		String studyDescription="N/A";
+		if(studyDetails.has("StudyDescription")){
+			studyDescription=studyDetails.get("StudyDescription").getAsString();
+		}
+		
+		JsonObject patientDetails = (JsonObject) studyData.get("PatientMainDicomTags");
+		
+		String patientName="N/A";
+		if(patientDetails.has("PatientName")) {
+			patientName=patientDetails.get("PatientName").getAsString();
+		}
+		
+		String patientId="N/A";
+		if(patientDetails.has("PatientID")) {
+			patientId=patientDetails.get("PatientID").getAsString();
+		}
+		
+		String patientSex="N/A";
+		if(patientDetails.has("PatientSex")) {
+			patientSex=patientDetails.get("PatientSex").getAsString();
+		}
+		
+		Date patientDob=null;
+		if(patientDetails.has("PatientBirthDate")) {
+			try {
+				patientDob = format.parse("19000101");
+				patientDob=format.parse(patientDetails.get("PatientBirthDate").getAsString());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+			}
+		}
+		
+		String patientOrthancID=studyData.get("ParentPatient").getAsString();
+		
+		Study2 studyObject=new Study2(studyDescription, studyDateObject, accessionNumber, studyOrthancID, patientName, patientId, patientDob, patientSex, patientOrthancID,studyInstanceUid, null);
+		
+		return studyObject;
 	}
 
 	

@@ -37,10 +37,13 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
+import org.petctviewer.orthanc.anonymize.QueryOrthancData;
 import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.query.QueryRetrieve;
 import org.petctviewer.orthanc.query.datastorage.StudyDetails;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 public class AutoQuery  {
@@ -60,8 +63,8 @@ public class AutoQuery  {
 	private ArrayList<JsonObject> retrievedStudies;
 	
 	
-	public AutoQuery(QueryRetrieve rest) {
-		api=rest;
+	public AutoQuery(QueryRetrieve api) {
+		this.api=api;
 
 		//Get Jprefer Value
 		jPrefer = VueAnon.jprefer;
@@ -141,12 +144,14 @@ public class AutoQuery  {
 	public void retrieveQuery(StudyDetails[] results, String aetRetrieve, int discard) {
 	
 		retrievedStudies=new ArrayList<JsonObject>();
+		
 		if (results.length<=discard){
 			int studiesRetrievedSuccess=0;
 			for (int i=0; i<results.length; i++) {
 				JsonObject answer=null;
 				try {
 					answer=api.retrieve(results[i].getQueryID(), results[i].getAnswerNumber(), aetRetrieve );
+					System.out.println(answer);
 					studiesRetrievedSuccess++;
 				} catch (Exception e) {
 					System.out.println( "Error During Retrieve Patient ID"+results[i].getPatientID() +" Study Date "+ results[i].getStudyDate() );
@@ -248,6 +253,29 @@ public class AutoQuery  {
   			    "Wrong Input",
   			    JOptionPane.WARNING_MESSAGE);
   	  }
+	
+	public ArrayList<Study2> recievedStudiesAsStudiesObject() {
+		QueryOrthancData queryOrthanc=new QueryOrthancData(api.getConnexion());
+		
+		ArrayList<Study2> studies=new ArrayList<Study2>();
+		
+		for(JsonObject studyanswer :retrievedStudies) {
+			JsonArray queryArray=studyanswer.get("Query").getAsJsonArray();
+			for(int i=0 ; i<queryArray.size() ; i++){
+				JsonObject query=queryArray.get(i).getAsJsonObject();
+				String studyUID=query.get("0020,000d").getAsString();
+				Study2 studyObject=queryOrthanc.getStudyObjbyStudyInstanceUID(studyUID);
+				studies.add(studyObject);
+				
+			}
+		}
+		
+		
+		
+		return studies;
+		
+		
+	}
 
 }
 

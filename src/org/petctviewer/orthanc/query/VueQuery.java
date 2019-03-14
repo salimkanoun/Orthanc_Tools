@@ -80,6 +80,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.petctviewer.orthanc.Orthanc_Tools;
 import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.anonymize.gui.DateRenderer;
 import org.petctviewer.orthanc.query.autoquery.AutoQuery;
 import org.petctviewer.orthanc.query.autoquery.gui.AutoQueryOptions;
@@ -1211,7 +1212,9 @@ public class VueQuery extends JFrame {
 							autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), autoQuery.discard);
 							textAreaConsole.append(results[1] + " studies Retrieved \n");
 						}
-						
+						//SK A CONTINUER ICI
+						//SK RISQUE DE STUDY DUPLIQUEE SI RETRIEVE AU NIVEAU SERIES
+						ArrayList<Study2> studiesRecieves=autoQuery.recievedStudiesAsStudiesObject();
 					} else { 
 						info.setText("Empty Results");
 						textAreaConsole.append("empty Results,");
@@ -1306,6 +1309,8 @@ public class VueQuery extends JFrame {
 		this.working=working;
 	}
 	
+	
+	//SK DOIT REJOINDRE AUTO QUERY !
 	private int filterSerie(StudyDetails[] studyResults, SwingWorker<Void,Void> workerAutoRetrieve) throws Exception {
 		//counter to log number of series retrieved
 		int serieCountRevtrieved=0;

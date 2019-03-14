@@ -243,5 +243,9 @@ public class QueryRetrieve {
 	public String getLocalAet() {
 		return connexion.getLocalAET();
 	}
+	
+	public OrthancRestApis getConnexion() {
+		return connexion;
+	}
 
 }
