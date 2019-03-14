@@ -31,7 +31,7 @@ import javax.swing.JPanel;
 
 import org.apache.commons.io.IOUtils;
 import org.petctviewer.orthanc.anonymize.VueAnon;
-import org.petctviewer.orthanc.monitoring.CD_Burner;
+import org.petctviewer.orthanc.monitoring.cdburner.CD_Burner;
 
 public class Run_Orthanc {
 	

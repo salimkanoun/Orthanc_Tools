@@ -1,4 +1,4 @@
-package org.petctviewer.orthanc.monitoring;
+package org.petctviewer.orthanc.monitoring.autofetch;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,6 +11,7 @@ import javax.swing.JLabel;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.petctviewer.orthanc.monitoring.Orthanc_Monitoring;
 import org.petctviewer.orthanc.query.QueryRetrieve;
 import org.petctviewer.orthanc.query.datastorage.StudyDetails;
 import org.petctviewer.orthanc.setup.OrthancRestApis;

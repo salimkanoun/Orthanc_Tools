@@ -1,4 +1,4 @@
-package org.petctviewer.orthanc.monitoring;
+package org.petctviewer.orthanc.monitoring.autorouting;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;

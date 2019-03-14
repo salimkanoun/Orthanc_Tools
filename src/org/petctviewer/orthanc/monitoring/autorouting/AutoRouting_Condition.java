@@ -1,4 +1,4 @@
-package org.petctviewer.orthanc.monitoring;
+package org.petctviewer.orthanc.monitoring.autorouting;
 /**
  * Defini une condition d'autoRouting
  * @author kanoun_s

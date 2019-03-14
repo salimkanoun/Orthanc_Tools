@@ -20,12 +20,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.prefs.Preferences;
 
 import javax.swing.Box;
@@ -42,15 +40,20 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
 import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.monitoring.autofetch.Auto_Fetch;
+import org.petctviewer.orthanc.monitoring.autorouting.Rule_AutoRouting_Gui;
+import org.petctviewer.orthanc.monitoring.cdburner.Burner_Settings;
+import org.petctviewer.orthanc.monitoring.cdburner.CD_Burner;
+import org.petctviewer.orthanc.monitoring.tagmonitoring.Tag_Monitoring;
+import org.petctviewer.orthanc.monitoring.tagmonitoring.Tag_Monitoring_Settings;
 import org.petctviewer.orthanc.query.QueryRetrieve;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
-
-import javax.swing.ListSelectionModel;
 
 @SuppressWarnings("serial")
 public class Monitoring_GUI extends JFrame {
@@ -400,7 +403,7 @@ public class Monitoring_GUI extends JFrame {
 						btnDbSettings.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent arg0) {
 								//On ouvre le panel setting pour lien BDD Mysql
-								Monitoring_Settings settings=new Monitoring_Settings();
+								Tag_Monitoring_Settings settings=new Tag_Monitoring_Settings();
 								settings.setLocationRelativeTo(gui);
 								settings.setVisible(true);
 								

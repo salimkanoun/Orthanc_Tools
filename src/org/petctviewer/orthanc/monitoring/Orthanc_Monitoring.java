@@ -33,12 +33,12 @@ public class Orthanc_Monitoring {
 	private boolean done;
 	
 	//CD Burner variable
-	protected List<String> newStableStudyID = new ArrayList<String>();
-	protected List<String> newStablePatientID = new ArrayList<String>();
-	protected List<String> newStableSeriesID = new ArrayList<String>();
-	protected List<String> newPatientID = new ArrayList<String>();
-	protected List<String> newStudyID = new ArrayList<String>();
-	protected List<String> newSerieID = new ArrayList<String>();
+	public List<String> newStableStudyID = new ArrayList<String>();
+	public List<String> newStablePatientID = new ArrayList<String>();
+	public List<String> newStableSeriesID = new ArrayList<String>();
+	public List<String> newPatientID = new ArrayList<String>();
+	public List<String> newStudyID = new ArrayList<String>();
+	public List<String> newSerieID = new ArrayList<String>();
 	
 	//Connxion API
 	OrthancRestApis connexion;

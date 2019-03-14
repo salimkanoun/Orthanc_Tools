@@ -1,4 +1,4 @@
-package org.petctviewer.orthanc.monitoring;
+package org.petctviewer.orthanc.monitoring.tagmonitoring;
 
 import java.util.HashMap;
 import java.util.Timer;
@@ -12,6 +12,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.monitoring.Orthanc_Monitoring;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class Tag_Monitoring {

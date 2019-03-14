@@ -47,3 +47,4 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 //SC Deletion Anon => A priori OK a tester
 //Tester toutes les fonctions!
 //Reoganiser le package Query
+//Finir sortie de AutoQuery

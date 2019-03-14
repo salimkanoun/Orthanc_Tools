@@ -1,4 +1,4 @@
-package org.petctviewer.orthanc.monitoring;
+package org.petctviewer.orthanc.monitoring.tagmonitoring;
 
 import java.awt.Dimension;
 import java.util.prefs.Preferences;
@@ -20,7 +20,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.JCheckBox;
 
 @SuppressWarnings("serial")
-public class Monitoring_Settings extends JDialog {
+public class Tag_Monitoring_Settings extends JDialog {
 
 	private Preferences jprefer = VueAnon.jprefer;
 	private JTextField dbPort, dbName, dbUsername, dbadress;
@@ -32,12 +32,12 @@ public class Monitoring_Settings extends JDialog {
 	private JCheckBox chckbxAutodelete;
 
 	public static void main(String[] args) {
-		Monitoring_Settings settings=new Monitoring_Settings();
+		Tag_Monitoring_Settings settings=new Tag_Monitoring_Settings();
 		settings.setVisible(true);
 
 	}
 	
-	public Monitoring_Settings() {
+	public Tag_Monitoring_Settings() {
 		JPanel setting_Panel = new JPanel();
 		setting_Panel.setLayout(new GridLayout(0, 2, 0, 0));
 		

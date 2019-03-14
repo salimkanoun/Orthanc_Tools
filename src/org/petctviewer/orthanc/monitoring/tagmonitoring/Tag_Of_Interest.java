@@ -1,4 +1,4 @@
-package org.petctviewer.orthanc.monitoring;
+package org.petctviewer.orthanc.monitoring.tagmonitoring;
 
 public class Tag_Of_Interest {
 
