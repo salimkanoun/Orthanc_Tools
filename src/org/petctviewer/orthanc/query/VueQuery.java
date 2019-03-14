@@ -1230,8 +1230,7 @@ public class VueQuery extends JFrame {
 		
 		table.addFocusListener(new FocusListener() {
 			@Override
-			public void focusGained(FocusEvent arg0) {
-				
+			public void focusGained(FocusEvent arg0) {	
 			}
 
 			@Override
@@ -1241,8 +1240,7 @@ public class VueQuery extends JFrame {
 				}else {
 					lastFocusHistory=table;
 				}
-			}
-			
+			}	
 		});
 		
 	}
@@ -1291,8 +1289,6 @@ public class VueQuery extends JFrame {
 	public void setWorkingBoolean(boolean working) {
 		this.working=working;
 	}
-	
-	
-	
+
 }
 

@@ -50,8 +50,8 @@ import com.google.gson.JsonObject;
 public class AutoQuery  {
 
 	private QueryRetrieve queryRetrieve;
-	private Preferences jPrefer;
 	
+	private Preferences jPrefer;
 	public long fONCE_PER_DAY=1000*60*60*24;
 	public int fTEN_PM=22;
 	public int fZERO_MINUTES=00;
@@ -160,6 +160,7 @@ public class AutoQuery  {
 				try {
 					
 					if(this.chckbxSeriesFilter) {
+						//ICI RECUPERER L ARRAY LISTE DES STUDYUID?
 						filterSerie(results[i], aetRetrieve);
 					}else {
 						answer=queryRetrieve.retrieve(results[i].getQueryID(), results[i].getAnswerNumber(), aetRetrieve );
@@ -292,9 +293,7 @@ public class AutoQuery  {
 		
 	}
 	
-	
-	//SK DOIT REJOINDRE AUTO QUERY !
-	private int filterSerie(StudyDetails studyResults, String destinationAet) throws Exception {
+	private ArrayList<JsonObject> filterSerie(StudyDetails studyResults, String destinationAet) throws Exception {
 		//counter to log number of series retrieved
 		int serieCountRevtrieved=0;
 		
@@ -339,13 +338,11 @@ public class AutoQuery  {
 		
 		//On scann tous les results la 1ere dimension contient l'ID de la query et la deuxime le nombre de reponse study a scanner	
 		SerieDetails[] seriesDetails=queryRetrieve.getSeriesAnswers(studyResults.getStudyInstanceUID(), studyResults.getSourceAet());
-		//On verifie qu'un parameter est bien defini
-		if (!StringUtils.isEmpty(seriesModalities) || !StringUtils.isEmpty(serieDescriptionContains) || !StringUtils.isEmpty(serieNumberMatch)  || !StringUtils.isEmpty(serieDescriptionExclude) || !StringUtils.isEmpty(serieNumberExclude)) {
-		
-		//Alors on boucle les reponse	
 		ArrayList<JsonObject> answers=new ArrayList<JsonObject>();
-		
-		for (int k=0; k<seriesDetails.length ; k++) {
+		//On verifie qu'au moins un parameter est bien defini
+		if (!StringUtils.isEmpty(seriesModalities) || !StringUtils.isEmpty(serieDescriptionContains) || !StringUtils.isEmpty(serieNumberMatch)  || !StringUtils.isEmpty(serieDescriptionExclude) || !StringUtils.isEmpty(serieNumberExclude)) {
+			//Alors on boucle les reponse	
+			for (int k=0; k<seriesDetails.length ; k++) {
 				//On definit le candidat:
 				String seriesDescription=seriesDetails[k].getSeriesDescription().toLowerCase();
 				String modality=seriesDetails[k].getModality();
@@ -365,7 +362,7 @@ public class AutoQuery  {
 							if (nombreFiltre==3) {
 								if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
 									asnwerSeries=queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  destinationAet);
-									serieCountRevtrieved++;
+									
 								}
 							}
 							//Si deux filtre il faut chercher le match des deux conditions
@@ -373,20 +370,17 @@ public class AutoQuery  {
 								if (!filtreSerieDescription) {
 									if ( StringUtils.contains(seriesModalities.toString(), modality) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
 										asnwerSeries=queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  destinationAet);
-										serieCountRevtrieved++;
 									}
 								}
 								else if (!filtreSerieNumber) {
 									if ( StringUtils.contains(seriesModalities.toString(), modality) && (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) ){
 										asnwerSeries=queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  destinationAet);
-										serieCountRevtrieved++;
 									}
 									
 								}
 								else if (!filtreSerieModality) {
 									if ( (StringUtils.indexOfAny(seriesDescription, serieDescriptionArray)!=(-1)) &&  (StringUtils.indexOfAny(seriesNumber, serieNumberArray)!=(-1)) ){
 										asnwerSeries=queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  destinationAet);
-										serieCountRevtrieved++;
 									}
 									
 								}
@@ -395,29 +389,26 @@ public class AutoQuery  {
 						//Si un seul filtre on retrieve la serie qui a matche
 						else {
 							asnwerSeries=queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(),  destinationAet);
-							serieCountRevtrieved++;
 						}
 						
 					}
 					//Si on a pas defini de contains ou de modalitie on telecharge tout ce qui n'est pas exclu
 					else if ( StringUtils.isEmpty(seriesModalities.toString()) && StringUtils.isEmpty(serieDescriptionContains) && StringUtils.isEmpty(serieNumberMatch) ) {
 						asnwerSeries=queryRetrieve.retrieve(seriesDetails[k].getIdQuery(), seriesDetails[k].getAnswerNumber(), destinationAet);
-						serieCountRevtrieved++;
 					}
 				}
 				
 				if(asnwerSeries!=null) {
 					//info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1)+" Query "+(i+1)+"/"+table.getRowCount());
 					answers.add(asnwerSeries);
+					serieCountRevtrieved++;
 				}
 				
 			}
-		
-		
 		}
 		
 		
-		return serieCountRevtrieved;
+		return answers;
 		
 	}
 
