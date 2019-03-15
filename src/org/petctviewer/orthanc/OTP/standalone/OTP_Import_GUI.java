@@ -136,8 +136,14 @@ public class OTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 		
 		modeleAnonPatients.clear();
 		for (int i=0; i<keysArray.length; i++) {
-			Study2 study=queryOrthanc.getStudyDetails(keysArray[i], true);
-			modeleAnonPatients.addStudy(study);
+			try {
+				Study2 study = queryOrthanc.getStudyDetails(keysArray[i], true);
+				modeleAnonPatients.addStudy(study);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 		
 		importFrame.dispose();

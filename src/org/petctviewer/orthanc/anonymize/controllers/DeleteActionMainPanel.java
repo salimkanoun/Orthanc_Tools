@@ -98,11 +98,14 @@ public class DeleteActionMainPanel implements ActionListener{
 			
 			@Override
 			protected void done(){
-				//SK QUAND LA DERNIERE STUDY OU SERIE EST EFFACE UPDATE EST NON GERER, PEUT ETRE BESOIN D EXCEPTIOn
+				//Refresh the GUI
 				if(level.equals("Study")){
-					modeleStudies.clear();
+					modeleStudies.refresh();
+					if(modeleStudies.getRowCount()==0) searchBtn.doClick();
 				}else if(level.equals("Serie")){
-					modeleSeries.clear();
+					modeleSeries.refresh();
+					if(modeleSeries.getRowCount()==0) modeleStudies.refresh();
+					if(modeleStudies.getRowCount()==0) searchBtn.doClick();
 				}else{
 					searchBtn.doClick();
 				}

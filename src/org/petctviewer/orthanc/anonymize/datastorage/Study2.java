@@ -111,8 +111,15 @@ public class Study2 {
 	}
 	
 	public void refreshChildSeries(QueryOrthancData queryOrthanc) {
-		Study2 tempstudy=queryOrthanc.getStudyDetails(this.StudyOrthancId, true);
-		this.setSeries(tempstudy.getSeries());
+		try {
+			Study2 tempstudy = queryOrthanc.getStudyDetails(this.StudyOrthancId, true);
+			this.setSeries(tempstudy.getSeries());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			this.childSeries=new ArrayList<Serie>();
+		}
+		
 		
 	}
 	

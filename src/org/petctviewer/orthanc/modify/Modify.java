@@ -35,12 +35,14 @@ public class Modify {
 	private String id;
 	private JSONArray seriesInstancesID;
 	private OrthancRestApis connexion;
+	private VueAnon guiParent;
 	private JSONParser parser=new JSONParser();
 	
 	public Modify(String level, String id, VueAnon guiParent, OrthancRestApis connexion){
 		this.connexion= connexion;
 		gui = new Modify_Gui(this, guiParent);
 		this.id=id;
+		this.guiParent=guiParent;
 		try {
 			setUrlAndFetch(level);
 		} catch (IOException | ParseException e) {
@@ -53,14 +55,12 @@ public class Modify {
 		if (level.equals("series")){
 			levelUrl="/series/";
 			getSeriesTags(id);
-			
 			//Open GUI and enable instance button
 			
 		}
 		else if (level.equals("studies")) {
 			levelUrl="/studies/";
 			getStudiesTags(id);
-			
 			//Open GUI and disable instance button because level is too high
 			
 		}
@@ -184,7 +184,24 @@ public class Modify {
 	
 	public void sendQuery(JSONObject query) {
 		connexion.makePostConnectionAndStringBuilder(this.levelUrl+this.id+"/modify", query.toString());
+		refreshTable();
 		
+	}
+	
+	public void refreshTable() {
+		
+		if (levelUrl.equals("/series/")){
+		
+			guiParent.modeleSeries.refresh();
+			
+		} else if (levelUrl.equals("/studies/")) {
+			
+			guiParent.modeleStudies.refresh();
+			
+		} else if (levelUrl.equals("/patients/")) {
+			guiParent.getSearchButton().doClick();
+			
+		}
 	}
 	
 }

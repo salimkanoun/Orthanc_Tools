@@ -136,14 +136,16 @@ public class VueAnon extends JFrame {
 	private JTable tableauPatients;
 	private JTable tableauStudies;
 	public JTable tableauSeries;
-	private TablePatientsModel modelePatients;
-	private TableStudiesModel modeleStudies;
-	private TableSeriesModel modeleSeries;
+	public TablePatientsModel modelePatients;
+	public TableStudiesModel modeleStudies;
+	public TableSeriesModel modeleSeries;
 	
 	public JTable anonPatientTable;
 	public JTable anonStudiesTable;
 	public TableAnonPatientsModel modeleAnonPatients;
 	public TableAnonStudiesModel modeleAnonStudies;
+	
+	JButton searchBtn;
 
 	// Orthanc toolbox (p1)
 	private JLabel state ;
@@ -280,7 +282,7 @@ public class VueAnon extends JFrame {
 		//Instanciate needed Table and their model
 		modelePatients = new TablePatientsModel(connexionHttp);
 		modeleStudies = new TableStudiesModel(connexionHttp);
-		modeleSeries = new TableSeriesModel(connexionHttp, this);
+		modeleSeries = new TableSeriesModel(connexionHttp, this, queryOrthanc);
 		modeleExportStudies = new TableExportStudiesModel();
 		modeleExportSeries = new TableExportSeriesModel(connexionHttp, queryOrthanc);
 		modeleAnonStudies = new TableAnonStudiesModel();
@@ -365,13 +367,13 @@ public class VueAnon extends JFrame {
 		topPanel.add(new JLabel("To"));
 		topPanel.add(to);
 
-		JButton search = new JButton("Search");
-		search.addActionListener(new ActionListener() {
+		searchBtn = new JButton("Search");
+		searchBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					search.setText("Searching");
-					search.setEnabled(false);
+					searchBtn.setText("Searching");
+					searchBtn.setEnabled(false);
 					modelePatients.clear();
 					modeleStudies.clear();
 					modeleSeries.clear();
@@ -390,8 +392,8 @@ public class VueAnon extends JFrame {
 				} catch (Exception e1) { System.out.println("Exception"+e1);}
 				finally{
 					state.setText("");
-					search.setEnabled(true);
-					search.setText("Search");
+					searchBtn.setEnabled(true);
+					searchBtn.setText("Search");
 					jprefer.putInt("InputParameter", inputType.getSelectedIndex());
 				}
 			}
@@ -429,7 +431,7 @@ public class VueAnon extends JFrame {
 			}
 		});
 
-		topPanel.add(search);
+		topPanel.add(searchBtn);
 		topPanel.add(queryRetrieveBtn);
 		topPanel.add(queryImportBtn);
 		mainPanel.add(topPanel);
@@ -540,7 +542,7 @@ public class VueAnon extends JFrame {
 		
 		JMenuItem menuItemDeletePatients = new JMenuItem("Delete this patient");
 		menuItemDeletePatients.addActionListener(new DeleteActionMainPanel(connexionHttp, "Patient", this.modeleStudies, this.tableauStudies, 
-				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, search));
+				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, searchBtn));
 
 		popMenuPatients.add(menuItemModifyPatients);
 		popMenuPatients.addSeparator();
@@ -581,7 +583,7 @@ public class VueAnon extends JFrame {
 		
 		JMenuItem menuItemDeleteStudy = new JMenuItem("Delete this study");
 		menuItemDeleteStudy.addActionListener(new DeleteActionMainPanel(connexionHttp, "Study", this.modeleStudies, this.tableauStudies, 
-				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, search));
+				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, searchBtn));
 		
 		popMenuStudies.add(menuItemModifyStudy);
 		popMenuStudies.addSeparator();
@@ -647,7 +649,7 @@ public class VueAnon extends JFrame {
 		});
 		JMenuItem menuItemDeleteSeries = new JMenuItem("Delete this serie");
 		menuItemDeleteSeries.addActionListener(new DeleteActionMainPanel(connexionHttp, "Serie", this.modeleStudies, this.tableauStudies, 
-				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, search));
+				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, searchBtn));
 
 		popMenuSeries.add(menuItemModifySeries);
 		popMenuSeries.addSeparator();
@@ -801,7 +803,7 @@ public class VueAnon extends JFrame {
 						manageSize.setText("empty list");
 						manageShownContent.removeAllItems();
 						manageContent.removeAll(manageContent);
-						search.doClick();
+						searchBtn.doClick();
 					}
 					
 					
@@ -1958,7 +1960,7 @@ public class VueAnon extends JFrame {
 		this.setIconImage(image);
 		this.getContentPane().add(tabbedPane);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		this.getRootPane().setDefaultButton(search);
+		this.getRootPane().setDefaultButton(searchBtn);
 		this.addWindowListener(new Window_Custom_Listener(this, zipContent, modeleAnonPatients, modeleExportStudies, monitoring, runOrthanc));
 		pack();
 		
@@ -2283,6 +2285,14 @@ public class VueAnon extends JFrame {
 	
 	public OrthancRestApis getOrthancApisConnexion() {
 		return connexionHttp;
+	}
+	
+	public JButton getSearchButton() {
+		return searchBtn;
+	}
+	
+	public QueryOrthancData getOrthancQuery() {
+		return queryOrthanc;
 	}
 
 }

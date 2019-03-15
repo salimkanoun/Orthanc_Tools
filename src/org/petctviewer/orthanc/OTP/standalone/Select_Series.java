@@ -26,7 +26,7 @@ public class Select_Series extends JDialog {
 	 * Create the dialog.
 	 */
 	public Select_Series(OrthancRestApis connexionHttp, String studyUID, VueAnon vue) {
-		TableSeriesModel tableSeriesModel=new TableSeriesModel(connexionHttp, vue);
+		TableSeriesModel tableSeriesModel=new TableSeriesModel(connexionHttp, vue, vue.getOrthancQuery());
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		tableSeriesModel.addSerie(studyUID);
 		

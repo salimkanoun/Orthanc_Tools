@@ -32,12 +32,14 @@ public class TableSeriesModel extends DefaultTableModel{
 	private OrthancRestApis connexionHttp;
 	private Study2 currentStudy;
 	private VueAnon gui;
+	private QueryOrthancData queryOrthanc;
 
-	public TableSeriesModel(OrthancRestApis connexionHttp, VueAnon gui){
+	public TableSeriesModel(OrthancRestApis connexionHttp, VueAnon gui, QueryOrthancData queryOrthanc){
 		super(0,7);
 		//Recupere les settings
 		this.connexionHttp=connexionHttp;
 		this.gui=gui;
+		this.queryOrthanc=queryOrthanc;
 	}
 
 	@Override
@@ -112,18 +114,23 @@ public class TableSeriesModel extends DefaultTableModel{
 	public void addSerie(String studyOrthancID) {
 		clear();
 		QueryOrthancData querySeries = new QueryOrthancData(connexionHttp);
-		Study2 study =querySeries.getStudyDetails(studyOrthancID, true);
-		
-		this.currentStudy=study;
-		for(Serie serie:study.getSeries()) {
-			this.addRow(new Object[] {serie.getSerieDescription(), 
-				serie.getModality(), 
-				serie.getNbInstances(), 
-				serie.isSecondaryCapture(), 
-				serie.getId(), 
-				serie.getSeriesNumber(), serie});
-			
+		try {
+			Study2 study = querySeries.getStudyDetails(studyOrthancID, true);
+			this.currentStudy=study;
+			for(Serie serie:study.getSeries()) {
+				this.addRow(new Object[] {serie.getSerieDescription(), 
+					serie.getModality(), 
+					serie.getNbInstances(), 
+					serie.isSecondaryCapture(), 
+					serie.getId(), 
+					serie.getSeriesNumber(), serie});
+				
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+		
+		
 
 	}
 
@@ -135,6 +142,7 @@ public class TableSeriesModel extends DefaultTableModel{
 	}
 	
 	public void refresh() {
+		currentStudy.refreshChildSeries(queryOrthanc);
 		addSerie(currentStudy);
 	}
 	

@@ -107,7 +107,7 @@ public class Controller_Anonymize_Btn implements ActionListener {
 				return;
 			}
 			
-			private void anonymize() {
+			private void anonymize() throws Exception {
 
 				//Storage of Anon Setting
 				Choice bodyCharChoice=Choice.CLEAR,

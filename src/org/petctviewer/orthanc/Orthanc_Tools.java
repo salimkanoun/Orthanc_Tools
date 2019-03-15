@@ -42,6 +42,7 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 
 
 //SK TO DO
+//Modif nom series dans Export
 //Renderer SC =>OK tester sur deux table main et export
 //Modality Check Anon  => A priori OK a tester
 //SC Deletion Anon => A priori OK a tester

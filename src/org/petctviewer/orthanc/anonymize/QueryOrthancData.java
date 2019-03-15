@@ -127,7 +127,13 @@ public class QueryOrthancData {
 		
 		Iterator<JsonElement> iterator = studyIdArray.iterator();
 		while(iterator.hasNext()) {
-			Study2 study=getStudyDetails(iterator.next().getAsString(), true);
+			Study2 study = null;
+			try {
+				study = getStudyDetails(iterator.next().getAsString(), true);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			studies.add(study);
 		}
 		return studies;
@@ -152,10 +158,12 @@ public class QueryOrthancData {
 		return statistics;
 	}
 	
-	public Study2 getStudyDetails(String studyOrthancID, boolean includeSerieLevel) {
+	public Study2 getStudyDetails(String studyOrthancID, boolean includeSerieLevel) throws Exception {
 		
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/studies/"+studyOrthancID);
-		
+		 if(sb==null) {
+			 throw new Exception("Study Not Existing");
+		 }
 		
 		JsonObject studyData=(JsonObject) parserJson.parse(sb.toString());
 		JsonObject studyDetails = (JsonObject) studyData.get("MainDicomTags");
