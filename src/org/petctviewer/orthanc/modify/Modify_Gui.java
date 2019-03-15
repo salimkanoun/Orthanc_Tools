@@ -94,13 +94,12 @@ public class Modify_Gui extends JDialog {
 		this.modify=modify;
 		this.guiParent=guiParent;
 		makegui();
+		
 	}
 	
 	private void makegui() {
-		this.setIconImage(new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage());
-		
+		setIconImage(new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage());
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
 		
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -124,12 +123,11 @@ public class Modify_Gui extends JDialog {
 		btnModify.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				JsonObject query =modify.buildModifyQuery(queryReplace, queryRemove, chckbxRemovePrivateTags.isSelected());
-				System.out.println(query);
 				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 					@Override
 					protected Void doInBackground() throws Exception {
-
+						JsonObject query =modify.buildModifyQuery(queryReplace, queryRemove, chckbxRemovePrivateTags.isSelected());
+						System.out.println(query);
 						if (query !=null) {
 							saveprefs();
 							dispose();
@@ -322,7 +320,7 @@ public class Modify_Gui extends JDialog {
 					    JOptionPane.YES_NO_OPTION);
 				
 				if (answer==JOptionPane.OK_OPTION) {
-					removeAllRow (table_SharedTags);				
+					removeAllRow(table_SharedTags);				
 					JsonObject response = modify.getSharedTags();
 					
 					Set<String> sharedTagsItems=response.keySet();
@@ -445,14 +443,9 @@ public class Modify_Gui extends JDialog {
 		if (level.equals("patients")) {
 			study_panel.setVisible(false);
 			serie_panel.setVisible(false);
-		}
-			
-		
-		else if (level.equals("studies")) {
+		} else if (level.equals("studies")) {
 			serie_panel.setVisible(false);
-		}
-		
-		else if (level.equals("all")) {
+		} else if (level.equals("all")) {
 			removeAllRow(table_patient);
 			removeAllRow(table_serie);
 			removeAllRow(table_study);
@@ -463,12 +456,10 @@ public class Modify_Gui extends JDialog {
 	
 	private void removeAllRow (JTable table) {
 		DefaultTableModel model =(DefaultTableModel) table.getModel();
-		for (int i = model.getRowCount() - 1; i >= 0; i--) {
-			model.removeRow(i);
-		}
+		model.setRowCount(0);
 	}
 	
-	public void addTableModelListener(JTable table) {
+	private void addTableModelListener(JTable table) {
 		table.getModel().addTableModelListener(new TableModelListener() {
 			@Override
 			public void tableChanged(TableModelEvent e) {
@@ -492,16 +483,19 @@ public class Modify_Gui extends JDialog {
 		
 	}
     
-	//SK ICI EXISTE UN BUG
+	/**
+	 * Listener for the Shared Tag Table
+	 */
     TableModelListener tablechangeListenerSharedTags =new TableModelListener() {
     	@Override
 		public void tableChanged(TableModelEvent e) {
     		if (e.getType()==TableModelEvent.UPDATE) {
-    			System.out.println(e);
-    			JsonElement tag=new JsonPrimitive( table_SharedTags.getValueAt(e.getFirstRow(), 1).toString() );
     			
-	    		if (!(boolean) table_SharedTags.getValueAt(e.getFirstRow(), 3)) {
-	    			queryReplace.addProperty( tag.getAsString(), (String) table_SharedTags.getValueAt(e.getFirstRow(), 2));
+    			int modifiedRow=table_SharedTags.convertRowIndexToView(e.getFirstRow());
+    			JsonElement tag=new JsonPrimitive(table_SharedTags.getValueAt(modifiedRow, 1).toString() );
+    			
+	    		if (!(boolean) table_SharedTags.getValueAt(modifiedRow, 3)) {
+	    			queryReplace.addProperty( tag.getAsString(), (String) table_SharedTags.getValueAt(modifiedRow, 2));
 	    			queryRemove.remove(tag);
 				}
 				//else add item to replace list and remove it from remove list
@@ -513,7 +507,5 @@ public class Modify_Gui extends JDialog {
     		}
 		}
     };
-    
-	
 
 }

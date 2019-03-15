@@ -33,8 +33,8 @@ import com.google.gson.JsonPrimitive;
 public class Modify {
 	
 	private Modify_Gui gui;
-	private String levelUrl;
 	private String id;
+	private String level;
 	private JsonArray seriesInstancesID;
 	private OrthancRestApis connexion;
 	private VueAnon guiParent;
@@ -43,48 +43,43 @@ public class Modify {
 	public Modify(String level, String id, VueAnon guiParent, OrthancRestApis connexion){
 		this.connexion= connexion;
 		parser=new JsonParser();
-		gui = new Modify_Gui(this, guiParent);
 		this.id=id;
 		this.guiParent=guiParent;
-
-		setUrlAndFetch(level);
-
-	}
-	
-	private void setUrlAndFetch(String level) {
+		this.level=level;
 		
+		gui = new Modify_Gui(this, guiParent);
+
 		if (level.equals("series")){
-			levelUrl="/series/";
-			getSeriesTags(id);
+			getSeriesTags();
 			//Open GUI and enable instance button
 			
 		}
 		else if (level.equals("studies")) {
-			levelUrl="/studies/";
 			getStudiesTags(id);
 			//Open GUI and disable instance button because level is too high
 			
 		}
 		else if (level.equals("patients")) {
-			levelUrl="/patients/";
-			getPatientsTags(id);
-			
+			getPatientsTags();
 			
 		}
+		
 		//On ouvre la GUI
 		gui.setSize(800,750);
 		gui.hideTables(level);
+		gui.setLocationRelativeTo(guiParent);
 		gui.setVisible(true);
+				
 	}
-	
+
 	/**
 	 * Retrieve and set Patients level main tags in the gui
 	 * @param patientID
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	private void getPatientsTags(String patientID) {
-		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/patients/"+patientID);
+	private void getPatientsTags() {
+		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/patients/"+id);
 		JsonObject response=parser.parse(sb.toString()).getAsJsonObject();
 		JsonObject patientsMainTags=response.get("MainDicomTags").getAsJsonObject();
 		gui.setTables(patientsMainTags, "patient");
@@ -97,8 +92,8 @@ public class Modify {
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	private void getSeriesTags(String seriesID) {
-		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/series/"+seriesID);
+	private void getSeriesTags() {
+		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/series/"+id);
 		JsonObject response=parser.parse(sb.toString()).getAsJsonObject();
 		JsonObject seriesMainTags=response.get("MainDicomTags").getAsJsonObject();
 		String parentStudyID=response.get("ParentStudy").getAsString();
@@ -130,7 +125,7 @@ public class Modify {
 	 * @throws ParseException
 	 */
 	public JsonObject getSharedTags() {
-		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder(levelUrl+id+"/shared-tags");
+		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/"+level+"/"+id+"/shared-tags");
 		JsonObject response=parser.parse(sb.toString()).getAsJsonObject();
 		return response;
 	}
@@ -157,7 +152,7 @@ public class Modify {
 	}
 	
 	/**
-	 * Build the final modify query and send it to Orthanc
+	 * Build the modify query and return it as JSON
 	 * @param replaceTags
 	 * @param removeTags
 	 * @param removePrivateTags
@@ -180,7 +175,7 @@ public class Modify {
             modifyRequest.addProperty("Force", Boolean.TRUE);
 		}
 		
-		if (levelUrl.contains("patients") && !replaceTags.has("PatientID") || removeTags.contains(jsonPatientID) ) {
+		if (level.equals("patients") && !replaceTags.has("PatientID") || removeTags.contains(jsonPatientID) ) {
 			JOptionPane.showMessageDialog(null, "For Patient edition, PatientID must be set to a new value, please edit it");
 			modifyRequest=null;
 		}
@@ -189,28 +184,32 @@ public class Modify {
 
 	}
 	
+	/**
+	 * Send the modify query and deleted original dicom if wanted
+	 * @param query
+	 * @param deleteOriginal
+	 * @throws Exception
+	 */
 	public void sendQuery(JsonObject query, boolean deleteOriginal) throws Exception {
-		StringBuilder sb=connexion.makePostConnectionAndStringBuilder(this.levelUrl+this.id+"/modify", query.toString());
+		StringBuilder sb=connexion.makePostConnectionAndStringBuilder("/"+level+"/"+this.id+"/modify", query.toString());
 		if (sb==null) {
 			throw new Exception("Not Allowed");
 		}
 		if(deleteOriginal) {
-			connexion.makeDeleteConnection(this.levelUrl+this.id);
+			connexion.makeDeleteConnection("/"+level+"/"+this.id);
 		}
 		
 	}
 	
+	/**
+	 * Refresh table Patient/Studies/Series in the main frame
+	 */
 	public void refreshTable() {
-		
-		if (levelUrl.equals("/series/")){
-		
+		if (level.equals("series")){
 			guiParent.modeleSeries.refresh();
-			
-		} else if (levelUrl.equals("/studies/")) {
-			
+		} else if (level.equals("studies")) {
 			guiParent.modeleStudies.refresh();
-			
-		} else if (levelUrl.equals("/patients/")) {
+		} else if (level.equals("patients")) {
 			guiParent.getSearchButton().doClick();
 			
 		}
