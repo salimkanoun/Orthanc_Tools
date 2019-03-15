@@ -406,13 +406,12 @@ public class Modify_Gui extends JDialog {
 		if (level.equals("patient")) {
 			DefaultTableModel patientModel =(DefaultTableModel) table_patient.getModel();
 			for (String mainPatientTag : mainPatientTags) {
-			
-			String tag=mainPatientTag;
-			String value=MainTags.get(mainPatientTag).getAsString();
-			patientModel.addRow(new Object[] {tag, value, Boolean.FALSE});
-			//On ajoute le listener pour ecouter les changement de l'utilisateur
+				String tag=mainPatientTag;
+				String value=MainTags.get(mainPatientTag).getAsString();
+				patientModel.addRow(new Object[] {tag, value, Boolean.FALSE});
 			}
 			table_patient.putClientProperty("terminateEditOnFocusLost", true);
+			//On ajoute le listener pour ecouter les changement de l'utilisateur
 			addTableModelListener(table_patient);
 		}
 		
