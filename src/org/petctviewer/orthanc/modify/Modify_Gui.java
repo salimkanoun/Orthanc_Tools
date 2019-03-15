@@ -34,21 +34,22 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.table.DefaultTableModel;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.anonymize.VueAnon;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 import java.awt.GridLayout;
 import java.awt.Dimension;
 import javax.swing.JSpinner;
 import java.awt.event.ActionListener;
-import java.io.IOException;
+import java.util.Set;
+import java.util.prefs.Preferences;
 import java.awt.event.ActionEvent;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingWorker;
@@ -73,9 +74,11 @@ public class Modify_Gui extends JDialog {
 	
 	private VueAnon guiParent;
 	
+	private Preferences prefs=VueAnon.jprefer;
+	
 	//Build modification list Replace and Remove
-	JSONObject queryReplace=new JSONObject();
-	JSONArray queryRemove=new JSONArray();
+	private JsonObject queryReplace=new JsonObject();
+	private JsonArray queryRemove=new JsonArray();
 
 	/**
 	 * Make edition dialog box
@@ -110,14 +113,15 @@ public class Modify_Gui extends JDialog {
 		button_panel.add(label);
 		
 		JCheckBox chckbxRemovePrivateTags = new JCheckBox("Remove Private Tags");
-		button_panel.add(chckbxRemovePrivateTags);
+		
+		JCheckBox chckbxDeleteOriginalDicoms = new JCheckBox("Delete Original Dicoms");
 		
 		JButton btnModify = new JButton("Modify");
 		
 		btnModify.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				JSONObject query =modify.buildModifyQuery(queryReplace, queryRemove, chckbxRemovePrivateTags.isSelected());
-				
+				JsonObject query =modify.buildModifyQuery(queryReplace, queryRemove, chckbxRemovePrivateTags.isSelected());
+				System.out.println(query);
 				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 					@Override
 					protected Void doInBackground() throws Exception {
@@ -125,7 +129,7 @@ public class Modify_Gui extends JDialog {
 						if (query !=null) {
 							dispose();
 							guiParent.setStateMessage("Modifying...", "red", -1);
-							modify.sendQuery(query);
+							modify.sendQuery(query, chckbxDeleteOriginalDicoms.isSelected());
 						}
 						return null;
 					}
@@ -133,7 +137,7 @@ public class Modify_Gui extends JDialog {
 					protected void done() {
 						try {
 							get();
-							guiParent.setStateMessage("Modified DICOM created (refresh list)", "green", -1);
+							guiParent.setStateMessage("Modified DICOM created", "green", -1);
 							modify.refreshTable();
 						} catch (Exception e) {
 							guiParent.setStateMessage("Modification not allowed", "red", -1);
@@ -146,6 +150,9 @@ public class Modify_Gui extends JDialog {
 				
 			}
 		});
+		
+		button_panel.add(chckbxRemovePrivateTags);
+		button_panel.add(chckbxDeleteOriginalDicoms);
 		button_panel.add(btnModify);
 		
 		JButton btnCancel = new JButton("Cancel");
@@ -311,26 +318,21 @@ public class Modify_Gui extends JDialog {
 				
 				if (answer==JOptionPane.OK_OPTION) {
 					removeAllRow (table_SharedTags);				
-					JSONObject response = null;
+					JsonObject response = modify.getSharedTags();
 					
-					try {
-						response = modify.getSharedTags();
-					} catch (IOException | ParseException e1) {
-						e1.printStackTrace();
-					}
-					Object[] sharedTags=response.keySet().toArray();
-					for (int i=0; i<sharedTags.length; i++) {
-						String address = (String) sharedTags[i];
-						JSONObject response2 =(JSONObject) response.get(sharedTags[i]);
-						String tag = response2.get("Name").toString() ;
-						String value = response2.get("Value").toString() ;
+					Set<String> sharedTagsItems=response.keySet();
+					for (String sharedTags:sharedTagsItems) {
+						String address = (String) sharedTags;
+						JsonObject response2 = response.get(sharedTags).getAsJsonObject();
+						String tag = response2.get("Name").getAsString();
+						String value = response2.get("Value").getAsString() ;
 						
 						table_customChange_model.addRow(new Object[] {address, tag, value, Boolean.FALSE});
 					}
 					// Unable all other table because risk of redundency
 					hideTables("all");
-					queryReplace.clear();
-					queryRemove.clear();
+					queryReplace=new JsonObject();
+					queryRemove=new JsonArray();
 					table_SharedTags.putClientProperty("terminateEditOnFocusLost", true);
 					table_SharedTags.getModel().addTableModelListener(tablechangeListenerSharedTags);
 					table_SharedTags.setAutoCreateRowSorter(true);
@@ -362,64 +364,69 @@ public class Modify_Gui extends JDialog {
 		panel_otherButtons.add(btnShowTags);
 		btnShowTags.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					JSONObject instanceTags=modify.getInstanceTags((int) spinner_instanceNumber.getValue());
-					Gson gson = new GsonBuilder().setPrettyPrinting().create();
-					JsonParser jp = new JsonParser();
-					JsonElement je = jp.parse(instanceTags.toString());
-					String prettyJsonString = gson.toJson(je);
-					
-					JTextArea textArea = new JTextArea(prettyJsonString);
-					JScrollPane scrollPane = new JScrollPane(textArea);  
-					textArea.setLineWrap(true);  
-					textArea.setWrapStyleWord(true); 
-					scrollPane.setPreferredSize( new Dimension( 500, 500 ) );
-					JOptionPane.showMessageDialog(null, scrollPane, "DICOM Tags", JOptionPane.INFORMATION_MESSAGE);
-				} catch (IOException | ParseException e1) {
-					e1.printStackTrace();
-				}
+				
+				JsonObject instanceTags=modify.getInstanceTags((int) spinner_instanceNumber.getValue());
+				Gson gson = new GsonBuilder().setPrettyPrinting().create();
+				JsonParser jp = new JsonParser();
+				JsonElement je = jp.parse(instanceTags.toString());
+				String prettyJsonString = gson.toJson(je);
+				
+				JTextArea textArea = new JTextArea(prettyJsonString);
+				JScrollPane scrollPane = new JScrollPane(textArea);  
+				textArea.setLineWrap(true);  
+				textArea.setWrapStyleWord(true); 
+				scrollPane.setPreferredSize( new Dimension( 500, 500 ) );
+				JOptionPane.showMessageDialog(null, scrollPane, "DICOM Tags", JOptionPane.INFORMATION_MESSAGE);
 				
 			}
 		});
 
 	}
 	
-	public void setTables(JSONObject MainTags, String level) {
-		Object[] mainPatientTag=MainTags.keySet().toArray();	
+	private void saveprefs() {
+		
+	}
+	
+	private void loadprefs() {
+		
+	}
+	
+	public void setTables(JsonObject MainTags, String level) {
+		Set<String> mainPatientTags=MainTags.keySet();
 		
 		if (level.equals("patient")) {
 			DefaultTableModel patientModel =(DefaultTableModel) table_patient.getModel();
-			for (int i=0; i<mainPatientTag.length;i++) {
+			for (String mainPatientTag : mainPatientTags) {
 			
-			String tag=(String) mainPatientTag[i];
-			String value=(String) MainTags.get(mainPatientTag[i]);
+			String tag=mainPatientTag;
+			String value=MainTags.get(mainPatientTag).getAsString();
 			patientModel.addRow(new Object[] {tag, value, Boolean.FALSE});
 			//On ajoute le listener pour ecouter les changement de l'utilisateur
 			}
 			table_patient.putClientProperty("terminateEditOnFocusLost", true);
-			table_patient.getModel().addTableModelListener(tablechangeListenerPatient);
+			addTableModelListener(table_patient);
 		}
 		
 		else if (level.equals("study")) {
 			DefaultTableModel studyModel =(DefaultTableModel) table_study.getModel();
-			for (int i=0; i<mainPatientTag.length;i++) {
-				String tag=(String) mainPatientTag[i];
-				String value=(String) MainTags.get(mainPatientTag[i]);
+			for (String mainPatientTag : mainPatientTags) {
+				String tag=mainPatientTag;
+				String value=MainTags.get(mainPatientTag).getAsString();
 				studyModel.addRow(new Object[] {tag, value, Boolean.FALSE});
 			}
 			table_study.putClientProperty("terminateEditOnFocusLost", true);
-			table_study.getModel().addTableModelListener(tablechangeListenerStudy);
+			addTableModelListener(table_study);
 		}
 		
 		else if (level.equals("serie")) {
 			DefaultTableModel serieModel =(DefaultTableModel) table_serie.getModel();
-			for (int i=0; i<mainPatientTag.length;i++) {
-				String tag=(String) mainPatientTag[i];
-				String value=(String) MainTags.get(mainPatientTag[i]);
+			for (String mainPatientTag : mainPatientTags) {
+				String tag=mainPatientTag;
+				String value=MainTags.get(mainPatientTag).getAsString();
 				serieModel.addRow(new Object[] {tag, value, Boolean.FALSE});
 			}
 			table_serie.putClientProperty("terminateEditOnFocusLost", true);
-			table_serie.getModel().addTableModelListener(tablechangeListenerSeries);
+			addTableModelListener(table_serie);
 			btnShowTags.setEnabled(true);
 			spinner_instanceNumber.setEnabled(true);
 		}
@@ -453,85 +460,49 @@ public class Modify_Gui extends JDialog {
 		}
 	}
 	
-	
-	TableModelListener tablechangeListenerPatient =new TableModelListener() {
-		@SuppressWarnings("unchecked")
-		@Override
-		public void tableChanged(TableModelEvent e) {
-			if (e.getType()==TableModelEvent.UPDATE) {
-				// If item not to remove, add to replace list and remove if present in the remove list
-				if (table_patient.getValueAt(e.getFirstRow(), 2).equals(Boolean.FALSE)) {
-					queryReplace.put( table_patient.getValueAt(e.getFirstRow(), 0), table_patient.getValueAt(e.getFirstRow(), 1));
-					queryRemove.remove(table_patient.getValueAt(e.getFirstRow(), 0));
+	public void addTableModelListener(JTable table) {
+		table.getModel().addTableModelListener(new TableModelListener() {
+			@Override
+			public void tableChanged(TableModelEvent e) {
+				if (e.getType()==TableModelEvent.UPDATE) {
+					
+					JsonElement tag=new JsonPrimitive( table.getValueAt(e.getFirstRow(), 0).toString() );
+					// If item not to remove, add to replace list and remove if present in the remove list
+					if (table.getValueAt(e.getFirstRow(), 2).equals(Boolean.FALSE)) {
+						queryReplace.addProperty(tag.getAsString(), (String) table.getValueAt(e.getFirstRow(), 1));
+						queryRemove.remove(tag);
+					}
+					//else add item to replace list and remove it from remove list
+					else {
+						queryRemove.add(tag);
+						queryReplace.remove(tag.getAsString());
+					}
 				}
-				//else add item to replace list and remove it from remove list
-				else {
-					queryRemove.add(table_patient.getValueAt(e.getFirstRow(), 0));
-					queryReplace.remove(table_patient.getValueAt(e.getFirstRow(), 0));
-				}
+				
 			}
-			
-		}
-    };
+	    });
+		
+	}
     
-    TableModelListener tablechangeListenerStudy =new TableModelListener() {
-    	@SuppressWarnings("unchecked")
-    	@Override
-		public void tableChanged(TableModelEvent e) {
-    		if (e.getType()==TableModelEvent.UPDATE) {
-    			if (!(boolean) table_study.getValueAt(e.getFirstRow(), 2)) {
-					queryReplace.put( table_study.getValueAt(e.getFirstRow(), 0), table_study.getValueAt(e.getFirstRow(), 1));
-					queryRemove.remove(table_study.getValueAt(e.getFirstRow(), 0));
-				}
-				//else add item to replace list and remove it from remove list
-				else {
-					queryRemove.add(table_study.getValueAt(e.getFirstRow(), 0));
-					queryReplace.remove(table_study.getValueAt(e.getFirstRow(), 0));
-				}
-    		}
-	    		
-		}
-    };
-    
-    TableModelListener tablechangeListenerSeries =new TableModelListener() {
-    	@SuppressWarnings("unchecked")
-    	@Override
-		public void tableChanged(TableModelEvent e) {
-    		if (e.getType()==TableModelEvent.UPDATE) {
-				if (!(boolean) table_serie.getValueAt(e.getFirstRow(), 2)) {
-				queryReplace.put( table_serie.getValueAt(e.getFirstRow(), 0), table_serie.getValueAt(e.getFirstRow(), 1));
-				queryRemove.remove(table_serie.getValueAt(e.getFirstRow(), 0));
-				}
-				//else add item to replace list and remove it from remove list
-				else {
-				queryRemove.add(table_serie.getValueAt(e.getFirstRow(), 0));
-				queryReplace.remove(table_serie.getValueAt(e.getFirstRow(), 0));
-				}
-    		}
-
-    		
-			
-		}
-    };
-    
+	//SK ICI EXISTE UN BUG
     TableModelListener tablechangeListenerSharedTags =new TableModelListener() {
-    	@SuppressWarnings("unchecked")
     	@Override
 		public void tableChanged(TableModelEvent e) {
     		if (e.getType()==TableModelEvent.UPDATE) {
+    			System.out.println(e);
+    			JsonElement tag=new JsonPrimitive( table_SharedTags.getValueAt(e.getFirstRow(), 1).toString() );
+    			
 	    		if (!(boolean) table_SharedTags.getValueAt(e.getFirstRow(), 3)) {
-	    			queryReplace.put( table_SharedTags.getValueAt(e.getFirstRow(), 1), table_SharedTags.getValueAt(e.getFirstRow(), 2));
-	    			queryRemove.remove(table_SharedTags.getValueAt(e.getFirstRow(), 1));
+	    			queryReplace.addProperty( tag.getAsString(), (String) table_SharedTags.getValueAt(e.getFirstRow(), 2));
+	    			queryRemove.remove(tag);
 				}
 				//else add item to replace list and remove it from remove list
 				else {
-					queryRemove.add(table_SharedTags.getValueAt(e.getFirstRow(), 1));
-					queryReplace.remove(table_SharedTags.getValueAt(e.getFirstRow(), 1));
+					queryRemove.add(tag);
+					queryReplace.remove(tag.getAsString());
 				}
 	    		
     		}
-    		
-			
 		}
     };
     

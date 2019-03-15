@@ -21,36 +21,37 @@ import java.io.IOException;
 
 import javax.swing.JOptionPane;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 public class Modify {
 	
 	private Modify_Gui gui;
 	private String levelUrl;
 	private String id;
-	private JSONArray seriesInstancesID;
+	private JsonArray seriesInstancesID;
 	private OrthancRestApis connexion;
 	private VueAnon guiParent;
-	private JSONParser parser=new JSONParser();
+	private JsonParser parser;
 	
 	public Modify(String level, String id, VueAnon guiParent, OrthancRestApis connexion){
 		this.connexion= connexion;
+		parser=new JsonParser();
 		gui = new Modify_Gui(this, guiParent);
 		this.id=id;
 		this.guiParent=guiParent;
-		try {
-			setUrlAndFetch(level);
-		} catch (IOException | ParseException e) {
-			e.printStackTrace();
-		} 
+
+		setUrlAndFetch(level);
+
 	}
 	
-	private void setUrlAndFetch(String level) throws IOException, ParseException {
+	private void setUrlAndFetch(String level) {
 		
 		if (level.equals("series")){
 			levelUrl="/series/";
@@ -82,10 +83,10 @@ public class Modify {
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	public void getPatientsTags(String patientID) throws IOException, ParseException{
+	private void getPatientsTags(String patientID) {
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/patients/"+patientID);
-		JSONObject response=(JSONObject) parser.parse(sb.toString());
-		JSONObject patientsMainTags=(JSONObject) response.get("MainDicomTags");
+		JsonObject response=parser.parse(sb.toString()).getAsJsonObject();
+		JsonObject patientsMainTags=response.get("MainDicomTags").getAsJsonObject();
 		gui.setTables(patientsMainTags, "patient");
 	}
 	
@@ -96,12 +97,12 @@ public class Modify {
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	public void getSeriesTags(String seriesID) throws IOException, ParseException{
+	private void getSeriesTags(String seriesID) {
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/series/"+seriesID);
-		JSONObject response=(JSONObject) parser.parse(sb.toString());
-		JSONObject seriesMainTags=(JSONObject) response.get("MainDicomTags");
-		String parentStudyID=(String) response.get("ParentStudy");
-		seriesInstancesID= (JSONArray) response.get("Instances");
+		JsonObject response=parser.parse(sb.toString()).getAsJsonObject();
+		JsonObject seriesMainTags=response.get("MainDicomTags").getAsJsonObject();
+		String parentStudyID=response.get("ParentStudy").getAsString();
+		seriesInstancesID= response.get("Instances").getAsJsonArray();
 		gui.setTables(seriesMainTags, "serie");
 		getStudiesTags(parentStudyID);
 		
@@ -112,11 +113,11 @@ public class Modify {
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	public void getStudiesTags(String studyID) throws IOException, ParseException{
+	private void getStudiesTags(String studyID) {
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/studies/"+studyID);
-		JSONObject response=(JSONObject) parser.parse(sb.toString());
-		JSONObject studyMainTags=(JSONObject) response.get("MainDicomTags");
-		JSONObject patientMainTags=(JSONObject) response.get("PatientMainDicomTags");
+		JsonObject response=parser.parse(sb.toString()).getAsJsonObject();
+		JsonObject studyMainTags=response.get("MainDicomTags").getAsJsonObject();
+		JsonObject patientMainTags=response.get("PatientMainDicomTags").getAsJsonObject();
 		gui.setTables(studyMainTags, "study");
 		gui.setTables(patientMainTags, "patient");
 		
@@ -128,9 +129,9 @@ public class Modify {
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	public JSONObject getSharedTags() throws IOException, ParseException{
+	public JsonObject getSharedTags() {
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder(levelUrl+id+"/shared-tags");
-		JSONObject response=(JSONObject) parser.parse(sb.toString());
+		JsonObject response=parser.parse(sb.toString()).getAsJsonObject();
 		return response;
 	}
 	
@@ -141,12 +142,12 @@ public class Modify {
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	public JSONObject getInstanceTags(int instance) throws IOException, ParseException{
-		JSONObject responseInstance = null;
+	public JsonObject getInstanceTags(int instance) {
+		JsonObject responseInstance = null;
 		if (instance<seriesInstancesID.size()) {
-			String idInstance=(String) seriesInstancesID.get(instance);
+			String idInstance=seriesInstancesID.get(instance).getAsString();
 			StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/instances/"+idInstance+"/tags");
-			responseInstance=(JSONObject) parser.parse(sb.toString());
+			responseInstance=parser.parse(sb.toString()).getAsJsonObject();
 		}
 		else {
 			JOptionPane.showMessageDialog(null, "Series contains "+seriesInstancesID.size()+" Instances (index start a 0)");
@@ -161,31 +162,40 @@ public class Modify {
 	 * @param removeTags
 	 * @param removePrivateTags
 	 */
-	@SuppressWarnings("unchecked")
-	public JSONObject buildModifyQuery(JSONObject replaceTags, JSONArray removeTags, boolean removePrivateTags) {
+	public JsonObject buildModifyQuery(JsonObject replaceTags, JsonArray removeTags, boolean removePrivateTags) {
 
-		JSONObject modifyRequest=new JSONObject();
-		modifyRequest.put("Replace", replaceTags);
-		modifyRequest.put("Remove", removeTags);
-		modifyRequest.put("RemovePrivateTags", removePrivateTags);
+		JsonObject modifyRequest=new JsonObject();
+		modifyRequest.add("Replace", replaceTags);
+		modifyRequest.add("Remove", removeTags);
+		modifyRequest.addProperty("RemovePrivateTags", removePrivateTags);
 		
-		if (replaceTags.containsKey("PatientID") || replaceTags.containsKey("StudyInstanceUID") || replaceTags.containsKey("SeriesInstanceUID") || replaceTags.containsKey( "SOPInstanceUID" ) || removeTags.contains("PatientID") || removeTags.contains("StudyInstanceUID") || removeTags.contains("SeriesInstanceUID") || removeTags.contains( "SOPInstanceUID" ) ) {
-            modifyRequest.put("Force", Boolean.TRUE);
+		//JsonPrimitives:
+		JsonElement jsonPatientID=new JsonPrimitive("PatientID");
+		JsonElement jsonStudyInstanceUID=new JsonPrimitive("StudyInstanceUID");
+		JsonElement jsonSeriesInstanceUID=new JsonPrimitive("SeriesInstanceUID");
+		JsonElement jsonSOPInstanceUID=new JsonPrimitive("SOPInstanceUID");
+		
+		
+		if (replaceTags.has("PatientID") || replaceTags.has("StudyInstanceUID") || replaceTags.has("SeriesInstanceUID") || replaceTags.has( "SOPInstanceUID" ) || removeTags.contains(jsonPatientID) || removeTags.contains(jsonStudyInstanceUID) || removeTags.contains(jsonSeriesInstanceUID) || removeTags.contains(jsonSOPInstanceUID) ) {
+            modifyRequest.addProperty("Force", Boolean.TRUE);
 		}
 		
-		if (levelUrl.contains("patients") && !replaceTags.containsKey("PatientID") || removeTags.contains("PatientID")) {
+		if (levelUrl.contains("patients") && !replaceTags.has("PatientID") || removeTags.contains(jsonPatientID) ) {
 			JOptionPane.showMessageDialog(null, "For Patient edition, PatientID must be set to a new value, please edit it");
 			modifyRequest=null;
 		}
-		System.out.println(modifyRequest.toString());
+
 		return modifyRequest;
 
 	}
 	
-	public void sendQuery(JSONObject query) throws Exception {
+	public void sendQuery(JsonObject query, boolean deleteOriginal) throws Exception {
 		StringBuilder sb=connexion.makePostConnectionAndStringBuilder(this.levelUrl+this.id+"/modify", query.toString());
 		if (sb==null) {
 			throw new Exception("Not Allowed");
+		}
+		if(deleteOriginal) {
+			connexion.makeDeleteConnection(this.levelUrl+this.id);
 		}
 		
 	}
