@@ -38,6 +38,13 @@ public class Read_Orthanc {
 		this.connexion=connexion;
 	}
 	
+	private int getFrameNumber(String instanceID) {
+		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/instances/"+instanceID+"/frames/");
+		JsonArray nbframe=parser.parse(sb.toString()).getAsJsonArray();
+		return nbframe.size();
+		
+	}
+	
 	public ImagePlus readSerie(String uuid) {
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/series/"+uuid);
 		JsonObject seriesDetails = null;
@@ -45,25 +52,37 @@ public class Read_Orthanc {
 		ImageStack stack = null;
 		JsonArray instanceIDList=(JsonArray) seriesDetails.get("Instances");
 		boolean screenCapture=false;
-		
+		int nbFrameInInstance = 0;
 		for(int i=0 ; i<instanceIDList.size(); i++) {
+			String metadata = this.extractDicomInfo(instanceIDList.get(i).getAsString());
 			
 			if(i==0) {
 				StringBuilder sop=connexion.makeGetConnectionAndStringBuilder("/instances/"+instanceIDList.get(i).getAsString()+"/metadata/SopClassUid");
+				nbFrameInInstance=getFrameNumber(instanceIDList.get(i).getAsString());
 				//If it is a screen capture change the boolean
 				if(sop.toString().startsWith("1.2.840.10008.5.1.4.1.1.7")) screenCapture=true;
 				if(sop.toString().equals("1.2.840.10008.5.1.4.1.1.6.1")) screenCapture=true;
 			}
 			
-			ImageProcessor ip=readCompressed(instanceIDList.get(i).getAsString(), screenCapture);
-			String metadata = "Compressed \n" + this.extractDicomInfo(instanceIDList.get(i).getAsString());
-			
-			if(i==0) {
-				stack= new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
+			if(nbFrameInInstance==1) {
+				ImageProcessor ip=readCompressed(instanceIDList.get(i).getAsString(), screenCapture);
+				if(i==0) {
+					stack= new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
+				}
+				stack.addSlice(metadata, ip);
+				IJ.showProgress((double) (i+1)/instanceIDList.size());
+			} else {
+				for(int j=0; j<nbFrameInInstance; j++) {
+					ImageProcessor ip=readCompressedMultiFrame(instanceIDList.get(i).getAsString(), j,screenCapture );
+					if(j==0) {
+						stack= new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
+					}
+					stack.addSlice(metadata, ip);
+					IJ.showProgress((double) (j+1)/nbFrameInInstance);
+				}
+				break;
 			}
 			
-			stack.addSlice(metadata, ip);
-			IJ.showProgress((double) (i+1)/instanceIDList.size());
 		}
 		
 		
@@ -121,6 +140,29 @@ public class Read_Orthanc {
 		} catch (Exception e
 				//SK ICI ESAYER METHODE AVEC LE FICHIER BRUTE
 				) { e.printStackTrace();}
+		
+		return slice;
+		
+	}
+	
+	private ImageProcessor readCompressedMultiFrame(String uuid, int frameNb, boolean SC ) {
+		ImageProcessor slice=null;
+		try {
+			String uri=null;
+			if(SC) {
+				uri = "/instances/" + uuid +"/frames/" +frameNb+"/preview";
+			}else {
+				uri = "/instances/" + uuid +"/frames/"+frameNb+"/image-uint16";
+
+			}
+			System.out.println(uri);
+			BufferedImage bi = ImageIO.read( connexion.openImage(uri));
+		
+			if(SC) slice = new ColorProcessor(bi);
+			else slice = new ShortProcessor(bi);
+
+			
+		} catch (Exception e) { e.printStackTrace();}
 		
 		return slice;
 		
