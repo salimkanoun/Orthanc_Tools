@@ -70,6 +70,9 @@ public class Modify_Gui extends JDialog {
 	private JButton btnShowTags;
 	private JSpinner spinner_instanceNumber;
 	
+	private JCheckBox chckbxRemovePrivateTags;
+	private JCheckBox chckbxDeleteOriginalDicoms;
+	
 	private Modify modify;
 	
 	private VueAnon guiParent;
@@ -112,14 +115,15 @@ public class Modify_Gui extends JDialog {
 		JLabel label = new JLabel("");
 		button_panel.add(label);
 		
-		JCheckBox chckbxRemovePrivateTags = new JCheckBox("Remove Private Tags");
+		chckbxRemovePrivateTags = new JCheckBox("Remove Private Tags");
 		
-		JCheckBox chckbxDeleteOriginalDicoms = new JCheckBox("Delete Original Dicoms");
+		chckbxDeleteOriginalDicoms = new JCheckBox("Delete Original Dicoms");
 		
 		JButton btnModify = new JButton("Modify");
 		
 		btnModify.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				
 				JsonObject query =modify.buildModifyQuery(queryReplace, queryRemove, chckbxRemovePrivateTags.isSelected());
 				System.out.println(query);
 				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
@@ -127,6 +131,7 @@ public class Modify_Gui extends JDialog {
 					protected Void doInBackground() throws Exception {
 
 						if (query !=null) {
+							saveprefs();
 							dispose();
 							guiParent.setStateMessage("Modifying...", "red", -1);
 							modify.sendQuery(query, chckbxDeleteOriginalDicoms.isSelected());
@@ -380,15 +385,19 @@ public class Modify_Gui extends JDialog {
 				
 			}
 		});
+		
+		loadprefs();
 
 	}
 	
 	private void saveprefs() {
-		
+		prefs.putBoolean("Modify_DeleteOriginal", 	chckbxDeleteOriginalDicoms.isSelected() );
+		prefs.putBoolean("Modify_RemovePrivateTags", chckbxRemovePrivateTags.isSelected() );
 	}
 	
 	private void loadprefs() {
-		
+		chckbxDeleteOriginalDicoms.setSelected(prefs.getBoolean("Modify_DeleteOriginal", false));
+		chckbxRemovePrivateTags.setSelected(prefs.getBoolean("Modify_RemovePrivateTags", false));
 	}
 	
 	public void setTables(JsonObject MainTags, String level) {
