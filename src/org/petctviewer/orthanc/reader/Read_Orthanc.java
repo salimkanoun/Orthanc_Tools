@@ -47,12 +47,13 @@ public class Read_Orthanc {
 	
 	public ImagePlus readSerie(String uuid) {
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/series/"+uuid);
-		JsonObject seriesDetails = null;
-		seriesDetails=(JsonObject)parser.parse(sb.toString());
-		ImageStack stack = null;
+		JsonObject seriesDetails=(JsonObject)parser.parse(sb.toString());
 		JsonArray instanceIDList=(JsonArray) seriesDetails.get("Instances");
+		
 		boolean screenCapture=false;
 		int nbFrameInInstance = 0;
+		ImageStack stack = null;
+		
 		for(int i=0 ; i<instanceIDList.size(); i++) {
 			String metadata = this.extractDicomInfo(instanceIDList.get(i).getAsString());
 			
@@ -65,26 +66,40 @@ public class Read_Orthanc {
 			}
 			
 			if(nbFrameInInstance==1) {
-				ImageProcessor ip=readCompressed(instanceIDList.get(i).getAsString(), screenCapture);
+				ImageProcessor ip=readInstance(instanceIDList.get(i).getAsString(), screenCapture);
 				if(i==0) {
 					stack= new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
 				}
 				stack.addSlice(metadata, ip);
 				IJ.showProgress((double) (i+1)/instanceIDList.size());
 			} else {
-				for(int j=0; j<nbFrameInInstance; j++) {
-					ImageProcessor ip=readCompressedMultiFrame(instanceIDList.get(i).getAsString(), j,screenCapture );
-					if(j==0) {
-						stack= new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
-					}
-					stack.addSlice(metadata, ip);
-					IJ.showProgress((double) (j+1)/nbFrameInInstance);
-				}
-				break;
+				ImagePlus imp=readMultiFrameImage(instanceIDList.get(i).getAsString(), nbFrameInInstance, metadata, screenCapture);
+				return imp;
 			}
 			
 		}
 		
+		ImagePlus imp=generateFinalImagePlus(stack);
+		return imp;
+		
+	}
+	
+	private ImagePlus readMultiFrameImage(String instanceID, int nbFrameInInstance, String metadata, boolean sc) {
+		ImageStack stack = null;
+		for(int i=0; i<nbFrameInInstance; i++) {
+			ImageProcessor ip=readFrameInInstance(instanceID, i,sc );
+			if(i==0) {
+				stack= new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
+			}
+			stack.addSlice(metadata, ip);
+			IJ.showProgress((double) (i+1)/nbFrameInInstance);
+		}
+		
+		ImagePlus imp=generateFinalImagePlus(stack);
+		return imp;
+	}
+	
+	private ImagePlus generateFinalImagePlus(ImageStack stack) {
 		
 		ImagePlus imp=new ImagePlus();
 		imp.setStack(stack);
@@ -120,7 +135,7 @@ public class Read_Orthanc {
 		
 	}
 
-	private ImageProcessor readCompressed(String uuid, boolean SC ) {
+	private ImageProcessor readInstance(String uuid, boolean SC ) {
 		ImageProcessor slice=null;
 		try {
 			String uri=null;
@@ -145,7 +160,7 @@ public class Read_Orthanc {
 		
 	}
 	
-	private ImageProcessor readCompressedMultiFrame(String uuid, int frameNb, boolean SC ) {
+	private ImageProcessor readFrameInInstance(String uuid, int frameNb, boolean SC ) {
 		ImageProcessor slice=null;
 		try {
 			String uri=null;
@@ -155,7 +170,6 @@ public class Read_Orthanc {
 				uri = "/instances/" + uuid +"/frames/"+frameNb+"/image-uint16";
 
 			}
-			System.out.println(uri);
 			BufferedImage bi = ImageIO.read( connexion.openImage(uri));
 		
 			if(SC) slice = new ColorProcessor(bi);
