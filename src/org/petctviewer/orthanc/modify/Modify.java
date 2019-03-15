@@ -182,9 +182,11 @@ public class Modify {
 
 	}
 	
-	public void sendQuery(JSONObject query) {
-		connexion.makePostConnectionAndStringBuilder(this.levelUrl+this.id+"/modify", query.toString());
-		refreshTable();
+	public void sendQuery(JSONObject query) throws Exception {
+		StringBuilder sb=connexion.makePostConnectionAndStringBuilder(this.levelUrl+this.id+"/modify", query.toString());
+		if (sb==null) {
+			throw new Exception("Not Allowed");
+		}
 		
 	}
 	

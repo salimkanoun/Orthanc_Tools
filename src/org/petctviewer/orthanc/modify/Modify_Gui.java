@@ -120,7 +120,7 @@ public class Modify_Gui extends JDialog {
 				
 				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 					@Override
-					protected Void doInBackground() {
+					protected Void doInBackground() throws Exception {
 
 						if (query !=null) {
 							dispose();
@@ -131,8 +131,14 @@ public class Modify_Gui extends JDialog {
 					}
 					@Override
 					protected void done() {
-						guiParent.setStateMessage("Modified DICOM created (refresh list)", "green", -1);
-						//SK Tenter le refresh Auto
+						try {
+							get();
+							guiParent.setStateMessage("Modified DICOM created (refresh list)", "green", -1);
+							modify.refreshTable();
+						} catch (Exception e) {
+							guiParent.setStateMessage("Modification not allowed", "red", -1);
+							e.printStackTrace();
+						}
 					}
 				};
 				
