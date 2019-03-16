@@ -42,9 +42,6 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 
 
 //SK TO DO
-//Bug Shared Tag modify
-//Finir Refactoring Modify
-//Reading MultiFrame Image
 //Modif nom series dans Export
 //Renderer SC =>OK tester sur deux table main et export
 //Modality Check Anon  => A priori OK a tester
@@ -52,3 +49,4 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 //Tester toutes les fonctions!
 //Reoganiser le package Query
 //Finir sortie de AutoQuery
+//Search at study level
