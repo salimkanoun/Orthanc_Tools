@@ -152,9 +152,7 @@ public class Read_Orthanc {
 			else slice = new ShortProcessor(bi);
 
 			
-		} catch (Exception e
-				//SK ICI ESAYER METHODE AVEC LE FICHIER BRUTE
-				) { e.printStackTrace();}
+		} catch (Exception e) { e.printStackTrace();}
 		
 		return slice;
 		

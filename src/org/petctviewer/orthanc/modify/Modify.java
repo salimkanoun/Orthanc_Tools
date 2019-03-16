@@ -48,23 +48,16 @@ public class Modify {
 		this.level=level;
 		
 		gui = new Modify_Gui(this, guiParent);
-
 		if (level.equals("series")){
 			getSeriesTags();
-			//Open GUI and enable instance button
-			
-		}
-		else if (level.equals("studies")) {
-			getStudiesTags(id);
-			//Open GUI and disable instance button because level is too high
-			
-		}
-		else if (level.equals("patients")) {
+		} else if (level.equals("studies")) {
+			getStudiesTags(id);	
+		} else if (level.equals("patients")) {
 			getPatientsTags();
 			
 		}
 		
-		//On ouvre la GUI
+		//Open GUI
 		gui.setSize(800,750);
 		gui.hideTables(level);
 		gui.setLocationRelativeTo(guiParent);

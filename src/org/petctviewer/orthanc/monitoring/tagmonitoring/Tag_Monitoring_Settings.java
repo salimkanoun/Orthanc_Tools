@@ -108,16 +108,13 @@ public class Tag_Monitoring_Settings extends JDialog {
 	}
 	
 	private void saveInRegistery() {
-			jprefer.put("dbPort", dbPort.getText());
-			jprefer.put("dbName", dbName.getText());
-			jprefer.put("dbUsername", dbUsername.getText());
-			jprefer.put("dbPassword", new String(dbPassword.getPassword()));
-			jprefer.put("dbAdress", dbadress.getText());
-			jprefer.putBoolean("useDBMonitoring", chckbxUseMysql.isSelected());
-			jprefer.putBoolean("AutoDeleteMonitoring", chckbxAutodelete.isSelected());
-			
-		
-		
+		jprefer.put("dbPort", dbPort.getText());
+		jprefer.put("dbName", dbName.getText());
+		jprefer.put("dbUsername", dbUsername.getText());
+		jprefer.put("dbPassword", new String(dbPassword.getPassword()));
+		jprefer.put("dbAdress", dbadress.getText());
+		jprefer.putBoolean("useDBMonitoring", chckbxUseMysql.isSelected());
+		jprefer.putBoolean("AutoDeleteMonitoring", chckbxAutodelete.isSelected());
 	}
 	
 

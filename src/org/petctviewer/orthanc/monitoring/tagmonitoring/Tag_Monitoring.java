@@ -39,6 +39,7 @@ public class Tag_Monitoring {
 			@Override
 			public void run() {	
 				monitoring.makeMonitor();
+				@SuppressWarnings("rawtypes")
 				JDBC_Monitoring db=new JDBC_Monitoring();
 				
 				if (level.equals("patient")) {
