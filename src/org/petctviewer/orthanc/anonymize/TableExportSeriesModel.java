@@ -123,25 +123,12 @@ public class TableExportSeriesModel extends DefaultTableModel{
 		this.addSerie(currentStudy);
 
 	}
-	
-	public void removeSerie(int selectedRow, VueAnon vue) {
-		Serie serie= (Serie) this.getValueAt(selectedRow,7);
-		String url="/series/" + serie.getId();
-		vue.setStateExportMessage("Deleting "+serie.getSerieDescription(), "red", -1);
-		boolean success=connexionHttp.makeDeleteConnection(url);
-		if(success) {
-			vue.setStateExportMessage("Deleted suceeded", "green", 4);
-		}else {
-			vue.setStateExportMessage("Delete Failed", "red", -1);
-		}
-		
-	}
 
 	public void addSerie(Study_Anonymized studyAnonymized) {
 		this.currentStudy=studyAnonymized;
 		clear();
 		for(Serie serie:studyAnonymized.getAnonymizedStudy().getSeries()) {
-			addRow(new String[] {serie.getSerieDescription(), serie.getModality(), String.valueOf(serie.getNbInstances()), String.valueOf(serie.isSecondaryCapture()), serie.getId(), serie.getSeriesNumber()});
+			addRow(new Object[] {serie.getSerieDescription(), serie.getModality(), String.valueOf(serie.getNbInstances()), String.valueOf(serie.isSecondaryCapture()), serie.getId(), serie.getSeriesNumber(), serie});
 		}
 	}
 	
@@ -165,6 +152,10 @@ public class TableExportSeriesModel extends DefaultTableModel{
 	
 	public String getStudyOriginID() {
 		return currentStudy.getOriginalStudy().getOrthancId();
+	}
+	
+	public String getStudyAnonymizedID() {
+		return currentStudy.getAnonymizedStudy().getOrthancId();
 	}
 
 

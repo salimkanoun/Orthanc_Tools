@@ -45,6 +45,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutionException;
 import java.util.prefs.Preferences;
 
 import javax.swing.BoxLayout;
@@ -87,6 +88,7 @@ import org.petctviewer.orthanc.anonymize.controllers.Controller_Read_Series;
 import org.petctviewer.orthanc.anonymize.controllers.DeleteActionMainPanel;
 import org.petctviewer.orthanc.anonymize.datastorage.Patient;
 import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
+import org.petctviewer.orthanc.anonymize.datastorage.Serie;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2Anon;
 import org.petctviewer.orthanc.anonymize.gui.AboutBoxFrame;
@@ -1189,9 +1191,23 @@ public class VueAnon extends JFrame {
 		menuItemExportStudiesDelete.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				DeleteActionExport del = new DeleteActionExport(connexionHttp, tableauExportStudies, modeleExportStudies);
-				del.delete();
-				modeleExportStudies.removeRow(tableauExportStudies.getSelectedRow());
+				
+				String url="/studies/" + tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(), 5);
+				
+				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+					@Override
+					protected Void doInBackground() {
+						boolean deleted=connexionHttp.makeDeleteConnection(url);
+						if(deleted) {
+							modeleExportStudies.removeRow(tableauExportStudies.getSelectedRow());
+							modeleExportSeries.clear();
+						}
+					
+						return null;
+					}
+				};
+				worker.execute();
+				
 			}
 		});
 		
@@ -1249,17 +1265,39 @@ public class VueAnon extends JFrame {
 		menuItemExportSeriesDelete.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+					
 				SwingWorker<Void, Void> worker = new SwingWorker<Void,Void>() {
 
 					@Override
 					protected Void doInBackground() throws Exception {
-						modeleExportSeries.removeSerie(tableauExportSeries.getSelectedRow(), gui);
+						int selectedRow = tableauExportSeries.getSelectedRow();
+						Serie serie= (Serie) tableauExportSeries.getValueAt(selectedRow,6);
+						
+						String url="/series/" + serie.getId();
+						setStateExportMessage("Deleting "+serie.getSerieDescription(), "red", -1);
+						boolean success=connexionHttp.makeDeleteConnection(url);
+						if(success) {
+							setStateExportMessage("Deleted suceeded", "green", 4);
+						}else {
+							setStateExportMessage("Delete Failed", "red", -1);
+						}
+						
 						return null;
 					}
 					
 					@Override
 					protected void done() {
-						modeleExportSeries.refresh();
+						try {
+							get();
+							//SK ICI GENERE UNE ERREUR
+							modeleExportSeries.refresh();
+							if(modeleExportSeries.getRowCount()==0) {
+								modeleExportStudies.removeStudy(modeleExportSeries.getStudyAnonymizedID());
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						
 					}
 					
 				};
@@ -1274,7 +1312,7 @@ public class VueAnon extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				modeleExportSeries.removeAllSecondaryCaptures();
 				if(modeleExportSeries.getRowCount()==0){
-					modeleExportStudies.removeStudy(modeleExportSeries.getStudyOriginID());
+					modeleExportStudies.removeStudy(modeleExportSeries.getStudyAnonymizedID());
 				}
 			}
 		});
