@@ -58,12 +58,13 @@ public class Run_Orthanc {
 			resourceLibName.add("OrthancTransfers.dll");
 		//Still to Update	
 		} else if (System.getProperty("os.name").toLowerCase().startsWith("mac")){
-			resourceName="Orthanc_Standalone/Orthanc-1.5.1-ReleaseMac";
-			fileExecName="Orthanc-1.5.1-ReleaseMac";
+			resourceName="Orthanc_Standalone/Orthanc-1.5.6-ReleaseMac";
+			fileExecName="Orthanc-1.5.6-ReleaseMac";
 			resourceLibName.add("libOsimisWebViewer.dylib");
+			resourceLibName.add("libOrthancTransfers.dylib");
 		} else if (System.getProperty("os.name").toLowerCase().startsWith("linux")){
 			resourceName="Orthanc_Standalone/Orthanc-1.5.6-ReleaseLinux";
-			fileExecName="Orthanc-1.5.1-ReleaseLinux";
+			fileExecName="Orthanc-1.5.6-ReleaseLinux";
 			resourceLibName.add("libOrthancWebViewer.so");
 			resourceLibName.add("libOrthancTransfers.so");
 		}

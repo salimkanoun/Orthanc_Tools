@@ -49,3 +49,4 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 //Reoganiser le package Query
 //Finir sortie de AutoQuery
 //Search at study level
+//Run auto a tester sur Mac
