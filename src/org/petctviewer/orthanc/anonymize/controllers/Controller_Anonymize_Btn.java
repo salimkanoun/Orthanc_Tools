@@ -57,7 +57,7 @@ public class Controller_Anonymize_Btn implements ActionListener {
 									JOptionPane.YES_NO_OPTION);
 				}
 				if(us) {
-					JOptionPane.showMessageDialog (vue, 
+					dialogResult = JOptionPane.showConfirmDialog (vue, 
 							"DICOM files with the US modality may have hard printed informations, "
 									+ "you may need to edit the image, do you want to anonymize?",
 									"Warning anonymizing US",
@@ -201,7 +201,7 @@ public class Controller_Anonymize_Btn implements ActionListener {
 				for(int i=0 ; i<vue.anonPatientTable.getRowCount(); i++) {
 					PatientAnon patientAnon=(PatientAnon) vue.anonPatientTable.getValueAt(i, 6);
 					//Search for similar new ID
-					String newPatientId=(String) vue.anonPatientTable.getValueAt(i, 3);
+					String newPatientId=(String) vue.anonPatientTable.getValueAt(i, 4);
 					if(newPatientId != "" && !newIDs.contains(newPatientId)){
 						newIDs.add(newPatientId);
 					}else if(newIDs.contains(newPatientId)){
