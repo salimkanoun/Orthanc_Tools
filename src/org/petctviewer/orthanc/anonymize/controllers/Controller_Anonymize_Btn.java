@@ -41,10 +41,14 @@ public class Controller_Anonymize_Btn implements ActionListener {
 			
 			@Override
 			protected Void doInBackground() throws Exception {
-				vue.enableAnonButton(false);
-				analyzeAnonlist();
+				
 				int dialogResult=0;
-				if(pt || nm) {
+				//Retrieve the selected anon profile
+				String anonProfile=vue.getSelectedAnonProfile();
+				//Analyze anon list to detect similar ID
+				analyzeAnonlist();
+				
+				if((pt || nm) && anonProfile.equals("Full clearing")) {
 					dialogResult = JOptionPane.showConfirmDialog (vue, 
 							"Full clearing is not recommended for NM or PT modalities."
 									+ "Are you sure you want to anonymize ?",
@@ -70,7 +74,10 @@ public class Controller_Anonymize_Btn implements ActionListener {
 				}
 				//0 is the Yes option
 				if(dialogResult==0) {
-					this.anonymize();
+					vue.enableAnonButton(false);
+					anonymize();
+				}else {
+					throw new Exception("Anon Aborted");
 				}
 				
 				return null;
@@ -80,30 +87,31 @@ public class Controller_Anonymize_Btn implements ActionListener {
 			protected void done() {
 				try {
 					get();
+					vue.enableAnonButton(true);
+					vue.anonBtn.setText("Anonymize");
+					vue.setStateMessage("The data has successfully been anonymized.", "green", 4);
+					vue.enableAnonButton(true);
+					vue.openCloseAnonTool(false);
+					vue.pack();
+					vue.tabbedPane.setSelectedIndex(1);
+					//Clear Anon List
+					vue.modeleAnonPatients.clear();
+					vue.modeleAnonStudies.clear();
+					
+					//Si fonction a ete fait avec le CTP on fait l'envoi auto A l'issue de l'anon
+					if(vue.autoSendCTP) {
+						vue.exportCTP.doClick();
+						vue.autoSendCTP=false;
+					}
+					
+					if(vue.anonymizeListener!=null) {
+						vue.anonymizeListener.AnonymizationDone();
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 				
-				vue.enableAnonButton(true);
-				vue.anonBtn.setText("Anonymize");
-				vue.setStateMessage("The data has successfully been anonymized.", "green", 4);
-				vue.enableAnonButton(true);
-				vue.openCloseAnonTool(false);
-				vue.pack();
-				vue.tabbedPane.setSelectedIndex(1);
-				//Clear Anon List
-				vue.modeleAnonPatients.clear();
-				vue.modeleAnonStudies.clear();
 				
-				//Si fonction a ete fait avec le CTP on fait l'envoi auto A l'issue de l'anon
-				if(vue.autoSendCTP) {
-					vue.exportCTP.doClick();
-					vue.autoSendCTP=false;
-				}
-				
-				if(vue.anonymizeListener!=null) {
-					vue.anonymizeListener.AnonymizationDone();
-				}
 				return;
 			}
 			

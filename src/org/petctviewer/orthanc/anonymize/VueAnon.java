@@ -284,7 +284,7 @@ public class VueAnon extends JFrame {
 		modeleStudies = new TableStudiesModel(connexionHttp);
 		modeleSeries = new TableSeriesModel(connexionHttp, this, queryOrthanc);
 		modeleExportStudies = new TableExportStudiesModel();
-		modeleExportSeries = new TableExportSeriesModel(connexionHttp, queryOrthanc);
+		modeleExportSeries = new TableExportSeriesModel(connexionHttp, queryOrthanc, this);
 		modeleAnonStudies = new TableAnonStudiesModel();
 		modeleAnonPatients = new TableAnonPatientsModel(connexionHttp);
 		

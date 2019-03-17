@@ -17,6 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 
 import org.petctviewer.orthanc.anonymize.datastorage.Serie;
@@ -32,11 +33,13 @@ public class TableExportSeriesModel extends DefaultTableModel{
 	private QueryOrthancData queryOrthanc;
 	//Store the current StudyOrthanc ID the Series came from (for refresh)
 	private Study_Anonymized currentStudy;
+	private VueAnon vueAnon;
 
-	public TableExportSeriesModel(OrthancRestApis connexionHttp, QueryOrthancData queryOrthanc){
+	public TableExportSeriesModel(OrthancRestApis connexionHttp, QueryOrthancData queryOrthanc, VueAnon vueAnon){
 		super(0,7);
 		this.connexionHttp=connexionHttp;
 		this.queryOrthanc=queryOrthanc;
+		this.vueAnon=vueAnon;
 	
 	}
 
@@ -56,27 +59,26 @@ public class TableExportSeriesModel extends DefaultTableModel{
 		}
 		return false;
 	}
-
-	//SK A REFLECHIR COMMENT RE IMPEMENTER
-	/*public void setValueAt(Object value, int row, int col) {
+	
+	@Override
+	public void setValueAt(Object value, int row, int col) {
+		
 		String uid = this.getValueAt(row, 4).toString();
 		String oldDesc ;
 		if (this.getValueAt(row, 0)==null) oldDesc=""; else oldDesc=this.getValueAt(row, 0).toString();
 		
-		if(!oldDesc.equals(value.toString()) && col == 0){
-			series.get(row).setSerieDescription(value.toString());
-			fireTableCellUpdated(row, col);
-		}
 		SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 			boolean success=true;
 			@Override
 			protected Void doInBackground() {
-				url="/series/" + uid + "/modify";
-				stateExport.setText("<html>Modifying a serie description <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
-				frame.pack();
+				String url="/series/" + uid + "/modify";
+				vueAnon.setStateExportMessage("Modifying a serie description", "red", -1);
+				vueAnon.pack();
 				StringBuilder sb =connexionHttp.makePostConnectionAndStringBuilder(url, ("{\"Replace\":{\"SeriesDescription\":\"" + value.toString() + "\"}}"));
 				if(sb!=null) {
+					System.out.println("ici");
 					connexionHttp.makeDeleteConnection("/series/" + uid );
+					System.out.println("la");
 				}else {
 					success=false;
 				}
@@ -85,20 +87,24 @@ public class TableExportSeriesModel extends DefaultTableModel{
 			@Override
 			protected void done(){
 				if(success) {
-					clear();
-					addSerie(studyID);
-					stateExport.setText("<html><font color='green'>The description has been changed.</font></html>");
-					frame.pack();	
+					refresh();
+					vueAnon.setStateExportMessage("The serie description has been changed.","green",4);
+				
 				}else {
-					stateExport.setText("<html><font color='red'>Error during Dicom Edition</font></html>");
+					vueAnon.setStateExportMessage("Error during Dicom Edition","red",-1);
 				}
+				vueAnon.pack();	
 				
 			}
 		};
+		
+		//If value changed, validate the change and trigger the worker
 		if(!oldDesc.equals(value.toString()) && col == 0){
+			super.setValueAt(value, row, col);
 			worker.execute();
 		}
-	}*/
+		
+	}
 
 	public void removeAllSecondaryCaptures() {
 		
@@ -135,7 +141,7 @@ public class TableExportSeriesModel extends DefaultTableModel{
 		this.currentStudy=studyAnonymized;
 		clear();
 		for(Serie serie:studyAnonymized.getAnonymizedStudy().getSeries()) {
-			addRow(new String[] {serie.getSerieDescription(), serie.getModality(), String.valueOf(serie.getNbInstances()), String.valueOf(serie.isSecondaryCapture()), serie.getFistInstanceId(), serie.getSeriesNumber()});
+			addRow(new String[] {serie.getSerieDescription(), serie.getModality(), String.valueOf(serie.getNbInstances()), String.valueOf(serie.isSecondaryCapture()), serie.getId(), serie.getSeriesNumber()});
 		}
 	}
 	
