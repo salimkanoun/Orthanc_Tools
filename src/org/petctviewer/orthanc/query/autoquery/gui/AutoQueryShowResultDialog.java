@@ -39,6 +39,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.awt.event.ActionEvent;
 
 @SuppressWarnings("serial")
@@ -106,9 +107,10 @@ public class AutoQueryShowResultDialog extends JDialog {
 				if (table.getSelectedRow()!=-1) {
 					DefaultTableModel model = (DefaultTableModel) table.getModel();
 					int[] rows = table.getSelectedRows();
-					   for(int i=0;i<rows.length;i++){
-						   model.removeRow(rows[i]-i);
-					   }
+					Arrays.sort(rows);
+					for(int i=(rows.length-1); i>=0; i--){
+						model.removeRow(rows[i]);
+					}
 				}
 			}
 		});

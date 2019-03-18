@@ -45,7 +45,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutionException;
 import java.util.prefs.Preferences;
 
 import javax.swing.BoxLayout;
@@ -2004,8 +2003,13 @@ public class VueAnon extends JFrame {
 		
 	}
 	
+	//private enum panels {Anon,Export,Manage};
+	//private panels currentopenPanel;
+	
 	public void openCloseAnonTool(boolean open) {
+		
 		if (open) {
+			closeAllPanel();
 			oToolRight.setVisible(false);
 			anonTablesPanel.setVisible(true);
 			addToAnon.setVisible(true);
@@ -2014,43 +2018,53 @@ public class VueAnon extends JFrame {
 			displayAnonTool.setText("Close anonymization tool");
 		}
 		else {
-			anonTablesPanel.setVisible(false);
-			addToAnon.setVisible(false);
-			displayAnonTool.setText("Anonymize");
-			displayExportTool.setVisible(true);
-			displayManageTool.setVisible(true);
+			closeAllPanel();
 		}
-		
+		pack();
 	}
 	
 	public void openCloseExportTool(boolean open) {
 		if (open) {
+			closeAllPanel();
 			oToolRight.setVisible(true);
 			displayExportTool.setText("Close Export Tool");
 			displayAnonTool.setVisible(false);
 			displayManageTool.setVisible(false);
 		}
 		else {
-			oToolRight.setVisible(false);
-			displayExportTool.setText("Export");
-			displayAnonTool.setVisible(true);
-			displayManageTool.setVisible(true);
+			closeAllPanel();
 		}
+		pack();
 	}
 	
 	private void openCloseManageTool(boolean open) {
 		if (open) {
+			closeAllPanel();
 			oToolRightManage.setVisible(true);
 			displayManageTool.setText("Close Manage Tool");
 			displayAnonTool.setVisible(false);
 			displayExportTool.setVisible(false);
 		}
 		else {
-			oToolRightManage.setVisible(false);
-			displayManageTool.setText("Manage");
-			displayAnonTool.setVisible(true);
-			displayExportTool.setVisible(true);
+			closeAllPanel();
 		}
+		pack();
+	}
+	
+	private void closeAllPanel() {
+		//Hide all panels
+		oToolRightManage.setVisible(false);
+		oToolRight.setVisible(false);
+		anonTablesPanel.setVisible(false);
+		addToAnon.setVisible(false);
+		//reset button to default value
+		displayManageTool.setText("Manage");
+		displayExportTool.setText("Export");
+		displayAnonTool.setText("Anonymize");
+		//Show buttons
+		displayAnonTool.setVisible(true);
+		displayExportTool.setVisible(true);
+		displayManageTool.setVisible(true);
 	}
 	
 	private void enableManageButtons(boolean enable) {

@@ -46,7 +46,12 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 //Renderer SC =>OK tester sur deux table main et export
 //SC Deletion Anon => A priori OK a tester
 //Tester toutes les fonctions!
-//Reoganiser le package Query
-//Finir sortie de AutoQuery
+//Reoganiser le package Query = +-
 //Search at study level
 //Run auto a tester sur Mac
+
+
+//AutoQuery doc a refaire
+//Valeur global au click
+//Interface resultats
+//recurrent query 

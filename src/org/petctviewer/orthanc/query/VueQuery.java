@@ -32,9 +32,10 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -63,7 +64,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
@@ -74,11 +74,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
-import javax.swing.text.DefaultCaret;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.petctviewer.orthanc.Orthanc_Tools;
 import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.anonymize.gui.DateRenderer;
@@ -163,7 +161,7 @@ public class VueQuery extends JFrame {
 	private JButton btnSchedule_1 ;
 	private JLabel info;
 	private AutoQuery autoQuery;
-	private JTextArea textAreaConsole;
+	//private JTextArea textAreaConsole;
 	private SwingWorker<Void, Void> workerAutoRetrieve;
 	private JButton btnStart ;
 	
@@ -657,6 +655,19 @@ public class VueQuery extends JFrame {
 		table.setModel(new DefaultTableModel(new Object[] {"Last Name", "First Name", "ID", "Accession Nb", "Study Date From","Study Date To", "Modality", "Study Description" },0));
 		table.setToolTipText("Date Format YYYYMMDD, Modality example : CT\\\\MRI");
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		
+		// listener
+		table.getTableHeader().addMouseListener(new MouseAdapter() {
+		    @Override
+		    public void mouseClicked(MouseEvent e) {
+		        int col = table.columnAtPoint(e.getPoint());
+		        String colName = table.getColumnName(col);
+		        String name = JOptionPane.showInputDialog("Set value for all "+colName);
+		        for(int i=0; i<table.getRowCount();i++) {
+		        	table.setValueAt(name, i, col);
+		        }
+		    }
+		});
 		scrollPane.setViewportView(table);
 		
 		JPanel Batch_Title = new JPanel();
@@ -724,7 +735,11 @@ public class VueQuery extends JFrame {
 					if(dailyInterface.validate) {
 						TimerTask task=new TimerTask() {
 						    public void run() {
-						    	showConsoleFrame();
+						    	AutoQuery_Retrieve_Results resultGui=new AutoQuery_Retrieve_Results(vueAnon);
+								resultGui.pack();
+								resultGui.setLocationRelativeTo(gui);
+								resultGui.setVisible(true);
+								resultGui.getConsole().append("Retrieved AET,"+comboBox_RetrieveAet.getSelectedItem().toString()+"\n");
 						    	//Ne marchera que pour le jour J (sans prendre en compte le calendar)
 								//On construit la string modalities
 								String modalities=dailyInterface.GetModalitiesString();
@@ -743,10 +758,13 @@ public class VueQuery extends JFrame {
 									results=autoQuery.sendQuery("*","*",df.format(new Date()),df.format(new Date()),modalities,studyDescParam,reseachString, comboBox_RetrieveAet.getSelectedItem().toString());
 								}
 								
-								textAreaConsole.append("found "+ results.length +" studies,");
-								autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(),textAreaConsole);
+								resultGui.getConsole().append("found "+ results.length +" studies,");
+								autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(),resultGui.getConsole());
 								//SK CONTINUER ICI
 								ArrayList<Study2> studiesRecieves=autoQuery.recievedStudiesAsStudiesObject();
+								Study2[] studiesRecieved=new Study2[studiesRecieves.size()];
+								studiesRecieves.toArray(studiesRecieved);
+								resultGui.addStudy(studiesRecieved);
 								
 						    }};
 						    
@@ -1122,93 +1140,55 @@ public class VueQuery extends JFrame {
 			}
 		}
 	}
-	/**
-	 * Create GUI to display log message during retrieve operations
-	 */
-	private void showConsoleFrame() {
-		JFrame console=new JFrame();
-		JPanel panel=new JPanel();
-		panel.setLayout(new BorderLayout());
-		console.add(panel);
-		JScrollPane scrollPane=new JScrollPane();
-		textAreaConsole = new JTextArea(10, 80);
-		textAreaConsole.setAutoscrolls(true);
-		DefaultCaret caret = (DefaultCaret) textAreaConsole.getCaret();
-		caret.setUpdatePolicy(DefaultCaret.OUT_BOTTOM);
-		scrollPane.setViewportView(textAreaConsole);
-		panel.add(scrollPane, BorderLayout.CENTER);
-		
-		JButton btnCsvRetrieveReport = new JButton("Save To CSV");
-		btnCsvRetrieveReport.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				JFileChooser csvReport=new JFileChooser();
-				csvReport.setFileSelectionMode(JFileChooser.FILES_ONLY);
-				csvReport.setSelectedFile(new File("Report_AutoRetrieve_"+df.format(new Date())+".csv"));
-				int ok=csvReport.showSaveDialog(null);
-				if (ok==JFileChooser.APPROVE_OPTION ) {
-					Orthanc_Tools.writeCSV(textAreaConsole.getText(), csvReport.getSelectedFile());
-					}
-			}
-		});
-		JPanel button=new JPanel();
-		btnCsvRetrieveReport.setToolTipText("Set Folder to generate report of AutoQuery");
-		button.add(btnCsvRetrieveReport);
-		panel.add(button, BorderLayout.SOUTH);
-		
-		console.pack();
-		console.setLocationRelativeTo(this);
-		console.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		console.setVisible(true);
-		
-	}
+	
 
 	private void makeWorker() {
 		
 		workerAutoRetrieve =new SwingWorker<Void,Void>(){
-
+			AutoQuery_Retrieve_Results resultGui;
 			ArrayList<Study2> studiesRecieves=new ArrayList<Study2>();
 			
 			@Override
 			protected Void doInBackground()  {
-			showConsoleFrame();
-			textAreaConsole.append("Retrieved AET,"+comboBox_RetrieveAet.getSelectedItem().toString()+"\n");
-			btnSchedule_1.setEnabled(false);
-			
-			if (table.getRowCount()!=0) {
+				resultGui=new AutoQuery_Retrieve_Results(vueAnon);
+				resultGui.pack();
+				resultGui.setLocationRelativeTo(gui);
+				resultGui.setVisible(true);
+				resultGui.getConsole().append("Retrieved AET,"+comboBox_RetrieveAet.getSelectedItem().toString()+"\n");
+				btnSchedule_1.setEnabled(false);
 				
-				for (int i=0; i<table.getRowCount(); i++) {
-					if (isCancelled()) return null;
-					textAreaConsole.append("Query "+(i+1)+ "/" + table.getRowCount()+",");
-					working=true;
-					//Construction String Name
-					String name=(table.getValueAt(i, 0).toString()+"^"+table.getValueAt(i, 1).toString());
-					if (name.equals("*^*")) name="*" ;
-					StudyDetails[] results=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox_RetrieveAet.getSelectedItem().toString());
-					textAreaConsole.append("["+ name.toString() + "_"+ table.getValueAt(i, 2).toString()+ "_"+ table.getValueAt(i, 4).toString().replaceAll("/", "") + "_" +table.getValueAt(i, 5).toString().replaceAll("/", "")+"_"+table.getValueAt(i, 6).toString()+"_"+table.getValueAt(i, 7).toString()+"_"+table.getValueAt(i, 3).toString()+"],");
-					//On retrieve toutes les studies 
-					if (results!=null) {
-						autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), textAreaConsole);
-						studiesRecieves.addAll(autoQuery.recievedStudiesAsStudiesObject());
-						System.out.println(studiesRecieves.size());
-					} else { 
-						info.setText("Empty Results");
-						textAreaConsole.append("empty Results,");
-					}	
+				if (table.getRowCount()!=0) {
+					
+					for (int i=0; i<table.getRowCount(); i++) {
+						if (isCancelled()) return null;
+						resultGui.getConsole().append("Query "+(i+1)+ "/" + table.getRowCount()+",");
+						working=true;
+						//Construction String Name
+						String name=(table.getValueAt(i, 0).toString()+"^"+table.getValueAt(i, 1).toString());
+						if (name.equals("*^*")) name="*" ;
+						StudyDetails[] results=autoQuery.sendQuery(name.toString(),table.getValueAt(i, 2).toString(),table.getValueAt(i, 4).toString().replaceAll("/", ""),table.getValueAt(i, 5).toString().replaceAll("/", ""),table.getValueAt(i, 6).toString(),table.getValueAt(i, 7).toString(),table.getValueAt(i, 3).toString(), comboBox_RetrieveAet.getSelectedItem().toString());
+						resultGui.getConsole().append("["+ name.toString() + "_"+ table.getValueAt(i, 2).toString()+ "_"+ table.getValueAt(i, 4).toString().replaceAll("/", "") + "_" +table.getValueAt(i, 5).toString().replaceAll("/", "")+"_"+table.getValueAt(i, 6).toString()+"_"+table.getValueAt(i, 7).toString()+"_"+table.getValueAt(i, 3).toString()+"],");
+						//On retrieve toutes les studies 
+						if (results!=null) {
+							autoQuery.retrieveQuery(results, Aet_Retrieve.getSelectedItem().toString(), resultGui.getConsole());
+							studiesRecieves.addAll(autoQuery.recievedStudiesAsStudiesObject());
+							System.out.println(studiesRecieves.size());
+						} else { 
+							info.setText("Empty Results");
+							resultGui.getConsole().append("empty Results,");
+						}	
+					}
+				
 				}
-			
-			}
-			return null;
+				return null;
 			}
 				
 			@Override
 			protected void done(){
-				AutoQuery_Retrieve_Results resultGui=new AutoQuery_Retrieve_Results(vueAnon);
+				
 				Study2[] studyArray=new Study2[studiesRecieves.size()];
 				studiesRecieves.toArray(studyArray);
 				resultGui.addStudy(studyArray);
-				resultGui.setLocationRelativeTo(gui);
-				resultGui.pack();
-				resultGui.setVisible(true);
 				info.setText("<html><font color='green'>Done, see Console for details</font></html>");
 				btnSchedule_1.setEnabled(true);
 				working=false;
