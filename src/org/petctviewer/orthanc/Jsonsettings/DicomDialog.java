@@ -26,6 +26,9 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+
+import com.google.gson.JsonObject;
+
 import javax.swing.JScrollPane;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -67,12 +70,12 @@ public class DicomDialog extends JDialog {
 						model.addRow(new Object[]{"Name", "AET", "IP", "0", "GenericNoUniversalWildcard"});
 						//On recupere les variable des arrays de la Hasmap des dicomNode
 						table.setValueAt(aetDispo[i], i, 0);
-						table.setValueAt(settings.dicomNode.get(aetDispo[i]).get(0).toString(), i, 1);
-						table.setValueAt(settings.dicomNode.get(aetDispo[i]).get(1).toString(), i, 2);
-						table.setValueAt(settings.dicomNode.get(aetDispo[i]).get(2).toString(), i, 3);
+						table.setValueAt(settings.dicomNode.get(aetDispo[i]).getAsJsonArray().get(0).getAsString(), i, 1);
+						table.setValueAt(settings.dicomNode.get(aetDispo[i]).getAsJsonArray().get(1).getAsString(), i, 2);
+						table.setValueAt(settings.dicomNode.get(aetDispo[i]).getAsJsonArray().get(2).getAsString(), i, 3);
 						//Le manifacturer n'est pas obligatoire
-						if (settings.dicomNode.get(aetDispo[i]).size()==3) table.setValueAt("Generic", i, 4);
-						if (settings.dicomNode.get(aetDispo[i]).size()==4) table.setValueAt(settings.dicomNode.get(aetDispo[i]).get(3).toString(), i, 4);
+						if (settings.dicomNode.get(aetDispo[i]).getAsJsonArray().size()==3) table.setValueAt("Generic", i, 4);
+						if (settings.dicomNode.get(aetDispo[i]).getAsJsonArray().size()==4) table.setValueAt(settings.dicomNode.get(aetDispo[i]).getAsJsonArray().get(3).getAsString(), i, 4);
 					}
 				
 					
@@ -91,7 +94,7 @@ public class DicomDialog extends JDialog {
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
 						//On vide l'ancienne variable des dicom node (pour effacer ceux qui aurait ete supprimee)
-						settings.dicomNode.clear();
+						settings.dicomNode=new JsonObject();
 						//On en construit une nouvelle à partir des valeurs du tableau
 						for (int i=0; i<table.getRowCount();i++)
 						{
@@ -144,7 +147,7 @@ public class DicomDialog extends JDialog {
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						//On vide la liste des dicomnodes avant de la reconstruire
-						settings.dicomNode.clear();
+						settings.dicomNode=new JsonObject();
 						for (int i=0; i<table.getRowCount(); i++){
 							settings.addDicomNode(table.getValueAt(i, 0).toString(), table.getValueAt(i, 1).toString(), table.getValueAt(i, 2).toString(), Integer.valueOf(table.getValueAt(i, 3).toString()), table.getValueAt(i, 4).toString());
 						}

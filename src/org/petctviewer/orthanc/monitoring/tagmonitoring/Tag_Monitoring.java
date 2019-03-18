@@ -7,20 +7,20 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JTextArea;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.monitoring.Orthanc_Monitoring;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class Tag_Monitoring {
 	
 	private Preferences jprefer = VueAnon.jprefer;
 	private OrthancRestApis parametre;
 	private String level;
-	private JSONParser parser=new JSONParser();
+	private JsonParser parser=new JsonParser();
 	private Timer timer;
 	JTextArea textAreaConsole;
 	
@@ -45,14 +45,9 @@ public class Tag_Monitoring {
 				if (level.equals("patient")) {
 					for (int i=0 ; i<monitoring.newPatientID.size(); i++) {
 						StringBuilder sb=parametre.makeGetConnectionAndStringBuilder("/patients/"+monitoring.newPatientID.get(i));
-						JSONObject patientJson = null;
-						try {
-							patientJson = (JSONObject) parser.parse(sb.toString());
-						} catch (ParseException e) {
-							e.printStackTrace();
-						}
+						JsonObject patientJson = parser.parse(sb.toString()).getAsJsonObject();
 						
-						HashMap<String, String> hashmapTagPatient=getMainPatientTag((JSONObject) patientJson.get("MainDicomTags"));
+						HashMap<String, String> hashmapTagPatient=getMainPatientTag(patientJson.get("MainDicomTags").getAsJsonObject());
 						
 						//On ecrit dans la BDD
 						if(jprefer.getBoolean("useDBMonitoring", false)) {
@@ -67,12 +62,8 @@ public class Tag_Monitoring {
 				else if (level.equals("study")) {
 					for (int i=0 ; i<monitoring.newStudyID.size(); i++) {
 						StringBuilder sb=parametre.makeGetConnectionAndStringBuilder("/studies/"+monitoring.newStudyID.get(i));
-						HashMap<String, String> studyTag=null;
-						try {
-							studyTag=getMainStudyTag((JSONObject) parser.parse(sb.toString()));
-						} catch (ParseException e) {
-							e.printStackTrace();
-						}
+						HashMap<String, String> studyTag=getMainStudyTag(parser.parse(sb.toString()).getAsJsonObject());
+						
 						if(jprefer.getBoolean("useDBMonitoring", false)) {
 							db.InsertPatient(studyTag.get("LastName"), studyTag.get("FirstName") ,  studyTag.get("PatientID"), monitoring.newPatientID.get(i), studyTag.get("PatientBirthDate"), studyTag.get("PatientSex") );
 							db.InsertStudy(studyTag.get("StudyID"), studyTag.get("StudyInstanceUID"), studyTag.get(monitoring.newStudyID.get(i)), studyTag.get("AccessionNumber"), studyTag.get("InstitutionName"), studyTag.get("ReferringPhysicianName"), studyTag.get("StudyDate"), studyTag.get("StudyDescription"), studyTag.get("StudyTime"), studyTag.get("ParentPatient"));
@@ -123,12 +114,12 @@ public class Tag_Monitoring {
         timer.scheduleAtFixedRate(timerTask, 0, (90*1000));
 	}
 	
-	private HashMap<String, String> getMainPatientTag(JSONObject mainPatientTag) {
+	private HashMap<String, String> getMainPatientTag(JsonObject mainPatientTag) {
 		
-		String birthDate=(String) mainPatientTag.get("PatientBirthDate");
-		String patientID=(String) mainPatientTag.get("PatientID");
-		String patientName=(String) mainPatientTag.get("PatientName");
-		String patientSex=(String) mainPatientTag.get("PatientSex");
+		String birthDate=mainPatientTag.get("PatientBirthDate").getAsString();
+		String patientID=mainPatientTag.get("PatientID").getAsString();
+		String patientName=mainPatientTag.get("PatientName").getAsString();
+		String patientSex=mainPatientTag.get("PatientSex").getAsString();
 		
 		textAreaConsole.append("New patient"+ ",");
 		textAreaConsole.append("Name= "+patientName+",");
@@ -155,23 +146,23 @@ public class Tag_Monitoring {
 		return hashmapTagPatient;
 	}
 	
-	private HashMap<String, String> getMainStudyTag(JSONObject jsonStudy) {
+	private HashMap<String, String> getMainStudyTag(JsonObject jsonStudy) {
 		textAreaConsole.append("New Study"+ "\n");
-		JSONObject jsonMainStudyTag=(JSONObject) jsonStudy.get("MainDicomTags");
+		JsonObject jsonMainStudyTag=jsonStudy.get("MainDicomTags").getAsJsonObject();
 		
 		//On recupere les info Patients
-		HashMap<String, String> hashmapTagPatient=getMainPatientTag((JSONObject) jsonStudy.get("PatientMainDicomTags"));
+		HashMap<String, String> hashmapTagPatient=getMainPatientTag(jsonStudy.get("PatientMainDicomTags").getAsJsonObject());
 		
 		//Info Study
-		String accessionNumber=(String) jsonMainStudyTag.get("AccessionNumber");
-		String institutionName=(String) jsonMainStudyTag.get("InstitutionName");
-		String referringPhysicianName=(String) jsonMainStudyTag.get("ReferringPhysicianName");
-		String studyDate=(String) jsonMainStudyTag.get("StudyDate");
-		String studyDescription=(String) jsonMainStudyTag.get("StudyDescription");
-		String studyID=(String) jsonMainStudyTag.get("StudyID");
-		String studyInstanceUID=(String) jsonMainStudyTag.get("StudyInstanceUID");
-		String studyTime=(String) jsonMainStudyTag.get("StudyTime");
-		String parentPatientID=(String) jsonMainStudyTag.get("ParentPatient");
+		String accessionNumber=jsonMainStudyTag.get("AccessionNumber").getAsString();
+		String institutionName=jsonMainStudyTag.get("InstitutionName").getAsString();
+		String referringPhysicianName=jsonMainStudyTag.get("ReferringPhysicianName").getAsString();
+		String studyDate=jsonMainStudyTag.get("StudyDate").getAsString();
+		String studyDescription=jsonMainStudyTag.get("StudyDescription").getAsString();
+		String studyID=jsonMainStudyTag.get("StudyID").getAsString();
+		String studyInstanceUID=jsonMainStudyTag.get("StudyInstanceUID").getAsString();
+		String studyTime=jsonMainStudyTag.get("StudyTime").getAsString();
+		String parentPatientID=jsonMainStudyTag.get("ParentPatient").getAsString();
 		
 		textAreaConsole.append("AccessionNumber= "+accessionNumber+ ",");
 		textAreaConsole.append("InstitutionName= " + institutionName+ ",");
@@ -202,35 +193,24 @@ public class Tag_Monitoring {
 		HashMap<String, String> hashmapTag=new HashMap<String, String>();
 		
 		StringBuilder sbSeries=parametre.makeGetConnectionAndStringBuilder("/series/"+seriesID);
-		JSONObject seriesJson = null;
-		try {
-			seriesJson = (JSONObject) parser.parse(sbSeries.toString());
-			String parentStudy=(String) seriesJson.get("ParentStudy");
-			hashmapTag.put("ParentStudy", parentStudy);
-			StringBuilder patient=parametre.makeGetConnectionAndStringBuilder("/studies/"+parentStudy);
-			JSONObject patientJson = (JSONObject) parser.parse(patient.toString());
-			String parentPatient=(String) patientJson.get("ParentPatient");
-			hashmapTag.put("ParentPatient", parentPatient);
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
+		JsonObject seriesJson = parser.parse(sbSeries.toString()).getAsJsonObject();
 		
-		
-		JSONArray instanceArray=(JSONArray) seriesJson.get("Instances");
+		String parentStudy=seriesJson.get("ParentStudy").getAsString();
+		hashmapTag.put("ParentStudy", parentStudy);
+		StringBuilder patient=parametre.makeGetConnectionAndStringBuilder("/studies/"+parentStudy);
+		JsonObject patientJson = parser.parse(patient.toString()).getAsJsonObject();
+		String parentPatient=patientJson.get("ParentPatient").getAsString();
+		hashmapTag.put("ParentPatient", parentPatient);
+
+		JsonArray instanceArray=seriesJson.get("Instances").getAsJsonArray();
 		StringBuilder instanceJson=parametre.makeGetConnectionAndStringBuilder("/instances/"+instanceArray.get(0)+"/tags");
-		JSONObject tags = null;
-		try {
-			tags = (JSONObject) parser.parse(instanceJson.toString());
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		
-				
+		JsonObject tags = parser.parse(instanceJson.toString()).getAsJsonObject();
+
 		for (int i=0 ; i<Tag_Of_Interest.tagOfInterestPatient.length; i++) {
-			if (tags.containsKey(Tag_Of_Interest.tagOfInterestPatient[i])) {
-				JSONObject jsonTag=(JSONObject) tags.get(Tag_Of_Interest.tagOfInterestPatient[i]);
-				String name=(String) jsonTag.get("Name");
-				String value=(String) jsonTag.get("Value");
+			if (tags.has(Tag_Of_Interest.tagOfInterestPatient[i])) {
+				JsonObject jsonTag=tags.get(Tag_Of_Interest.tagOfInterestPatient[i]).getAsJsonObject();
+				String name=jsonTag.get("Name").getAsString();
+				String value=jsonTag.get("Value").getAsString();
 				textAreaConsole.append(name +" "+value +",");
 				
 				hashmapTag.put(name, value);
@@ -251,10 +231,10 @@ public class Tag_Monitoring {
 		
 		
 		for (int i=0 ; i<Tag_Of_Interest.tagOfInterestStudy.length; i++) {
-			if (tags.containsKey(Tag_Of_Interest.tagOfInterestStudy[i])) {
-				JSONObject jsonTag=(JSONObject) tags.get(Tag_Of_Interest.tagOfInterestStudy[i]);
-				String name=(String) jsonTag.get("Name");
-				String value=(String) jsonTag.get("Value");
+			if (tags.has(Tag_Of_Interest.tagOfInterestStudy[i])) {
+				JsonObject jsonTag=tags.get(Tag_Of_Interest.tagOfInterestStudy[i]).getAsJsonObject();
+				String name=jsonTag.get("Name").getAsString();
+				String value=jsonTag.get("Value").getAsString();
 				textAreaConsole.append(name +" "+value +",");
 				hashmapTag.put(name, value);
 			}
@@ -262,26 +242,26 @@ public class Tag_Monitoring {
 		}
 		
 		for (int i=0 ; i<Tag_Of_Interest.tagOfInterestSeries.length; i++) {
-			if (tags.containsKey(Tag_Of_Interest.tagOfInterestSeries[i])) {
-				JSONObject jsonTag=(JSONObject) tags.get(Tag_Of_Interest.tagOfInterestSeries[i]);
-				String name=(String) jsonTag.get("Name");
-				String value=(String) jsonTag.get("Value");
+			if (tags.has(Tag_Of_Interest.tagOfInterestSeries[i])) {
+				JsonObject jsonTag=tags.get(Tag_Of_Interest.tagOfInterestSeries[i]).getAsJsonObject();
+				String name=jsonTag.get("Name").getAsString();
+				String value=jsonTag.get("Value").getAsString();
 				textAreaConsole.append(name +" "+value+",");
 				hashmapTag.put(name, value);
 			}
 			
 		}
 		
-		if (tags.containsKey(Tag_Of_Interest.radiopharmaceuticalTag)) {
-			JSONObject radiopharmaceuticalSequence = (JSONObject) tags.get(Tag_Of_Interest.radiopharmaceuticalTag);
+		if (tags.has(Tag_Of_Interest.radiopharmaceuticalTag)) {
+			JsonObject radiopharmaceuticalSequence = tags.get(Tag_Of_Interest.radiopharmaceuticalTag).getAsJsonObject();
 			hashmapTag.put("RadiopharmaceuticalInformationSequence", radiopharmaceuticalSequence.toString());
-			JSONArray radiopharmaceuticalSequenceTags= (JSONArray) radiopharmaceuticalSequence.get("Value");
-			JSONObject radiopharmaceuticalSequenceTagsValue = (JSONObject) radiopharmaceuticalSequenceTags.get(0);
+			JsonArray radiopharmaceuticalSequenceTags=radiopharmaceuticalSequence.get("Value").getAsJsonArray();
+			JsonObject radiopharmaceuticalSequenceTagsValue = radiopharmaceuticalSequenceTags.get(0).getAsJsonObject();
 			for (int i=0 ; i<Tag_Of_Interest.radiopharmaceutical.length; i++) {
-				if (radiopharmaceuticalSequenceTagsValue.containsKey(Tag_Of_Interest.radiopharmaceutical[i])) {
-					JSONObject jsonTag=(JSONObject) radiopharmaceuticalSequenceTagsValue.get(Tag_Of_Interest.radiopharmaceutical[i]);
-					String name=(String) jsonTag.get("Name");
-					String value=(String) jsonTag.get("Value");
+				if (radiopharmaceuticalSequenceTagsValue.has(Tag_Of_Interest.radiopharmaceutical[i])) {
+					JsonObject jsonTag=radiopharmaceuticalSequenceTagsValue.get(Tag_Of_Interest.radiopharmaceutical[i]).getAsJsonObject();
+					String name=jsonTag.get("Name").getAsString();
+					String value=jsonTag.get("Value").getAsString();
 					textAreaConsole.append(name +" "+value+",");
 					hashmapTag.put(name, value);
 				}
@@ -290,9 +270,9 @@ public class Tag_Monitoring {
 		}
 		
 		
-		if (tags.containsKey(Tag_Of_Interest.radiationDoseModule)) {
-			JSONObject radiationDoseModule = (JSONObject) tags.get(Tag_Of_Interest.radiationDoseModule);
-			JSONArray radiationSequenceTags= (JSONArray) radiationDoseModule.get("Value");
+		if (tags.has(Tag_Of_Interest.radiationDoseModule)) {
+			JsonObject radiationDoseModule = tags.get(Tag_Of_Interest.radiationDoseModule).getAsJsonObject();
+			JsonArray radiationSequenceTags= radiationDoseModule.get("Value").getAsJsonArray();
 			textAreaConsole.append(radiationSequenceTags+",");
 			hashmapTag.put(Tag_Of_Interest.radiationDoseModule, radiationSequenceTags.toString());
 			

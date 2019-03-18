@@ -26,7 +26,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-import org.json.simple.JSONArray;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -58,7 +59,7 @@ public class Content_Dialog extends JDialog {
 				settings.contentType.keySet().toArray(contentType);
 				for (int i=0 ; i<contentType.length;i++){
 					model.addRow(new Object[]{"Name", "0", "MIME"});
-					JSONArray content=settings.contentType.get(contentType[i]);
+					JsonArray content=settings.contentType.get(contentType[i]).getAsJsonArray();
 					table.setValueAt(contentType[i], i, 0);
 					table.setValueAt(Integer.valueOf(content.get(0).toString()), i, 1);
 					table.setValueAt(content.get(1).toString(), i, 2);
@@ -115,7 +116,7 @@ public class Content_Dialog extends JDialog {
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						//On vide les ancienne content
-						settings.contentType.clear();
+						settings.contentType=new JsonObject();
 						for (int i=0; i<table.getRowCount(); i++){
 							settings.addContentType(table.getValueAt(i, 0).toString(), Integer.valueOf(table.getValueAt(i, 1).toString()), table.getValueAt(i, 2).toString());
 						}

@@ -25,6 +25,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+
+import com.google.gson.JsonArray;
+
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.awt.event.ActionEvent;
@@ -105,8 +108,8 @@ public class FolderDialog extends JDialog {
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						//On vide les array ancienne et on les remplace
-						if (lua) settings.luaFolder.clear();
-						if (!lua) settings.pluginsFolder.clear();
+						if (lua) settings.luaFolder=new JsonArray();
+						if (!lua) settings.pluginsFolder=new JsonArray();
 						DefaultTableModel model = (DefaultTableModel) table.getModel();
 						for (int i=0; i<model.getRowCount();i++){
 							if (!lua) settings.addplugins(model.getValueAt(i, 0).toString());
