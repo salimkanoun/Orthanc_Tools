@@ -42,12 +42,13 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.export.ExportZip;
 import org.petctviewer.orthanc.monitoring.Orthanc_Monitoring;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -69,7 +70,7 @@ public class CD_Burner {
 	private Date datenow;
 	private OrthancRestApis connexion;
 	private Timer timer;
-	private JSONParser parser=new JSONParser();
+	private JsonParser parser=new JsonParser();
 	private HashMap<String, Object[]> burningStatus=new HashMap<String, Object[]>();
 	
 	public CD_Burner (OrthancRestApis connexion, JTable table_burning_history) {
@@ -134,18 +135,18 @@ public class CD_Burner {
 			try {
 				//Store the Row number where we are going to display progress
 				int rownumber=table_burning_history.getRowCount();
-				
-				JSONObject response=(JSONObject) parser.parse(connexion.makeGetConnectionAndStringBuilder("/studies/"+ newStableStudyID.get(i)).toString());			
-				JSONObject mainPatientTag=(JSONObject) response.get("PatientMainDicomTags");
+				StringBuilder answer=connexion.makeGetConnectionAndStringBuilder("/studies/"+ newStableStudyID.get(i));
+				JsonObject response=parser.parse(answer.toString()).getAsJsonObject();			
+				JsonObject mainPatientTag=response.get("PatientMainDicomTags").getAsJsonObject();
 				
 				//Get value of interest : Patient Name / ID / DOB / study date and description
-				String nom=(String) mainPatientTag.get("PatientName");
-				String id=(String) mainPatientTag.get("PatientID");
-				String patientDOB=(String) mainPatientTag.get("PatientBirthDate");
-				JSONObject mainDicomTag=(JSONObject) response.get("MainDicomTags");
-				String studyDate=(String) mainDicomTag.get("StudyDate");
-				String studyDescription=(String) mainDicomTag.get("StudyDescription");
-				String accessionNumber=(String) mainDicomTag.get("AccessionNumber");
+				String nom=mainPatientTag.get("PatientName").getAsString();
+				String id=mainPatientTag.get("PatientID").getAsString();
+				String patientDOB=mainPatientTag.get("PatientBirthDate").getAsString();
+				JsonObject mainDicomTag=response.get("MainDicomTags").getAsJsonObject();
+				String studyDate=mainDicomTag.get("StudyDate").getAsString();
+				String studyDescription=mainDicomTag.get("StudyDescription").getAsString();
+				String accessionNumber=mainDicomTag.get("AccessionNumber").getAsString();
 				
 				//Update display status
 				(( DefaultTableModel) table_burning_history.getModel()).addRow(new String[]{nom,id, patientDOB ,studyDate,studyDescription,"Recieved" });

@@ -8,19 +8,19 @@ import java.util.TimerTask;
 
 import javax.swing.JLabel;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.petctviewer.orthanc.monitoring.Orthanc_Monitoring;
 import org.petctviewer.orthanc.query.QueryRetrieve;
 import org.petctviewer.orthanc.query.datastorage.StudyDetails;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 public class Auto_Fetch {
 	
 	private OrthancRestApis connexion;
 	private String level, studyDate, modality, studyDescription, queryAet , retrieveAet;
-	private JSONParser parser=new JSONParser();
+	private JsonParser parser=new JsonParser();
 	private QueryRetrieve restApi;
 	private JLabel status;
 	
@@ -55,28 +55,19 @@ public class Auto_Fetch {
 				if (level.equals("study")) {
 					for (int i=0; i<monitoring.newStudyID.size(); i++) {
 						StringBuilder sb = connexion.makeGetConnectionAndStringBuilder("/studies/"+monitoring.newStudyID.get(i));
-						try {
-							JSONObject study = (JSONObject) parser.parse(sb.toString());
-							JSONObject patientMainTag= (JSONObject) study.get("PatientMainDicomTags");
-							idToProcess.add((String) patientMainTag.get("PatientID"));
-						} catch (ParseException e) {
-							e.printStackTrace();
-						}
-						
+					
+						JsonObject study = parser.parse(sb.toString()).getAsJsonObject();
+						JsonObject patientMainTag= study.get("PatientMainDicomTags").getAsJsonObject();
+						idToProcess.add(patientMainTag.get("PatientID").getAsString());
 					}
 				}
 				//Si on monitore le level Patients on parcours les patients arrivees pour stocker les ID patients a retrieve
 				if (level.equals("patient")) {
 					for (int i=0; i<monitoring.newPatientID.size(); i++) {
 						StringBuilder sb = connexion.makeGetConnectionAndStringBuilder("/patients/"+monitoring.newPatientID.get(i));
-						try {
-							JSONObject patient = (JSONObject) parser.parse(sb.toString());
-							JSONObject patientMainTag= (JSONObject) patient.get("MainDicomTags");
-							idToProcess.add((String) patientMainTag.get("PatientID"));
-						} catch (ParseException e) {
-							e.printStackTrace();
-						}
-						
+						JsonObject patient = parser.parse(sb.toString()).getAsJsonObject();
+						JsonObject patientMainTag=patient.get("MainDicomTags").getAsJsonObject();
+						idToProcess.add(patientMainTag.get("PatientID").getAsString());
 					}
 					
 				}
