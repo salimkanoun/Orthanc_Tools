@@ -662,7 +662,7 @@ public class VueQuery extends JFrame {
 		    public void mouseClicked(MouseEvent e) {
 		        int col = table.columnAtPoint(e.getPoint());
 		        String colName = table.getColumnName(col);
-		        String name = JOptionPane.showInputDialog("Set value for all "+colName);
+		        String name = JOptionPane.showInputDialog("Set value for all "+colName, "*");
 		        for(int i=0; i<table.getRowCount();i++) {
 		        	table.setValueAt(name, i, col);
 		        }
