@@ -18,18 +18,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 package org.petctviewer.orthanc.anonymize.gui;
 
 import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.Color;
+import java.awt.GridLayout;
 import java.awt.Image;
-import java.awt.Insets;
 
-import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
 public class AboutBoxFrame extends JDialog{
 
@@ -39,90 +38,42 @@ public class AboutBoxFrame extends JDialog{
 		super(gui, "About us");
 		
 		JPanel mainPanel = new JPanel(new BorderLayout());
-		JPanel labelPanel = new JPanel();
-		labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.PAGE_AXIS));
-		JLabel title = new JLabel("Dicom Tools v.1.2");
-		title.setBorder(new EmptyBorder(3, 150, 3, 150));
-		labelPanel.add(title);
-		JLabel orthancSite = new JLabel("<html><i>Based on Orthanc http://www.orthanc-server.com</i></html>");
-		orthancSite.setBorder(new EmptyBorder(3, 100, 3, 100));
-		labelPanel.add(orthancSite);
 		
-		JPanel authorsLicencePanel = new JPanel(new GridBagLayout());
-		GridBagConstraints gbc = new GridBagConstraints();
-		
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.insets = new Insets(20, 5, 5, 20);
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		authorsLicencePanel.add(new JLabel("Anousone Vongsalat"), gbc);
-		
-		gbc.gridx = 1;
-		gbc.gridy = 0;
-		authorsLicencePanel.add(new JLabel("<html><i>anousonevongsalat@yahoo.com</i></html>"), gbc);
-		
-		gbc.gridx = 0;
-		gbc.gridy = 1;
-		authorsLicencePanel.add(new JLabel("Salim Kanoun"), gbc);
-		
-		gbc.gridx = 1;
-		gbc.gridy = 1;
-		authorsLicencePanel.add(new JLabel("<html><i>salim.kanoun@gmail.com</i></html>"), gbc);
-		
-		gbc.gridx = 0;
-		gbc.gridy = 2;
-		authorsLicencePanel.add(new JLabel("Licence"), gbc);
-		
-		gbc.gridx = 1;
-		gbc.gridy = 2;
-		authorsLicencePanel.add(new JLabel("GPL V.3"), gbc);
-		
-		gbc.gridx = 0;
-		gbc.gridy = 3;
-		authorsLicencePanel.add(new JLabel("Website"), gbc);
-		
-		gbc.gridx = 1;
-		gbc.gridy = 3;
-		authorsLicencePanel.add(new JLabel("<html><i>petctviewer.org</i><html>"), gbc);
-		
-		JPanel logosPanel = new JPanel(new GridBagLayout());
-		gbc.insets = new Insets(20, 10, 0, 10);
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		Image logoICR = new ImageIcon(ClassLoader.getSystemResource("logos/claudiusregaud.png")).getImage();
-		logosPanel.add(new JLabel(new ImageIcon(logoICR)), gbc);
-		
-		gbc.gridx = 1;
-		gbc.gridy = 0;
-		Image logoCHU = new ImageIcon(ClassLoader.getSystemResource("logos/chu.png")).getImage();
-		logosPanel.add(new JLabel(new ImageIcon(logoCHU)), gbc);
-		
-		gbc.gridx = 2;
-		gbc.gridy = 0;
-		Image logoIUT = new ImageIcon(ClassLoader.getSystemResource("logos/iut.png")).getImage();
-		logosPanel.add(new JLabel(new ImageIcon(logoIUT)), gbc);
-
-		gbc.insets = new Insets(0, 10, 0, 10);
-		
-		gbc.gridx = 0;
-		gbc.gridy = 1;
-		logosPanel.add(new JLabel("Institut Claudius Regaud"), gbc);
 		Image image = new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage();
 		this.setIconImage(image);
 		
-		gbc.gridx = 1;
-		gbc.gridy = 1;
-		logosPanel.add(new JLabel("CHU de Toulouse"), gbc);
-		
-		gbc.gridx = 2;
-		gbc.gridy = 1;
-		logosPanel.add(new JLabel("IUT Paul Sabatier"), gbc);
-		
-		mainPanel.add(labelPanel, BorderLayout.NORTH);
-		mainPanel.add(authorsLicencePanel, BorderLayout.CENTER);
-		mainPanel.add(logosPanel, BorderLayout.SOUTH);
-		
 		this.getContentPane().add(mainPanel);
+		
+		JPanel panel_center = new JPanel();
+		mainPanel.add(panel_center, BorderLayout.CENTER);
+		panel_center.setLayout(new BorderLayout(5, 10));
+		
+		JPanel panel = new JPanel();
+		panel.setBorder(new LineBorder(Color.LIGHT_GRAY));
+		panel_center.add(panel, BorderLayout.CENTER);
+		panel.setLayout(new GridLayout(0, 1, 0, 0));
+		JLabel title = new JLabel("Dicom Tools v.1.5alfa");
+		title.setForeground(Color.RED);
+		panel.add(title);
+		title.setBorder(new EmptyBorder(3, 150, 3, 150));
+		JLabel orthancSite = new JLabel("<html><i>Based on Orthanc :  http://www.orthanc-server.com</i></html>");
+		panel.add(orthancSite);
+		orthancSite.setBorder(new EmptyBorder(3, 100, 3, 100));
+		
+		JPanel authorsLicencePanel = new JPanel();
+		panel_center.add(authorsLicencePanel, BorderLayout.SOUTH);
+		authorsLicencePanel.setLayout(new GridLayout(0, 2, 10, 10));
+			
+		JLabel label = new JLabel("Salim Kanoun");
+		authorsLicencePanel.add(label);
+
+		JLabel label_1 = new JLabel("<html><i>salim.kanoun@gmail.com</i></html>");
+		authorsLicencePanel.add(label_1);
+		authorsLicencePanel.add(new JLabel("Licence"));
+		authorsLicencePanel.add(new JLabel("GPL V.3"));
+		authorsLicencePanel.add(new JLabel("Website"));
+
+		authorsLicencePanel.add(new JLabel("<html><i>petctviewer.org</i><html>"));
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		pack();
 		setLocationRelativeTo(gui);
