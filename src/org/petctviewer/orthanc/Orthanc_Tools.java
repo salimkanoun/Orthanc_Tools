@@ -42,13 +42,14 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 
 
 //SK TO DO
-//Debeug clique droit dans export (study et series)
+//Debeug clique droit dans export (study et series) => Reste reperage et delete des SC dans export series
 //Renderer SC =>OK tester sur deux table main et export
 //SC Deletion Anon => A priori OK a tester
 //Tester toutes les fonctions!
-//Reoganiser le package Query = +-
 //Search at study level
+
 //Run auto a tester sur Mac
+//Reoganiser le package Query = +-
 
 
 //AutoQuery doc a refaire
