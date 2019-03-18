@@ -110,6 +110,7 @@ public class TableExportSeriesModel extends DefaultTableModel{
 		
 		for(int i=0; i<this.getRowCount(); i++){
 			Serie serie= (Serie) this.getValueAt(i, 6);
+			System.out.println(serie.isSecondaryCapture());
 			if(serie.isSecondaryCapture()){
 				String url="/series/" + serie.getId();
 				boolean success=connexionHttp.makeDeleteConnection(url);
@@ -119,6 +120,8 @@ public class TableExportSeriesModel extends DefaultTableModel{
 				
 			}
 		}
+		//refresh the series list in the current anonymized object
+		currentStudy.getAnonymizedStudy().refreshChildSeries(queryOrthanc);
 		//Refresh the Table by quering again Orthanc
 		this.addSerie(currentStudy);
 
