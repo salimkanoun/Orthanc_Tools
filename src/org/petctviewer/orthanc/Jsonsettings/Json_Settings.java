@@ -43,10 +43,8 @@ public class Json_Settings {
 	protected JsonObject contentType=new JsonObject();
 	// JsonObject des dictionary
 	protected JsonObject dictionary=new JsonObject();
-	
 	// Array des Lua folder 
 	protected JsonArray luaFolder=new JsonArray();
-	
 	//Array des plugin folder
 	protected JsonArray pluginsFolder=new JsonArray();
 	
@@ -110,11 +108,19 @@ public class Json_Settings {
 	protected int JobsHistorySize;
 	protected int ConcurrentJobs;
 	
+	
+	
 	protected boolean dicomModalitiesInDb;
 	protected boolean orthancPeerInDb;
 	protected boolean overwriteInstances;
 	protected int mediaArchiveSize;
 	protected String storageAccessOnFind;
+
+	protected boolean httpVerbose;
+	protected boolean tcpNoDelay;
+	protected int httpThreadsCount;
+	protected boolean saveJobs;
+	protected boolean metricsEnabled;
 	
 	
 	protected File fichierInput;
@@ -124,7 +130,7 @@ public class Json_Settings {
 	}
 	
 	protected void initialiserIndex() {
-		// on Set des valeurs par defaut
+				// on Set des valeurs par defaut
 				orthancName="myOrthanc";
 				storageDirectory="OrthancStorage";
 				indexDirectory="OrthancStorage";
@@ -234,12 +240,9 @@ public class Json_Settings {
 		index.addProperty("AuthenticationEnabled", AuthenticationEnabled);
 		index.add("RegisteredUsers", users);
 		index.add("DicomModalities", dicomNode);
-
-		
 		index.addProperty("DicomAlwaysAllowEcho", dicomAlwaysAllowEcho);
 		index.addProperty("DicomAlwaysAllowStore", DicomAlwaysStore);
 		index.addProperty("DicomCheckModalityHost", CheckModalityHost);
-		
 		index.addProperty("DicomScuTimeout", DicomScuTimeout);
 		index.add("OrthancPeers", orthancPeer);
 		index.addProperty("HttpProxy", HttpProxy);
@@ -264,12 +267,11 @@ public class Json_Settings {
 		index.add("Dictionary", dictionary);
 		index.addProperty("SynchronousCMove", SynchronousCMove);
 		index.addProperty("JobsHistorySize", JobsHistorySize);
-		index.addProperty("dicomModalitiesInDb", dicomModalitiesInDb);
-		index.addProperty("orthancPeerInDb", orthancPeerInDb);
-		index.addProperty("overwriteInstances", overwriteInstances);
-		index.addProperty("mediaArchiveSize", mediaArchiveSize);
-		index.addProperty("storageAccessOnFind", storageAccessOnFind);
-		
+		index.addProperty("DicomModalitiesInDatabase", dicomModalitiesInDb);
+		index.addProperty("OrthancPeersInDatabase", orthancPeerInDb);
+		index.addProperty("OverwriteInstances", overwriteInstances);
+		index.addProperty("MediaArchiveSize", mediaArchiveSize);
+		index.addProperty("StorageAccessOnFind", storageAccessOnFind);
 		index.addProperty("HttpVerbose", httpVerbose);
 		index.addProperty("TcpNoDelay", tcpNoDelay);
 		index.addProperty("HttpThreadsCount", httpThreadsCount);
@@ -391,18 +393,11 @@ public class Json_Settings {
 			 //On passe dans JSMin pour enlever les commentaire avant le parsing
 			 StringWriter out = new StringWriter();
 			 JSMin js= new JSMin(reader, out);
-			 
 			 js.jsmin();
-			 
-			
 			 JsonParser parser = new JsonParser();
 			 JsonObject orthancJson= parser.parse(out.toString()).getAsJsonObject();
-		
 			 parserOrthancJson(orthancJson);
-		 }
-	 
-		 catch (FileNotFoundException e1) {	e1.printStackTrace();}
-			
+		 } catch (FileNotFoundException e1) {e1.printStackTrace();}	
 		
 	}
 	
@@ -462,13 +457,18 @@ public class Json_Settings {
 		if (orthancJson.has("SynchronousCMove")) SynchronousCMove=orthancJson.get("SynchronousCMove").getAsBoolean();
 		if (orthancJson.has("JobsHistorySize")) JobsHistorySize=orthancJson.get("JobsHistorySize").getAsInt();
 		if (orthancJson.has("ConcurrentJobs")) ConcurrentJobs=orthancJson.get("ConcurrentJobs").getAsInt();
-		if (orthancJson.has("dicomModalitiesInDb")) dicomModalitiesInDb=orthancJson.get("dicomModalitiesInDb").getAsBoolean();
-		if (orthancJson.has("orthancPeerInDb")) orthancPeerInDb=orthancJson.get("dicomPeerInDb").getAsBoolean();
-		if (orthancJson.has("overwriteInstances")) overwriteInstances=orthancJson.get("overwriteInstances").getAsBoolean();
-		if (orthancJson.has("mediaArchiveSize")) mediaArchiveSize=orthancJson.get("mediaArchiveSize").getAsInt();
-		if (orthancJson.has("storageAccessOnFind")) storageAccessOnFind=orthancJson.get("storageAccessOnFind").getAsString();
+		if (orthancJson.has("DicomModalitiesInDatabase")) dicomModalitiesInDb=orthancJson.get("DicomModalitiesInDatabase").getAsBoolean();
+		if (orthancJson.has("OrthancPeersInDatabase")) orthancPeerInDb=orthancJson.get("OrthancPeersInDatabase").getAsBoolean();
+		if (orthancJson.has("OverwriteInstances")) overwriteInstances=orthancJson.get("OverwriteInstances").getAsBoolean();
+		if (orthancJson.has("MediaArchiveSize")) mediaArchiveSize=orthancJson.get("MediaArchiveSize").getAsInt();
+		if (orthancJson.has("StorageAccessOnFind")) storageAccessOnFind=orthancJson.get("StorageAccessOnFind").getAsString();
+		if (orthancJson.has("HttpVerbose")) httpVerbose=orthancJson.get("HttpVerbose").getAsBoolean();
+		if (orthancJson.has("TcpNoDelay")) tcpNoDelay=orthancJson.get("TcpNoDelay").getAsBoolean();
+		if (orthancJson.has("HttpThreadsCount")) httpThreadsCount=orthancJson.get("HttpThreadsCount").getAsInt();
+		if (orthancJson.has("SaveJobs")) saveJobs=orthancJson.get("SaveJobs").getAsBoolean();
+		if (orthancJson.has("MetricsEnabled")) metricsEnabled=orthancJson.get("MetricsEnabled").getAsBoolean();
 		
-
+	
 		
 		//On recupere les autres objet JSON dans le JSON principal
 		//on recupere les AET declares par un nouveau parser
