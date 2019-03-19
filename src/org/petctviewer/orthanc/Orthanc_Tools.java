@@ -42,13 +42,13 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 
 
 //SK TO DO
+//Upgrade JsonSettings a la derniere version
 //Search at study level
 //Run auto a tester sur Mac
 //Reoganiser le package Query = +-
-//Upgrade JsonSettings a la derniere version et tester ++
 //Tester toutes les fonctions!
 
-//AutoQuery doc a refaire
+//AutoQuery doc a refaire : 
 //Valeur global au click
 //Interface resultats
 //recurrent query 

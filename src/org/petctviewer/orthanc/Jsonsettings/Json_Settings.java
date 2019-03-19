@@ -126,11 +126,14 @@ public class Json_Settings {
 	protected void initialiserIndex() {
 		// on Set des valeurs par defaut
 				orthancName="myOrthanc";
-				storageDirectory="C:\\Orthanc\\OrthancStorage-v6";
-				indexDirectory="C:\\Orthanc\\OrthancStorage-v6";
+				storageDirectory="OrthancStorage";
+				indexDirectory="OrthancStorage";
 				StorageCompression=false;
 				MaximumStorageSize=0;
 				MaximumPatientCount=0;
+				//Lua scripts
+				//plugins
+				ConcurrentJobs=2;
 				HttpServerEnabled=true;
 				HttpPort=8042;
 				HttpDescribeErrors=true;
@@ -153,35 +156,45 @@ public class Json_Settings {
 				SslEnabled=false;
 				SslCertificate="certificate.pem";
 				AuthenticationEnabled=false;
+				//registred users
+				//Dicom modalities
+				dicomModalitiesInDb=false;
+				dicomAlwaysAllowEcho=true;
+				DicomAlwaysStore=true;
+				CheckModalityHost=false;
 				DicomScuTimeout=10;
-				HttpsVerifyPeers=true;
+				//Orthanc Peers
+				orthancPeerInDb = false;
 				HttpProxy="";
+				httpVerbose=false;
+				httpTimout=10;
+				HttpsVerifyPeers=true;
 				HttpsCACertificates="";
+				//userMetadata
+				//userContentType
 				StableAge=60;
 				StrictAetComparison=false;
 				StoreMD5ForAttachments=true;
 				LimitFindResults=0;
 				LimitFindInstances=0;
 				LimitJobs=10;
-				LogExportedResources=true;
-				KeepAlive=false;
+				LogExportedResources=false;
+				KeepAlive=true;
+				tcpNoDelay=true;
+				httpThreadsCount=50;
 				StoreDicom=true;
 				DicomAssociationCloseDelay=5;
 				QueryRetrieveSize=10;
 				CaseSensitivePN=false;
 				LoadPrivateDictionary=true;
-				DicomAlwaysStore=true;
-				CheckModalityHost=false;
-				dicomAlwaysAllowEcho=true;
+				//Dictionary
 				SynchronousCMove=true;
 				JobsHistorySize=10;
-				ConcurrentJobs=2;
-				
-				dicomModalitiesInDb=false;
-				orthancPeerInDb=false;
+				saveJobs=true;
 				overwriteInstances=false;
 				mediaArchiveSize=1;
 				storageAccessOnFind="Always";
+				metricEnabled=true;	
 	}
 	
 	// permet de creer le JSON avant de l'ecrire
@@ -221,6 +234,7 @@ public class Json_Settings {
 		index.addProperty("AuthenticationEnabled", AuthenticationEnabled);
 		index.add("RegisteredUsers", users);
 		index.add("DicomModalities", dicomNode);
+
 		
 		index.addProperty("DicomAlwaysAllowEcho", dicomAlwaysAllowEcho);
 		index.addProperty("DicomAlwaysAllowStore", DicomAlwaysStore);
