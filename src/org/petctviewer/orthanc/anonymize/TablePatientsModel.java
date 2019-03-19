@@ -60,8 +60,8 @@ public class TablePatientsModel extends DefaultTableModel{
 		
 		QueryOrthancData queryPatients = new QueryOrthancData(connexionHttp);
 		
-		ArrayList<Patient> patients =queryPatients.findPatients(inputType, input, date, studyDesc);
-		
+		//ArrayList<Patient> patients =queryPatients.findPatients(inputType, input, date, studyDesc);
+		ArrayList<Patient> patients =queryPatients.findStudies(inputType, input, date, studyDesc);
 		for (Patient patient : patients) {
 			this.addRow(new Object[] {patient.getName(), patient.getPatientId(), patient.getPatientOrthancId(), null, null, patient});
 		}

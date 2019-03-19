@@ -1,6 +1,7 @@
 package org.petctviewer.orthanc.anonymize.datastorage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import org.petctviewer.orthanc.anonymize.QueryOrthancData;
@@ -42,12 +43,28 @@ public class Patient {
 		return this.sex;
 	}
 	
-	public void storeChildStudies(QueryOrthancData queryOrthanc) {
+	public void storeAllChildStudies(QueryOrthancData queryOrthanc) {
 		childStudies= new HashMap<String, Study2>();
-		ArrayList<Study2> allStudies=queryOrthanc.getStudiesOfPatient(orthancID);
+		ArrayList<Study2> allStudies=queryOrthanc.getAllStudiesOfPatient(orthancID);
 		for(Study2 study: allStudies) {
 			this.childStudies.put(study.getOrthancId(), study);
 		}
+	}
+	
+	public void addStudy(Study2 study) {
+		if(childStudies==null) {
+			childStudies= new HashMap<String, Study2>();
+		}
+		childStudies.put(study.getOrthancId(), study);
+	}
+	
+	/**
+	 * Return the studies of this object
+	 * @return
+	 */
+	public ArrayList<Study2> getStudies(){
+		Study2[] studyArray=childStudies.values().toArray(new Study2[0]);
+		return new ArrayList<Study2>(Arrays.asList(studyArray));
 	}
 	
 	public Study2 getChildStudy(String studyOrthancID) {

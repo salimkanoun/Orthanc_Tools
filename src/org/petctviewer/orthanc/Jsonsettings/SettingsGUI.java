@@ -1176,7 +1176,7 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	
-	JLabel orthancVersion = new JLabel("For Orthanc 1.5.1");
+	JLabel orthancVersion = new JLabel("For Orthanc 1.5.6");
 	Bouttons_Bouttons.add(orthancVersion);
 	orthancVersion.setHorizontalAlignment(SwingConstants.CENTER);
 	

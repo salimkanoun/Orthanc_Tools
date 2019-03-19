@@ -26,6 +26,7 @@ import javax.swing.event.ListSelectionListener;
 import org.petctviewer.orthanc.anonymize.TablePatientsModel;
 import org.petctviewer.orthanc.anonymize.TableSeriesModel;
 import org.petctviewer.orthanc.anonymize.TableStudiesModel;
+import org.petctviewer.orthanc.anonymize.datastorage.Patient;
 
 
 public class TablePatientsMouseListener implements ListSelectionListener {
@@ -51,14 +52,11 @@ public class TablePatientsMouseListener implements ListSelectionListener {
 			this.modeleStudies.clear();
 			this.modeleSeries.clear();
 
-			try {
-				if(this.modele.getRowCount() != 0 && tableau.getSelectedRow() != -1){
-					String patientOrthancID = (String)this.tableau.getValueAt(this.tableau.getSelectedRow(), 2);
-					this.modeleStudies.addStudy(patientOrthancID);
-				}
-			}catch (Exception e1) {
-				e1.printStackTrace();
+			if(this.modele.getRowCount() != 0 && tableau.getSelectedRow() != -1){
+				Patient patientObject = (Patient) this.tableau.getValueAt(this.tableau.getSelectedRow(), 5);
+				this.modeleStudies.addStudy(patientObject);
 			}
+
 			frame.pack();
 		}
 		

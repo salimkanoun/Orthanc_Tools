@@ -22,6 +22,7 @@ import java.util.Date;
 
 import javax.swing.table.DefaultTableModel;
 
+import org.petctviewer.orthanc.anonymize.datastorage.Patient;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
@@ -31,13 +32,14 @@ public class TableStudiesModel extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 	private String[] entetes = {"Study date", "Study description", "Accession number", "ID", "studyObject"};
 	private final Class<?>[] columnClasses = new Class<?>[] {Date.class, String.class, String.class, String.class, Study2.class};
-	private OrthancRestApis connexionHttp;
-	private String patientOrthancId;
+	//private OrthancRestApis connexionHttp;
+	private Patient parentPatient;
 
 	public TableStudiesModel(OrthancRestApis connexionHttp){
 		super(0,5);
 		//Recupere les settings
-		this.connexionHttp=connexionHttp;
+		//this.connexionHttp=connexionHttp;
+		//SK SI OK retirer ConnexionHTTP DU CONSTRUCTEUR
 		
 	}
 
@@ -62,17 +64,17 @@ public class TableStudiesModel extends DefaultTableModel{
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
-	public void addStudy(String patientOrthancId) {
-		this.patientOrthancId=patientOrthancId;
-		QueryOrthancData queryStudies = new QueryOrthancData(connexionHttp);
+	public void addStudy(Patient parentPatient) {
+		this.parentPatient=parentPatient;
+		//QueryOrthancData queryStudies = new QueryOrthancData(connexionHttp);
 		
-		ArrayList<Study2> studies=queryStudies.getStudiesOfPatient(patientOrthancId);
-		
+		//ArrayList<Study2> studies=queryStudies.getAllStudiesOfPatient(patientOrthancId);
+		ArrayList<Study2> studies=parentPatient.getStudies();
 		if(studies.size()==0) {
 			clear();
 		}else{
 			for(Study2 study :studies) {
-				this.addRow(new Object[] {study.getDate(), study.getStudyDescription(), study.getAccession(), study.getOrthancId(), study});
+				addRow(new Object[] {study.getDate(), study.getStudyDescription(), study.getAccession(), study.getOrthancId(), study});
 				
 			}
 		}
@@ -87,7 +89,7 @@ public class TableStudiesModel extends DefaultTableModel{
 	
 	public void refresh() {
 		clear();
-		addStudy(patientOrthancId);
+		addStudy(parentPatient);
 	}
 	
 	public ArrayList<String> getOrthancIds(){

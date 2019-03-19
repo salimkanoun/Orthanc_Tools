@@ -29,6 +29,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import java.awt.Font;
 
 public class AboutBoxFrame extends JDialog{
 
@@ -37,7 +38,10 @@ public class AboutBoxFrame extends JDialog{
 	public AboutBoxFrame(JFrame gui){
 		super(gui, "About us");
 		
-		JPanel mainPanel = new JPanel(new BorderLayout());
+		BorderLayout bl_mainPanel = new BorderLayout();
+		bl_mainPanel.setHgap(10);
+		bl_mainPanel.setVgap(10);
+		JPanel mainPanel = new JPanel(bl_mainPanel);
 		
 		Image image = new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage();
 		this.setIconImage(image);
@@ -48,18 +52,6 @@ public class AboutBoxFrame extends JDialog{
 		mainPanel.add(panel_center, BorderLayout.CENTER);
 		panel_center.setLayout(new BorderLayout(5, 10));
 		
-		JPanel panel = new JPanel();
-		panel.setBorder(new LineBorder(Color.LIGHT_GRAY));
-		panel_center.add(panel, BorderLayout.CENTER);
-		panel.setLayout(new GridLayout(0, 1, 0, 0));
-		JLabel title = new JLabel("Dicom Tools v.1.5alfa");
-		title.setForeground(Color.RED);
-		panel.add(title);
-		title.setBorder(new EmptyBorder(3, 150, 3, 150));
-		JLabel orthancSite = new JLabel("<html><i>Based on Orthanc :  http://www.orthanc-server.com</i></html>");
-		panel.add(orthancSite);
-		orthancSite.setBorder(new EmptyBorder(3, 100, 3, 100));
-		
 		JPanel authorsLicencePanel = new JPanel();
 		panel_center.add(authorsLicencePanel, BorderLayout.SOUTH);
 		authorsLicencePanel.setLayout(new GridLayout(0, 2, 10, 10));
@@ -67,13 +59,35 @@ public class AboutBoxFrame extends JDialog{
 		JLabel label = new JLabel("Salim Kanoun");
 		authorsLicencePanel.add(label);
 
-		JLabel label_1 = new JLabel("<html><i>salim.kanoun@gmail.com</i></html>");
-		authorsLicencePanel.add(label_1);
+		JLabel lblSalimkanoungmailcom = new JLabel("salim.kanoun@gmail.com");
+		lblSalimkanoungmailcom.setFont(new Font("Dialog", Font.BOLD | Font.ITALIC, 12));
+		authorsLicencePanel.add(lblSalimkanoungmailcom);
 		authorsLicencePanel.add(new JLabel("Licence"));
-		authorsLicencePanel.add(new JLabel("GPL V.3"));
+		authorsLicencePanel.add(new JLabel("GPL v3"));
 		authorsLicencePanel.add(new JLabel("Website"));
 
-		authorsLicencePanel.add(new JLabel("<html><i>petctviewer.org</i><html>"));
+		JLabel label_1 = new JLabel("http://petctviewer.org");
+		label_1.setFont(new Font("Dialog", Font.BOLD | Font.ITALIC, 12));
+		authorsLicencePanel.add(label_1);
+		
+		JLabel lblNewLabel = new JLabel("Sources");
+		authorsLicencePanel.add(lblNewLabel);
+		
+		JLabel lblHttpsgithubcomsalimkanounorthanctools = new JLabel("https://github.com/salimkanoun/Orthanc_Tools");
+		lblHttpsgithubcomsalimkanounorthanctools.setFont(new Font("Dialog", Font.BOLD | Font.ITALIC, 12));
+		authorsLicencePanel.add(lblHttpsgithubcomsalimkanounorthanctools);
+		
+		JPanel panel_north = new JPanel();
+		mainPanel.add(panel_north, BorderLayout.NORTH);
+		panel_north.setBorder(new LineBorder(Color.LIGHT_GRAY));
+		panel_north.setLayout(new GridLayout(0, 1, 0, 0));
+		JLabel title = new JLabel("Dicom Tools v.1.5alfa");
+		title.setForeground(Color.RED);
+		panel_north.add(title);
+		title.setBorder(new EmptyBorder(3, 150, 3, 150));
+		JLabel orthancSite = new JLabel("<html><i>Based on Orthanc :  http://www.orthanc-server.com</i></html>");
+		panel_north.add(orthancSite);
+		orthancSite.setBorder(new EmptyBorder(3, 100, 3, 100));
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		pack();
 		setLocationRelativeTo(gui);

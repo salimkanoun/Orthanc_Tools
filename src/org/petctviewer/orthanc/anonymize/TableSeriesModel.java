@@ -97,7 +97,7 @@ public class TableSeriesModel extends DefaultTableModel{
 	public void addSerie(Study2 study) {
 		this.currentStudy=study;
 		clear();
-		
+		study.refreshChildSeries(queryOrthanc);
 		for(Serie serie:study.getSeries()) {
 			this.addRow(new Object[] {serie.getSerieDescription(), 
 				serie.getModality(), 

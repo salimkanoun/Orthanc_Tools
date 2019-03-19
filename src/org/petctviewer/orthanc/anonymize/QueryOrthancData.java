@@ -19,7 +19,9 @@ package org.petctviewer.orthanc.anonymize;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import org.petctviewer.orthanc.anonymize.datastorage.Patient;
@@ -41,14 +43,10 @@ public class QueryOrthancData {
 	public QueryOrthancData(OrthancRestApis connexion) {
 		this.connexion=connexion;
 	}
-	
-	public static void main(String[] arg) {
-		QueryOrthancData ici=new QueryOrthancData(new OrthancRestApis(null));
-		ici.getStudyObjbyStudyInstanceUID("");
-	}
-	
+	/*
 	public ArrayList<Patient> findPatients(String inputType, String input, String date, String studyDesc) {
 		
+		findStudies(inputType, input, date, studyDesc);
 		JsonObject query=new JsonObject();
 		query.addProperty("Level", "Patients");
 		query.addProperty("Expand", true);
@@ -77,7 +75,7 @@ public class QueryOrthancData {
 		
 		query.add("Query", queryDetails);
 		
-		StringBuilder sb=connexion.makePostConnectionAndStringBuilder("/tools/find?expand", query.toString());
+		StringBuilder sb=connexion.makePostConnectionAndStringBuilder("/tools/find", query.toString());
 		JsonArray patients=(JsonArray) parserJson.parse(sb.toString());
 		ArrayList<Patient> patientList=new ArrayList<Patient>();
 		
@@ -112,8 +110,115 @@ public class QueryOrthancData {
 		
 		
 	}
+	*/
+	public ArrayList<Patient> findStudies(String inputType, String input, String date, String studyDesc) {
+		
+		JsonObject query=new JsonObject();
+		query.addProperty("Level", "Studies");
+		query.addProperty("Expand", true);
+		
+		JsonObject queryDetails=new JsonObject();
+		
+		queryDetails.addProperty("StudyDate", date);
+		
+		if(!studyDesc.equals("*")){
+			queryDetails.addProperty("StudyDescription", studyDesc);
+		}
+		
+		switch (inputType) {
+			case "Patient name":
+				queryDetails.addProperty("PatientName", input);
+				break;
+			case "Accession number":
+				queryDetails.addProperty("AccessionNumber", input);
+				break;
+				
+			case "Patient ID":
+				queryDetails.addProperty("PatientID", input);
+			default:
+				break;
+		}
+		
+		query.add("Query", queryDetails);
+		
+		HashMap<String, Patient> patientMap=new HashMap<String, Patient>();
+		
+		StringBuilder sb=connexion.makePostConnectionAndStringBuilder("/tools/find", query.toString());
+		JsonArray studies=(JsonArray) parserJson.parse(sb.toString());
+		Iterator<JsonElement> studiesIterator=studies.iterator();
+		System.out.println("ICI");
+		while (studiesIterator.hasNext()) {
+			JsonObject studyData=(JsonObject) studiesIterator.next();
+			JsonObject parentPatientDetails=studyData.get("PatientMainDicomTags").getAsJsonObject();
+			String parentPatientID=studyData.get("ParentPatient").getAsString();
+			String studyId=studyData.get("ID").getAsString();
+			JsonObject studyDetails=studyData.get("MainDicomTags").getAsJsonObject();
+
+			String patientBirthDate="N/A";
+			String patientSex="N/A";
+			String patientName="N/A";
+			String patientId="N/A";
+			Date patientDob=null;
+			if(parentPatientDetails.has("PatientBirthDate")) {
+				try {
+					patientDob = format.parse("19000101");
+					patientDob=format.parse(parentPatientDetails.get("PatientBirthDate").getAsString());
+				} catch (Exception e) {
+					//e.printStackTrace();
+				}
+			}
+			
+			if(parentPatientDetails.has("PatientSex")) {
+				patientSex=parentPatientDetails.get("PatientSex").getAsString();
+			}
+			
+			if(parentPatientDetails.has("PatientName")) {
+				patientName=parentPatientDetails.get("PatientName").getAsString();
+			}
+			if(parentPatientDetails.has("PatientID")) {
+				patientId=parentPatientDetails.get("PatientID").getAsString();
+			}
+			
+			String accessionNumber="N/A";
+			if(studyDetails.has("AccessionNumber")) {
+				accessionNumber=studyDetails.get("AccessionNumber").getAsString();
+			}
+			
+			String studyInstanceUid=studyDetails.get("StudyInstanceUID").getAsString();
+			
+			String studyDate=studyDetails.get("StudyDate").getAsString();
+			Date studyDateObject=null;
+			try {
+				studyDateObject=format.parse("19000101");
+				studyDateObject=format.parse(studyDate);
+			} catch (Exception e) {
+				//e.printStackTrace();
+			}
+			
+			String studyDescription="N/A";
+			if(studyDetails.has("StudyDescription")){
+				studyDescription=studyDetails.get("StudyDescription").getAsString();
+			}
+
+			Study2 studyObj=new Study2(studyDescription, studyDateObject, accessionNumber, studyId, patientName, patientId, patientDob, patientSex, parentPatientID, studyInstanceUid, null);
+		
+			if(!patientMap.containsKey(parentPatientID)) {
+				Patient patient=new Patient(patientName,patientId,patientBirthDate,patientSex,parentPatientID);
+				patient.addStudy(studyObj);
+				patientMap.put(parentPatientID, patient);
+			}else {
+				patientMap.get(parentPatientID).addStudy(studyObj);
+			}
+
+		}
+		//Move hashmap to arrayList of Patient object
+		Patient[] patientsArray=patientMap.values().toArray(new Patient[0]);
+		return new ArrayList<Patient>(Arrays.asList(patientsArray));
+
+	}
 	
-	public ArrayList<Study2>  getStudiesOfPatient(String patientOrthancID) {
+	
+	public ArrayList<Study2>  getAllStudiesOfPatient(String patientOrthancID) {
 		
 		ArrayList<Study2> studies=new ArrayList<Study2>();
 		
@@ -138,6 +243,8 @@ public class QueryOrthancData {
 		}
 		return studies;
 	}
+	
+	
 	
 	public int[]  getStudyStatistics(String studyOrthancID) {
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/studies/" + studyOrthancID +"/statistics");
@@ -285,7 +392,7 @@ public class QueryOrthancData {
 		queryDetails.addProperty("StudyInstanceUID", studyInstanceUID);
 		query.add("Query", queryDetails);
 		
-		StringBuilder sb=connexion.makePostConnectionAndStringBuilder("/tools/find?expand", query.toString());
+		StringBuilder sb=connexion.makePostConnectionAndStringBuilder("/tools/find", query.toString());
 		JsonObject studyAnswer=parserJson.parse(sb.toString()).getAsJsonArray().get(0).getAsJsonObject();
 		Study2 study=answerToStudyObject(studyAnswer);
 		

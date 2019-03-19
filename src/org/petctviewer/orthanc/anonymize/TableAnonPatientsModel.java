@@ -105,7 +105,7 @@ public class TableAnonPatientsModel extends DefaultTableModel{
 		//If not existing patient, create a new patientAnonObject and add the selected study in it
 		if(patientExistingRow==-1) {
 			PatientAnon patientAnon=new PatientAnon (study.getPatientName(), study.getPatientID(),null,null, study.getParentPatientId());
-			patientAnon.storeChildStudies(new QueryOrthancData(connexion));
+			patientAnon.storeAllChildStudies(new QueryOrthancData(connexion));
 			patientAnon.addNewAnonymizeStudyFromExistingStudy(study.getOrthancId());
 			this.addRow(new Object[]{study.getPatientName(), study.getPatientID(), study.getParentPatientId(),
 				"","","", patientAnon});

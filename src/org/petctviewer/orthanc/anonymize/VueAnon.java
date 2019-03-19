@@ -979,7 +979,7 @@ public class VueAnon extends JFrame {
 						Patient patient=modelePatients.getPatient(modelRow);
 						//Conversion into a PatientAnon object to store the future anonymized name / id ...
 						PatientAnon patientAnon=new PatientAnon(patient);
-						patientAnon.storeChildStudies(queryOrthanc);
+						patientAnon.storeAllChildStudies(queryOrthanc);
 						patientAnon.addAllChildStudiesToAnonymizeList();
 						modeleAnonPatients.addPatient(patientAnon);	
 					}	
