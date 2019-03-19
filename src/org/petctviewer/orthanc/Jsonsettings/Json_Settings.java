@@ -35,13 +35,13 @@ public class Json_Settings {
 	
 	protected JsonObject index = new JsonObject();
 	
-	// Hasmap des AET
+	// JsonObject des AET
 	protected JsonObject dicomNode=new JsonObject();
-	// Hasmap des orthancPeer
+	// JsonObject des orthancPeer
 	protected JsonObject orthancPeer=new JsonObject();
-	// Hasmap des contentType
+	// JsonObject des contentType
 	protected JsonObject contentType=new JsonObject();
-	// Hasmap des dictionary
+	// JsonObject des dictionary
 	protected JsonObject dictionary=new JsonObject();
 	
 	// Array des Lua folder 
@@ -55,18 +55,6 @@ public class Json_Settings {
 	
 	//Object pour les metadata
 	protected JsonObject userMetadata=new JsonObject();
-	
-	//OrthancPeer JsonObject
-	protected JsonObject orthancPeers =new JsonObject();
-	
-	//DicomNode JSON object
-	private JsonObject dicom =new JsonObject();
-	
-	//Object pour les content Type
-	private JsonObject contentTypes=new JsonObject();
-	
-	//Object pour les dictionnaire
-	private JsonObject dictionaries=new JsonObject();
 	
 	// A modifier via des setteurs
 	protected String orthancName;
@@ -232,20 +220,20 @@ public class Json_Settings {
 		index.addProperty("SslCertificate", SslCertificate);
 		index.addProperty("AuthenticationEnabled", AuthenticationEnabled);
 		index.add("RegisteredUsers", users);
-		index.add("DicomModalities", dicom);
+		index.add("DicomModalities", dicomNode);
 		
 		index.addProperty("DicomAlwaysAllowEcho", dicomAlwaysAllowEcho);
 		index.addProperty("DicomAlwaysAllowStore", DicomAlwaysStore);
 		index.addProperty("DicomCheckModalityHost", CheckModalityHost);
 		
 		index.addProperty("DicomScuTimeout", DicomScuTimeout);
-		index.add("OrthancPeers", orthancPeers);
+		index.add("OrthancPeers", orthancPeer);
 		index.addProperty("HttpProxy", HttpProxy);
 		index.addProperty("HttpTimeout", HttpTimeout);
 		index.addProperty("HttpsVerifyPeers", HttpsVerifyPeers);
 		index.addProperty("HttpsCACertificates", HttpsCACertificates);
 		index.add("UserMetadata", userMetadata);
-		index.add("UserContentType", contentTypes);
+		index.add("UserContentType", contentType);
 		index.addProperty("StableAge", StableAge);
 		index.addProperty("StrictAetComparison", StrictAetComparison);
 		index.addProperty("StoreMD5ForAttachments", StoreMD5ForAttachments);
@@ -259,7 +247,7 @@ public class Json_Settings {
 		index.addProperty("QueryRetrieveSize", QueryRetrieveSize);
 		index.addProperty("CaseSensitivePN", CaseSensitivePN);
 		index.addProperty("LoadPrivateDictionary", LoadPrivateDictionary);
-		index.add("Dictionary", dictionaries);
+		index.add("Dictionary", dictionary);
 		index.addProperty("SynchronousCMove", SynchronousCMove);
 		index.addProperty("JobsHistorySize", JobsHistorySize);
 		index.addProperty("dicomModalitiesInDb", dicomModalitiesInDb);
