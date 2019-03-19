@@ -42,13 +42,12 @@ public class Read_Orthanc {
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/instances/"+instanceID+"/frames/");
 		JsonArray nbframe=parser.parse(sb.toString()).getAsJsonArray();
 		return nbframe.size();
-		
 	}
 	
 	public ImagePlus readSerie(String uuid) {
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/series/"+uuid);
-		JsonObject seriesDetails=(JsonObject)parser.parse(sb.toString());
-		JsonArray instanceIDList=(JsonArray) seriesDetails.get("Instances");
+		JsonObject seriesDetails=parser.parse(sb.toString()).getAsJsonObject();
+		JsonArray instanceIDList=seriesDetails.get("Instances").getAsJsonArray();
 		
 		boolean screenCapture=false;
 		int nbFrameInInstance = 0;
