@@ -167,7 +167,7 @@ public class Json_Settings {
 				orthancPeerInDb = false;
 				HttpProxy="";
 				httpVerbose=false;
-				httpTimout=10;
+				HttpTimeout=10;
 				HttpsVerifyPeers=true;
 				HttpsCACertificates="";
 				//userMetadata
@@ -194,7 +194,7 @@ public class Json_Settings {
 				overwriteInstances=false;
 				mediaArchiveSize=1;
 				storageAccessOnFind="Always";
-				metricEnabled=true;	
+				metricsEnabled=true;	
 	}
 	
 	// permet de creer le JSON avant de l'ecrire
@@ -269,6 +269,12 @@ public class Json_Settings {
 		index.addProperty("overwriteInstances", overwriteInstances);
 		index.addProperty("mediaArchiveSize", mediaArchiveSize);
 		index.addProperty("storageAccessOnFind", storageAccessOnFind);
+		
+		index.addProperty("HttpVerbose", httpVerbose);
+		index.addProperty("TcpNoDelay", tcpNoDelay);
+		index.addProperty("HttpThreadsCount", httpThreadsCount);
+		index.addProperty("SaveJobs", saveJobs);
+		index.addProperty("MetricsEnabled", metricsEnabled);
 		
 
 	}
