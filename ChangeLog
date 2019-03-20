@@ -1,5 +1,6 @@
 Pending Change for next Release
 - Big refactoring, better efficiency
+- Warning : Due to refactoring your previous settings will be lost (server address...) you will have to re-set them.
 - Search made at the study level (more specific search in Orthanc with study description, modalities filters)
 - AutoQuery : Add "To anonymize" and "To Export" to send the result of the auto retrieve to the anonymize/Export list
 - AutoQuery : Cleaner interface
