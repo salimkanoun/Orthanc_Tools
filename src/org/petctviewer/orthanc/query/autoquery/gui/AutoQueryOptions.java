@@ -36,7 +36,7 @@ public class AutoQueryOptions extends JDialog {
 	private JSpinner spinnerHour;
 	private JSpinner spinnerMin;
 	private JTextField serieDescriptionContains,serieDescriptionExclude, serieNumberExclude, serieNumberMatch, customModalities;
-	private JCheckBox chckbxCr ,chckbxCt,chckbxCmr,chckbxNm,chckbxPt,chckbxUs ,chckbxXa , chckbxMg,chckbxDx, chckbxSeriesFilter;
+	private JCheckBox chckbxCr ,chckbxCt,chckbxMr,chckbxNm,chckbxPt,chckbxUs ,chckbxXa , chckbxMg,chckbxDx, chckbxSeriesFilter;
 	private List<JCheckBox> checkboxList;
 	private int discard, hour, min;
 
@@ -154,7 +154,7 @@ public class AutoQueryOptions extends JDialog {
 
 		chckbxCr = new JCheckBox("CR");
 		chckbxCt = new JCheckBox("CT");
-		chckbxCmr = new JCheckBox("CMR");
+		chckbxMr = new JCheckBox("MR");
 		chckbxNm = new JCheckBox("NM");
 		chckbxPt = new JCheckBox("PT");
 		chckbxUs = new JCheckBox("US");
@@ -166,7 +166,7 @@ public class AutoQueryOptions extends JDialog {
 		
 		checkboxList.add(chckbxCr);
 		checkboxList.add(chckbxCt);
-		checkboxList.add(chckbxCmr);
+		checkboxList.add(chckbxMr);
 		checkboxList.add(chckbxNm);
 		checkboxList.add(chckbxPt);
 		checkboxList.add(chckbxUs);
@@ -176,7 +176,7 @@ public class AutoQueryOptions extends JDialog {
 		
 		panel_modalities.add(chckbxCr);
 		panel_modalities.add(chckbxCt);
-		panel_modalities.add(chckbxCmr);
+		panel_modalities.add(chckbxMr);
 		panel_modalities.add(chckbxNm);
 		panel_modalities.add(chckbxPt);
 		panel_modalities.add(chckbxUs);
@@ -204,7 +204,7 @@ public class AutoQueryOptions extends JDialog {
 				jPrefer.put("AutoQuery_seriesNumberExclude", serieNumberExclude.getText());
 				jPrefer.putBoolean("AutoQuery_useSeriesCRFilter", chckbxCr.isSelected());
 				jPrefer.putBoolean("AutoQuery_useSeriesCTFilter", chckbxCt.isSelected());
-				jPrefer.putBoolean("AutoQuery_useSeriesCMRFilter", chckbxCmr.isSelected());
+				jPrefer.putBoolean("AutoQuery_useSeriesCMRFilter", chckbxMr.isSelected());
 				jPrefer.putBoolean("AutoQuery_useSeriesNMFilter", chckbxNm.isSelected());
 				jPrefer.putBoolean("AutoQuery_useSeriesPTFilter", chckbxPt.isSelected());
 				jPrefer.putBoolean("AutoQuery_useSeriesUSFilter", chckbxUs.isSelected());
@@ -268,7 +268,7 @@ public class AutoQueryOptions extends JDialog {
 		
 		chckbxCr.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesCRFilter", false));
 		chckbxCt.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesCTFilter", false));
-		chckbxCmr.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesCMRFilter", false));
+		chckbxMr.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesCMRFilter", false));
 		chckbxNm.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesNMFilter", false));
 		chckbxPt.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesPTFilter", false));
 		chckbxUs.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesUSFilter", false));
@@ -284,7 +284,7 @@ public class AutoQueryOptions extends JDialog {
 		serieNumberMatch.setEnabled(activate);
 		chckbxCr.setEnabled(activate);
 		chckbxCt.setEnabled(activate);
-		chckbxCmr.setEnabled(activate);
+		chckbxMr.setEnabled(activate);
 		chckbxNm.setEnabled(activate);
 		chckbxPt.setEnabled(activate);
 		chckbxUs.setEnabled(activate);
