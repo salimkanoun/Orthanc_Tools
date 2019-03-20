@@ -47,6 +47,7 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 //Reoganiser le package Query = +-
 //Tester toutes les fonctions!
 //Tester JsonEditor
+//Cacher les colonnes ID
 
 //AutoQuery doc a refaire : 
 //Valeur global au click
