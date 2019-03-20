@@ -52,6 +52,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -132,6 +133,9 @@ public class VueAnon extends JFrame {
 	private OrthancRestApis connexionHttp;
 	private QueryOrthancData queryOrthanc;
 	protected JPanel tablesPanel, mainPanel, topPanel, anonBtnPanelTop;
+	
+	//Search settings
+	JCheckBox cr, ct, cmr , nm , pt , us, xa , mg;
 	
 	// Tables and models
 	private JTable tableauPatients;
@@ -281,13 +285,13 @@ public class VueAnon extends JFrame {
 
 	public void buildGui(){
 		//Instanciate needed Table and their model
-		modelePatients = new TablePatientsModel(connexionHttp);
-		modeleStudies = new TableStudiesModel(connexionHttp);
+		modelePatients = new TablePatientsModel();
+		modeleStudies = new TableStudiesModel();
 		modeleSeries = new TableSeriesModel(connexionHttp, this, queryOrthanc);
 		modeleExportStudies = new TableExportStudiesModel();
 		modeleExportSeries = new TableExportSeriesModel(connexionHttp, queryOrthanc, this);
 		modeleAnonStudies = new TableAnonStudiesModel();
-		modeleAnonPatients = new TableAnonPatientsModel(connexionHttp);
+		modeleAnonPatients = new TableAnonPatientsModel();
 		
 		//Instanciate label status
 		state= new JLabel();
@@ -367,6 +371,26 @@ public class VueAnon extends JFrame {
 		topPanel.add(from);
 		topPanel.add(new JLabel("To"));
 		topPanel.add(to);
+		
+		JPanel panelModalities=new JPanel(new BorderLayout());
+		JPanel checkboxes = new JPanel(new GridLayout(2,4));
+		cr = new JCheckBox("CR");
+		ct = new JCheckBox("CT");
+		cmr = new JCheckBox("CMR");
+		nm = new JCheckBox("NM");
+		pt = new JCheckBox("PT");
+		us = new JCheckBox("US");
+		xa = new JCheckBox("XA");
+		mg = new JCheckBox("MG");
+		checkboxes.add(cr); checkboxes.add(ct);
+		checkboxes.add(cmr); checkboxes.add(nm);
+		checkboxes.add(pt); checkboxes.add(us);
+		checkboxes.add(xa); checkboxes.add(mg);
+		
+		panelModalities.add(checkboxes, BorderLayout.CENTER);
+		panelModalities.add(new JLabel("Contains Modalities"), BorderLayout.NORTH);
+		
+		topPanel.add(panelModalities);
 
 		searchBtn = new JButton("Search");
 		searchBtn.addActionListener(new ActionListener() {
@@ -387,9 +411,24 @@ public class VueAnon extends JFrame {
 						if (userInputString.equals("*^*")) userInputString="*"; 
 					}
 					else userInputString=userInput.getText();
-					modelePatients.addPatient(inputType.getSelectedItem().toString(), userInputString, date, 
-							studyDesc.getText());
+
+					
+					StringBuilder modalities=new StringBuilder();
+					if (cr.isSelected()) modalities.append("CR\\");
+					if (ct.isSelected()) modalities.append("CT\\");
+					if (cmr.isSelected()) modalities.append("CMR\\");
+					if (nm.isSelected()) modalities.append("NM\\");
+					if (pt.isSelected()) modalities.append("PT\\");
+					if (us.isSelected()) modalities.append("US\\");
+					if (xa.isSelected()) modalities.append("XA\\");
+					if (mg.isSelected()) modalities.append("MG\\");
+					
+					String modality=StringUtils.removeEnd(modalities.toString(), "\\");
+					
+					ArrayList<Patient> patients =queryOrthanc.findStudies(inputType.getSelectedItem().toString(), userInputString, date, studyDesc.getText(), modality);
+					modelePatients.addPatient(patients);
 					pack();
+					
 				} catch (Exception e1) { System.out.println("Exception"+e1);}
 				finally{
 					state.setText("");
@@ -760,17 +799,14 @@ public class VueAnon extends JFrame {
 				// Liste des orthanc ID A supprimer qu'on va delete un a un
 				ArrayList<String> deleteSeries=new ArrayList<String>();
 				ArrayList<String> deleteStudies=new ArrayList<String>();
-				ArrayList<String> deletePatients=new ArrayList<String>();
 				
 				for (int i=0; i<manageContent.size(); i++){
-					if (manageShownContent.getItemAt(i).contains("Study -")){
+					//Patient or Studies are defined as study level
+					if (manageShownContent.getItemAt(i).contains("Study -") || manageShownContent.getItemAt(i).contains("Patient -")){
 						deleteStudies.add("/studies/"+manageContent.get(i));
 					}
 					else if (manageShownContent.getItemAt(i).contains("Serie -")){
 						deleteSeries.add("/series/"+manageContent.get(i));
-					}
-					else if (manageShownContent.getItemAt(i).contains("Patient -")){
-						deletePatients.add("/patients/"+manageContent.get(i));
 					}
 				}
 				setStateMessage("Deleting please wait", "red", -1);
@@ -786,11 +822,6 @@ public class VueAnon extends JFrame {
 						}
 						for (int i=0 ; i<deleteStudies.size(); i++){
 							connexionHttp.makeDeleteConnection(deleteStudies.get(i));
-							progress++;
-							setStateMessage("Deleted "+ progress +"/"+manageContent.size(), "red", -1);
-						}
-						for (int i=0 ; i<deletePatients.size(); i++){
-							connexionHttp.makeDeleteConnection(deletePatients.get(i));
 							progress++;
 							setStateMessage("Deleted "+ progress +"/"+manageContent.size(), "red", -1);
 						}
@@ -977,9 +1008,12 @@ public class VueAnon extends JFrame {
 					for(int row:selectedRows) {
 						int modelRow=tableauPatients.convertRowIndexToModel(row);
 						Patient patient=modelePatients.getPatient(modelRow);
+						//Get the studies listed in this patients
+						ArrayList<Study2> studiesInPatient=patient.getStudies();
 						//Conversion into a PatientAnon object to store the future anonymized name / id ...
 						PatientAnon patientAnon=new PatientAnon(patient);
-						patientAnon.storeAllChildStudies(queryOrthanc);
+						//Set all listed studies in this patient
+						patientAnon.addStudies(studiesInPatient);
 						patientAnon.addAllChildStudiesToAnonymizeList();
 						modeleAnonPatients.addPatient(patientAnon);	
 					}	
@@ -991,7 +1025,6 @@ public class VueAnon extends JFrame {
 						modeleAnonPatients.addStudy(modeleStudies.getStudy(modelRow));
 						
 					}		
-					//modeleAnonStudies.addStudies(modeleAnonPatients.getPatient(anonPatientTable.convertColumnIndexToModel(anonPatientTable.getSelectedRow())));
 				}
 				else {
 					setStateMessage("Selection to Anonymize only possible from Patient Or Study table", "orange",4);
@@ -2088,20 +2121,25 @@ public class VueAnon extends JFrame {
 		boolean duplicate = false;
 		if(tableau.equals(tableauPatients)){
 			for (int i=0; i<selectedLines.length; i++){
-				String name = "Patient - " + tableauPatients.getValueAt(selectedLines[i], 0).toString();
-				String id = tableauPatients.getValueAt(selectedLines[i], 2).toString();
-				if(!zipContent.contains(id)){
-					zipShownContent.addItem(name);
-					zipContent.add(id);
-				}else{
-					duplicate=true;
-					
-				}
+				Patient selectedPatient = (Patient) tableauPatients.getValueAt(selectedLines[i], 5);
+				ArrayList<Study2> studiesInPatient= selectedPatient.getStudies();
+				
+				for (Study2 study : studiesInPatient) {
+					if(!zipContent.contains(study.getOrthancId())){
+						String name = "Patient - " + tableauPatients.getValueAt(selectedLines[i], 0).toString()+" Study Date "+df.format(study.getDate())+" Desc "+study.getStudyDescription();
+						zipShownContent.addItem(name);
+						zipContent.add(study.getOrthancId());
+					}else{
+						duplicate=true;
+					}
+				}	
 			}
 			
 		}else if(tableau.equals(tableauStudies)){
 			for (int i=0; i<selectedLines.length; i++){
-				String date = "Study - " + df.format(((Date)tableauStudies.getValueAt(selectedLines[i], 0))) + "  " + tableauStudies.getValueAt(selectedLines[i], 1);
+				Study2 selectedStudy=(Study2)tableauStudies.getValueAt(selectedLines[i], 4);
+				
+				String date = "Patient - "+selectedStudy.getPatientName()+" Study - " + df.format(selectedStudy.getDate()) + " Desc " + selectedStudy.getStudyDescription();
 				String id = tableauStudies.getValueAt(selectedLines[i], 3).toString();
 				if(!zipContent.contains(id)){
 					zipShownContent.addItem(date);

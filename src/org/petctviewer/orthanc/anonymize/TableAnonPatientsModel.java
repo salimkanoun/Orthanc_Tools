@@ -23,18 +23,15 @@ import javax.swing.table.DefaultTableModel;
 
 import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2;
-import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class TableAnonPatientsModel extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
 	private String[] entetes = {"Old name", "Old ID", "Old OrthancId", "New name*", "New ID*", "New OrthancId", "patientAnonObject"};
 	private Class<?>[] classEntetes = {String.class, String.class, String.class, String.class, String.class, String.class, PatientAnon.class};
-	private OrthancRestApis connexion;
 	
-	public TableAnonPatientsModel(OrthancRestApis connexion){
+	public TableAnonPatientsModel(){
 		super(0,7);
-		this.connexion=connexion;
 	}
 
 
@@ -95,6 +92,9 @@ public class TableAnonPatientsModel extends DefaultTableModel{
 			//"Old name", "Old ID", "Old OrthancId", "New name*", "New ID*", "New OrthancId", "patientAnonObject"
 			this.addRow(new Object[]{patient.getName(), patient.getPatientId(), patient.getPatientOrthancId(),
 				"","","",patient});
+		}else {
+			this.getPatient(patientExistingRow).addStudies(patient.getStudies());
+			this.getPatient(patientExistingRow).addAllChildStudiesToAnonymizeList();
 		}
 	}
 		
@@ -105,7 +105,7 @@ public class TableAnonPatientsModel extends DefaultTableModel{
 		//If not existing patient, create a new patientAnonObject and add the selected study in it
 		if(patientExistingRow==-1) {
 			PatientAnon patientAnon=new PatientAnon (study.getPatientName(), study.getPatientID(),null,null, study.getParentPatientId());
-			patientAnon.storeAllChildStudies(new QueryOrthancData(connexion));
+			patientAnon.addStudy(study);
 			patientAnon.addNewAnonymizeStudyFromExistingStudy(study.getOrthancId());
 			this.addRow(new Object[]{study.getPatientName(), study.getPatientID(), study.getParentPatientId(),
 				"","","", patientAnon});

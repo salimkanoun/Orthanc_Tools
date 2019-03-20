@@ -23,19 +23,15 @@ import java.util.Date;
 import javax.swing.table.DefaultTableModel;
 
 import org.petctviewer.orthanc.anonymize.datastorage.Patient;
-import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class TablePatientsModel extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
 	private String[] entetes = {"Patient Name", "Patient ID", "ID", "Birthdate", "Sex", "patientObject"};
 	private final Class<?>[] columnClasses = new Class<?>[] {String.class, String.class, String.class, Date.class, String.class, Patient.class};
-	private OrthancRestApis connexionHttp;
 
-	public TablePatientsModel(OrthancRestApis connexionHttp){
+	public TablePatientsModel(){
 		super(0,6);
-		//Set des settings
-		this.connexionHttp=connexionHttp;
 	}
 
 	@Override
@@ -56,12 +52,8 @@ public class TablePatientsModel extends DefaultTableModel{
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable
 	 */
-	public void addPatient(String inputType, String input, String date, String studyDesc) {
-		
-		QueryOrthancData queryPatients = new QueryOrthancData(connexionHttp);
-		
-		//ArrayList<Patient> patients =queryPatients.findPatients(inputType, input, date, studyDesc);
-		ArrayList<Patient> patients =queryPatients.findStudies(inputType, input, date, studyDesc);
+	public void addPatient(ArrayList<Patient> patients) {
+
 		for (Patient patient : patients) {
 			this.addRow(new Object[] {patient.getName(), patient.getPatientId(), patient.getPatientOrthancId(), null, null, patient});
 		}

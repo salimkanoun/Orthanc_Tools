@@ -111,10 +111,11 @@ public class QueryOrthancData {
 		
 	}
 	*/
-	public ArrayList<Patient> findStudies(String inputType, String input, String date, String studyDesc) {
+	public ArrayList<Patient> findStudies(String inputType, String input, String date, String studyDesc, String modalities) {
 		
 		JsonObject query=new JsonObject();
 		query.addProperty("Level", "Studies");
+		query.addProperty("CaseSensitive", false);
 		query.addProperty("Expand", true);
 		
 		JsonObject queryDetails=new JsonObject();
@@ -138,6 +139,8 @@ public class QueryOrthancData {
 			default:
 				break;
 		}
+		
+		queryDetails.addProperty("ModalitiesInStudy", modalities);
 		
 		query.add("Query", queryDetails);
 		

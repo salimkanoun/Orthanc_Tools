@@ -24,7 +24,6 @@ import javax.swing.table.DefaultTableModel;
 
 import org.petctviewer.orthanc.anonymize.datastorage.Patient;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2;
-import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 
 public class TableStudiesModel extends DefaultTableModel{
@@ -32,15 +31,10 @@ public class TableStudiesModel extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 	private String[] entetes = {"Study date", "Study description", "Accession number", "ID", "studyObject"};
 	private final Class<?>[] columnClasses = new Class<?>[] {Date.class, String.class, String.class, String.class, Study2.class};
-	//private OrthancRestApis connexionHttp;
 	private Patient parentPatient;
 
-	public TableStudiesModel(OrthancRestApis connexionHttp){
+	public TableStudiesModel(){
 		super(0,5);
-		//Recupere les settings
-		//this.connexionHttp=connexionHttp;
-		//SK SI OK retirer ConnexionHTTP DU CONSTRUCTEUR
-		
 	}
 
 	@Override

@@ -58,6 +58,16 @@ public class Patient {
 		childStudies.put(study.getOrthancId(), study);
 	}
 	
+	public void addStudies(ArrayList<Study2> studies) {
+		if(childStudies==null) {
+			childStudies= new HashMap<String, Study2>();
+		}
+		for(Study2 study:studies) {
+			childStudies.put(study.getOrthancId(), study);
+		}
+		
+	}
+	
 	/**
 	 * Return the studies of this object
 	 * @return
