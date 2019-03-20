@@ -127,7 +127,7 @@ public class CD_Burner {
 		timer.cancel();
 	}
 	
-	public void makeCDFromPatient(List<String> newStablePatientID) {
+	private void makeCDFromPatient(List<String> newStablePatientID) {
 		for (String patientID : newStablePatientID) {
 			//Store the Row number where we are going to display progress
 			int rownumber=table_burning_history.getRowCount();
@@ -137,35 +137,34 @@ public class CD_Burner {
 			JsonObject mainPatientTag=jsonResponse.get("PatientMainDicomTags").getAsJsonObject();
 			JsonArray studiesOrthancId=jsonResponse.get("Studies").getAsJsonArray();
 			
+			if(studiesOrthancId.size()==1) {
+				List<String> newStableStudyID=new ArrayList<String>();
+				newStableStudyID.add(studiesOrthancId.get(0).getAsString());
+				makeCD(newStableStudyID);
+				return;
+			}
+			
 			
 			//Get value of interest : Patient Name / ID / DOB / study date and description
-			String nom="";
+			String nom="N/A";
 			if(mainPatientTag.has("PatientName")) {
 				nom=mainPatientTag.get("PatientName").getAsString();
 			}
 			
-			String id="";
+			String id="N/A";
 			if(mainPatientTag.has("PatientID")) {
 				mainPatientTag.get("PatientID").getAsString();
 			}
 
 			String accessionNumber="Multiples";
 
-			String formattedPatientDOB;
+			String formattedPatientDOB="N/A";
 			try {
 				String patientDOB=mainPatientTag.get("PatientBirthDate").getAsString();
 				Date patientDOBDate = parserDate.parse(patientDOB);
 				formattedPatientDOB = formatter.format(patientDOBDate);
 			}catch (Exception e) {
-				formattedPatientDOB="N/A";
 				e.printStackTrace();
-			}
-
-			if(studiesOrthancId.size()==1) {
-				List<String> newStableStudyID=new ArrayList<String>();
-				newStableStudyID.add(studiesOrthancId.get(0).getAsString());
-				makeCD(newStableStudyID);
-				return;
 			}
 			
 			String formattedDateExamen = "";
@@ -230,45 +229,43 @@ public class CD_Burner {
 			JsonObject mainPatientTag=response.get("PatientMainDicomTags").getAsJsonObject();
 			
 			//Get value of interest : Patient Name / ID / DOB / study date and description
-			String nom="";
+			String nom="N/A";
 			if(mainPatientTag.has("PatientName")) {
 				nom=mainPatientTag.get("PatientName").getAsString();
 			}
 			
-			String id="";
+			String id="N/A";
 			if(mainPatientTag.has("PatientID")) {
 				mainPatientTag.get("PatientID").getAsString();
 			}
 
 			JsonObject mainDicomTag=response.get("MainDicomTags").getAsJsonObject();
 			
-			String studyDescription="";
+			String studyDescription="N/A";
 			if(mainDicomTag.has("StudyDescription")) {
 				studyDescription=mainDicomTag.get("StudyDescription").getAsString();
 			}
 
-			String accessionNumber="";
+			String accessionNumber="N/A";
 			if(mainDicomTag.has("AccessionNumber")) {
 				mainDicomTag.get("AccessionNumber").getAsString();
 			}
 
-			String formattedDateExamen;
+			String formattedDateExamen="N/A";
 			try {
 				String studyDate=mainDicomTag.get("StudyDate").getAsString();
 				Date dateExamen = parserDate.parse(studyDate);
 				formattedDateExamen = formatter.format(dateExamen);
 			}catch (Exception e) {
-				formattedDateExamen="N/A";
 				e.printStackTrace();
 			}
 			
-			String formattedPatientDOB;
+			String formattedPatientDOB="N/A";
 			try {
 				String patientDOB=mainPatientTag.get("PatientBirthDate").getAsString();
 				Date patientDOBDate = parserDate.parse(patientDOB);
 				formattedPatientDOB = formatter.format(patientDOBDate);
 			}catch (Exception e) {
-				formattedPatientDOB="N/A";
 				e.printStackTrace();
 			}
 			
