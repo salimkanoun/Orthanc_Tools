@@ -53,13 +53,6 @@ public class ExportZip{
 		this.zipContent = zipContent;
 		this.temporary = temporary;
 	}
-	
-	public void setConvertZipAction(String fileDestination, String zipContent, boolean temporary){
-		this.zipDestination = fileDestination;
-		this.zipContent = new ArrayList<String>(); 
-		this.zipContent.add(zipContent);
-		this.temporary = temporary;
-	}
 
 	public void generateZip(boolean dicomDir) throws Exception  {
 		
