@@ -20,12 +20,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.prefs.Preferences;
 
 import javax.swing.Box;
@@ -42,13 +40,20 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
-import org.petctviewer.orthanc.ParametreConnexionHttp;
-import org.petctviewer.orthanc.query.Rest;
-import javax.swing.ListSelectionModel;
+import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.monitoring.autofetch.Auto_Fetch;
+import org.petctviewer.orthanc.monitoring.autorouting.Rule_AutoRouting_Gui;
+import org.petctviewer.orthanc.monitoring.cdburner.Burner_Settings;
+import org.petctviewer.orthanc.monitoring.cdburner.CD_Burner;
+import org.petctviewer.orthanc.monitoring.tagmonitoring.Tag_Monitoring;
+import org.petctviewer.orthanc.monitoring.tagmonitoring.Tag_Monitoring_Settings;
+import org.petctviewer.orthanc.query.QueryRetrieve;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 @SuppressWarnings("serial")
 public class Monitoring_GUI extends JFrame {
@@ -87,36 +92,19 @@ public class Monitoring_GUI extends JFrame {
 	Preferences jPrefer;
 	
 	// parametre http
-	private ParametreConnexionHttp parametre;
+	private OrthancRestApis parametre;
 	
 	/**
 	 * @wbp.nonvisual location=-24,419
 	 */
 	private JTable table;
 	private JTable table_burning_history;
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					Monitoring_GUI frame = new Monitoring_GUI(new ParametreConnexionHttp());
-					frame.pack();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
 
 	/**
 	 * Create the frame.
 	 */
-	public Monitoring_GUI(ParametreConnexionHttp parametre) {
-		jPrefer = Preferences.userNodeForPackage(Burner_Settings.class);
-		jPrefer = jPrefer.node("CDburner");
+	public Monitoring_GUI(OrthancRestApis parametre) {
+		jPrefer = VueAnon.jprefer;
 		this.parametre=parametre;
 		this.gui=this;
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -196,10 +184,10 @@ public class Monitoring_GUI extends JFrame {
 								"Name", "ID", "DOB", "Date", "Description", "Status"
 							}
 						) {
-							Class[] columnTypes = new Class[] {
+							Class<?>[] columnTypes = new Class[] {
 								String.class, String.class, String.class, String.class, String.class, String.class
 							};
-							public Class getColumnClass(int columnIndex) {
+							public Class<?> getColumnClass(int columnIndex) {
 								return columnTypes[columnIndex];
 							}
 						});
@@ -309,10 +297,10 @@ public class Monitoring_GUI extends JFrame {
 								"Tag", "Name"
 							}
 						) {
-							Class[] columnTypes = new Class[] {
+							Class<?>[] columnTypes = new Class[] {
 								String.class, Object.class
 							};
-							public Class getColumnClass(int columnIndex) {
+							public Class<?> getColumnClass(int columnIndex) {
 								return columnTypes[columnIndex];
 							}
 						});
@@ -346,10 +334,10 @@ public class Monitoring_GUI extends JFrame {
 								"Tag", "Name"
 							}
 						) {
-							Class[] columnTypes = new Class[] {
+							Class<?>[] columnTypes = new Class[] {
 								String.class, String.class
 							};
-							public Class getColumnClass(int columnIndex) {
+							public Class<?> getColumnClass(int columnIndex) {
 								return columnTypes[columnIndex];
 							}
 						});
@@ -415,7 +403,7 @@ public class Monitoring_GUI extends JFrame {
 						btnDbSettings.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent arg0) {
 								//On ouvre le panel setting pour lien BDD Mysql
-								Monitoring_Settings settings=new Monitoring_Settings();
+								Tag_Monitoring_Settings settings=new Tag_Monitoring_Settings();
 								settings.setLocationRelativeTo(gui);
 								settings.setVisible(true);
 								
@@ -479,10 +467,10 @@ public class Monitoring_GUI extends JFrame {
 								"Conditions", "Destination AET"
 							}
 						) {
-							Class[] columnTypes = new Class[] {
+							Class<?>[] columnTypes = new Class[] {
 								String.class, String.class
 							};
-							public Class getColumnClass(int columnIndex) {
+							public Class<?> getColumnClass(int columnIndex) {
 								return columnTypes[columnIndex];
 							}
 						});
@@ -644,19 +632,12 @@ public class Monitoring_GUI extends JFrame {
 	}
 	
 	private void setAET() {
-		Rest restApi=new Rest(parametre);
-		try {
-			Object[] aets=restApi.getAET();
-			for (int i=0; i<aets.length ; i++) {
-				comboBoxAET_AutoFetch.addItem((String) aets[i]);
-				
-			}
+		QueryRetrieve restApi=new QueryRetrieve(parametre);
+		String[] aets=restApi.getAets();
+		for (int i=0; i<aets.length ; i++) {
+			comboBoxAET_AutoFetch.addItem((String) aets[i]);
 			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-		
 	}
 	/**
 	 * Stops all monitoring services (for exit call)

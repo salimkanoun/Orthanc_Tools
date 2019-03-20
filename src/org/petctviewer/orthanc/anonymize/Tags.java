@@ -17,30 +17,39 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
+/**
+ * Store Choice for each Tag for anonymization query construction
+ *
+ */
+
 public class Tags {
 
+	public enum Choice {
+		REPLACE,
+		KEEP,
+		CLEAR
+	}
+	
 	private String code;
 	private Choice choice;
+	private String replaceValue;
 	
-	public Tags(String code, Choice choice){
+	public Tags(String code, Choice choice, String replaceValue){
+		this.choice=choice;
 		this.code = code;
-		this.choice = choice;
+		this.replaceValue=replaceValue;
 	}
 
 	public String getCode() {
 		return code;
 	}
-
-	public void setCode(String code) {
-		this.code = code;
-	}
-
+	
 	public Choice getChoice() {
 		return choice;
 	}
-
-	public void setChoice(Choice choice) {
-		this.choice = choice;
+	
+	public String getReplaceValue() {
+		return replaceValue;
 	}
 	
 }

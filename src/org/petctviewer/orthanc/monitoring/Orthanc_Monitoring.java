@@ -18,38 +18,36 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 package org.petctviewer.orthanc.monitoring;
 import java.util.ArrayList;
 import java.util.List;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.petctviewer.orthanc.ParametreConnexionHttp;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class Orthanc_Monitoring {
 	
-	private JSONObject changes=new JSONObject();
-	private JSONParser parser=new JSONParser();
+	private JsonObject changes=new JsonObject();
+	private JsonParser parser=new JsonParser();
 	private int last=0;
 	private boolean done;
 	
 	//CD Burner variable
-	protected List<String> newStableStudyID = new ArrayList<String>();
-	protected List<String> newStablePatientID = new ArrayList<String>();
-	protected List<String> newStableSeriesID = new ArrayList<String>();
-	protected List<String> newPatientID = new ArrayList<String>();
-	protected List<String> newStudyID = new ArrayList<String>();
-	protected List<String> newSerieID = new ArrayList<String>();
+	public List<String> newStableStudyID = new ArrayList<String>();
+	public List<String> newStablePatientID = new ArrayList<String>();
+	public List<String> newStableSeriesID = new ArrayList<String>();
+	public List<String> newPatientID = new ArrayList<String>();
+	public List<String> newStudyID = new ArrayList<String>();
+	public List<String> newSerieID = new ArrayList<String>();
 	
 	//Connxion API
-	ParametreConnexionHttp connexion;
+	OrthancRestApis connexion;
 
-	public Orthanc_Monitoring(ParametreConnexionHttp connexion) {
+	public Orthanc_Monitoring(OrthancRestApis connexion) {
 		this.connexion=connexion;
 		
 	}
 	
 	public void makeMonitor() {
-		try {
 			StringBuilder sb;
 			do {
 				sb = connexion.makeGetConnectionAndStringBuilder("/changes?since="+String.valueOf(last));
@@ -57,9 +55,6 @@ public class Orthanc_Monitoring {
 			}
 			while(!done);
 			
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	/**
@@ -67,16 +62,9 @@ public class Orthanc_Monitoring {
 	 * @return
 	 */
 	public int getChangeLastLine() {
-		StringBuilder sb;
-		JSONObject changes = null;
-		try {
-			sb = connexion.makeGetConnectionAndStringBuilder("/changes?last");
-			changes=(JSONObject) parser.parse(sb.toString());
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		
-		int last=Integer.parseInt(changes.get("Last").toString());
+		StringBuilder sb = connexion.makeGetConnectionAndStringBuilder("/changes?last");
+		JsonObject changes = parser.parse(sb.toString()).getAsJsonObject();
+		int last=Integer.parseInt(changes.get("Last").getAsString());
 		System.out.println(last);
 		
 		return last;
@@ -96,38 +84,38 @@ public class Orthanc_Monitoring {
 	 * @param outputStream
 	 * @throws ParseException
 	 */
-	private void parseOutput(String outputStream) throws ParseException {
+	private void parseOutput(String outputStream) {
 		
-		changes=(JSONObject) parser.parse(outputStream);
+		changes=parser.parse(outputStream).getAsJsonObject();
 		System.out.println(changes.toString());
-		JSONArray changesArray=(JSONArray) changes.get("Changes");
+		JsonArray changesArray=changes.get("Changes").getAsJsonArray();
 		for (int i=0; i<changesArray.size(); i++) {
-			JSONObject changeEvent=(JSONObject) changesArray.get(i);
-			String ID= (String) changeEvent.get("ID");
+			JsonObject changeEvent=changesArray.get(i).getAsJsonObject();
+			String ID=changeEvent.get("ID").getAsString();
 			
-			if (changeEvent.get("ChangeType").equals("NewPatient")) {
+			if (changeEvent.get("ChangeType").getAsString().equals("NewPatient")) {
 				newPatientID.add(ID);
 			}
 			 
-			else if (changeEvent.get("ChangeType").equals("NewStudy")) {
+			else if (changeEvent.get("ChangeType").getAsString().equals("NewStudy")) {
 				newStudyID.add(ID);
 
 			}
 			
-			else if (changeEvent.get("ChangeType").equals("NewSeries")) {
+			else if (changeEvent.get("ChangeType").getAsString().equals("NewSeries")) {
 				newSerieID.add(ID);
 			}
 			
-			else if (changeEvent.get("ChangeType").equals("StablePatient")) {
-				newStablePatientID.add((String) changeEvent.get("ID"));
+			else if (changeEvent.get("ChangeType").getAsString().equals("StablePatient")) {
+				newStablePatientID.add(ID);
 			}
 			
-			else if (changeEvent.get("ChangeType").equals("StableStudy")) {
-				newStableStudyID.add((String) changeEvent.get("ID"));
+			else if (changeEvent.get("ChangeType").getAsString().equals("StableStudy")) {
+				newStableStudyID.add(ID);
 			}
 
-			else if (changeEvent.get("ChangeType").equals("StableSeries")) {
-				newStableSeriesID.add((String) changeEvent.get("ID"));
+			else if (changeEvent.get("ChangeType").getAsString().equals("StableSeries")) {
+				newStableSeriesID.add(ID);
 			}
 			
 		}

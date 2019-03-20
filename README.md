@@ -1,6 +1,8 @@
 # Orthanc_Tools
 DICOM tools built on Orthanc API in Java
 
+Detailled Documentation : https://github.com/salimkanoun/Orthanc_Tools/blob/master/Orthanc_Tools_Documentation.pdf
+
 Features : 
 
 - Anonymization : Fine tunable anonymization and sharing services of Anonymized DICOMs (FTP/SSH/WebDAV)
@@ -23,11 +25,16 @@ Features :
  - Import :
    - Recursive import to Orthanc of local DICOMs
    
- - Monitoring : Work In Progress
+ - Monitoring :
    - Auto-Fetch : Automatically retrieve patient's history for each new study/patient recieved in Orthanc
-   - CD-Burner : Generate DVD burning intruction for Epson PP100II diskmaker
-   - Tag-Monitoring : Autocollection of DICOM tag value of recieved patients/studies/series (monitoring injected dose, dlp...)
+   - CD-Burner : Trigger DVD burning for Epson and Primera discproducers from DICOM transfert
+   - Tag-Monitoring : Autocollection of DICOM tag value of recieved patients/studies/series (monitoring injected dose, patient's weight,        acquisition time ...) and possibility to store these data into a structured mySQL database
    - Auto-Routing (Not desgigned yet)
+   
+ - Orthanc JSON Editor :  
+   - Edit all Orthanc settings in a comprehensive GUI and generate JSON settings file for Orthanc Server
+   
+ - Read : Load and visualize DICOM (better to use with Fiji version for image interaction)
    
  Contribution from http://petctviewer.org, free and open source PET/CT viewer based on Fiji/ImageJ
  

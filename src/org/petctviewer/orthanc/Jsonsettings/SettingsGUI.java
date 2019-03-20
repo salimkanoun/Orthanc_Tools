@@ -16,7 +16,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -27,7 +26,6 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.File;
 
-import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -43,14 +41,11 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
-import org.petctviewer.orthanc.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 
 public class SettingsGUI extends JFrame {
-	
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 7041807507652097056L;
 	private JTextField txtOrthanc;
 	private JTextField textfield_Http_Port;
@@ -72,15 +67,15 @@ public class SettingsGUI extends JFrame {
 	
 	private JSpinner maxStorageSize, maximumPatientCount,scpTimeout, dicom_Scu_Timeout, http_Timeout,
 	stable_Age,limitFindResult,dicomAssociationCloseDelay,limitFindInstance, queryRetrieveSize,limit_Jobs,
-	jobsHistorySize, concurrentJobs, mediaArchiveSize;
+	jobsHistorySize, concurrentJobs, mediaArchiveSize, httpThreadCount;
 	private JCheckBox storageCompression, httpServerEnabled, httpDescribeErrors, httpCompression, allowRemoteAccess,
 	ssl, enableAuthentication, serverEnabled, checkCalledAet, unknowSop, deflatedTs, jpegTs, jpeg2000Ts, jpegLoselessTs, jpipTs, mpegTs,rleTs,
 	dicomAlwaysStore,checkModalityStore, allowEcho,httpsVerifyPeers, dicomModalitiesInDb,orthancPeerInDb,
 	strictAetComparison, storeMD5, logExportedRessources, keepAlive, storeDicom, caseSensitivePatient, loadPrivateDictionary,
-	synchronousCMove, overwriteInstances;
+	synchronousCMove, overwriteInstances, httpVerbose, tcpNoDelay, saveJobs, metricsEnabled;
 	private JComboBox<String> comboBox_Encoding, storageAccessOnFind ;
 	
-	private ParametreConnexionHttp connexion=new ParametreConnexionHttp();
+	private OrthancRestApis connexion=new OrthancRestApis(null);
 
 	private Json_Settings settings=new Json_Settings();
 	
@@ -713,6 +708,17 @@ public class SettingsGUI extends JFrame {
 		JLabel lblHttpTimeout = new JLabel("HTTP timeout");
 		panel_peers.add(lblHttpTimeout);
 		lblHttpTimeout.setToolTipText("Set the timeout for HTTP requests issued by Orthanc (in seconds)");
+		
+		httpVerbose = new JCheckBox("New check box");
+		httpVerbose.setSelected(settings.httpVerbose);
+		panel_peers.add(httpVerbose);
+		
+		httpVerbose.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				settings.httpVerbose=httpVerbose.isSelected();
+			}
+		});
 
 		http_Timeout = new JSpinner();
 		panel_peers.add(http_Timeout);
@@ -911,6 +917,20 @@ public class SettingsGUI extends JFrame {
 	storageAccessOnFind.setSelectedItem(settings.storageAccessOnFind);
 	panel_1.add(storageAccessOnFind);
 	
+	JLabel httpThreadCountslbl = new JLabel("Http Thread Count");
+	panel_1.add(httpThreadCountslbl);
+	
+	httpThreadCount = new JSpinner();
+	httpThreadCount.setModel(new SpinnerNumberModel(new Integer(50), new Integer(0), null, new Integer(1)));
+	httpThreadCount.setValue(settings.httpThreadsCount);
+	httpThreadCount.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.httpThreadsCount=Integer.valueOf(httpThreadCount.getValue().toString());
+		}
+	});
+	panel_1.add(httpThreadCount);
+	
 	limit_Jobs.addFocusListener(new FocusAdapter() {
 		@Override
 		public void focusLost(FocusEvent e) {
@@ -961,6 +981,17 @@ public class SettingsGUI extends JFrame {
 			settings.KeepAlive=keepAlive.isSelected();
 		}
 	});
+	
+	tcpNoDelay = new JCheckBox("New check box");
+	tcpNoDelay.setSelected(true);
+	tcpNoDelay.setSelected(settings.tcpNoDelay);
+	tcpNoDelay.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.tcpNoDelay=tcpNoDelay.isSelected();
+		}
+	});
+	panel_chkbox.add(tcpNoDelay);
 
 	storeDicom = new JCheckBox("Store DICOM");
 	panel_chkbox.add(storeDicom);
@@ -996,9 +1027,32 @@ public class SettingsGUI extends JFrame {
 	});
 	panel_chkbox.add(synchronousCMove);
 	
+	saveJobs = new JCheckBox("New check box");
+	saveJobs.setSelected(true);
+	saveJobs.setSelected(settings.saveJobs);
+	saveJobs.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.saveJobs=saveJobs.isSelected();
+		}
+	});
+	panel_chkbox.add(saveJobs);
+	
 	overwriteInstances = new JCheckBox("Overwrite Instances");
 	panel_chkbox.add(overwriteInstances);
 	overwriteInstances.setSelected(settings.overwriteInstances);
+	
+	metricsEnabled = new JCheckBox("New check box");
+	metricsEnabled.setSelected(true);
+	metricsEnabled.setSelected(settings.metricsEnabled);
+	metricsEnabled.addFocusListener(new FocusAdapter() {
+		@Override
+		public void focusLost(FocusEvent e) {
+			settings.metricsEnabled=metricsEnabled.isSelected();
+		}
+	});
+	
+	panel_chkbox.add(metricsEnabled);
 	
 	loadPrivateDictionary.addFocusListener(new FocusAdapter() {
 		@Override
@@ -1122,7 +1176,7 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	
-	JLabel orthancVersion = new JLabel("For Orthanc 1.5.1");
+	JLabel orthancVersion = new JLabel("For Orthanc 1.5.6");
 	Bouttons_Bouttons.add(orthancVersion);
 	orthancVersion.setHorizontalAlignment(SwingConstants.CENTER);
 	
@@ -1130,19 +1184,11 @@ public class SettingsGUI extends JFrame {
 	Bouttons_Bouttons.add(btnRestartOrthancServer);
 	btnRestartOrthancServer.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent arg0) {
-			if (connexion.testConnexion()) connexion.restartOrthanc();
+			if (connexion.isConnected()) connexion.restartOrthanc();
 		}
 	});
 	}
 
-	public static void main(String[] args)  {
-			SettingsGUI gui=new SettingsGUI();
-			//On met la fenetre au centre de l ecran
-			gui.pack();
-			gui.setLocationRelativeTo(null);
-			gui.updateGUI();
-			gui.setVisible(true);
-		}
 	
 	
 	public void updateGUI() {
@@ -1211,6 +1257,21 @@ public class SettingsGUI extends JFrame {
 		synchronousCMove.setSelected(settings.SynchronousCMove);
 		concurrentJobs.setValue(settings.ConcurrentJobs);
 		
+		httpVerbose.setSelected(settings.httpVerbose);
+		httpThreadCount.setValue(settings.httpThreadsCount);
+		tcpNoDelay.setSelected(settings.tcpNoDelay);
+		saveJobs.setSelected(settings.saveJobs);
+		metricsEnabled.setSelected(settings.metricsEnabled);
+	}
+	
+
+	public static void main(String[] args)  {
+			SettingsGUI gui=new SettingsGUI();
+			//On met la fenetre au centre de l ecran
+			gui.pack();
+			gui.setLocationRelativeTo(null);
+			gui.updateGUI();
+			gui.setVisible(true);
 	}
 
 }

@@ -1,6 +1,9 @@
 package org.petctviewer.orthanc.setup;
 
 
+import java.awt.BorderLayout;
+import java.awt.Font;
+import java.awt.Image;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,13 +24,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 import org.apache.commons.io.IOUtils;
-import org.petctviewer.orthanc.ParametreConnexionHttp;
-import org.petctviewer.orthanc.monitoring.CD_Burner;
+import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.monitoring.cdburner.CD_Burner;
 
 public class Run_Orthanc {
 	
-	 private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
+	 private Preferences jprefer =VueAnon.jprefer;
 	 private Process process;
 	 private Path file;
 	 private Thread orthancThread;
@@ -40,46 +48,35 @@ public class Run_Orthanc {
 	 private String resourceLibPath="Orthanc_Standalone/";
 	 private List<String> resourceLibName=new ArrayList<String>();
 	 private boolean temp;
-	 private ParametreConnexionHttp connexionHttp;
 	
-	public Run_Orthanc(ParametreConnexionHttp connexionHttp) {
-		this.connexionHttp=connexionHttp;
-		
+	public Run_Orthanc() {
 		//SK AJOUTER ORTHANC TRANSFERS
-		//LIBRAIRIE A COMPILER POUR WINDOWS ET MAC
-		
 		if(System.getProperty("os.name").toLowerCase().startsWith("win")) {
-			if (System.getProperty("os.arch").contains("86")){
-				resourceName="Orthanc_Standalone/Orthanc-1.5.1-Release_32.exe";
-				fileExecName="Orthanc-1.5.1-Release_32.exe";
-				resourceLibName.add("OrthancWebViewer-2.4_32.dll");
-				
-			}else {
-				resourceName="Orthanc_Standalone/Orthanc-1.5.1-Release.exe";
-				fileExecName="Orthanc-1.5.1-Release.exe";
-				resourceLibName.add("OrthancWebViewer.dll");
-			}
-			
-			
-		}
-		else if (System.getProperty("os.name").toLowerCase().startsWith("mac")){
-			resourceName="Orthanc_Standalone/Orthanc-1.5.1-ReleaseMac";
-			fileExecName="Orthanc-1.5.1-ReleaseMac";
+			resourceName="Orthanc_Standalone/Orthanc-1.5.6-Release_32.exe";
+			fileExecName="Orthanc-1.5.6-Release_32.exe";
+			resourceLibName.add("OrthancWebViewer.dll");
+			resourceLibName.add("OrthancTransfers.dll");
+		//Still to Update	
+		} else if (System.getProperty("os.name").toLowerCase().startsWith("mac")){
+			resourceName="Orthanc_Standalone/Orthanc-1.5.6-ReleaseMac";
+			fileExecName="Orthanc-1.5.6-ReleaseMac";
 			resourceLibName.add("libOsimisWebViewer.dylib");
-			
-		}
-		else if (System.getProperty("os.name").toLowerCase().startsWith("linux")){
-			resourceName="Orthanc_Standalone/Orthanc-1.5.1-ReleaseLinux";
-			fileExecName="Orthanc-1.5.1-ReleaseLinux";
+			resourceLibName.add("libOrthancTransfers.dylib");
+		} else if (System.getProperty("os.name").toLowerCase().startsWith("linux")){
+			resourceName="Orthanc_Standalone/Orthanc-1.5.6-ReleaseLinux";
+			fileExecName="Orthanc-1.5.6-ReleaseLinux";
 			resourceLibName.add("libOrthancWebViewer.so");
 			resourceLibName.add("libOrthancTransfers.so");
-			
-			
-			
 		}
 	}
 	
-	public String copyOrthanc(String installPath) throws Exception {
+	/**
+	 * Copy compiled ressources (orthanc+plugin+create storage path) to destination (temp file or user defined path) 
+	 * @param installPath
+	 * @return
+	 * @throws Exception
+	 */
+	public void copyOrthanc(String installPath) throws Exception {
 		String resourceNameJSON=resourceLibPath+orthancJsonName;
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		
@@ -106,7 +103,7 @@ public class Run_Orthanc {
 		//Create OrthancStorageDirectory
 		new File(file.toString()+File.separator+"OrthancStorage").mkdirs();
 		
-		//Add lib to get GDCM decoder
+		//Add libs to orthanc (orthanc viewer to get GDCM decoder)
 		for (int i=0; i<resourceLibName.size(); i++) {
 			File FileLib=new File(file.toString()+File.separator+resourceLibName.get(i));
 			InputStream inLib = ClassLoader.getSystemResourceAsStream(resourceLibPath+resourceLibName.get(i));
@@ -114,24 +111,21 @@ public class Run_Orthanc {
 			IOUtils.copy(inLib, outLib);
 			outLib.close();
 		}
-
-		
 		orthancExe=FileExe;
 		orthancJson=FileJSON;
-		
-	    startOrthanc();
-	    
-	    
-
-        return resourceName;
   
     }
 	
+	/**
+	 * Start orthanc locally
+	 */
 	public void startOrthanc() {
+		
         orthancThread=new Thread(new Runnable() {
-
+        	JFrame splashScreen;
+        	JLabel openStatus;
 			public void run() {
-				
+					showSplashScreen(true);
 				 	if ( ! System.getProperty("os.name").toLowerCase().startsWith("win")) {
 				 		Set<PosixFilePermission> perms = new HashSet<>();
 				 		 	perms.add(PosixFilePermission.OWNER_READ);
@@ -149,70 +143,86 @@ public class Run_Orthanc {
 						    try {
 								Files.setPosixFilePermissions(orthancExe.toPath(), perms);
 							} catch (IOException e1) {
-								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
 				 	}
-				   
-				    
+
 				  ProcessBuilder pb = new ProcessBuilder(orthancExe.getAbsolutePath().toString(),orthancJson.getAbsolutePath().toString());
 				  pb.directory(orthancExe.getParentFile());
 				  pb.redirectErrorStream(true); 
 				
 				  try {
-				  process = pb.start();
-				  Thread.sleep(2000);
-				  InputStream stdout = process.getInputStream(); 
-			      InputStream stderr = process.getErrorStream();
-			      //OutputStream stdin = process.getOutputStream(); 
-				  BufferedReader reader = new BufferedReader (new InputStreamReader(stdout));
-				  BufferedReader error = new BufferedReader (new InputStreamReader(stderr));
-				  //BufferedReader stinn = new BufferedReader (new OutputStreamReader(stdin));
-				  String line = null;
-		
-				  while ( (line = reader.readLine()) != null ) {
-						 	//If JSON Object parse it
-						 System.out.println(line);
-						 if (line.contains("Orthanc has started")) {
-							 isStarted=true;
-							 System.out.println("confirmation");
-							//SK A REVOIR
-							connexionHttp.testConnexion();
+					  process = pb.start();
+					  Thread.sleep(2000);
+					  InputStream stdout = process.getInputStream(); 
+				      //InputStream stderr = process.getErrorStream();
+				      //OutputStream stdin = process.getOutputStream(); 
+					  BufferedReader reader = new BufferedReader (new InputStreamReader(stdout));
+					  //BufferedReader error = new BufferedReader (new InputStreamReader(stderr));
+					  //BufferedReader stinn = new BufferedReader (new OutputStreamReader(stdin));
+					  String line = null;
+			
+					  while ( (line = reader.readLine()) != null ) {
+							 	//If JSON Object parse it
+							 System.out.println(line);
+							 if (line.contains("Orthanc has started")) {
+								 isStarted=true;
+								 showSplashScreen(false);
+							 }
 						 }
-					 }
-					
-				  while ( (line = error.readLine()) != null) {
-					 	//If JSON Object parse it
-					 //System.out.println(line);				 	
-				    }
 					
 
 				} catch (IOException | InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
+				}	
+			} 	
+			
+			public void showSplashScreen(boolean show) {
+				if (show) {
+					splashScreen= new JFrame();
+					JPanel mainPanel=new JPanel(new BorderLayout());
+					JLabel imageLabel=new JLabel();
+					Image image = new ImageIcon(ClassLoader.getSystemResource("logos/orthanc-logo.png")).getImage();
+					ImageIcon incon=new ImageIcon(image);
+					imageLabel.setIcon(incon);
+					JLabel openStatus=new JLabel("Starting Orthanc");
+					openStatus.setFont(new Font("TimesRoman", Font.PLAIN, 30));
+					openStatus.setHorizontalAlignment(JLabel.CENTER);
+					
+					mainPanel.add(imageLabel, BorderLayout.CENTER);
+					mainPanel.add(openStatus, BorderLayout.SOUTH);
+					
+					splashScreen.add(mainPanel);
+					splashScreen.pack();
+					splashScreen.setLocationRelativeTo(null);
+					splashScreen.setVisible(true);
+					
+				}else {
+					splashScreen.dispose();
 				}
 				
-				
 			}
-        	
         });
         
-        orthancThread.start();
-
+       orthancThread.start();
+       
         
-       if(!isStarted) {
+       int loop=0;
+       while(!isStarted && loop<10) {
     	   try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+    		   System.out.println(loop);
+    		  
+    		   Thread.sleep(1000);
+    		   loop++;
+    	   } catch (InterruptedException e) {
+    		   e.printStackTrace();
+    	   }
        }
-
-
-		
-		
-		
+       
+       if(loop==10) {
+    	   System.exit(0);
+       }
+       
 
 	}
 	
@@ -223,7 +233,6 @@ public class Run_Orthanc {
 			orthancExe=new File(installPath+File.separator+fileExecName);
 			orthancJson=new File(installPath+File.separator+"Orthanc.json");
 			if(orthancExe.exists() && orthancJson.exists()) {
-				startOrthanc();
 				return true;
 			}
 				
@@ -232,20 +241,23 @@ public class Run_Orthanc {
 		return false;
 	}
 	
-	public void stopOrthanc() {
+	public void stopOrthanc(OrthancRestApis connexionHttp) {
+		
+		if(connexionHttp==null || !connexionHttp.isConnected()) {
+			return;
+		}
 		System.out.println("Stoping Orthanc");
-		//Ask Orthanc to shutdown
-		connexionHttp.makePostConnection("/tools/shutdown", "");
 		//Destroy the process
 		try {
+			//Ask Orthanc to shutdown
+			connexionHttp.makePostConnection("/tools/shutdown", "");
 			while (process.isAlive()) {
 				Thread.sleep(1000);
 			}
 			process.destroy();
 			orthancThread.interrupt();
 			isStarted=false;
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
@@ -257,9 +269,6 @@ public class Run_Orthanc {
 				e.printStackTrace();
 			}
 		}
-		
-		
-
 	}
 	
 	public boolean getIsStarted() {

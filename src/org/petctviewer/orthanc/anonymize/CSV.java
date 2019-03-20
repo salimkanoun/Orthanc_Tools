@@ -30,8 +30,6 @@ import javax.swing.JFileChooser;
 public class CSV {
 
 	private StringBuilder content;
-	private DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
-	private Preferences jpreferAnon = Preferences.userRoot().node("<unnamed>/anonPlugin");
 	
 	public CSV(){
 		content = new StringBuilder();
@@ -60,8 +58,9 @@ public class CSV {
 	}
 
 	public void addStudy(String oldPatientName, String oldPatientId, String newPatientName, String newPatientId,
-			String oldStudyDate, String oldStudyDesc, String newStudyDesc, String nbSeries, String nbInstances, 
-			String size, String studyInstanceUid){
+			Date oldStudyDate, String oldStudyDesc, String newStudyDesc, int nbSeries, int nbInstances, 
+			int size, String studyInstanceUid){
+		SimpleDateFormat df=new SimpleDateFormat("MMddyyyy");
 		content.append(oldPatientName);
 		content.append(',');
 		content.append(oldPatientId);
@@ -70,7 +69,7 @@ public class CSV {
 		content.append(',');
 		content.append(newPatientId);
 		content.append(',');
-		content.append(oldStudyDate);
+		content.append(df.format(oldStudyDate));
 		content.append(',');
 		content.append(oldStudyDesc);
 		content.append(',');
@@ -95,7 +94,15 @@ public class CSV {
 		}
 	}
 	
+	/**
+	 * Open JFileChooser with the last CSV location and predified name for export
+	 * @return
+	 */
 	private File fileChooser(){
+		
+		Preferences jpreferAnon = VueAnon.jprefer;
+		DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
+		
 		JFileChooser chooser = new JFileChooser();
 		chooser.setCurrentDirectory(new File(jpreferAnon.get("csvLocation", System.getProperty("user.dir"))));
 		chooser.setSelectedFile(new File(df.format(new Date()) + ".csv"));
