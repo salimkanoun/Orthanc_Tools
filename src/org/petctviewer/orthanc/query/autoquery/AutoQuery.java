@@ -58,8 +58,8 @@ public class AutoQuery  {
 	public int fZERO_MINUTES=00;
 	public int discard=10;
 	public String serieDescriptionContains, serieDescriptionExclude, serieNumberExclude, serieNumberMatch;
-	public boolean chckbxCr , chckbxCt, chckbxCmr, chckbxNm, chckbxPt, chckbxUs, chckbxXa , chckbxMg, chckbxSeriesFilter;
-	
+	public boolean chckbxCr , chckbxCt, chckbxCmr, chckbxNm, chckbxPt, chckbxUs, chckbxXa , chckbxMg ,chckbxDx, chckbxSeriesFilter;
+	public String customModalities="";
 	private DateFormat df = new SimpleDateFormat("yyyyMMdd");
 	
 	private ArrayList<JsonObject> retrievedStudies;
@@ -305,6 +305,7 @@ public class AutoQuery  {
 		if (chckbxUs) seriesModalities.append("/US/");
 		if (chckbxXa) seriesModalities.append("/XA/");
 		if (chckbxMg) seriesModalities.append("/MG/");
+		seriesModalities.append(customModalities);
 		
 		//on recupere le nombre de condition a checker
 		int nombreFiltre=0;

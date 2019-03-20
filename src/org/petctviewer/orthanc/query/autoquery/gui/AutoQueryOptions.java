@@ -35,8 +35,8 @@ public class AutoQueryOptions extends JDialog {
 	private JSpinner spinnerDiscard;
 	private JSpinner spinnerHour;
 	private JSpinner spinnerMin;
-	private JTextField serieDescriptionContains,serieDescriptionExclude, serieNumberExclude, serieNumberMatch;
-	private JCheckBox chckbxCr ,chckbxCt,chckbxCmr,chckbxNm,chckbxPt,chckbxUs ,chckbxXa , chckbxMg, chckbxSeriesFilter;
+	private JTextField serieDescriptionContains,serieDescriptionExclude, serieNumberExclude, serieNumberMatch, customModalities;
+	private JCheckBox chckbxCr ,chckbxCt,chckbxCmr,chckbxNm,chckbxPt,chckbxUs ,chckbxXa , chckbxMg,chckbxDx, chckbxSeriesFilter;
 	private List<JCheckBox> checkboxList;
 	private int discard, hour, min;
 
@@ -160,6 +160,9 @@ public class AutoQueryOptions extends JDialog {
 		chckbxUs = new JCheckBox("US");
 		chckbxXa = new JCheckBox("XA");
 		chckbxMg = new JCheckBox("MG");
+		chckbxDx = new JCheckBox("DX");
+		customModalities=new JTextField();
+		customModalities.setToolTipText("Add custom modalities ex \"OT\\PR\" ");
 		
 		checkboxList.add(chckbxCr);
 		checkboxList.add(chckbxCt);
@@ -169,6 +172,7 @@ public class AutoQueryOptions extends JDialog {
 		checkboxList.add(chckbxUs);
 		checkboxList.add(chckbxXa);
 		checkboxList.add(chckbxMg);
+		checkboxList.add(chckbxDx);
 		
 		panel_modalities.add(chckbxCr);
 		panel_modalities.add(chckbxCt);
@@ -178,7 +182,9 @@ public class AutoQueryOptions extends JDialog {
 		panel_modalities.add(chckbxUs);
 		panel_modalities.add(chckbxXa);
 		panel_modalities.add(chckbxMg);
-
+		panel_modalities.add(chckbxDx);
+		panel_modalities.add(customModalities);
+		
 		JPanel buttonPane = new JPanel();
 		buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		getContentPane().add(buttonPane, BorderLayout.SOUTH);
@@ -204,6 +210,8 @@ public class AutoQueryOptions extends JDialog {
 				jPrefer.putBoolean("AutoQuery_useSeriesUSFilter", chckbxUs.isSelected());
 				jPrefer.putBoolean("AutoQuery_useSeriesXAFilter", chckbxXa.isSelected());
 				jPrefer.putBoolean("AutoQuery_useSeriesMGFilter", chckbxMg.isSelected());
+				jPrefer.put("AutoQuery_customModalities", customModalities.getText());
+				
 				//dispose
 				dispose();
 			}
@@ -265,7 +273,8 @@ public class AutoQueryOptions extends JDialog {
 		chckbxPt.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesPTFilter", false));
 		chckbxUs.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesUSFilter", false));
 		chckbxXa.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesXAFilter", false));
-		chckbxMg.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesMGFilter", false));	
+		chckbxMg.setSelected(jPrefer.getBoolean("AutoQuery_useSeriesMGFilter", false));
+		customModalities.setText(jPrefer.get("AutoQuery_customModalities", ""));
 	}
 	
 	protected void activateSeriesFiler(boolean activate) {
@@ -318,6 +327,10 @@ public class AutoQueryOptions extends JDialog {
 	
 	public List<JCheckBox> getSeriesModalities(){
 		return checkboxList;
+	}
+	
+	public String getCustomModalities() {
+		return customModalities.getText();
 	}
 
 }

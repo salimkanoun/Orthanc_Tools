@@ -135,8 +135,8 @@ public class VueAnon extends JFrame {
 	protected JPanel tablesPanel, mainPanel, topPanel, anonBtnPanelTop;
 	
 	//Search settings
-	JCheckBox cr, ct, cmr , nm , pt , us, xa , mg;
-	
+	JCheckBox cr, ct, mr , nm , pt , us, xa , mg, dx;
+	JTextField customModalities;
 	// Tables and models
 	private JTable tableauPatients;
 	private JTable tableauStudies;
@@ -376,17 +376,20 @@ public class VueAnon extends JFrame {
 		JPanel checkboxes = new JPanel(new GridLayout(2,4));
 		cr = new JCheckBox("CR");
 		ct = new JCheckBox("CT");
-		cmr = new JCheckBox("CMR");
+		mr = new JCheckBox("MR");
 		nm = new JCheckBox("NM");
 		pt = new JCheckBox("PT");
 		us = new JCheckBox("US");
 		xa = new JCheckBox("XA");
 		mg = new JCheckBox("MG");
+		dx = new JCheckBox("DX");
+		customModalities=new JTextField();
+		customModalities.setToolTipText("Add custom modalities ex \"OT\\PR\" ");
 		checkboxes.add(cr); checkboxes.add(ct);
-		checkboxes.add(cmr); checkboxes.add(nm);
+		checkboxes.add(mr); checkboxes.add(nm);
 		checkboxes.add(pt); checkboxes.add(us);
 		checkboxes.add(xa); checkboxes.add(mg);
-		
+		checkboxes.add(dx); checkboxes.add(customModalities);
 		panelModalities.add(checkboxes, BorderLayout.CENTER);
 		panelModalities.add(new JLabel("Contains Modalities"), BorderLayout.NORTH);
 		
@@ -416,12 +419,14 @@ public class VueAnon extends JFrame {
 					StringBuilder modalities=new StringBuilder();
 					if (cr.isSelected()) modalities.append("CR\\");
 					if (ct.isSelected()) modalities.append("CT\\");
-					if (cmr.isSelected()) modalities.append("CMR\\");
+					if (mr.isSelected()) modalities.append("MR\\");
 					if (nm.isSelected()) modalities.append("NM\\");
 					if (pt.isSelected()) modalities.append("PT\\");
 					if (us.isSelected()) modalities.append("US\\");
 					if (xa.isSelected()) modalities.append("XA\\");
 					if (mg.isSelected()) modalities.append("MG\\");
+					if (dx.isSelected()) modalities.append("DX\\");
+					modalities.append(customModalities.getText());
 					
 					String modality=StringUtils.removeEnd(modalities.toString(), "\\");
 					
@@ -2033,7 +2038,7 @@ public class VueAnon extends JFrame {
 		this.getRootPane().setDefaultButton(searchBtn);
 		this.addWindowListener(new Window_Custom_Listener(this, zipContent, modeleAnonPatients, modeleExportStudies, monitoring, runOrthanc));
 		pack();
-		
+		userInput.requestFocus();
 	}
 	
 	//private enum panels {Anon,Export,Manage};

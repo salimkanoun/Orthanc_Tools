@@ -123,7 +123,8 @@ public class VueQuery extends JFrame {
 	private JTextField userInput; // associated with searchingParam to get the input
 	private JTextField userInputFirstName; //First Name input in case of Name search
 	private JPanel checkboxes; // contains every checkboxes
-	private JCheckBox cr,ct,cmr,nm,pt,us,xa,mg; // the chosen modalities 
+	private JCheckBox cr,ct,mr,nm,pt,us,xa,mg, dx;
+	private JTextField customModalities; // the chosen modalities 
 	private JTextField description; // allows to search for a particular description
 	private DatePicker from, to; // allow to make a research in a user defined time frame
 	private TableRowSorter<ModelTableStudy> sorter; // used to filter and sort the rows for the main JTable
@@ -135,7 +136,8 @@ public class VueQuery extends JFrame {
 	private JComboBox<String> retrieveAETH; // indexes every AETs available that the user can retrieve instances to
 	private JLabel stateH; // allows the user to know the state of the retrieve query
 	private JPanel checkboxesH;
-	private JCheckBox crH,ctH,cmrH,nmH,ptH,usH,xaH,mgH;  
+	private JCheckBox crH,ctH,mrH,nmH,ptH,usH,xaH,mgH, dxH;
+	private JTextField customModalitiesH;  
 	private DatePicker fromH, toH; // allow to make a research in a user defined time frame
 	private TableRowSorter<ModelTableStudy> sorterH; // used to sort the rows for the main JTable
 	private TableRowSorter<ModelTableSeries> sorterDetailsH; // used to filter and sort the rows for the details JTable
@@ -293,16 +295,20 @@ public class VueQuery extends JFrame {
 		checkboxes = new JPanel(new GridLayout(2,4));
 		cr = new JCheckBox("CR");
 		ct = new JCheckBox("CT");
-		cmr = new JCheckBox("CMR");
+		mr = new JCheckBox("MR");
 		nm = new JCheckBox("NM");
 		pt = new JCheckBox("PT");
 		us = new JCheckBox("US");
 		xa = new JCheckBox("XA");
 		mg = new JCheckBox("MG");
+		dx = new JCheckBox("DX");
+		customModalities=new JTextField();
+		customModalities.setToolTipText("Add custom modalities ex \"OT\\PR\" ");
 		checkboxes.add(cr); checkboxes.add(ct);
-		checkboxes.add(cmr); checkboxes.add(nm);
+		checkboxes.add(mr); checkboxes.add(nm);
 		checkboxes.add(pt); checkboxes.add(us);
 		checkboxes.add(xa); checkboxes.add(mg);
+		checkboxes.add(dx); checkboxes.add(customModalities);
 
 		
 		queryAET = new JComboBox<String>(distantAets);
@@ -450,16 +456,20 @@ public class VueQuery extends JFrame {
 		checkboxesH = new JPanel(new GridLayout(2,4));
 		crH = new JCheckBox("CR");
 		ctH = new JCheckBox("CT");
-		cmrH = new JCheckBox("CMR");
+		mrH = new JCheckBox("MR");
 		nmH = new JCheckBox("NM");
 		ptH = new JCheckBox("PT");
 		usH = new JCheckBox("US");
 		xaH = new JCheckBox("XA");
 		mgH = new JCheckBox("MG");
+		dxH = new JCheckBox("DX");
+		customModalitiesH=new JTextField();
+		customModalitiesH.setToolTipText("Add custom modalities ex \"OT\\PR\" ");
 		checkboxesH.add(crH); checkboxesH.add(ctH);
-		checkboxesH.add(cmrH); checkboxesH.add(nmH);
+		checkboxesH.add(mrH); checkboxesH.add(nmH);
 		checkboxesH.add(ptH); checkboxesH.add(usH);
 		checkboxesH.add(xaH); checkboxesH.add(mgH);
+		checkboxesH.add(dxH); checkboxesH.add(customModalitiesH);
 
 		// Creating the user input's components
 		JPanel datesH = new JPanel(new FlowLayout());		 
@@ -849,6 +859,8 @@ public class VueQuery extends JFrame {
 				autoQuery.chckbxUs=options.getSeriesModalities().get(5).isSelected();
 				autoQuery.chckbxXa=options.getSeriesModalities().get(6).isSelected();
 				autoQuery.chckbxMg=options.getSeriesModalities().get(7).isSelected();
+				autoQuery.chckbxDx=options.getSeriesModalities().get(8).isSelected();
+				autoQuery.customModalities=options.getCustomModalities();
 				
 				
 			}
@@ -1021,6 +1033,8 @@ public class VueQuery extends JFrame {
 						modalities.append((((JCheckBox) c).getText()));
 						modalities.append("\\");
 					}
+				}else if(c instanceof JTextField){
+					modalities.append(((JTextField) c).getText());
 				}
 			}
 			

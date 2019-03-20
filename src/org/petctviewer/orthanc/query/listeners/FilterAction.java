@@ -27,6 +27,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import org.petctviewer.orthanc.query.ModelTableSeries;
 import org.petctviewer.orthanc.query.ModelTableStudy;
@@ -75,7 +76,6 @@ public class FilterAction extends AbstractAction {
 		DateFormat df = new SimpleDateFormat("yyyyMMdd");
 
 		// We append a StringBuilder with every selected modalities.
-		// We append "\\\\" in order to get the double \ which allows for multiple modalities in the query
 		StringBuilder modalities = new StringBuilder();
 		for(Component c : checkboxes.getComponents()){
 			if(c instanceof JCheckBox){
@@ -88,8 +88,12 @@ public class FilterAction extends AbstractAction {
 						modalities.append("\\");
 					}
 				}
+			//Add customModalities
+			}else if(c instanceof JTextField) {
+				modalities.append(((JTextField) c).getText());
 			}
 		}
+		
 		// If the checkbox is the last chosen checkbox, we delete the '\\\\' at the end
 		if(modalities.length() != 0 && modalities.charAt(modalities.length() - 1) == '\\'){
 			modalities.deleteCharAt(modalities.length() - 1);
