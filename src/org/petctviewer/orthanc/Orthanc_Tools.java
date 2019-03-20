@@ -49,6 +49,8 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 //Tester JsonEditor
 //Cacher les colonnes ID
 //Graveur monitorer le level patient
+//Envoi manuel de cd/dvd ?
+//Tester filtre modalities dans autoquery
 
 //AutoQuery doc a refaire : 
 //Valeur global au click
