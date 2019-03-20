@@ -184,10 +184,10 @@ public class Monitoring_GUI extends JFrame {
 								"Name", "ID", "DOB", "Date", "Description", "Status"
 							}
 						) {
-							Class[] columnTypes = new Class[] {
+							Class<?>[] columnTypes = new Class[] {
 								String.class, String.class, String.class, String.class, String.class, String.class
 							};
-							public Class getColumnClass(int columnIndex) {
+							public Class<?> getColumnClass(int columnIndex) {
 								return columnTypes[columnIndex];
 							}
 						});
@@ -297,10 +297,10 @@ public class Monitoring_GUI extends JFrame {
 								"Tag", "Name"
 							}
 						) {
-							Class[] columnTypes = new Class[] {
+							Class<?>[] columnTypes = new Class[] {
 								String.class, Object.class
 							};
-							public Class getColumnClass(int columnIndex) {
+							public Class<?> getColumnClass(int columnIndex) {
 								return columnTypes[columnIndex];
 							}
 						});
@@ -334,10 +334,10 @@ public class Monitoring_GUI extends JFrame {
 								"Tag", "Name"
 							}
 						) {
-							Class[] columnTypes = new Class[] {
+							Class<?>[] columnTypes = new Class[] {
 								String.class, String.class
 							};
-							public Class getColumnClass(int columnIndex) {
+							public Class<?> getColumnClass(int columnIndex) {
 								return columnTypes[columnIndex];
 							}
 						});
@@ -467,10 +467,10 @@ public class Monitoring_GUI extends JFrame {
 								"Conditions", "Destination AET"
 							}
 						) {
-							Class[] columnTypes = new Class[] {
+							Class<?>[] columnTypes = new Class[] {
 								String.class, String.class
 							};
-							public Class getColumnClass(int columnIndex) {
+							public Class<?> getColumnClass(int columnIndex) {
 								return columnTypes[columnIndex];
 							}
 						});

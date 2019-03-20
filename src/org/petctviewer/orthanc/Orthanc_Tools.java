@@ -42,7 +42,7 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 
 
 //SK TO DO
-//Search at study level
+//Search at study level => A tester
 //Run auto a tester sur Mac
 //Reoganiser le package Query = +-
 //Tester toutes les fonctions!

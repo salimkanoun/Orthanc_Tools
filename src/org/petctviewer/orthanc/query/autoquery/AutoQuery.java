@@ -295,7 +295,6 @@ public class AutoQuery  {
 	
 	private ArrayList<JsonObject> filterSerie(StudyDetails studyResults, String destinationAet) throws Exception {
 		//counter to log number of series retrieved
-		int serieCountRevtrieved=0;
 		
 		StringBuilder seriesModalities=new StringBuilder();
 		if (chckbxCr) seriesModalities.append("/CR/");
@@ -401,7 +400,6 @@ public class AutoQuery  {
 				if(asnwerSeries!=null) {
 					//info.setText("Retrieve Serie "+(k+1)+"/"+(seriesDetails.length+1)+" Query "+(i+1)+"/"+table.getRowCount());
 					answers.add(asnwerSeries);
-					serieCountRevtrieved++;
 				}
 				
 			}

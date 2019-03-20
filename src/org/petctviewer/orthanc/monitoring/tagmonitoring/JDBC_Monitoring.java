@@ -25,7 +25,7 @@ import java.util.prefs.Preferences;
 
 import org.petctviewer.orthanc.anonymize.VueAnon;
 
-public class JDBC_Monitoring<accessionNumber> {
+public class JDBC_Monitoring {
 
 	private Connection connection;
 	
@@ -40,7 +40,6 @@ public class JDBC_Monitoring<accessionNumber> {
 				connection = DriverManager.getConnection("jdbc:mysql://" + jprefer.get("dbAdress", null) + ":" 
 					+ jprefer.get("dbPort", null)  + "/" + jprefer.get("dbName", null), jprefer.get("dbUsername", null), jprefer.get("dbPassword", null));
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -56,10 +55,8 @@ public class JDBC_Monitoring<accessionNumber> {
 			Statement st = connection.createStatement();
 			String sql = ("INSERT INTO `patients`(`Orthanc_Patient_ID`, `Last_Name`, `First_Name`, `Patient_ID`, `DOB`, `Sex`) "
 					+ "VALUES ('"+orthancID+"','"+patientLastName+"','"+patientFirstName+"','"+patientID+"','"+DOB+"','"+Sex+"')");
-			System.out.println(sql);
-			boolean rs = st.execute(sql);
+			st.execute(sql);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -73,10 +70,8 @@ public class JDBC_Monitoring<accessionNumber> {
 			Statement st = connection.createStatement();
 			String sql = ("INSERT INTO `studies`(`accessionNumber`, `institutionName`, `referringPhysicianName`, `studyDate`, `studyDescription`, `studyID`, `studyInstanceUID`, `studyTime`, `Orthanc_Study_ID`, `parentPatientOrthanc`) "
 					+ "VALUES ('"+accessionNumber+"','"+institutionName+"','"+referringPhysicianName+"','"+studyDate+"','"+studyDescription+"','"+studyID+"','"+studyInstanceUID+"','"+studyTime+"','"+Orthanc_Study_ID+"','"+parentPatientOrthanc+"')");
-			System.out.println(sql);
-			boolean rs = st.execute(sql);
+			st.execute(sql);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -91,10 +86,8 @@ public class JDBC_Monitoring<accessionNumber> {
 			Statement st = connection.createStatement();
 			String sql = ("INSERT INTO `series`(`size`, `age`, `weight`, `Manifacturer`, `Manifacturer_Model`, `Performing_Physician_Name`, `Series_Description`, `Station_Name`, `Content_Date`, `Content_Time`, `Protocol_Name`, `Series_Instance_UID`, `Comment_Radiation_Dose`, `Radiopharmaceutical_sequence`, `Radiopharmaceutical`, `RadiopharmaceuticalStartTime`, `RadionuclideTotalDose`, `RadionuclideHalfLife`, `RadionuclidePositronFraction`, `Radiation_Dose_Module`, `shared_Tags`, `Orthanc_Serie_ID`,`parentStudyOrthanc` ) "
 					+ "VALUES ('"+size+"','"+age+"','"+weight+"','"+Manifacturer+"','"+Manifacturer_Model+"','"+Performing_Physician_Name+"','"+Series_Description+"','"+Station_Name+"','"+Content_Date+"','"+Content_Time+"','"+Protocol_Name+"','"+Series_Instance_UID+"','"+Comment_Radiation_Dose+"','"+Radiopharmaceutical_sequence+"','"+Radiopharmaceutical+"','"+RadiopharmaceuticalStartTime+"','"+RadionuclideTotalDose+"','"+RadionuclideHalfLife+"','"+RadionuclidePositronFraction+"','"+Radiation_Dose_Module+"','"+Shared_Tags+"','"+Orthanc_Serie_ID+"','"+parentStudyOrthanc+"')");
-			System.out.println(sql);
-			boolean rs = st.execute(sql);
+			st.execute(sql);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		

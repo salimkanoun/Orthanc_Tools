@@ -136,9 +136,9 @@ public class OTP_Gui extends JDialog {
 											String lastName=patient.get("lastName").getAsString();
 											String patientSex=patient.get("patientSex").getAsString();
 											String patientDOB=patient.get("patientDOB").getAsString();
-											String investigatorName=patient.get("investigatorName").getAsString();
-											String country=patient.get("country").getAsString();
-											String centerNumber=patient.get("centerNumber").getAsString();
+											//String investigatorName=patient.get("investigatorName").getAsString();
+											//String country=patient.get("country").getAsString();
+											//String centerNumber=patient.get("centerNumber").getAsString();
 											String acquisitionDate=(String) patient.get("acquisitionDate").toString().replaceAll("-", "/");
 											modelTablePatient.addRow(new Object[]{numeroPatient, lastName, firstName, patientSex , patientDOB, acquisitionDate});
 											//SK MANQUE ACQUISITION DATE DANS L API
@@ -228,10 +228,10 @@ public class OTP_Gui extends JDialog {
 								"Patient Number", "Last Name", "First Name", "Sex", "DOB", "Acquisition Date" 
 						}
 					) {
-						Class[] columnTypes = new Class[] {
+						Class<?>[] columnTypes = new Class[] {
 								String.class, String.class, String.class, String.class, String.class, String.class
 						};
-						public Class getColumnClass(int columnIndex) {
+						public Class<?> getColumnClass(int columnIndex) {
 							return columnTypes[columnIndex];
 						}
 					});
