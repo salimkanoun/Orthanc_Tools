@@ -52,6 +52,7 @@ import org.petctviewer.orthanc.monitoring.Orthanc_Monitoring;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -77,6 +78,8 @@ public class CD_Burner {
 	private JsonParser parser=new JsonParser();
 	private HashMap<String, Object[]> burningStatus=new HashMap<String, Object[]>();
 	
+	private boolean levelPatient;
+	
 	public CD_Burner (OrthancRestApis connexion, JTable table_burning_history) {
 		this.connexion=connexion;
 		this.table_burning_history=table_burning_history;
@@ -101,11 +104,16 @@ public class CD_Burner {
 				@Override
 				public void run() {
 					monitoring.makeMonitor();
-					makeCD(monitoring.newStableStudyID);
+					if(levelPatient) {
+						makeCDFromPatient(monitoring.newStablePatientID);
+					}else {
+						makeCD(monitoring.newStableStudyID);
+					}
+					
 					monitoring.clearAllList();
 					try {
 						updateProgress();
-					} catch (IOException e) {
+					} catch (Exception e) {
 						e.printStackTrace();
 					}
 					
@@ -124,7 +132,9 @@ public class CD_Burner {
 	 * Stop the monitoring every 90secs
 	 */
 	public void stopCDMonitoring() {
-		timer.cancel();
+		if(timer!=null) {
+			timer.cancel();
+		}
 	}
 	
 	private void makeCDFromPatient(List<String> newStablePatientID) {
@@ -134,7 +144,7 @@ public class CD_Burner {
 			
 			StringBuilder answer=connexion.makeGetConnectionAndStringBuilder("/patients/"+ patientID);
 			JsonObject jsonResponse=parser.parse(answer.toString()).getAsJsonObject();			
-			JsonObject mainPatientTag=jsonResponse.get("PatientMainDicomTags").getAsJsonObject();
+			JsonObject mainPatientTag=jsonResponse.get("MainDicomTags").getAsJsonObject();
 			JsonArray studiesOrthancId=jsonResponse.get("Studies").getAsJsonArray();
 			
 			if(studiesOrthancId.size()==1) {
@@ -153,7 +163,7 @@ public class CD_Burner {
 			
 			String id="N/A";
 			if(mainPatientTag.has("PatientID")) {
-				mainPatientTag.get("PatientID").getAsString();
+				id=mainPatientTag.get("PatientID").getAsString();
 			}
 
 			String accessionNumber="Multiples";
@@ -167,8 +177,8 @@ public class CD_Burner {
 				e.printStackTrace();
 			}
 			
-			String formattedDateExamen = "";
-			String studyDescription=studiesOrthancId.size()+"studies";
+			String formattedDateExamen = "Multiples";
+			String studyDescription=studiesOrthancId.size()+" studies";
 
 			//Update display status
 			(( DefaultTableModel) table_burning_history.getModel()).addRow(new String[]{nom, id, formattedPatientDOB ,accessionNumber, studyDescription,"Recieved" });
@@ -176,7 +186,9 @@ public class CD_Burner {
 			
 			//Generate the ZIP with Orthanc IDs dicom
 			ArrayList<String> orthancIds=new ArrayList<String>();
-			orthancIds.add(id);
+			for(JsonElement studyID : studiesOrthancId) {
+				orthancIds.add(studyID.getAsString());
+			}
 			File zip=generateZip(orthancIds);
 			
 			// Unzip du fichier ZIP recupere
@@ -236,7 +248,7 @@ public class CD_Burner {
 			
 			String id="N/A";
 			if(mainPatientTag.has("PatientID")) {
-				mainPatientTag.get("PatientID").getAsString();
+				id=mainPatientTag.get("PatientID").getAsString();
 			}
 
 			JsonObject mainDicomTag=response.get("MainDicomTags").getAsJsonObject();
@@ -269,15 +281,13 @@ public class CD_Burner {
 				e.printStackTrace();
 			}
 			
-			if (studyDescription==null) studyDescription="N/A";
-			
 			//Update display status
 			(( DefaultTableModel) table_burning_history.getModel()).addRow(new String[]{nom,id, formattedPatientDOB , formattedDateExamen ,studyDescription,"Recieved" });
 			table_burning_history.setValueAt("Retriving DICOMs", rownumber, 5);
 			
 			//Generate the ZIP with Orthanc IDs dicom
 			ArrayList<String> orthancIds=new ArrayList<String>();
-			orthancIds.add(id);
+			orthancIds.add(studyID);
 			File zip=generateZip(orthancIds);
 			
 			// Unzip du fichier ZIP recupere
@@ -503,7 +513,7 @@ public class CD_Burner {
 		return dat;
 	}
 	
-	private void updateProgress() throws IOException {
+	private void updateProgress() throws Exception {
 		File folder = new File(epsonDirectory);
 		File[] listOfFiles = folder.listFiles();
 
@@ -592,15 +602,17 @@ public class CD_Burner {
 	public void setCDPreference() {
 				//On prends les settings du registery
 				Preferences jPrefer = VueAnon.jprefer;
-				jPrefer = jPrefer.node("Burner_CDburner");
 				burnerManifacturer=jPrefer.get("Burner_buernerManufacturer", "Epson");
 				fijiDirectory=jPrefer.get("Burner_fijiDirectory", null);
 				epsonDirectory=jPrefer.get("Burner_epsonDirectory", null);
 				labelFile=jPrefer.get("Burner_labelFile", null);
-				dateFormatChoix=jPrefer.get("Burner_DateFormat", null);
+				dateFormatChoix=jPrefer.get("Burner_DateFormat", "yyyyMMdd");
 				deleteStudies=jPrefer.getBoolean("Burner_deleteStudies", false);
 				suportType=jPrefer.get("Burner_suportType", "Auto");
 				monitoringTime=jPrefer.getInt("Burner_monitoringTime", 90);
+				levelPatient=jPrefer.getBoolean("Burner_levelPatient", false);
+				
+				
 		
 				
 	}

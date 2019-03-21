@@ -23,7 +23,6 @@ public class TableExportStudiesMouseListener implements ListSelectionListener {
 	public void valueChanged(ListSelectionEvent e) {
 		if(!e.getValueIsAdjusting()) {
 			if(tableauExportStudies.getSelectedRow() != -1){
-				System.out.println(tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(),6).getClass());
 				Study_Anonymized studyAnonymized =
 						(Study_Anonymized) tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(),6) ;
 				modeleExportSeries.addSerie(studyAnonymized);

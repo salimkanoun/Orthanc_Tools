@@ -42,7 +42,6 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 
 
 //SK TO DO
-//Search at study level => A tester
 //Run auto a tester sur Mac
 //Reoganiser le package Query = +-
 //Tester toutes les fonctions!
@@ -51,6 +50,7 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 //Graveur monitorer le level patient
 //Envoi manuel de cd/dvd ?
 //Tester filtre modalities dans autoquery
+//Retrieve AET History Query Ne reste pas memorise
 
 //AutoQuery doc a refaire : 
 //Valeur global au click
@@ -60,3 +60,6 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 //+Tard
 //Faire detection des SC dans table export Series comme sur main Tab
 //Faire item listener dans query pour repondre au changement clavier comme main tab
+
+//Idee refactor 
+//sortir panel modalities dans un objet a part

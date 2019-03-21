@@ -490,10 +490,11 @@ public class VueQuery extends JFrame {
 		queryAETH.setMinimumSize(new Dimension(200,20));
 		queryAETH.setMaximumSize(new Dimension(200,20));
 		
-		queryAETH.addItemListener(new ItemListener() {
+		queryAETH.addActionListener(new ActionListener() {
 			@Override
-			public void itemStateChanged(ItemEvent event) {
-				if(tablePatients.getRowCount() != 0){
+			public void actionPerformed(ActionEvent arg0) {
+				jprefer.putInt("HistoryAET", queryAETH.getSelectedIndex());
+				if(tablePatients.getSelectedRowCount() > 0){
 					String patientName = (String)tablePatients.getValueAt(tablePatients.getSelectedRow(), 0);
 					String patientID = (String)tablePatients.getValueAt(tablePatients.getSelectedRow(), 1);
 					// We clear the table completely before any queries
@@ -975,19 +976,17 @@ public class VueQuery extends JFrame {
 	}
 	
 	private void applyPreferences() {
-		
+		//SK BUG A VOIR ICI?
 		if(distantAets.length > 0){
 			int searchAetPosition = jprefer.getInt("SearchAET", 0);
-			if(jprefer.getInt("SearchAET", 99) < distantAets.length){
+			if(searchAetPosition <= (distantAets.length-1)){
 				queryAET.setSelectedIndex(searchAetPosition);
 			}else{
 				queryAET.setSelectedIndex(0);	
 			}
-		}
-		
-		if(distantAets.length > 0){
+			
 			int searchHistoryPosition = jprefer.getInt("HistoryAET", 0);
-			if(searchHistoryPosition < distantAets.length){
+			if(searchHistoryPosition <= (distantAets.length-1)){
 				queryAETH.setSelectedIndex(searchHistoryPosition);
 			}else{
 				queryAETH.setSelectedIndex(0);
@@ -1018,7 +1017,7 @@ public class VueQuery extends JFrame {
 			// Saving search parameters
 			jprefer.putInt("InputParameter", searchingParam.getSelectedIndex());
 			jprefer.putInt("SearchAET", queryAET.getSelectedIndex());
-			jprefer.putInt("HistoryAET", queryAETH.getSelectedIndex());
+			
 
 			// Making a DateFormat for the query
 			DateFormat df = new SimpleDateFormat("yyyyMMdd");

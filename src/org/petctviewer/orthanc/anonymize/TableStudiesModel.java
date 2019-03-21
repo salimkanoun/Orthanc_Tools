@@ -60,9 +60,6 @@ public class TableStudiesModel extends DefaultTableModel{
 	 */
 	public void addStudy(Patient parentPatient) {
 		this.parentPatient=parentPatient;
-		//QueryOrthancData queryStudies = new QueryOrthancData(connexionHttp);
-		
-		//ArrayList<Study2> studies=queryStudies.getAllStudiesOfPatient(patientOrthancId);
 		ArrayList<Study2> studies=parentPatient.getStudies();
 		if(studies.size()==0) {
 			clear();

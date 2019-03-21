@@ -149,7 +149,7 @@ public class QueryOrthancData {
 		StringBuilder sb=connexion.makePostConnectionAndStringBuilder("/tools/find", query.toString());
 		JsonArray studies=(JsonArray) parserJson.parse(sb.toString());
 		Iterator<JsonElement> studiesIterator=studies.iterator();
-		System.out.println("ICI");
+
 		while (studiesIterator.hasNext()) {
 			JsonObject studyData=(JsonObject) studiesIterator.next();
 			JsonObject parentPatientDetails=studyData.get("PatientMainDicomTags").getAsJsonObject();
@@ -221,7 +221,7 @@ public class QueryOrthancData {
 	}
 	
 	
-	public ArrayList<Study2>  getAllStudiesOfPatient(String patientOrthancID) {
+	public ArrayList<Study2>  getAllStudiesOfPatient(String patientOrthancID, boolean seriesDetails) {
 		
 		ArrayList<Study2> studies=new ArrayList<Study2>();
 		
@@ -237,7 +237,7 @@ public class QueryOrthancData {
 		while(iterator.hasNext()) {
 			Study2 study = null;
 			try {
-				study = getStudyDetails(iterator.next().getAsString(), true);
+				study = getStudyDetails(iterator.next().getAsString(), seriesDetails);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

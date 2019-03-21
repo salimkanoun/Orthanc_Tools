@@ -263,11 +263,7 @@ public class Run_Orthanc {
 		
 		//If temp session make the directory in the delete list
 		if (temp) {
-			try {
-				CD_Burner.recursiveDeleteOnExit(file);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			CD_Burner.recursiveDeleteOnExit(file);
 		}
 	}
 	

@@ -36,9 +36,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.prefs.Preferences;
 import java.awt.event.ActionEvent;
-import javax.swing.JRadioButton;
 import javax.swing.SwingConstants;
-import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
@@ -48,265 +46,218 @@ import javax.swing.SpinnerNumberModel;
 @SuppressWarnings("serial")
 public class Burner_Settings extends JDialog {
 
-	private final JPanel contentPanel = new JPanel();
+	private Preferences jPrefer = VueAnon.jprefer;
+	private JDialog dialogSettings;
 	
 	private JLabel imageJPath;
 	private JLabel epsonDirectoryLabel;
 	private JLabel labelFilePath;
-	
-	private Preferences jPrefer = null;
-	private final ButtonGroup buttonGroup = new ButtonGroup();
-	
-	private JDialog dialogSettings;
-
-	private String dateFormatChoix;
-	private String labelFile;
-	private String epsonDirectory;
-	private String fijiDirectory;
-	private String burnerManifacturer;
-	private String suportType;
 	private JSpinner spinnerTiming;
-	private Boolean deleteStudies;
-	private int monitoringTime;
-	private JComboBox<String> comboBoxSupportType, comboBoxBurnerManufacturer;
+	private JComboBox<String> comboBoxSupportType, comboBoxBurnerManufacturer, levelMonitoring, dateFormatChoice;
+	private JCheckBox chckbxDeleteSentStudies;
 	
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			Burner_Settings dialog = new Burner_Settings();
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	/**
 	 * Create the dialog.
 	 */
 	public Burner_Settings() {
 		dialogSettings=this;
-		jPrefer = VueAnon.jprefer;
-		setCDPreference();
 		
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setModal(true);
 		setBounds(100, 100, 750, 300);
 		getContentPane().setLayout(new BorderLayout());
+		JPanel contentPanel = new JPanel();
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(new GridLayout(0, 2, 0, 0));
-		{
-			JButton imageJ = new JButton("Set Viewer Directory");
-			imageJ.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					JFileChooser fc=new JFileChooser();
-					fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-					int ouvrir=fc.showOpenDialog(null);
-					if (ouvrir==JFileChooser.APPROVE_OPTION){
-						fijiDirectory=fc.getSelectedFile().getAbsolutePath().toString();
-						imageJPath.setText(fijiDirectory);
-					}
+		
+		JButton imageJ = new JButton("Set Viewer Directory");
+		imageJ.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc=new JFileChooser();
+				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				int ouvrir=fc.showOpenDialog(null);
+				if (ouvrir==JFileChooser.APPROVE_OPTION){
+					String fijiDirectory=fc.getSelectedFile().getAbsolutePath().toString();
+					imageJPath.setText(fijiDirectory);
 				}
-			});
-			{
-				JLabel lblDiscburnerManufacturer = new JLabel("DiscBurner Manufacturer : ");
-				lblDiscburnerManufacturer.setHorizontalAlignment(SwingConstants.CENTER);
-				contentPanel.add(lblDiscburnerManufacturer);
 			}
-			{
-				comboBoxBurnerManufacturer = new JComboBox<String>(new String[] {"Epson", "Primera"});
+		});
+	
+		JLabel lblDiscburnerManufacturer = new JLabel("DiscBurner Manufacturer : ");
+		lblDiscburnerManufacturer.setHorizontalAlignment(SwingConstants.CENTER);
+		contentPanel.add(lblDiscburnerManufacturer);
+		
+		comboBoxBurnerManufacturer = new JComboBox<String>(new String[] {"Epson", "Primera"});
+		comboBoxBurnerManufacturer.addItemListener(new ItemListener() {
+		
+			@Override
+			public void itemStateChanged(ItemEvent arg0) {
+				if(comboBoxBurnerManufacturer.getSelectedItem().equals("Primera")) {
+					comboBoxSupportType.setEnabled(false);
+				}else {
+					comboBoxSupportType.setEnabled(true);
+				}
 				
-				comboBoxBurnerManufacturer.addItemListener(new ItemListener() {
+			}
+			
+		});
+		
+		contentPanel.add(comboBoxBurnerManufacturer);
+		contentPanel.add(imageJ);
+	
+	
+		imageJPath = new JLabel();
+		contentPanel.add(imageJPath);
+	
+	
+		JButton labelFileButton = new JButton("Set Label File");
+		labelFileButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc=new JFileChooser();
+				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				int ouvrir=fc.showOpenDialog(null);
+				if (ouvrir==JFileChooser.APPROVE_OPTION){
+					String labelFile=fc.getSelectedFile().getAbsolutePath().toString();
+					labelFilePath.setText(labelFile);
+				}
+			}
+		});
+		contentPanel.add(labelFileButton);
+	
+	
+		labelFilePath = new JLabel();
+		contentPanel.add(labelFilePath);
+	
+	
+		JButton epsonDirectoryButton = new JButton("Set Monitored Directory");
+		epsonDirectoryButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc=new JFileChooser();
+				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				int ouvrir=fc.showOpenDialog(null);
+				if (ouvrir==JFileChooser.APPROVE_OPTION){
+					String epsonDirectory=fc.getSelectedFile().getAbsolutePath().toString();
+					epsonDirectoryLabel.setText(epsonDirectory);
+				}
+			}
+		});
+		contentPanel.add(epsonDirectoryButton);
+	
+	
+		epsonDirectoryLabel = new JLabel();
+		contentPanel.add(epsonDirectoryLabel);
+	
+	
+		JPanel panel = new JPanel();
+		contentPanel.add(panel);
+		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		
+		JLabel lblDateFormat = new JLabel("Date Format");
+		lblDateFormat.setHorizontalAlignment(SwingConstants.CENTER);
+		panel.add(lblDateFormat);
+		
+		dateFormatChoice=new JComboBox<String> (new String[] {"yyyyMMdd","dd/MM/yyyy","MM/dd/yyyy"});
+		contentPanel.add(dateFormatChoice);
+	
+		JLabel CdType = new JLabel("CD/DVD Type");
+		CdType.setHorizontalAlignment(SwingConstants.CENTER);
+		contentPanel.add(CdType);
+	
+	
+		JPanel panel_1 = new JPanel();
+		contentPanel.add(panel_1);
+		
+		comboBoxSupportType = new JComboBox<String>();
+		comboBoxSupportType.setModel(new DefaultComboBoxModel<String>(new String[] {"Auto", "CD", "DVD"}));
+		
+		panel_1.add(comboBoxSupportType);
+
+		JPanel buttonPane = new JPanel();
+		buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		getContentPane().add(buttonPane, BorderLayout.SOUTH);
+		
+		JButton okButton = new JButton("OK");
+		okButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//On sauve dans le registery
+				jPrefer.put("Burner_buernerManufacturer", (String) comboBoxBurnerManufacturer.getSelectedItem());
 				
-					@Override
-					public void itemStateChanged(ItemEvent arg0) {
-						if(comboBoxBurnerManufacturer.getSelectedItem().equals("Primera")) {
-							comboBoxSupportType.setEnabled(false);
-						}else {
-							comboBoxSupportType.setEnabled(true);
-						}
-						
-					}
+				if (imageJPath.getText()!=null) jPrefer.put("Burner_fijiDirectory", imageJPath.getText());
+				if (labelFilePath.getText()!=null) jPrefer.put("Burner_labelFile", labelFilePath.getText());
+				if (epsonDirectoryLabel.getText()!=null) jPrefer.put("Burner_epsonDirectory", epsonDirectoryLabel.getText());
+				;
+				jPrefer.putBoolean("Burner_deleteStudies", chckbxDeleteSentStudies.isSelected());
+				jPrefer.put("Burner_suportType", comboBoxSupportType.getSelectedItem().toString());
+				//On ajoute la string du format date
+				jPrefer.put("Burner_DateFormat", dateFormatChoice.getSelectedItem().toString());
+				jPrefer.putInt("Burner_monitoringTime", (int) spinnerTiming.getValue());
+				
+				if(levelMonitoring.getSelectedItem().equals("Patient")) {
+					jPrefer.putBoolean("Burner_levelPatient", true);
+				}
+				//on dispose 
+				dispose();
+			}
+		});
+		
+		chckbxDeleteSentStudies = new JCheckBox("Delete Sent Studies");
+		chckbxDeleteSentStudies.setSelected(jPrefer.getBoolean("Burner_deleteStudies", false));
+		chckbxDeleteSentStudies.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (chckbxDeleteSentStudies.isSelected()) {
+					JOptionPane.showMessageDialog(dialogSettings,
+						    "With this Options, once sent to the burner Orthanc will remove stored studies \n"
+						    + "This will mean Orthanc will act only as a Burner manager and will not act as a storage/PACS system",
+						    "Delete warning",
+						    JOptionPane.WARNING_MESSAGE);
 					
-				});
-				
-				
-				contentPanel.add(comboBoxBurnerManufacturer);
-			}
-			contentPanel.add(imageJ);
-		}
-		{
-			imageJPath = new JLabel(fijiDirectory);
-			contentPanel.add(imageJPath);
-		}
-		{
-			JButton labelFileButton = new JButton("Set Label File");
-			labelFileButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					JFileChooser fc=new JFileChooser();
-					fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-					int ouvrir=fc.showOpenDialog(null);
-					if (ouvrir==JFileChooser.APPROVE_OPTION){
-						labelFile=fc.getSelectedFile().getAbsolutePath().toString();
-						labelFilePath.setText(labelFile);
-					}
 				}
-			});
-			contentPanel.add(labelFileButton);
-		}
-		{
-			labelFilePath = new JLabel(labelFile);
-			contentPanel.add(labelFilePath);
-		}
-		{
-			JButton epsonDirectoryButton = new JButton("Set Monitored Directory");
-			epsonDirectoryButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					JFileChooser fc=new JFileChooser();
-					fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-					int ouvrir=fc.showOpenDialog(null);
-					if (ouvrir==JFileChooser.APPROVE_OPTION){
-						epsonDirectory=fc.getSelectedFile().getAbsolutePath().toString();
-						epsonDirectoryLabel.setText(epsonDirectory);
-					}
-				}
-			});
-			contentPanel.add(epsonDirectoryButton);
-		}
-		{
-			epsonDirectoryLabel = new JLabel(epsonDirectory);
-			contentPanel.add(epsonDirectoryLabel);
-		}
-		{
-			JPanel panel = new JPanel();
-			contentPanel.add(panel);
-			panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-			{
-				JLabel lblDateFormat = new JLabel("Date Format");
-				lblDateFormat.setHorizontalAlignment(SwingConstants.CENTER);
-				panel.add(lblDateFormat);
+					
 			}
-		}
-		{
-			JPanel panel = new JPanel();
-			contentPanel.add(panel);
-			{
-				JRadioButton rdbtnYyyymmdd = new JRadioButton("yyyyMMdd");
-				rdbtnYyyymmdd.setActionCommand("yyyyMMdd");
-				buttonGroup.add(rdbtnYyyymmdd);
-				panel.add(rdbtnYyyymmdd);
-				if (rdbtnYyyymmdd.getActionCommand().equals(dateFormatChoix) || dateFormatChoix==null) rdbtnYyyymmdd.setSelected(true);
-			}
-			{
-				JRadioButton rdbtnDdmmyyyy = new JRadioButton("dd/MM/yyyy");
-				rdbtnDdmmyyyy.setActionCommand("dd/MM/yyyy");
-				buttonGroup.add(rdbtnDdmmyyyy);
-				panel.add(rdbtnDdmmyyyy);
-				if (rdbtnDdmmyyyy.getActionCommand().equals(dateFormatChoix)) rdbtnDdmmyyyy.setSelected(true);
-			}
-			{
-				JRadioButton rdbtnMmddyyyy = new JRadioButton("MM/dd/yyyy");
-				rdbtnMmddyyyy.setActionCommand("MM/dd/yyyy");
-				buttonGroup.add(rdbtnMmddyyyy);
-				panel.add(rdbtnMmddyyyy);
-				{
-					JLabel CdType = new JLabel("CD/DVD Type");
-					CdType.setHorizontalAlignment(SwingConstants.CENTER);
-					contentPanel.add(CdType);
-				}
-				{
-					JPanel panel_1 = new JPanel();
-					contentPanel.add(panel_1);
-					{
-						comboBoxSupportType = new JComboBox<String>();
-						comboBoxSupportType.setModel(new DefaultComboBoxModel<String>(new String[] {"Auto", "CD", "DVD"}));
-						comboBoxSupportType.setSelectedItem(suportType);
-						panel_1.add(comboBoxSupportType);
-					}
-				}
-				if (rdbtnMmddyyyy.getActionCommand().equals(dateFormatChoix)) rdbtnMmddyyyy.setSelected(true);
-			}
-		}
-		{
-			JPanel buttonPane = new JPanel();
-			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
-			getContentPane().add(buttonPane, BorderLayout.SOUTH);
-			{
-				JButton okButton = new JButton("OK");
-				okButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						//On sauve dans le registery
-						jPrefer.put("Burner_buernerManufacturer", (String) comboBoxBurnerManufacturer.getSelectedItem());
-						if (epsonDirectory!=null) jPrefer.put("Burner_epsonDirectory", epsonDirectory);
-						if (fijiDirectory!=null) jPrefer.put("Burner_fijiDirectory", fijiDirectory);
-						if (labelFile!=null) jPrefer.put("Burner_labelFile", labelFile);
-						if (deleteStudies!=null) jPrefer.putBoolean("Burner_deleteStudies", deleteStudies);
-						jPrefer.put("Burner_suportType", comboBoxSupportType.getSelectedItem().toString());
-						//On ajoute la string du format date
-						jPrefer.put("Burner_DateFormat", buttonGroup.getSelection().getActionCommand());
-						jPrefer.putInt("Burner_monitoringTime", (int) spinnerTiming.getValue());
-						//on dispose 
-						dispose();
-					}
-				});
-				{
-					JCheckBox chckbxDeleteSentStudies = new JCheckBox("Delete Sent Studies");
-					chckbxDeleteSentStudies.setSelected(jPrefer.getBoolean("Burner_deleteStudies", false));
-					chckbxDeleteSentStudies.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent arg0) {
-							if (chckbxDeleteSentStudies.isSelected()) {
-								JOptionPane.showMessageDialog(dialogSettings,
-									    "With this Options, once sent to the burner Orthanc will remove stored studies \n"
-									    + "This will mean Orthanc will act only as a Burner manager and will not act as a storage/PACS system",
-									    "Delete warning",
-									    JOptionPane.WARNING_MESSAGE);
-								
-							}
-							deleteStudies=chckbxDeleteSentStudies.isSelected();
-								
-						}
-					});
-					buttonPane.add(chckbxDeleteSentStudies);
-				}
-				okButton.setActionCommand("OK");
-				buttonPane.add(okButton);
-				getRootPane().setDefaultButton(okButton);
-				//Select the Burner set in the options registery
-				comboBoxBurnerManufacturer.setSelectedItem(burnerManifacturer);
-			}
-		}
-		{
-			JLabel lblMonitorEachsec = new JLabel("Monitor Each (sec)");
-			lblMonitorEachsec.setHorizontalAlignment(SwingConstants.CENTER);
-			contentPanel.add(lblMonitorEachsec);
-		}
-		{
-			JPanel panel = new JPanel();
-			contentPanel.add(panel);
+		});
+		buttonPane.add(chckbxDeleteSentStudies);
 		
-			spinnerTiming = new JSpinner();
-			spinnerTiming.setModel(new SpinnerNumberModel(new Integer(90), new Integer(10), null, new Integer(1)));
-			spinnerTiming.setValue(monitoringTime);
-			panel.add(spinnerTiming);
+		okButton.setActionCommand("OK");
+		buttonPane.add(okButton);
+		getRootPane().setDefaultButton(okButton);
+
+		JLabel lblMonitorEachsec = new JLabel("Monitor Each (sec)");
+		lblMonitorEachsec.setHorizontalAlignment(SwingConstants.CENTER);
 		
-		}
+		JPanel panel2 = new JPanel();
+		spinnerTiming = new JSpinner();
+		spinnerTiming.setModel(new SpinnerNumberModel(new Integer(30), new Integer(10), null, new Integer(1)));
+		panel2.add(spinnerTiming);
+	
 		
+		JLabel lblLevel=new JLabel("Monitoring Level");
+		lblLevel.setHorizontalAlignment(SwingConstants.CENTER);
+		levelMonitoring = new JComboBox<String>(new String[] {"Study", "Patient"});
+		
+		contentPanel.add(lblLevel);
+		contentPanel.add(new JPanel().add(levelMonitoring));
+		contentPanel.add(lblMonitorEachsec);
+		contentPanel.add(panel2);
+		
+		setCDPreference();
+
 	}
 	
 	public void setCDPreference() {
 		//On prends les settings du registery
-		burnerManifacturer=jPrefer.get("Burner_buernerManufacturer", "Epson");
-		fijiDirectory=jPrefer.get("Burner_fijiDirectory", null);
-		epsonDirectory=jPrefer.get("Burner_epsonDirectory", null);
-		labelFile=jPrefer.get("Burner_labelFile", null);
-		dateFormatChoix=jPrefer.get("Burner_DateFormat", null);
-		deleteStudies=jPrefer.getBoolean("Burner_deleteStudies", false);
-		suportType=jPrefer.get("Burner_suportType", "Auto");
-		monitoringTime=jPrefer.getInt("Burner_monitoringTime", 90);
-
-		
-	}
+		comboBoxBurnerManufacturer.setSelectedItem(jPrefer.get("Burner_buernerManufacturer", "Epson"));
+		imageJPath.setText(jPrefer.get("Burner_fijiDirectory", null));
+		labelFilePath.setText(jPrefer.get("Burner_labelFile", null));
+		epsonDirectoryLabel.setText(jPrefer.get("Burner_epsonDirectory", null));
+		dateFormatChoice.setSelectedItem(jPrefer.get("Burner_DateFormat", "yyyyMMdd"));
+		chckbxDeleteSentStudies.setSelected(jPrefer.getBoolean("Burner_deleteStudies", false));
+		comboBoxSupportType.setSelectedItem(jPrefer.get("Burner_suportType", "Auto"));
+		spinnerTiming.setValue(jPrefer.getInt("Burner_monitoringTime", 30));
+		if(jPrefer.getBoolean("Burner_levelPatient", true)) {
+			levelMonitoring.setSelectedItem("Patient");
+		}
+	}	
+	
 
 }

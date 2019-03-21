@@ -34,7 +34,6 @@ public class Retrieve_Action extends AbstractAction{
 				gui.setWorkingBoolean(true);
 				JTable lastFocusedTable = gui.getLastFocusedTable(main);
 				int[] selectedrows=lastFocusedTable.getSelectedRows();
-				System.out.println(selectedrows.length);
 				for(int i=0; i<selectedrows.length ; i++) {
 					Object details = lastFocusedTable.getValueAt(selectedrows[i], lastFocusedTable.getColumnCount()-1);
 					gui.getStatusLabel(main).setText("<html>Retrieve state " + (i+1) + "/" + selectedrows.length + 
