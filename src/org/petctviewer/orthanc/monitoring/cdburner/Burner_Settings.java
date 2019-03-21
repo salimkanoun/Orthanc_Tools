@@ -195,6 +195,8 @@ public class Burner_Settings extends JDialog {
 				
 				if(levelMonitoring.getSelectedItem().equals("Patient")) {
 					jPrefer.putBoolean("Burner_levelPatient", true);
+				}else {
+					jPrefer.putBoolean("Burner_levelPatient", false);
 				}
 				//on dispose 
 				dispose();
@@ -254,7 +256,7 @@ public class Burner_Settings extends JDialog {
 		chckbxDeleteSentStudies.setSelected(jPrefer.getBoolean("Burner_deleteStudies", false));
 		comboBoxSupportType.setSelectedItem(jPrefer.get("Burner_suportType", "Auto"));
 		spinnerTiming.setValue(jPrefer.getInt("Burner_monitoringTime", 30));
-		if(jPrefer.getBoolean("Burner_levelPatient", true)) {
+		if(jPrefer.getBoolean("Burner_levelPatient", false)) {
 			levelMonitoring.setSelectedItem("Patient");
 		}
 	}	

@@ -68,7 +68,7 @@ public class CD_Burner {
 	private String suportType;
 	private JTable table_burning_history;
 	private Path folder;
-	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS");
 	private SimpleDateFormat parserDate = new SimpleDateFormat("yyyyMMdd");
 	private SimpleDateFormat formatter;
 	
