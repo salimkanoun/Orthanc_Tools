@@ -91,10 +91,11 @@ public class CD_Burner {
 	/**
 	 * Start Monitoring of Orthanc Change API every 90secs
 	 */
-	public void startCDMonitoring() {
+	public boolean startCDMonitoring() {
 		if ( epsonDirectory==null ||fijiDirectory==null ||labelFile==null || dateFormatChoix==null ){
 			//Message d'erreur doit faire le set de output folder
 			JOptionPane.showMessageDialog(null, "Go to settings Menu to set missing paths", "Set directories and date format", JOptionPane.ERROR_MESSAGE);
+			return false;
 		} else {
 			Orthanc_Monitoring monitoring=new Orthanc_Monitoring(connexion);
 			//Met la derniere ligne pour commencer le monitoring
@@ -124,6 +125,7 @@ public class CD_Burner {
 	        timer = new Timer(true);
 	        //Toutes les 90 seconds
 	        timer.scheduleAtFixedRate(timerTask, 0, (monitoringTime*1000));
+	        return true;
 		}
 		
 	}
@@ -195,17 +197,16 @@ public class CD_Burner {
 			table_burning_history.setValueAt("Unzipping", rownumber, 5);
 			unzip(zip);
 			
-			String discType=determineDiscType();
-			
 			File robotRequestFile=null;
 			// Creation du Cd
 			if (burnerManifacturer.equals("Epson")) {
+				String discType=determineDiscType();
 				//Generation du Dat
 				File dat = printDat(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB );
 				robotRequestFile=createCdBurnerEpson(dat, discType, nom, formattedDateExamen);
 				
 			} else if(burnerManifacturer.equals("Primera")) {
-				robotRequestFile=createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB, discType);
+				robotRequestFile=createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB);
 			}
 			
 			//Put the JDF base name associated to the Row number of the table for Monitoring
@@ -293,18 +294,17 @@ public class CD_Burner {
 			// Unzip du fichier ZIP recupere
 			table_burning_history.setValueAt("Unzipping", rownumber, 5);
 			unzip(zip);
-			
-			String discType=determineDiscType();
-			
+
 			File robotRequestFile=null;
 			// Creation du Cd
 			if (burnerManifacturer.equals("Epson")) {
+				String discType=determineDiscType();
 				//Generation du Dat
 				File dat = printDat(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB );
 				robotRequestFile=createCdBurnerEpson(dat, discType, nom, formattedDateExamen);
 				
 			} else if(burnerManifacturer.equals("Primera")) {
-				robotRequestFile=createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB, discType);
+				robotRequestFile=createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB);
 			}
 			
 			//Put the JDF base name associated to the Row number of the table for Monitoring
@@ -446,7 +446,7 @@ public class CD_Burner {
 	 * @param studyDescription
 	 * @param discType
 	 */
-	private File createCdBurnerPrimera(String nom, String id, String date, String studyDescription, String accessionNumber, String patientDOB, String discType){
+	private File createCdBurnerPrimera(String nom, String id, String date, String studyDescription, String accessionNumber, String patientDOB){
 		//Command Keys/Values for Primera Robot
 		String txtRobot=new String();
 		

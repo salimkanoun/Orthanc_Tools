@@ -206,13 +206,16 @@ public class Monitoring_GUI extends JFrame {
 									cdBurner=new CD_Burner(parametre, table_burning_history);
 									cdBurner.setCDPreference();
 									//On ouvre le watcher dans un nouveau thread pour ne pas bloquer l'interface				
-									cdBurner.startCDMonitoring();
-									cdMonitoringStarted=true;
-									jPrefer.putBoolean("CDMonitoringStarted", true);
-									//On grise le boutton pour empecher la creation d'un nouveau watcher
-									btnStartMonitoring.setEnabled(false);
-									btnStopMonitoring.setEnabled(true);
-									updateStatusLabel();
+									boolean started=cdBurner.startCDMonitoring();
+									if(started) {
+										cdMonitoringStarted=true;
+										jPrefer.putBoolean("CDMonitoringStarted", true);
+										//On grise le boutton pour empecher la creation d'un nouveau watcher
+										btnStartMonitoring.setEnabled(false);
+										btnStopMonitoring.setEnabled(true);
+										updateStatusLabel();
+									}
+									
 									
 								}
 								
