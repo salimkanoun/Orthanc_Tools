@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.commons.lang.StringUtils;
 import org.petctviewer.orthanc.anonymize.datastorage.Patient;
 import org.petctviewer.orthanc.anonymize.datastorage.Serie;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2;
@@ -112,7 +113,6 @@ public class QueryOrthancData {
 	}
 	*/
 	public ArrayList<Patient> findStudies(String inputType, String input, String date, String studyDesc, String modalities) {
-		
 		JsonObject query=new JsonObject();
 		query.addProperty("Level", "Studies");
 		query.addProperty("CaseSensitive", false);
@@ -140,7 +140,10 @@ public class QueryOrthancData {
 				break;
 		}
 		
-		queryDetails.addProperty("ModalitiesInStudy", modalities);
+		if(!StringUtils.isEmpty(modalities)) {
+			queryDetails.addProperty("ModalitiesInStudy", modalities);
+		}
+		
 		
 		query.add("Query", queryDetails);
 		

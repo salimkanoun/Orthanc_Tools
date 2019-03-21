@@ -32,9 +32,11 @@ public class TableStudiesModel extends DefaultTableModel{
 	private String[] entetes = {"Study date", "Study description", "Accession number", "ID", "studyObject"};
 	private final Class<?>[] columnClasses = new Class<?>[] {Date.class, String.class, String.class, String.class, Study2.class};
 	private Patient parentPatient;
+	private QueryOrthancData queryOrthanc;
 
-	public TableStudiesModel(){
+	public TableStudiesModel(QueryOrthancData queryOrthanc){
 		super(0,5);
+		this.queryOrthanc=queryOrthanc;
 	}
 
 	@Override
@@ -60,6 +62,7 @@ public class TableStudiesModel extends DefaultTableModel{
 	 */
 	public void addStudy(Patient parentPatient) {
 		this.parentPatient=parentPatient;
+		parentPatient.refreshChildStudies(queryOrthanc);
 		ArrayList<Study2> studies=parentPatient.getStudies();
 		if(studies.size()==0) {
 			clear();

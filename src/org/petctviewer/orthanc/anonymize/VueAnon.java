@@ -286,7 +286,7 @@ public class VueAnon extends JFrame {
 	public void buildGui(){
 		//Instanciate needed Table and their model
 		modelePatients = new TablePatientsModel();
-		modeleStudies = new TableStudiesModel();
+		modeleStudies = new TableStudiesModel(queryOrthanc);
 		modeleSeries = new TableSeriesModel(connexionHttp, this, queryOrthanc);
 		modeleExportStudies = new TableExportStudiesModel();
 		modeleExportSeries = new TableExportSeriesModel(connexionHttp, queryOrthanc, this);
@@ -429,6 +429,7 @@ public class VueAnon extends JFrame {
 					modalities.append(customModalities.getText());
 					
 					String modality=StringUtils.removeEnd(modalities.toString(), "\\");
+					
 					
 					ArrayList<Patient> patients =queryOrthanc.findStudies(inputType.getSelectedItem().toString(), userInputString, date, studyDesc.getText(), modality);
 					modelePatients.addPatient(patients);
