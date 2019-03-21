@@ -2,6 +2,7 @@ package org.petctviewer.orthanc.reader;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
@@ -54,10 +55,13 @@ public class Read_Orthanc {
 		ImageStack stack = null;
 		
 		for(int i=0 ; i<instanceIDList.size(); i++) {
-			String metadata = this.extractDicomInfo(instanceIDList.get(i).getAsString());
-			
+
+			String instanceID= instanceIDList.get(i).getAsString();
+			String metadata = this.extractDicomInfo(instanceID);
+			//end;
+
 			if(i==0) {
-				StringBuilder sop=connexion.makeGetConnectionAndStringBuilder("/instances/"+instanceIDList.get(i).getAsString()+"/metadata/SopClassUid");
+				StringBuilder sop=connexion.makeGetConnectionAndStringBuilder("/instances/"+instanceID+"/metadata/SopClassUid");
 				nbFrameInInstance=getFrameNumber(instanceIDList.get(i).getAsString());
 				//If it is a screen capture change the boolean
 				if(sop.toString().startsWith("1.2.840.10008.5.1.4.1.1.7")) screenCapture=true;
@@ -65,11 +69,13 @@ public class Read_Orthanc {
 			}
 			
 			if(nbFrameInInstance==1) {
-				ImageProcessor ip=readInstance(instanceIDList.get(i).getAsString(), screenCapture);
+				ImageProcessor ip=readInstance(instanceID, screenCapture);
 				if(i==0) {
 					stack= new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
 				}
+				
 				stack.addSlice(metadata, ip);
+				
 				IJ.showStatus("Reading");
 				IJ.showProgress((double) (i+1)/instanceIDList.size());
 			} else {
@@ -77,10 +83,14 @@ public class Read_Orthanc {
 				return imp;
 			}
 			
+			//end
+			
 		}
 		
 		ImagePlus imp=generateFinalImagePlus(stack);
 		return imp;
+		
+		
 		
 	}
 	
@@ -169,6 +179,7 @@ public class Read_Orthanc {
 				uri = "/instances/" + uuid +"/frames/"+frameNb+"/image-uint16";
 
 			}
+			
 			BufferedImage bi = ImageIO.read( connexion.openImage(uri));
 		
 			if(SC) slice = new ColorProcessor(bi);
@@ -183,17 +194,14 @@ public class Read_Orthanc {
 	
 	private String extractDicomInfo(String uuid) {
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/instances/" + uuid + "/tags");
-		JsonObject tags = (JsonObject) parser.parse(sb.toString());
+		JsonObject tags = parser.parse(sb.toString()).getAsJsonObject();
 		if (tags == null || tags.size()==0) return "";
 		String info = new String();
 		String type1;
 
-		ArrayList<String> tagsIndex = new ArrayList<String>();
-		for (Object tag : tags.keySet()) {
-			tagsIndex.add((String) tag);
-		}
+		String[] tagsIndex=tags.keySet().toArray(new String[0]);
+		Arrays.sort(tagsIndex);
 
-		Collections.sort(tagsIndex);
 		for (String tag : tagsIndex) {
 			JsonObject value = (JsonObject) tags.get(tag);
 			type1 = value.get("Type").getAsString();
@@ -213,24 +221,20 @@ public class Read_Orthanc {
 	
 	private String addSequence(String info0, JsonObject value, Object tag) {
 		String type2, info = info0;
-		JsonArray seq0;
 		JsonObject seqVal, vals;
-		seq0 = (JsonArray) value.get("Value");
+		JsonArray seq0 = value.get("Value").getAsJsonArray();
 		if( seq0 == null || seq0.size()==0) {
 			return info;	// ignore empty sequences
 		}
 		info += tag + getIndent() + value.get("Name").getAsString() +"\n";
 		seqDepth++;
-		seqVal = (JsonObject) seq0.get(0);
+		seqVal = seq0.get(0).getAsJsonObject();
 
-		ArrayList<String> tagsIndex = new ArrayList<String>();
-		for( Object tag0 : seqVal.keySet()) {
-			tagsIndex.add((String) tag0);
-		}
-		Collections.sort(tagsIndex);
+		String[] tagsIndex=seqVal.keySet().toArray(new String[0]);
+		Arrays.sort(tagsIndex);
 
-		for( Object tag1 : tagsIndex) {
-			vals = (JsonObject) seqVal.get((String) tag1);
+		for(String tag1 : tagsIndex) {
+			vals = seqVal.get(tag1).getAsJsonObject();
 			type2 = vals.get("Type").getAsString();
 			if( type2.equals("String")) {
 				info += tag1 + getIndent() + vals.get("Name").getAsString()

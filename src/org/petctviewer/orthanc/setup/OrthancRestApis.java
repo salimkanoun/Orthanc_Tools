@@ -90,6 +90,8 @@ public class OrthancRestApis {
 	
 	}
 	
+	
+	
 	private HttpURLConnection makeGetConnectionImage(String apiUrl) {
 		
 		HttpURLConnection conn=null;
