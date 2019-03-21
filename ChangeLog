@@ -5,6 +5,7 @@ Pending Change for next Release
 - AutoQuery : Add "To anonymize" and "To Export" to send the result of the auto retrieve to the anonymize/Export list
 - AutoQuery : Cleaner interface
 - Modify Dicom : Add option to automatically erase the original Dicom after generating the modified ones.
+- CD Burner : Monitoring at Patient Level (to burn multiple studies of a same patient)
 - Enhanced series reading to visualize dicom (in particular multiframe)
 - Update of OrthancJsonEditor to 1.5.6 Orthanc Json Verion
 - Various debug and interface enhancements
