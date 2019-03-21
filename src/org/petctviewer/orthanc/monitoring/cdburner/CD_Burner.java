@@ -217,7 +217,7 @@ public class CD_Burner {
 			}
 
 			//Update display status
-			(( DefaultTableModel) table_burning_history.getModel()).addRow(new String[]{nom, id, formattedPatientDOB ,"Mutiples", nbOfStudies+"studies" ,"Recieved" });
+			(( DefaultTableModel) table_burning_history.getModel()).addRow(new String[]{nom, id, formattedPatientDOB ,"Mutiples", nbOfStudies+" studies" ,"Recieved" });
 			table_burning_history.setValueAt("Retriving DICOMs", rownumber, 5);
 			
 			//Generate the ZIP with Orthanc IDs dicom
@@ -241,7 +241,7 @@ public class CD_Burner {
 				robotRequestFile=createCdBurnerEpson(dat, discType, nom, "Mutiples");
 				
 			} else if(burnerManifacturer.equals("Primera")) {
-				robotRequestFile=createCdBurnerPrimera(nom, id, "Mutiples", nbOfStudies+"studies", "Mutiples", formattedPatientDOB ,nbOfStudies);
+				robotRequestFile=createCdBurnerPrimera(nom, id, "Mutiples", nbOfStudies+" studies", "Mutiples", formattedPatientDOB ,nbOfStudies);
 			}
 			
 			//Put the JDF base name associated to the Row number of the table for Monitoring
@@ -568,12 +568,12 @@ public class CD_Burner {
 						+ "studyDescription="+ infos[0].studyDescription+"\n"
 						+ "accessionNumber="+ infos[0].accessionNumber+"\n"
 						+ "patientDOB="+infos[0].patientDOB+"\n"
-						+ "numberOfStudies="+infos.length;
+						+ "numberOfStudies="+infos.length+"\n";
 			
 			for(int i=1; i<infos.length ; i++) {
-				datFile+= "studyDate"+i+"="+ infos[i].date + "\n"
-						+ "studyDescription"+i+"="+ infos[i].studyDescription+"\n"
-						+ "accessionNumber"+i+"="+ infos[i].accessionNumber+"\n";
+				datFile+= "studyDate"+(i+1)+"="+ infos[i].date + "\n"
+						+ "studyDescription"+(i+1)+"="+ infos[i].studyDescription+"\n"
+						+ "accessionNumber"+(i+1)+"="+ infos[i].accessionNumber+"\n";
 			}
 			
 			
