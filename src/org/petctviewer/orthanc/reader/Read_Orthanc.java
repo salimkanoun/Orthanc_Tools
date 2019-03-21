@@ -70,6 +70,7 @@ public class Read_Orthanc {
 					stack= new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
 				}
 				stack.addSlice(metadata, ip);
+				IJ.showStatus("Reading");
 				IJ.showProgress((double) (i+1)/instanceIDList.size());
 			} else {
 				ImagePlus imp=readMultiFrameImage(instanceIDList.get(i).getAsString(), nbFrameInInstance, metadata, screenCapture);
@@ -91,6 +92,7 @@ public class Read_Orthanc {
 				stack= new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
 			}
 			stack.addSlice(metadata, ip);
+			IJ.showStatus("Reading");
 			IJ.showProgress((double) (i+1)/nbFrameInInstance);
 		}
 		
