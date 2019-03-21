@@ -19,7 +19,8 @@ package org.petctviewer.orthanc.anonymize;
 
 import java.util.ArrayList;
 
-import org.petctviewer.orthanc.anonymize.Tags.Choice;
+import org.petctviewer.orthanc.anonymize.datastorage.Tags;
+import org.petctviewer.orthanc.anonymize.datastorage.Tags.Choice;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import com.google.gson.JsonArray;
@@ -32,7 +33,7 @@ import com.google.gson.JsonParser;
  */
 public class AnonRequest {
 
-	private ArrayList<Tags> tags = new ArrayList<Tags>();
+	private ArrayList<Tags> tags ;
 	private boolean keepPrivateTags;
 	private String newOrthancID;
 	private String newPatientName;
@@ -44,8 +45,9 @@ public class AnonRequest {
 			String newPatientName, String newPatientID, String newDescription) {
 
 		this.connexionHttp=connexionHttp;
-		this.newPatientName = newPatientName;
-		this.newPatientID = newPatientID;
+		this.newPatientName=newPatientName;
+		this.newPatientID=newPatientID;
+		tags= new ArrayList<Tags>();
 
 		// Add date related tags with defined choice (keep or clear)
 		tags.add(new Tags("0008,0022",dates,null)); // Acquisition Date

@@ -17,15 +17,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.prefs.Preferences;
-
-import javax.swing.JFileChooser;
 
 public class CSV {
 
@@ -85,37 +78,9 @@ public class CSV {
 		content.append('\n');
 	}
 	
-	public void genCSV() throws FileNotFoundException{
-		File f=this.fileChooser();
-		if(f!=null) {
-			PrintWriter pw = new PrintWriter(f);
-			pw.write(content.toString());
-			pw.close();
-		}
+	public String getCsv() {
+		return content.toString();
 	}
 	
-	/**
-	 * Open JFileChooser with the last CSV location and predified name for export
-	 * @return
-	 */
-	private File fileChooser(){
-		
-		Preferences jpreferAnon = VueAnon.jprefer;
-		DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
-		
-		JFileChooser chooser = new JFileChooser();
-		chooser.setCurrentDirectory(new File(jpreferAnon.get("csvLocation", System.getProperty("user.dir"))));
-		chooser.setSelectedFile(new File(df.format(new Date()) + ".csv"));
-		chooser.setDialogTitle("Export csv to...");
-		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		chooser.setAcceptAllFileFilterUsed(false);
-		File fichier = null;
-		if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-			fichier=chooser.getSelectedFile();
-			jpreferAnon.put("csvLocation", chooser.getSelectedFile().toPath().toString() );
-			
-		}
-		return fichier;
-	}
 
 }

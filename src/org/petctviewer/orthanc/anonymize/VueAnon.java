@@ -1423,7 +1423,7 @@ public class VueAnon extends JFrame {
 		});
 
 		csvReport = new JButton("CSV Report");
-		csvReport.addActionListener(new Controller_Csv_Btn(modeleExportStudies, queryOrthanc));
+		csvReport.addActionListener(new Controller_Csv_Btn(modeleExportStudies, this));
 		
 		exportCTP = new JButton("OTP");
 		exportCTP.addActionListener(new ActionListener() {

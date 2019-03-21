@@ -14,12 +14,12 @@ import javax.swing.SwingWorker;
 import org.apache.commons.lang3.StringUtils;
 import org.petctviewer.orthanc.anonymize.AnonRequest;
 import org.petctviewer.orthanc.anonymize.QueryOrthancData;
-import org.petctviewer.orthanc.anonymize.Tags.Choice;
 import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2Anon;
 import org.petctviewer.orthanc.anonymize.datastorage.Study_Anonymized;
+import org.petctviewer.orthanc.anonymize.datastorage.Tags.Choice;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 public class Controller_Anonymize_Btn implements ActionListener {

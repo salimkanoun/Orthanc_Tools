@@ -43,7 +43,7 @@ public class Controller_Export_Zip implements ActionListener {
 				chooser.setSelectedFile(new File(dfZip.format(new Date()) + ".zip")); 
 			}
 
-			if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+			if (chooser.showSaveDialog(vue) == JFileChooser.APPROVE_OPTION) {
 				VueAnon.jprefer.put("zipLocation", chooser.getSelectedFile().toPath().toString());
 			
 				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
