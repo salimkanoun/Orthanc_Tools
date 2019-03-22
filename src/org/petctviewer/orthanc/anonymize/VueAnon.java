@@ -165,7 +165,7 @@ public class VueAnon extends JFrame {
 	private JButton exportZip;
 	private JButton removeFromZip;
 	private JButton addToZip;
-	private JLabel zipSize;
+	private JLabel exportSizeLabel;
 	private JLabel manageSize;
 	private JTextField userInputSearch;
 	
@@ -174,7 +174,7 @@ public class VueAnon extends JFrame {
 	private JButton removeFromManage = new JButton("Remove from List");
 	private JButton deleteManage = new JButton("Delete list");
 	//End manage buttons
-	public JComboBox<String> zipShownContent;
+	public JComboBox<String> exportShownContent;
 	private JComboBox<String> manageShownContent;
 	private JPanel oToolRight, oToolRightManage;
 	private JComboBox<String> listeAET;
@@ -182,7 +182,7 @@ public class VueAnon extends JFrame {
 	private JPopupMenu popMenuPatients = new JPopupMenu();
 	private JPopupMenu popMenuStudies = new JPopupMenu();
 	private JPopupMenu popMenuSeries = new JPopupMenu();
-	public ArrayList<String> zipContent = new ArrayList<String>();
+	public ArrayList<String> exportContent = new ArrayList<String>();
 	private ArrayList<String> manageContent = new ArrayList<String>();
 	private JPanel anonTablesPanel;
 	
@@ -300,11 +300,11 @@ public class VueAnon extends JFrame {
 		exportZip = new JButton("Export list");
 		removeFromZip = new JButton("Remove from list");
 		addToZip = new JButton("Add to list");
-		zipSize= new JLabel("");
+		exportSizeLabel= new JLabel("");
 		manageSize= new JLabel("");
 		userInputSearch = new JTextField();
 		
-		zipShownContent= new JComboBox<String>();
+		exportShownContent= new JComboBox<String>();
 		manageShownContent= new JComboBox<String>();
 		
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -731,7 +731,7 @@ public class VueAnon extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(!zipContent.isEmpty()){
+				if(!exportContent.isEmpty()){
 					
 					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 						boolean success;
@@ -740,7 +740,7 @@ public class VueAnon extends JFrame {
 							setStateMessage("Storing data (Do not use the toolbox while the current operation is not done)", "red", -1);
 							storeBtn.setEnabled(false);
 							pack();
-							success=connexionHttp.sendToAet(listeAET.getSelectedItem().toString(), zipContent);
+							success=connexionHttp.sendToAet(listeAET.getSelectedItem().toString(), exportContent);
 							return null;
 						}
 
@@ -748,8 +748,7 @@ public class VueAnon extends JFrame {
 						protected void done(){
 							if(success) {
 								state.setText("<html><font color='green'>The data have successfully been stored.</font></html>");
-								zipShownContent.removeAllItems();
-								zipContent.removeAll(zipContent);
+								emptyExportList();
 							}else {
 								setStateMessage("DICOM Send Failed", "red", -1);
 								
@@ -765,12 +764,12 @@ public class VueAnon extends JFrame {
 		storeTool.add(storeBtn);
 
 		JPanel comboBoxBtn = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		comboBoxBtn.add(zipShownContent);
+		comboBoxBtn.add(exportShownContent);
 		
 		removeFromZip.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				removeFromToolList(zipContent, zipShownContent, zipSize, state);
+				removeFromToolList(exportContent, exportShownContent, exportSizeLabel, state);
 					
 			}
 		});
@@ -786,7 +785,7 @@ public class VueAnon extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				//Ajout dans la tool list		
-				addToToolList(zipContent,zipShownContent, zipSize);
+				addToToolList(exportContent,exportShownContent, exportSizeLabel);
 			}
 		});
 		
@@ -860,7 +859,7 @@ public class VueAnon extends JFrame {
 		
 		exportTool.add(comboToolChooser);
 		exportTool.add(exportZip);;
-		comboBoxBtn.add(this.zipSize);
+		comboBoxBtn.add(this.exportSizeLabel);
 		oToolRight.add(comboBoxBtn);
 		oToolRight.add(exportTool);
 		oToolRight.add(storeTool);
@@ -2041,7 +2040,7 @@ public class VueAnon extends JFrame {
 		this.getContentPane().add(tabbedPane);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.getRootPane().setDefaultButton(searchBtn);
-		this.addWindowListener(new Window_Custom_Listener(this, zipContent, modeleAnonPatients, modeleExportStudies, monitoring, runOrthanc));
+		this.addWindowListener(new Window_Custom_Listener(this, exportContent, modeleAnonPatients, modeleExportStudies, monitoring, runOrthanc));
 		pack();
 		userInput.requestFocus();
 	}
@@ -2187,15 +2186,15 @@ public class VueAnon extends JFrame {
 	 */
 	public void importStudiesInExportList(Study2[] study){
 		//Clear previous list
-		zipShownContent.removeAllItems();
-		zipContent.clear();
+		exportShownContent.removeAllItems();
+		exportContent.clear();
 		//Add new studies
 		for (int i=0; i<study.length; i++){
 			String date = "Study - " + df.format(study[i].getDate()) + "  " + study[i].getStudyDescription();
 			String id = study[i].getOrthancId();
-			if(!zipContent.contains(id)){
-				zipShownContent.addItem(date);
-				zipContent.add(id);
+			if(!exportContent.contains(id)){
+				exportShownContent.addItem(date);
+				exportContent.add(id);
 			}
 		}
 	}
@@ -2221,6 +2220,12 @@ public class VueAnon extends JFrame {
 				pack();
 			}
 		}
+	}
+	
+	public void emptyExportList() {
+		exportShownContent.removeAllItems();
+		exportContent.removeAll(exportContent);
+		exportSizeLabel.setText("empty list");
 	}
 	
 	public void enableAnonButton(boolean enable) {

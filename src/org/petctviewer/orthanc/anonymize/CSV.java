@@ -17,69 +17,50 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
+import java.io.IOException;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 
 public class CSV {
 
 	private StringBuilder content;
+	private CSVPrinter csv;
+	private DateFormat df=new SimpleDateFormat("MMddyyyy");
 	
 	public CSV(){
 		content = new StringBuilder();
-		content.append("Old patient name");
-		content.append(',');
-		content.append("Old patient id");
-		content.append(',');
-		content.append("New patient name");
-		content.append(',');
-		content.append("New patient id");
-		content.append(',');
-		content.append("Old study date");
-		content.append(',');
-		content.append("Old study description");
-		content.append(',');
-		content.append("New study description");	
-		content.append(',');
-		content.append("Nb series");
-		content.append(',');
-		content.append("Nb instances");
-		content.append(',');
-		content.append("Size");
-		content.append(',');
-		content.append("Study instance uid");
-		content.append('\n');
+		
+		try {
+			csv=new CSVPrinter(content, CSVFormat.DEFAULT);
+			csv.printRecord(new Object[] {"Old patient name", "Old patient id", "New patient name",
+					"New patient id", "Old study date", "Old study description", "New study description", 
+					"Nb series", "Nb instances", "Size" , "Study instance uid"});
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void addStudy(String oldPatientName, String oldPatientId, String newPatientName, String newPatientId,
 			Date oldStudyDate, String oldStudyDesc, String newStudyDesc, int nbSeries, int nbInstances, 
 			int size, String studyInstanceUid){
-		SimpleDateFormat df=new SimpleDateFormat("MMddyyyy");
-		content.append(oldPatientName);
-		content.append(',');
-		content.append(oldPatientId);
-		content.append(',');
-		content.append(newPatientName);
-		content.append(',');
-		content.append(newPatientId);
-		content.append(',');
-		content.append(df.format(oldStudyDate));
-		content.append(',');
-		content.append(oldStudyDesc);
-		content.append(',');
-		content.append(newStudyDesc);
-		content.append(',');
-		content.append(nbSeries);
-		content.append(',');
-		content.append(nbInstances);
-		content.append(',');
-		content.append(size);
-		content.append(',');
-		content.append(studyInstanceUid);
-		content.append('\n');
+		
+		try {
+			csv.printRecord(new Object[] {oldPatientName, oldPatientId, newPatientName, newPatientId,
+					df.format(oldStudyDate), oldStudyDesc, newStudyDesc, nbSeries, nbInstances, 
+					size,  studyInstanceUid});
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 	}
 	
 	public String getCsv() {
 		return content.toString();
+		
 	}
 	
 

@@ -47,7 +47,6 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 //Tester envoie DICOM plateforme
 
 //Tester toutes les fonctions!
-//Envoi manuel de cd/dvd ?
 
 //AutoQuery doc a refaire : 
 //Valeur global au click
@@ -57,6 +56,7 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 //+Tard
 //Faire detection des SC dans table export Series comme sur main Tab
 //Faire item listener dans query pour repondre au changement clavier comme main tab
+//Envoi manuel de cd/dvd ?
 
 //Idee refactor 
 //sortir panel modalities dans un objet a part

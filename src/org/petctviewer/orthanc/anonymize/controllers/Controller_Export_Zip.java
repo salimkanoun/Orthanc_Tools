@@ -26,7 +26,7 @@ public class Controller_Export_Zip implements ActionListener {
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (!vue.zipContent.isEmpty()){
+		if (!vue.exportContent.isEmpty()){
 			//Open JFileChooser
 			JFileChooser chooser = new JFileChooser();
 			chooser.setDialogTitle("Export to...");
@@ -38,7 +38,7 @@ public class Controller_Export_Zip implements ActionListener {
 			String comboToolItem=vue.getComboToolChooserSeletedItem();
 			
 			if (comboToolItem.equals("Image with Viewer (iso)")) {
-				chooser.setSelectedFile(new File(vue.zipShownContent.getItemAt(0).replaceAll("/", "_")+"_image.iso")); 
+				chooser.setSelectedFile(new File(vue.exportShownContent.getItemAt(0).replaceAll("/", "_")+"_image.iso")); 
 			}else {
 				chooser.setSelectedFile(new File(dfZip.format(new Date()) + ".zip")); 
 			}
@@ -55,7 +55,7 @@ public class Controller_Export_Zip implements ActionListener {
 						vue.activateExport(false);
 						
 						if ( comboToolItem.equals("ZIP File") || comboToolItem.equals("DICOMDIR Zip") ) {	
-							convertzip.setConvertZipAction(chooser.getSelectedFile().getAbsolutePath().toString() , vue.zipContent, false);
+							convertzip.setConvertZipAction(chooser.getSelectedFile().getAbsolutePath().toString() , vue.exportContent, false);
 							if (comboToolItem.equals("ZIP File")) convertzip.generateZip(false);
 							if (comboToolItem.equals("DICOMDIR Zip")) convertzip.generateZip(true);
 						//If include the viewer	
@@ -67,7 +67,7 @@ public class Controller_Export_Zip implements ActionListener {
 								throw new Exception("No Available Viewer");
 							}
 							
-							convertzip.setConvertZipAction("Viewer", vue.zipContent, true);
+							convertzip.setConvertZipAction("Viewer", vue.exportContent, true);
 							convertzip.generateZip(true);
 							File tempImageZip=convertzip.getGeneratedZipFile();
 							File packageViewer=new File(viewerString);
@@ -98,16 +98,11 @@ public class Controller_Export_Zip implements ActionListener {
 						//Reactivate component after export
 						vue.activateExport(true);
 						//empty exported list
-						vue.zipShownContent.removeAllItems();
-						vue.zipContent.removeAll(vue.zipContent);	
+						vue.emptyExportList();
 						//Close export tool
 						vue.openCloseExportTool(false);
 						vue.pack();
-					}
-					
-					
-					
-					
+					}				
 			};
 				
 			worker.execute();
@@ -117,7 +112,5 @@ public class Controller_Export_Zip implements ActionListener {
 		}
 
 	}
-		
-	
 
 }

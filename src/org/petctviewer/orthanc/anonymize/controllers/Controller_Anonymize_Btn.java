@@ -212,6 +212,7 @@ public class Controller_Anonymize_Btn implements ActionListener {
 					Set<String> studyIds=studyAnon.keySet();
 					for(String studyId:studyIds) {
 						//Search for specific modality requiring special anon condition
+						studyAnon.get(studyId).refreshChildSeries(queryOrthanc);
 						ArrayList<String> modalities=studyAnon.get(studyId).getModalitiesInStudy();
 						if(modalities.contains("NM")) {
 							nm=true;
