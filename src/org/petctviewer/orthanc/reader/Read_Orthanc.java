@@ -1,9 +1,7 @@
 package org.petctviewer.orthanc.reader;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Scanner;

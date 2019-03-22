@@ -243,6 +243,8 @@ public class VueAnon extends JFrame {
 
 	public boolean fijiEnvironement=false;
 	
+	public Timer timerState=new Timer();
+	
 	public VueAnon() {
 		super("Orthanc Tools");
 		connexionHttp= new OrthancRestApis(null);
@@ -2316,8 +2318,8 @@ public class VueAnon extends JFrame {
 	public void setStateMessage(String message, String color, int seconds) {
 		state.setText("<html><font color='"+color+"'>"+message+"</font></html>");
 		if(seconds !=(-1)) {
-			Timer timer=new Timer();
-			timer.schedule(new TimerTask() {
+			
+			timerState.schedule(new TimerTask() {
 				  @Override
 				  public void run() {
 					  state.setText("");

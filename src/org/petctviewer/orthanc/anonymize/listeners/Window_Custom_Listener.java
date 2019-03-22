@@ -65,6 +65,7 @@ public class Window_Custom_Listener implements WindowListener{
 		if(runOrthanc.getIsStarted()) {
 			runOrthanc.stopOrthanc(gui.getOrthancApisConnexion());
 		}
+		gui.timerState.cancel();
 		gui.dispose();
 	}
 

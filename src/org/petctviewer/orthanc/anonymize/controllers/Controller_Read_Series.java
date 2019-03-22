@@ -45,7 +45,6 @@ public class Controller_Read_Series implements ActionListener {
 		
 		SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 			
-			@SuppressWarnings("rawtypes")
 			@Override
 			protected Void doInBackground() {
 
@@ -55,20 +54,19 @@ public class Controller_Read_Series implements ActionListener {
 					vue.setStateMessage("Reading Series"+(i+1)+"/"+ids.size(), "red", -1);
 					Read_Orthanc reader=new Read_Orthanc(vue.getOrthancApisConnexion());
 					ImagePlus ip=reader.readSerie(ids.get(i));
-					ip.show();
+
 					imagestacks.add(ip);
 				}
 				
 				if(startViewer) {
-					Class Run_Pet_Ct = null;
+					Class<?> Run_Pet_Ct = null;
 					try {
 						Run_Pet_Ct = Class.forName("Run_Pet_Ct");
 					} catch (ClassNotFoundException e1) {
 						e1.printStackTrace();
 					}
 					try {
-						@SuppressWarnings("unchecked")
-						Constructor cs=Run_Pet_Ct.getDeclaredConstructor(ArrayList.class);
+						Constructor<?> cs=Run_Pet_Ct.getDeclaredConstructor(ArrayList.class);
 						cs.newInstance(imagestacks);
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -83,11 +81,15 @@ public class Controller_Read_Series implements ActionListener {
 			public void done(){
 				vue.enableReadButton(true);
 				vue.setStateMessage("Reading Done", "green", 4);
+				for(ImagePlus ip: imagestacks) {
+					ip.show();
+				}
 			
 			}
 		};
 		
 		worker.execute();
+		
 
 	}
 
