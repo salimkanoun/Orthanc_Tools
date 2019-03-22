@@ -43,12 +43,11 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 
 //SK TO DO
 //Run auto a tester sur Mac
-//Reoganiser le package Query = +-
-//Tester toutes les fonctions!
-//Tester JsonEditor
-//Cacher les colonnes ID
-//Envoi manuel de cd/dvd ?
 //Tester filtre modalities dans autoquery
+//Tester envoie DICOM plateforme
+
+//Tester toutes les fonctions!
+//Envoi manuel de cd/dvd ?
 
 //AutoQuery doc a refaire : 
 //Valeur global au click

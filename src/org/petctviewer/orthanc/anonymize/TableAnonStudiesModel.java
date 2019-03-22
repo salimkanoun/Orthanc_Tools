@@ -32,7 +32,7 @@ public class TableAnonStudiesModel extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
 	private String[] entetes = {"Study description*", "Study date", "studyOrthancId", "Patient id", "studyObject", "patientAnon"};
-	private Class<?>[] typeEntetes = {String.class, Date.class, String.class, String.class, Study2.class};
+	private Class<?>[] typeEntetes = {String.class, Date.class, String.class, String.class, Study2.class, PatientAnon.class};
 	
 	private PatientAnon patientAnon;
 

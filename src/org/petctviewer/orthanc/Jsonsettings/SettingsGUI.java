@@ -709,16 +709,7 @@ public class SettingsGUI extends JFrame {
 		panel_peers.add(lblHttpTimeout);
 		lblHttpTimeout.setToolTipText("Set the timeout for HTTP requests issued by Orthanc (in seconds)");
 		
-		httpVerbose = new JCheckBox("New check box");
-		httpVerbose.setSelected(settings.httpVerbose);
-		panel_peers.add(httpVerbose);
 		
-		httpVerbose.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusLost(FocusEvent e) {
-				settings.httpVerbose=httpVerbose.isSelected();
-			}
-		});
 
 		http_Timeout = new JSpinner();
 		panel_peers.add(http_Timeout);
@@ -728,6 +719,17 @@ public class SettingsGUI extends JFrame {
 			@Override
 			public void focusLost(FocusEvent e) {
 				settings.HttpTimeout=Integer.valueOf(http_Timeout.getValue().toString());
+			}
+		});
+		
+		httpVerbose = new JCheckBox("HTTP Verbose");
+		httpVerbose.setSelected(settings.httpVerbose);
+		panel_peers.add(httpVerbose);
+		
+		httpVerbose.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				settings.httpVerbose=httpVerbose.isSelected();
 			}
 		});
 		
@@ -982,7 +984,7 @@ public class SettingsGUI extends JFrame {
 		}
 	});
 	
-	tcpNoDelay = new JCheckBox("New check box");
+	tcpNoDelay = new JCheckBox("TCP No Delay");
 	tcpNoDelay.setSelected(true);
 	tcpNoDelay.setSelected(settings.tcpNoDelay);
 	tcpNoDelay.addFocusListener(new FocusAdapter() {
@@ -1027,7 +1029,7 @@ public class SettingsGUI extends JFrame {
 	});
 	panel_chkbox.add(synchronousCMove);
 	
-	saveJobs = new JCheckBox("New check box");
+	saveJobs = new JCheckBox("Save Jobs");
 	saveJobs.setSelected(true);
 	saveJobs.setSelected(settings.saveJobs);
 	saveJobs.addFocusListener(new FocusAdapter() {
@@ -1042,7 +1044,7 @@ public class SettingsGUI extends JFrame {
 	panel_chkbox.add(overwriteInstances);
 	overwriteInstances.setSelected(settings.overwriteInstances);
 	
-	metricsEnabled = new JCheckBox("New check box");
+	metricsEnabled = new JCheckBox("Metric Enabled");
 	metricsEnabled.setSelected(true);
 	metricsEnabled.setSelected(settings.metricsEnabled);
 	metricsEnabled.addFocusListener(new FocusAdapter() {

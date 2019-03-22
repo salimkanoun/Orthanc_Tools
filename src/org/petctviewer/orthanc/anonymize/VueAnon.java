@@ -946,10 +946,14 @@ public class VueAnon extends JFrame {
 		anonStudiesTable.getColumnModel().getColumn(0).setMinWidth(200);
 		anonStudiesTable.getColumnModel().getColumn(1).setMinWidth(80);
 		anonStudiesTable.getColumnModel().getColumn(1).setMaxWidth(80);
-		anonStudiesTable.getColumnModel().getColumn(2).setMinWidth(150);
-		anonStudiesTable.getColumnModel().getColumn(2).setMaxWidth(150);
+		anonStudiesTable.getColumnModel().getColumn(2).setMinWidth(0);
+		anonStudiesTable.getColumnModel().getColumn(2).setMaxWidth(0);
 		anonStudiesTable.getColumnModel().getColumn(3).setMinWidth(0);
 		anonStudiesTable.getColumnModel().getColumn(3).setMaxWidth(0);
+		anonStudiesTable.getColumnModel().getColumn(4).setMinWidth(0);
+		anonStudiesTable.getColumnModel().getColumn(4).setMaxWidth(0);
+		anonStudiesTable.getColumnModel().getColumn(5).setMinWidth(0);
+		anonStudiesTable.getColumnModel().getColumn(5).setMaxWidth(0);
 		anonStudiesTable.setPreferredScrollableViewportSize(new Dimension(430,130));
 		anonStudiesTable.setDefaultRenderer(Date.class, new DateRenderer());
 		anonStudiesTable.putClientProperty("terminateEditOnFocusLost", true);
