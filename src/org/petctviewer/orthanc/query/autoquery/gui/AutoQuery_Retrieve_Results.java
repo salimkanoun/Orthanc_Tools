@@ -99,6 +99,9 @@ public class AutoQuery_Retrieve_Results extends JFrame {
 		table = new JTable(tableModel);
 		scrollPane.setViewportView(table);
 		
+		table.getColumnModel().getColumn(4).setMinWidth(0);
+		table.getColumnModel().getColumn(4).setMaxWidth(0);
+		
 		JPanel panel_main_south = new JPanel();
 		panel_result_import.add(panel_main_south, BorderLayout.SOUTH);
 		
