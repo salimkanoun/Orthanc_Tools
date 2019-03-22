@@ -45,7 +45,7 @@ public class Patient {
 	
 	public void refreshChildStudies(QueryOrthancData queryOrthanc) {
 		childStudies= new HashMap<String, Study2>();
-		ArrayList<Study2> allStudies=queryOrthanc.getAllStudiesOfPatient(orthancID, true);
+		ArrayList<Study2> allStudies=queryOrthanc.getAllStudiesOfPatient(orthancID, false);
 		for(Study2 study: allStudies) {
 			this.childStudies.put(study.getOrthancId(), study);
 		}

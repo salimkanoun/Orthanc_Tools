@@ -169,9 +169,7 @@ public class QueryOrthancData {
 				try {
 					patientDob = format.parse("19000101");
 					patientDob=format.parse(parentPatientDetails.get("PatientBirthDate").getAsString());
-				} catch (Exception e) {
-					//e.printStackTrace();
-				}
+				} catch (Exception e) { }
 			}
 			
 			if(parentPatientDetails.has("PatientSex")) {
@@ -192,14 +190,16 @@ public class QueryOrthancData {
 			
 			String studyInstanceUid=studyDetails.get("StudyInstanceUID").getAsString();
 			
-			String studyDate=studyDetails.get("StudyDate").getAsString();
+			String studyDate=null;
 			Date studyDateObject=null;
+			if(studyDetails.has("StudyDate")) {
+				studyDate=studyDetails.get("StudyDate").getAsString();
+			}
+			
 			try {
 				studyDateObject=format.parse("19000101");
 				studyDateObject=format.parse(studyDate);
-			} catch (Exception e) {
-				//e.printStackTrace();
-			}
+			} catch (Exception e) { }
 			
 			String studyDescription="N/A";
 			if(studyDetails.has("StudyDescription")){
@@ -288,15 +288,19 @@ public class QueryOrthancData {
 		
 		String studyInstanceUid=studyDetails.get("StudyInstanceUID").getAsString();
 		
-		String studyDate=studyDetails.get("StudyDate").getAsString();
+		
 		Date studyDateObject=null;
+		String studyDate=null;
+		if(studyDetails.has("StudyDate")) {
+			studyDate=studyDetails.get("StudyDate").getAsString();
+			
+		}
+		
 		try {
 			studyDateObject=format.parse("19000101");
 			studyDateObject=format.parse(studyDate);
-		} catch (java.text.ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} catch (Exception e) { }
+		
 		
 		String studyDescription="N/A";
 		if(studyDetails.has("StudyDescription")){
@@ -337,10 +341,13 @@ public class QueryOrthancData {
 		
 		if(includeSerieLevel) {
 			series=new ArrayList<Serie>();
-			JsonArray childSeries= studyData.get("Series").getAsJsonArray();
+			
+			StringBuilder sb2=connexion.makeGetConnectionAndStringBuilder("/studies/"+studyOrthancID+"/series?expand");
+					 
+			JsonArray childSeries= this.parserJson.parse(sb2.toString()).getAsJsonArray();
 			Iterator<JsonElement> iterator = childSeries.iterator();
 			while(iterator.hasNext()) {
-				String seriesOrthancId=iterator.next().getAsString();
+				JsonObject seriesOrthancId=iterator.next().getAsJsonObject();
 				Serie serie=getSeriesDetails(seriesOrthancId);
 				series.add(serie);
 			}
@@ -352,13 +359,12 @@ public class QueryOrthancData {
 		
 	}
 	
-	private Serie getSeriesDetails(String seriesOrthancID) {
-		
-		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/series/"+seriesOrthancID);
-		JsonObject serieData=(JsonObject) parserJson.parse(sb.toString());
+	private Serie getSeriesDetails(JsonObject serieData) {
 		
 		JsonObject seriesDetails = (JsonObject) serieData.get("MainDicomTags");
 		int nbOfSlice= serieData.get("Instances").getAsJsonArray().size();
+		
+		String seriesOrthancID=serieData.get("ID").getAsString();
 		
 		String modality ="N/A";
 		if(seriesDetails.has("Modality")) {
@@ -419,15 +425,16 @@ public class QueryOrthancData {
 		
 		String studyInstanceUid=studyDetails.get("StudyInstanceUID").getAsString();
 		
-		String studyDate=studyDetails.get("StudyDate").getAsString();
+		String studyDate=null;
 		Date studyDateObject=null;
+		if(studyDetails.has("StudyDate")) {
+			studyDate=studyDetails.get("StudyDate").getAsString();
+		}
+		
 		try {
 			studyDateObject=format.parse("19000101");
 			studyDateObject=format.parse(studyDate);
-		} catch (java.text.ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} catch (Exception e) { }
 		
 		String studyDescription="N/A";
 		if(studyDetails.has("StudyDescription")){
