@@ -17,6 +17,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 package org.petctviewer.orthanc.anonymize;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import javax.swing.table.DefaultTableModel;
@@ -99,18 +101,22 @@ public class TableAnonPatientsModel extends DefaultTableModel{
 	}
 		
 	public void addStudy(Study2 study) {
-		
+		DateFormat df=new SimpleDateFormat("yyyyMMdd");
 		int patientExistingRow=searchPatientOrthancIdRow(study.getParentPatientId());
 		
 		//If not existing patient, create a new patientAnonObject and add the selected study in it
 		if(patientExistingRow==-1) {
-			PatientAnon patientAnon=new PatientAnon (study.getPatientName(), study.getPatientID(),null,null, study.getParentPatientId());
+			PatientAnon patientAnon=new PatientAnon (study.getPatientName(), study.getPatientID(),df.format(study.getPatientDob()), study.getPatientSex(), study.getParentPatientId());
 			patientAnon.addStudy(study);
 			patientAnon.addNewAnonymizeStudyFromExistingStudy(study.getOrthancId());
 			this.addRow(new Object[]{study.getPatientName(), study.getPatientID(), study.getParentPatientId(),
 				"","","", patientAnon});
 		//If existing patient retrieve the PatientAnon object and Add the selected study in it
 		}else {
+			if(getPatient(patientExistingRow).getChildStudy(study.getOrthancId())== null) {
+				this.getPatient(patientExistingRow).addStudy(study);
+			}
+			
 			this.getPatient(patientExistingRow).addNewAnonymizeStudyFromExistingStudy(study.getOrthancId());
 			//modelAnonStudies.add
 		}
