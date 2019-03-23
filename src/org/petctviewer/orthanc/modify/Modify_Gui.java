@@ -423,7 +423,6 @@ public class Modify_Gui extends JDialog {
 			}
 			table_study.putClientProperty("terminateEditOnFocusLost", true);
 			addTableModelListener(table_study);
-			disableTable(table_patient);
 			
 		}
 		
