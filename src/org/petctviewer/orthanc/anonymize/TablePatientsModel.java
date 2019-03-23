@@ -48,6 +48,11 @@ public class TablePatientsModel extends DefaultTableModel{
 	public Patient getPatient(int row){
 		return (Patient) getValueAt(row, 5);
 	}
+	
+	@Override
+	public boolean isCellEditable(int row, int col){
+		return false;
+	}
 
 	/*
 	 * This method adds patient to the patients list, which will eventually be used by the JTable

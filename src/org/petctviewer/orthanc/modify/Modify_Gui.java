@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 package org.petctviewer.orthanc.modify;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 
 import javax.swing.ImageIcon;
@@ -422,6 +423,8 @@ public class Modify_Gui extends JDialog {
 			}
 			table_study.putClientProperty("terminateEditOnFocusLost", true);
 			addTableModelListener(table_study);
+			disableTable(table_patient);
+			
 		}
 		
 		else if (level.equals("serie")) {
@@ -433,10 +436,19 @@ public class Modify_Gui extends JDialog {
 			}
 			table_serie.putClientProperty("terminateEditOnFocusLost", true);
 			addTableModelListener(table_serie);
+			disableTable(table_patient);
+			disableTable(table_study);
 			btnShowTags.setEnabled(true);
 			spinner_instanceNumber.setEnabled(true);
 		}
 		
+	}
+	
+	private void disableTable(JTable table) {
+		table.setEnabled(false);
+		table.getColumnModel().getColumn(2).setMinWidth(0);
+		table.getColumnModel().getColumn(2).setMaxWidth(0);
+		table.setBackground(Color.LIGHT_GRAY);
 	}
 	
 	public void hideTables(String level) {
