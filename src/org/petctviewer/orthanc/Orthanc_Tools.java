@@ -43,7 +43,7 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 
 //SK TO DO
 //Tester envoie DICOM plateforme
-//Debeuger sortie reste des thread non collectés !
+//Debeuger sortie reste des thread non collectes=> Tracker update de ImageJ
 
 //AutoQuery doc a refaire : 
 //Valeur global au click
