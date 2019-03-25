@@ -51,7 +51,7 @@ public class Controller_Read_Series implements ActionListener {
 				vue.enableReadButton(false);
 				
 				for(int i=0; i<ids.size(); i++) {
-					vue.setStateMessage("Reading Series"+(i+1)+"/"+ids.size(), "red", -1);
+					vue.setStateMessage("Reading Series "+(i+1)+"/"+ids.size(), "red", -1);
 					Read_Orthanc reader=new Read_Orthanc(vue.getOrthancApisConnexion());
 					ImagePlus ip=reader.readSerie(ids.get(i));
 
