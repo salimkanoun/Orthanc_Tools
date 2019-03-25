@@ -16,19 +16,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
-import org.json.simple.JSONArray;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 @SuppressWarnings("serial")
 public class PeersDialog extends JDialog {
@@ -36,19 +36,6 @@ public class PeersDialog extends JDialog {
 	private final JPanel contentPanel = new JPanel();
 	private JTable table;
 	private DefaultTableModel model;
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			PeersDialog dialog = new PeersDialog(new Json_Settings());
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 	/**
 	 * Create the dialog.
@@ -69,7 +56,7 @@ public class PeersDialog extends JDialog {
 			settings.orthancPeer.keySet().toArray(peerName);
 			for (int i=0; i<settings.orthancPeer.size();i++){
 				model.addRow(new String[] {"Name", "URL", "Login", "Password"});
-				JSONArray peer=settings.orthancPeer.get(peerName[i]);
+				JsonArray peer=settings.orthancPeer.get(peerName[i]).getAsJsonArray();
 				table.setValueAt(peerName[i], i, 0);
 				table.setValueAt(peer.get(0).toString(), i, 1);
 				table.setValueAt(peer.get(1).toString(), i, 2);
@@ -112,7 +99,7 @@ public class PeersDialog extends JDialog {
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						//on vide les sauvegarde precedente
-						settings.orthancPeer.clear();
+						settings.orthancPeer=new JsonObject();
 						//On enregistre les nouveaux
 						for (int i=0; i<table.getRowCount();i++){
 							settings.addorthancPeer(table.getValueAt(i, 0).toString(), table.getValueAt(i, 1).toString(), table.getValueAt(i, 2).toString(), table.getValueAt(i, 3).toString());

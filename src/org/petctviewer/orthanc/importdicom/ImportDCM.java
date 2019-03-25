@@ -42,6 +42,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -49,54 +50,49 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
-import ij.plugin.PlugIn;
+import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.petctviewer.orthanc.ParametreConnexionHttp;
-import org.petctviewer.orthanc.ctpimport.ImportListener;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
-public class ImportDCM extends JFrame implements PlugIn{
+public class ImportDCM extends JDialog {
+	
 	private static final long serialVersionUID = 1L;
-	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
+	private Preferences jprefer = VueAnon.jprefer;
 	private JLabel state;
-	private ParametreConnexionHttp connexion;
-	private JFrame gui;
+	private OrthancRestApis connexion;
+	private JDialog gui;
 	private ArrayList<String> importAnswer=new ArrayList<String>();
 	private HashMap<String, HashMap<String,String> > importedstudy=new HashMap<String, HashMap<String,String> >();
-	private JSONParser parser=new JSONParser();
+	private JsonParser parser=new JsonParser();
 	
 	private ImportListener listener;
 
-	public ImportDCM(ParametreConnexionHttp connexion){
-		super("Import DICOM files");
-		if(connexion ==null) {
-			this.connexion=new ParametreConnexionHttp();
-		}else {
-			this.connexion=connexion;
-		}
-		
+	public ImportDCM(OrthancRestApis connexion, JFrame parentJframe){
+		this.setTitle("Import DICOM files");
+		this.connexion=connexion;
 		this.gui=this;
 		JPanel mainPanel = new JPanel(new GridBagLayout());
 		JLabel labelPath = new JLabel("DICOM files path");
-		JTextField path = new JTextField(jpreferPerso.get("filesLocation", System.getProperty("user.dir")));
+		JTextField path = new JTextField(jprefer.get("filesLocation", System.getProperty("user.dir")));
 		path.setMinimumSize(new Dimension(250, 27));
 		path.setMaximumSize(new Dimension(250, 27));
 		path.setEditable(false);
+		
 		JButton browse = new JButton("Browse");
 		browse.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser chooser = new JFileChooser();
-				chooser.setCurrentDirectory(new java.io.File(jpreferPerso.get("filesLocation", System.getProperty("user.dir"))));
+				chooser.setCurrentDirectory(new java.io.File(jprefer.get("filesLocation", System.getProperty("user.dir"))));
 				chooser.setDialogTitle("Export zip to...");
 				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				chooser.setAcceptAllFileFilterUsed(false);
 				if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 					path.setText(chooser.getSelectedFile().toPath().toString());
 					gui.pack();
-					jpreferPerso.put("filesLocation", path.getText());
+					jprefer.put("filesLocation", path.getText());
 				}
 			}
 		});
@@ -115,7 +111,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 						@Override
 						protected Void doInBackground() throws Exception { 
 							
-							importFiles(Paths.get(jpreferPerso.get("filesLocation", System.getProperty("user.dir"))));
+							importFiles(Paths.get(jprefer.get("filesLocation", System.getProperty("user.dir"))));
 							return null;
 						}
 						
@@ -166,6 +162,8 @@ public class ImportDCM extends JFrame implements PlugIn{
 		Image image = new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage();
 		this.setIconImage(image);
 		this.getContentPane().add(mainPanel);
+		pack();
+		setLocationRelativeTo(parentJframe);
 		
 		
 	}
@@ -174,7 +172,7 @@ public class ImportDCM extends JFrame implements PlugIn{
 		this.listener=listener;
 	}
 
-	public void importFiles(Path path){
+	private void importFiles(Path path){
 		try {
 			Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 				int successCount = 0;
@@ -216,60 +214,44 @@ public class ImportDCM extends JFrame implements PlugIn{
 		
 	}
 	
+	/**
+	 * Return Hashmap describing imported studies
+	 * @return
+	 */
 	public HashMap<String, HashMap<String, String>> getImportedStudy() {
 		
 		for (int i=0; i<importAnswer.size(); i++) {
-			try {
-				JSONObject importedInstance=(JSONObject) parser.parse(importAnswer.get(i));
-				String parentStudyID=(String) importedInstance.get("ParentStudy");
+				JsonObject importedInstance=(JsonObject) parser.parse(importAnswer.get(i));
+				String parentStudyID=importedInstance.get("ParentStudy").getAsString();
 				
 				//If new study Add it to the global Hashmap
 				if( ! importedstudy.containsKey(parentStudyID)) {
 					
 					StringBuilder studyQuery=connexion.makeGetConnectionAndStringBuilder("/studies/"+parentStudyID);
-					JSONObject parentStudy=(JSONObject)parser.parse(studyQuery.toString());
+					JsonObject parentStudy=(JsonObject)parser.parse(studyQuery.toString());
 					
 					//HashMap for a new Study imported
 					HashMap<String, String> newStudy=new HashMap<String,String>();
-					String studyDate=(String) ((JSONObject) (parentStudy.get("MainDicomTags"))).get("StudyDate");
-					String patientID=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientID");
-					String patientName=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientName");
-					String patientDOB=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientBirthDate");
-					String patientSex=(String) ((JSONObject) (parentStudy.get("PatientMainDicomTags"))).get("PatientSex");
+					String studyDate=parentStudy.get("MainDicomTags").getAsJsonObject().get("StudyDate").getAsString();
+					String patientID= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientID").getAsString();
+					String patientName= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientName").getAsString();
+					String patientDOB= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientBirthDate").getAsString();
+					String patientSex= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientSex").getAsString();
+					String patientOrthancID=parentStudy.get("ParentPatient").getAsString();
+					
 					newStudy.put("studyDate", studyDate);
 					newStudy.put("patientID", patientID);
 					newStudy.put("patientName", patientName);
 					newStudy.put("patientDOB", patientDOB);
 					newStudy.put("patientSex", patientSex);
+					newStudy.put("patientOrthancID", patientOrthancID);
 					importedstudy.put(parentStudyID, newStudy);
 				}
 				
-				
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 		
 		return importedstudy;
+
+	}
 	
-		
-	}
-
-
-
-	public static void main(String... args){
-		ImportDCM vue = new ImportDCM(null);
-		vue.setLocationRelativeTo(null);
-		vue.setVisible(true);
-		vue.pack();
-	}
-
-	@Override
-	public void run(String arg0) {
-		ImportDCM vue = new ImportDCM(null);
-		vue.setLocationRelativeTo(null);
-		vue.pack();
-		vue.setVisible(true);
-	}
 }

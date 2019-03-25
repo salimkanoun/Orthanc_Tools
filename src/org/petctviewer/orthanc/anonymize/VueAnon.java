@@ -34,25 +34,25 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.prefs.Preferences;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -68,144 +68,152 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.RowSorter;
-import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableRowSorter;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-
-import com.michaelbaranov.microba.calendar.DatePicker;
-
-import ij.ImagePlus;
-import ij.plugin.PlugIn;
-
-import org.petctviewer.orthanc.*;
-import org.petctviewer.orthanc.CTP.CTP;
-import org.petctviewer.orthanc.CTP.CTP_Gui;
+import org.petctviewer.orthanc.Orthanc_Tools;
 import org.petctviewer.orthanc.Jsonsettings.SettingsGUI;
-import org.petctviewer.orthanc.ctpimport.AnonymizeListener;
+import org.petctviewer.orthanc.OTP.OTP;
+import org.petctviewer.orthanc.OTP.OTP_Gui;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Anonymize_Btn;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Csv_Btn;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_Zip;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Read_Series;
+import org.petctviewer.orthanc.anonymize.controllers.DeleteActionMainPanel;
+import org.petctviewer.orthanc.anonymize.datastorage.Patient;
+import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
+import org.petctviewer.orthanc.anonymize.datastorage.Serie;
+import org.petctviewer.orthanc.anonymize.datastorage.Study2;
+import org.petctviewer.orthanc.anonymize.datastorage.Study2Anon;
+import org.petctviewer.orthanc.anonymize.gui.AboutBoxFrame;
+import org.petctviewer.orthanc.anonymize.gui.Custom_Cell_Renderer;
+import org.petctviewer.orthanc.anonymize.gui.DateRenderer;
+import org.petctviewer.orthanc.anonymize.listeners.AnonActionProfileListener;
+import org.petctviewer.orthanc.anonymize.listeners.AnonymizeListener;
+import org.petctviewer.orthanc.anonymize.listeners.Tab_Change_Listener;
+import org.petctviewer.orthanc.anonymize.listeners.TableAnonPatientsMouseListener;
+import org.petctviewer.orthanc.anonymize.listeners.TableExportStudiesMouseListener;
+import org.petctviewer.orthanc.anonymize.listeners.TablePatientsMouseListener;
+import org.petctviewer.orthanc.anonymize.listeners.TableStudiesMouseListener;
+import org.petctviewer.orthanc.anonymize.listeners.Window_Custom_Listener;
+import org.petctviewer.orthanc.export.ExportZip;
+import org.petctviewer.orthanc.export.SendFilesToRemote;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
+import org.petctviewer.orthanc.modify.Modify;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
-import org.petctviewer.orthanc.query.*;
-import org.petctviewer.orthanc.reader.Read_Orthanc;
+import org.petctviewer.orthanc.query.VueQuery;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 import org.petctviewer.orthanc.setup.Run_Orthanc;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.michaelbaranov.microba.calendar.DatePicker;
 
-public class VueAnon extends JFrame implements PlugIn, ActionListener{
+public class VueAnon extends JFrame {
+	
+	
 	private static final long serialVersionUID = 1L;
 	
-	protected JTabbedPane tabbedPane;
-	private JLabel state = new JLabel();
+	// Settings preferences
+	public static Preferences jprefer = Preferences.userNodeForPackage(Orthanc_Tools.class);
 	private DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
-	private DateFormat dfZip = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
-	public JFrame gui;
-	private JSONParser parser=new JSONParser();
 	
-	//QueryFillStore
-	protected QueryFillStore query ;
+	public JTabbedPane tabbedPane;
+	
+	private VueAnon gui=this;
 	
 	//Objet de connexion aux restFul API, prend les settings des registery et etabli les connexion a la demande
-	public ParametreConnexionHttp connexionHttp;
-	
-	
+	private OrthancRestApis connexionHttp;
+	private QueryOrthancData queryOrthanc;
 	protected JPanel tablesPanel, mainPanel, topPanel, anonBtnPanelTop;
 	
-	// Tables (p1)
+	//Search settings
+	JCheckBox cr, ct, mr , nm , pt , us, xa , mg, dx;
+	JTextField customModalities;
+	// Tables and models
 	private JTable tableauPatients;
 	private JTable tableauStudies;
-	private JTable tableauSeries;
-	private TableDataPatientsAnon modelePatients;
-	private TableDataStudies modeleStudies;
-	private TableDataSeries modeleSeries;
-	protected TableDataAnonPatients modeleAnonPatients = new TableDataAnonPatients();
-	protected TableDataAnonStudies modeleAnonStudies;
-	private TableRowSorter<TableDataPatientsAnon> sorterPatients;
-	private TableRowSorter<TableDataStudies> sorterStudies;
-	private TableRowSorter<TableDataSeries> sorterSeries;
+	public JTable tableauSeries;
+	public TablePatientsModel modelePatients;
+	public TableStudiesModel modeleStudies;
+	public TableSeriesModel modeleSeries;
+	
+	public JTable anonPatientTable;
+	public JTable anonStudiesTable;
+	public TableAnonPatientsModel modeleAnonPatients;
+	public TableAnonStudiesModel modeleAnonStudies;
+	
+	JButton searchBtn;
 
 	// Orthanc toolbox (p1)
-	protected JTable anonPatientTable;
-	protected JTable anonStudiesTable;
+	private JLabel state ;
 	private JButton displayAnonTool;
 	private JButton displayExportTool;
 	private JButton displayManageTool;
 	private JButton addToAnon;
-	protected JButton anonBtn;
+	public JButton anonBtn;
 	private JButton removeFromAnonList;
 	protected JButton importCTP;
-	private JButton queryCTPBtn;
-	private JButton exportZip = new JButton("Export list");
-	private JButton removeFromZip = new JButton("Remove from list");
-	private JButton addToZip = new JButton("Add to list");
-	private JLabel zipSize= new JLabel("");
-	private JLabel manageSize= new JLabel("");
-	private JTextField userInputFirstName = new JTextField();
+	protected JButton queryCTPBtn;
+	private JButton exportZip;
+	private JButton removeFromZip;
+	private JButton addToZip;
+	private JLabel exportSizeLabel;
+	private JLabel manageSize;
+	private JTextField userInputSearch;
 	
 	//Manage Buttons
-	JButton addManage = new JButton("Add to List");
-	JButton removeFromManage = new JButton("Remove from List");
-	JButton deleteManage = new JButton("Delete list");
+	private JButton addManage = new JButton("Add to List");
+	private JButton removeFromManage = new JButton("Remove from List");
+	private JButton deleteManage = new JButton("Delete list");
 	//End manage buttons
-	private JComboBox<Object> zipShownContent;
-	private JComboBox<Object> manageShownContent;
-	private ArrayList<String> manageShownContentList = new ArrayList<String>();
-	private ArrayList<String> zipShownContentList = new ArrayList<String>();
+	public JComboBox<String> exportShownContent;
+	private JComboBox<String> manageShownContent;
 	private JPanel oToolRight, oToolRightManage;
-	private JComboBox<Object> listeAET;
-	private JComboBox<String> comboToolChooser;
+	private JComboBox<String> listeAET;
+	public JComboBox<String> comboToolChooser;
 	private JPopupMenu popMenuPatients = new JPopupMenu();
 	private JPopupMenu popMenuStudies = new JPopupMenu();
 	private JPopupMenu popMenuSeries = new JPopupMenu();
-	private ArrayList<String> zipContent = new ArrayList<String>();
+	public ArrayList<String> exportContent = new ArrayList<String>();
 	private ArrayList<String> manageContent = new ArrayList<String>();
-	protected JPanel anonTablesPanel;
-	private int anonCount;
+	private JPanel anonTablesPanel;
+	
+	//Read Image Button
+	private JButton btnReadSeries;
 	
 
 	// Tab Export (p2)
 	private JLabel stateExports = new JLabel("");
 	protected JButton peerExport,csvReport, exportToZip, exportBtn, dicomStoreExport;
-	protected JComboBox<Object> listePeers, listeAETExport ;
+	protected JComboBox<String> listePeers;
+	protected JComboBox<String> listeAETExport;
 	private JTable tableauExportStudies;
 	private JTable tableauExportSeries;
-	private TableDataExportStudies modeleExportStudies;
-	private TableDataExportSeries modeleExportSeries;
-	private TableRowSorter<TableDataExportStudies> sorterExportStudies;
-	private TableRowSorter<TableDataExportSeries> sorterExportSeries;
+	public TableExportStudiesModel modeleExportStudies;
+	public TableExportSeriesModel modeleExportSeries;
 	private StringBuilder remoteFileName;
 	
 
 	//Monitoring (p3)
-	Monitoring_GUI monitoring;
+	private Monitoring_GUI monitoring;
 	
 	// Tab Setup (p4)
-	private JComboBox<Object> anonProfiles;
-	private Choice bodyCharChoice;
-	private Choice datesChoice;
-	private Choice bdChoice;
-	private Choice ptChoice;
-	private Choice scChoice;
-	private Choice descChoice;
-	private JRadioButton[] bodyCharList = new JRadioButton[2];
-	private JRadioButton[] datesList = new JRadioButton[2];
-	private JRadioButton[] bdList = new JRadioButton[2];
-	private JRadioButton[] ptList = new JRadioButton[2];
-	private JRadioButton[] scList = new JRadioButton[2];
-	private JRadioButton[] descList = new JRadioButton[2];
+	private JComboBox<String> anonProfiles;
+	//RadioButton for each group in Array 0 for Keep, 1 for Clear
+	public JRadioButton[] settingsBodyCharButtons = new JRadioButton[2];
+	public JRadioButton[] settingDatesButtons = new JRadioButton[2];
+	public JRadioButton[] settingsBirthDateButtons = new JRadioButton[2];
+	public JRadioButton[] settingsPrivateTagButtons = new JRadioButton[2];
+	public JRadioButton[] settingsSecondaryCaptureButtons = new JRadioButton[2];
+	public JRadioButton[] settingsStudySerieDescriptionButtons = new JRadioButton[2];
 	private JTextField centerCode;
 	private JTextField remoteServer;
 	private JTextField remotePort;
@@ -215,41 +223,40 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	private JComboBox<String> exportType;
 	
 	//CTP
-	protected JTextField addressFieldCTP;
-	protected JComboBox<Object> listePeersCTP ;
-	protected JButton exportCTP;
+	private JTextField addressFieldCTP;
+	public JComboBox<String> listePeersCTP ;
+	public JButton exportCTP;
 	private String CTPUsername;
 	private String CTPPassword;
-	private boolean autoSendCTP=false;
+	public boolean autoSendCTP=false;
 
-	// Settings preferences
-	private Preferences jprefer = Preferences.userRoot().node("<unnamed>/anonPlugin");
-	private Preferences jpreferPerso = Preferences.userRoot().node("<unnamed>/queryplugin");
 	
 	//Run Orthanc
-	Run_Orthanc runOrthanc;
+	private Run_Orthanc runOrthanc;
 	
 	// Last Table focus
-	private JTable lastTableFocus;
+	private JTable lastTableFocusMain;
+	private JTable lastTableFocusAnon;
 	
 	//CustomListener
-	AnonymizeListener anonymizeListener;
+	public AnonymizeListener anonymizeListener;
+
+	public boolean fijiEnvironement=false;
 	
-	//
-	private boolean fijiEnvironement=false;
+	public Timer timerState=new Timer();
 	
 	public VueAnon() {
-		
 		super("Orthanc Tools");
-		connexionHttp= new ParametreConnexionHttp();
-		runOrthanc=new Run_Orthanc(connexionHttp);
+		connexionHttp= new OrthancRestApis(null);
+		queryOrthanc=new QueryOrthancData(connexionHttp);
+		runOrthanc=new Run_Orthanc();
 		//Until we reach the Orthanc Server we give the setup panel
 		int check=0;
-		while (!connexionHttp.testConnexion() && check<3) {
+		while (!connexionHttp.isConnected() && check<3) {
 				if (check>0) JOptionPane.showMessageDialog(null, "Settings Attempt " + (check+1) +"/3", "Attempt", JOptionPane.INFORMATION_MESSAGE);
-				ConnectionSetup setup = new ConnectionSetup(runOrthanc);
+				ConnectionSetup setup = new ConnectionSetup(runOrthanc, null);
 				setup.setVisible(true);
-				connexionHttp=new ParametreConnexionHttp();
+				connexionHttp=new OrthancRestApis(null);
 				check++;
 				if(check ==3) JOptionPane.showMessageDialog(null, "Programme is starting without connexion (no services)", "Failure", JOptionPane.ERROR_MESSAGE);
 		}
@@ -263,33 +270,45 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	 */
 	public VueAnon(String orthancJsonName) {
 		super("Orthanc Tools");
-		connexionHttp= new ParametreConnexionHttp(true);
 		
 		try {
-			runOrthanc=new Run_Orthanc(connexionHttp);
+			runOrthanc=new Run_Orthanc();
 			runOrthanc.orthancJsonName=orthancJsonName;
 			runOrthanc.copyOrthanc(null);
+			runOrthanc.startOrthanc();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		
+		connexionHttp= new OrthancRestApis("http://localhost:8043");
 		buildGui();
 		
 	}
 
 	public void buildGui(){
+		//Instanciate needed Table and their model
+		modelePatients = new TablePatientsModel();
+		modeleStudies = new TableStudiesModel(queryOrthanc);
+		modeleSeries = new TableSeriesModel(connexionHttp, this, queryOrthanc);
+		modeleExportStudies = new TableExportStudiesModel();
+		modeleExportSeries = new TableExportSeriesModel(connexionHttp, queryOrthanc, this);
+		modeleAnonStudies = new TableAnonStudiesModel();
+		modeleAnonPatients = new TableAnonPatientsModel();
 		
-		gui=this;
-		//On set les objets necessaires
-		modelePatients = new TableDataPatientsAnon(connexionHttp);
-		modeleExportSeries = new TableDataExportSeries(connexionHttp, this, stateExports);
-		modeleSeries = new TableDataSeries(connexionHttp);
-		modeleExportStudies = new TableDataExportStudies(connexionHttp);
-		modeleAnonStudies = new TableDataAnonStudies(connexionHttp);
-		modeleStudies = new TableDataStudies(connexionHttp);
-
+		//Instanciate label status
+		state= new JLabel();
+		//Instanciate other objects
+		//SK A FINIR
+		exportZip = new JButton("Export list");
+		removeFromZip = new JButton("Remove from list");
+		addToZip = new JButton("Add to list");
+		exportSizeLabel= new JLabel("");
+		manageSize= new JLabel("");
+		userInputSearch = new JTextField();
+		
+		exportShownContent= new JComboBox<String>();
+		manageShownContent= new JComboBox<String>();
+		
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////// PANEL 1 : ANONYMIZATION ////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -312,24 +331,24 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			    public void itemStateChanged(ItemEvent event) {
 			       if (event.getStateChange() == ItemEvent.SELECTED) {
 			          if (inputType.getSelectedIndex()==0) {
-			        	  userInputFirstName.setEnabled(true);
+			        	  userInputSearch.setEnabled(true);
 			          }
-			          else userInputFirstName.setEnabled(false);
+			          else userInputSearch.setEnabled(false);
 			       }
 				}
 		});
-		inputType.setSelectedIndex(jpreferPerso.getInt("InputParameter", 0));
+		inputType.setSelectedIndex(jprefer.getInt("InputParameter", 0));
 		
 		JTextField userInput = new JTextField();
 		userInput.setToolTipText("Set your input accordingly to the field combobox on the left. ('*' stands for any character)");
 		userInput.setText("*");
 		userInput.setPreferredSize(new Dimension(125,20));
-		userInputFirstName.setText("*");
-		userInputFirstName.setToolTipText("Set your input accordingly to the field combobox on the left. ('*' stands for any character)");
-		userInputFirstName.setPreferredSize(new Dimension(125,20));
+		userInputSearch.setText("*");
+		userInputSearch.setToolTipText("Set your input accordingly to the field combobox on the left. ('*' stands for any character)");
+		userInputSearch.setPreferredSize(new Dimension(125,20));
 		topPanel.add(userInput);
 		topPanel.add(new JLabel("First Name : "));
-		topPanel.add(userInputFirstName);
+		topPanel.add(userInputSearch);
 
 		topPanel.add(new JLabel("Study description"));
 		JTextField studyDesc = new JTextField("*");
@@ -354,14 +373,37 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		topPanel.add(from);
 		topPanel.add(new JLabel("To"));
 		topPanel.add(to);
+		
+		JPanel panelModalities=new JPanel(new BorderLayout());
+		JPanel checkboxes = new JPanel(new GridLayout(2,4));
+		cr = new JCheckBox("CR");
+		ct = new JCheckBox("CT");
+		mr = new JCheckBox("MR");
+		nm = new JCheckBox("NM");
+		pt = new JCheckBox("PT");
+		us = new JCheckBox("US");
+		xa = new JCheckBox("XA");
+		mg = new JCheckBox("MG");
+		dx = new JCheckBox("DX");
+		customModalities=new JTextField();
+		customModalities.setToolTipText("Add custom modalities ex \"OT\\PR\" ");
+		checkboxes.add(cr); checkboxes.add(ct);
+		checkboxes.add(mr); checkboxes.add(nm);
+		checkboxes.add(pt); checkboxes.add(us);
+		checkboxes.add(xa); checkboxes.add(mg);
+		checkboxes.add(dx); checkboxes.add(customModalities);
+		panelModalities.add(checkboxes, BorderLayout.CENTER);
+		panelModalities.add(new JLabel("Contains Modalities"), BorderLayout.NORTH);
+		
+		topPanel.add(panelModalities);
 
-		JButton search = new JButton("Search");
-		search.addActionListener(new ActionListener() {
+		searchBtn = new JButton("Search");
+		searchBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					search.setText("Searching");
-					search.setEnabled(false);
+					searchBtn.setText("Searching");
+					searchBtn.setEnabled(false);
 					modelePatients.clear();
 					modeleStudies.clear();
 					modeleSeries.clear();
@@ -369,64 +411,77 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 					DateFormat df = new SimpleDateFormat("yyyyMMdd");
 					String date = df.format(from.getDate())+"-"+df.format(to.getDate());
 					String userInputString=null;
-					if (inputType.getSelectedIndex()==0 && !userInputFirstName.getText().equals("*") && !StringUtils.isEmpty(userInputFirstName.getText()) ) {
-						userInputString=userInput.getText()+"^"+userInputFirstName.getText();
+					if (inputType.getSelectedIndex()==0 && !userInputSearch.getText().equals("*") && !StringUtils.isEmpty(userInputSearch.getText()) ) {
+						userInputString=userInput.getText()+"^"+userInputSearch.getText();
 						if (userInputString.equals("*^*")) userInputString="*"; 
 					}
 					else userInputString=userInput.getText();
-					modelePatients.addPatient(inputType.getSelectedItem().toString(), userInputString, date, 
-							studyDesc.getText());
+
+					
+					StringBuilder modalities=new StringBuilder();
+					if (cr.isSelected()) modalities.append("CR\\");
+					if (ct.isSelected()) modalities.append("CT\\");
+					if (mr.isSelected()) modalities.append("MR\\");
+					if (nm.isSelected()) modalities.append("NM\\");
+					if (pt.isSelected()) modalities.append("PT\\");
+					if (us.isSelected()) modalities.append("US\\");
+					if (xa.isSelected()) modalities.append("XA\\");
+					if (mg.isSelected()) modalities.append("MG\\");
+					if (dx.isSelected()) modalities.append("DX\\");
+					modalities.append(customModalities.getText());
+					
+					String modality=StringUtils.removeEnd(modalities.toString(), "\\");
+					
+					
+					ArrayList<Patient> patients =queryOrthanc.findStudies(inputType.getSelectedItem().toString(), userInputString, date, studyDesc.getText(), modality);
+					modelePatients.addPatient(patients);
 					pack();
+					
 				} catch (Exception e1) { System.out.println("Exception"+e1);}
 				finally{
 					state.setText("");
-					search.setEnabled(true);
-					search.setText("Search");
-					jpreferPerso.putInt("InputParameter", inputType.getSelectedIndex());
+					searchBtn.setEnabled(true);
+					searchBtn.setText("Search");
+					jprefer.putInt("InputParameter", inputType.getSelectedIndex());
 				}
 			}
 		});
+		
 		JButton queryRetrieveBtn = new JButton("Queries/Retrieve");
 		queryRetrieveBtn.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
 				SwingUtilities.invokeLater(new Runnable () {
-
 					@Override
 					public void run() {
-						VueRest.main();
+						VueQuery query=new VueQuery(connexionHttp, gui);
+						query.pack();
+						query.setLocationRelativeTo(gui);
+						query.setVisible(true);
 					}
-					
 				});
-
 			}
 		});
 		
 		JButton queryImportBtn = new JButton("Import");
 		queryImportBtn.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				SwingUtilities.invokeLater(new Runnable () {
-
 					@Override
 					public void run() {
-						ImportDCM importFrame=new ImportDCM(connexionHttp);
+						ImportDCM importFrame=new ImportDCM(connexionHttp,gui);
 						importFrame.pack();
 						importFrame.setLocationRelativeTo(gui);
 						importFrame.setVisible(true);
 					}
-					
 				});
 			}
 		});
 
-		topPanel.add(search);
+		topPanel.add(searchBtn);
 		topPanel.add(queryRetrieveBtn);
 		topPanel.add(queryImportBtn);
-		this.state.setText("");
 		mainPanel.add(topPanel);
 
 		/////////////////////////////////////////////////////////////////////////////
@@ -438,39 +493,30 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.tableauPatients = new JTable(modelePatients);
 		this.tableauStudies = new JTable(modeleStudies);
 		this.tableauSeries = new JTable(modeleSeries);
-		this.sorterPatients = new TableRowSorter<TableDataPatientsAnon>(modelePatients);
-		this.sorterStudies = new TableRowSorter<TableDataStudies>(modeleStudies);
-		this.sorterSeries = new TableRowSorter<TableDataSeries>(modeleSeries);
-		this.sorterPatients.setSortsOnUpdates(true);
-		this.sorterStudies.setSortsOnUpdates(true);
-		this.sorterSeries.setSortsOnUpdates(true);
 		
 		//Listener pour savoir quelle table a le dernier focus
 		FocusListener tableFocus=new FocusListener() {
 			Color background= tableauSeries.getSelectionBackground();
 			@Override
-				public void focusGained(FocusEvent e) {
-					//memorise le dernier focus de table
-					JTable source= (JTable) e.getSource();
-					lastTableFocus=source;
-					//Tracking Visuel de la selection
-					if (source==tableauStudies){
-						tableauPatients.setSelectionBackground(Color.LIGHT_GRAY);
-						tableauStudies.setSelectionBackground(background);
-					}
-					else if (source==tableauPatients){
-						tableauStudies.setSelectionBackground(background);
-						tableauPatients.setSelectionBackground(background);
-					}
-					else if (source==tableauSeries){
-						tableauStudies.setSelectionBackground(Color.LIGHT_GRAY);
-						tableauPatients.setSelectionBackground(Color.LIGHT_GRAY);
-					}
-					
-					
-					
-					
+			public void focusGained(FocusEvent e) {
+				//memorise le dernier focus de table
+				JTable source= (JTable) e.getSource();
+				lastTableFocusMain=source;
+				//Tracking Visuel de la selection
+				if (source==tableauStudies){
+					tableauPatients.setSelectionBackground(Color.LIGHT_GRAY);
+					tableauStudies.setSelectionBackground(background);
 				}
+				else if (source==tableauPatients){
+					tableauStudies.setSelectionBackground(background);
+					tableauPatients.setSelectionBackground(background);
+				}
+				else if (source==tableauSeries){
+					tableauStudies.setSelectionBackground(Color.LIGHT_GRAY);
+					tableauPatients.setSelectionBackground(Color.LIGHT_GRAY);
+				}
+
+			}
 
 			@Override
 			public void focusLost(FocusEvent e) {
@@ -483,17 +529,30 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 							tableauStudies.setSelectionBackground(Color.lightGray);
 					}
 				}
-				
-				
+			}
+		};
+		
+		FocusListener tableFocusAnon=new FocusListener() {
+			@Override
+			public void focusGained(FocusEvent e) {
+			}
+
+			@Override
+			public void focusLost(FocusEvent e) {
+				//memorise le dernier focus de table
+				JTable source= (JTable) e.getSource();
+				lastTableFocusAnon=source;
 				
 			}
 		};
 		
-		//Ajout des listener focus tableau
-		
-		this.tableauPatients.addFocusListener(tableFocus);
-		this.tableauStudies.addFocusListener(tableFocus);
-		this.tableauSeries.addFocusListener(tableFocus);
+		//Add Focus listener to tables
+		tableauPatients.addFocusListener(tableFocus);
+		tableauStudies.addFocusListener(tableFocus);
+		tableauSeries.addFocusListener(tableFocus);
+		tableauPatients.setAutoCreateRowSorter(true);
+		tableauStudies.setAutoCreateRowSorter(true);
+		tableauSeries.setAutoCreateRowSorter(true);
 		
 		////////////////////////// PATIENTS ///////////////////////////////
 
@@ -515,61 +574,30 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.tableauPatients.getColumnModel().getColumn(4).setResizable(false);
 		this.tableauPatients.setPreferredScrollableViewportSize(new Dimension(290,267));
 
-		this.tableauPatients.setDefaultRenderer(Date.class, new DateRendererAnon());
+		this.tableauPatients.setDefaultRenderer(Date.class, new DateRenderer());
 		this.tableauPatients.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		this.tableauPatients.addMouseListener(new TablePatientsMouseListener(
+		this.tableauPatients.getSelectionModel().addListSelectionListener(new TablePatientsMouseListener(
 				this, this.tableauPatients, this.modelePatients, this.modeleStudies, this.modeleSeries, 
 				tableauPatients.getSelectionModel()));
-		List<RowSorter.SortKey> sortKeysPatients = new ArrayList<>();
-		sortKeysPatients.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
-		sortKeysPatients.add(new RowSorter.SortKey(1, SortOrder.ASCENDING));
-		sorterPatients.setSortKeys(sortKeysPatients);
-		sorterPatients.sort();
-		this.tableauPatients.setRowSorter(sorterPatients);
-				
-		
 
 		JMenuItem menuItemModifyPatients = new JMenuItem("Show tags/ Modify");
 		menuItemModifyPatients.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					new Modify("patients",(String)tableauPatients.getValueAt(tableauPatients.getSelectedRow(),2), gui, connexionHttp, state);
+					new Modify("patients",(String)tableauPatients.getValueAt(tableauPatients.getSelectedRow(),2), gui, connexionHttp);
 				}
 			});
 		
 		JMenuItem menuItemDeletePatients = new JMenuItem("Delete this patient");
 		menuItemDeletePatients.addActionListener(new DeleteActionMainPanel(connexionHttp, "Patient", this.modeleStudies, this.tableauStudies, 
-				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this.state, this, search));
+				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, searchBtn));
 
 		popMenuPatients.add(menuItemModifyPatients);
 		popMenuPatients.addSeparator();
 		popMenuPatients.add(menuItemDeletePatients);
 		//Selectionne la ligne avant affichage du popupMenu
-		popMenuPatients.addPopupMenuListener(new PopupMenuListener() {
-
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        int rowAtPoint = tableauPatients.rowAtPoint(SwingUtilities.convertPoint(popMenuPatients, new Point(0, 0), tableauPatients));
-                        if (rowAtPoint > -1) {
-                        	tableauPatients.setRowSelectionInterval(rowAtPoint, rowAtPoint);
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {
-            }
-
-			@Override
-			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
-			}
-        });
-		
-		this.tableauPatients.setComponentPopupMenu(popMenuPatients);
+		addPopUpMenuListener(popMenuPatients,tableauPatients);
+		tableauPatients.setComponentPopupMenu(popMenuPatients);
 
 		////////////////////////// STUDIES ///////////////////////////////
 
@@ -589,196 +617,97 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.tableauStudies.setPreferredScrollableViewportSize(new Dimension(410,267));
 		this.tableauStudies.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
-		this.tableauStudies.addMouseListener(new TableStudiesMouseListener(this, this.tableauStudies, this.modeleStudies, this.modeleSeries, tableauStudies.getSelectionModel()));
-		List<RowSorter.SortKey> sortKeysStudies = new ArrayList<>();
-		sortKeysStudies.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
-		sortKeysStudies.add(new RowSorter.SortKey(2, SortOrder.ASCENDING));
-		sorterStudies.setSortKeys(sortKeysStudies);
-		sorterStudies.sort();
-		this.tableauStudies.setRowSorter(sorterStudies);
-		this.tableauStudies.setDefaultRenderer(Date.class, new DateRendererAnon());
+		this.tableauStudies.getSelectionModel().addListSelectionListener(new TableStudiesMouseListener(this, this.tableauStudies, this.modeleStudies, this.modeleSeries, tableauStudies.getSelectionModel()));
+		this.tableauStudies.setDefaultRenderer(Date.class, new DateRenderer());
 		
 		JMenuItem menuItemModifyStudy = new JMenuItem("Show tags / Modify");
 		menuItemModifyStudy.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					new Modify("studies",(String)tableauStudies.getValueAt(tableauStudies.getSelectedRow(),3), gui, connexionHttp, state);
+					new Modify("studies",(String)tableauStudies.getValueAt(tableauStudies.getSelectedRow(),3), gui, connexionHttp);
 				}
 			});
 		
 		
 		JMenuItem menuItemDeleteStudy = new JMenuItem("Delete this study");
 		menuItemDeleteStudy.addActionListener(new DeleteActionMainPanel(connexionHttp, "Study", this.modeleStudies, this.tableauStudies, 
-				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this.state, this, search));
+				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, searchBtn));
 		
 		popMenuStudies.add(menuItemModifyStudy);
 		popMenuStudies.addSeparator();
 		popMenuStudies.add(menuItemDeleteStudy);
-		popMenuStudies.addPopupMenuListener(new PopupMenuListener() {
-
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        int rowAtPoint = tableauStudies.rowAtPoint(SwingUtilities.convertPoint(popMenuStudies, new Point(0, 0), tableauStudies));
-                        if (rowAtPoint > -1) {
-                        	tableauStudies.setRowSelectionInterval(rowAtPoint, rowAtPoint);
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {
-
-            }
-
-			@Override
-			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
-				
-			}
-        });
-		
-		
-		this.tableauStudies.setComponentPopupMenu(popMenuStudies);
+		addPopUpMenuListener(popMenuStudies,tableauStudies);
+		tableauStudies.setComponentPopupMenu(popMenuStudies);
 
 		////////////////////////// SERIES ///////////////////////////////
 
 		this.tableauSeries.getTableHeader().setReorderingAllowed(false);
 		this.tableauSeries.getColumnModel().getColumn(0).setMinWidth(260);
-		this.tableauSeries.getColumnModel().getColumn(0).setMaxWidth(260);
-		this.tableauSeries.getColumnModel().getColumn(0).setResizable(false);
 		this.tableauSeries.getColumnModel().getColumn(1).setMinWidth(100);
-		this.tableauSeries.getColumnModel().getColumn(1).setMaxWidth(100);
-		this.tableauSeries.getColumnModel().getColumn(1).setResizable(false);
 		this.tableauSeries.getColumnModel().getColumn(2).setMinWidth(100);
-		this.tableauSeries.getColumnModel().getColumn(2).setMaxWidth(100);
-		this.tableauSeries.getColumnModel().getColumn(2).setResizable(false);
 		this.tableauSeries.getColumnModel().getColumn(3).setMinWidth(0);
 		this.tableauSeries.getColumnModel().getColumn(3).setMaxWidth(0);
 		this.tableauSeries.getColumnModel().getColumn(3).setResizable(false);
+		this.tableauSeries.getColumnModel().getColumn(3).setCellRenderer(new Custom_Cell_Renderer());
 		this.tableauSeries.getColumnModel().getColumn(4).setMinWidth(0);
 		this.tableauSeries.getColumnModel().getColumn(4).setMaxWidth(0);
 		this.tableauSeries.getColumnModel().getColumn(4).setResizable(false);
 		this.tableauSeries.getColumnModel().getColumn(5).setMinWidth(70);
-		this.tableauSeries.getColumnModel().getColumn(5).setMaxWidth(70);
-		this.tableauSeries.getColumnModel().getColumn(5).setResizable(false);
-		this.tableauSeries.setPreferredScrollableViewportSize(new Dimension(530,267));
+		this.tableauSeries.getColumnModel().getColumn(6).setMinWidth(0);
+		this.tableauSeries.getColumnModel().getColumn(6).setMaxWidth(0);
+		this.tableauSeries.setPreferredScrollableViewportSize(new Dimension(580,267));
 		this.tableauSeries.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-
-		TableColumn serieDescCol = tableauSeries.getColumnModel().getColumn(0);
-		serieDescCol.setCellEditor(new DialogCellEditor());
-
-		List<RowSorter.SortKey> sortKeysSeries = new ArrayList<>();
-		sortKeysSeries.add(new RowSorter.SortKey(1, SortOrder.ASCENDING));
-		sortKeysSeries.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
-		sorterSeries.setSortKeys(sortKeysSeries);
-		sorterSeries.sort();
-		this.tableauSeries.setRowSorter(sorterSeries);
+		this.tableauSeries.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
 		JMenuItem menuItemModifySeries = new JMenuItem("Show tags / Modify");
 		menuItemModifySeries.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					new Modify("series",(String)tableauSeries.getValueAt(tableauSeries.getSelectedRow(),4), gui, connexionHttp, state);
+					new Modify("series",(String)tableauSeries.getValueAt(tableauSeries.getSelectedRow(),4), gui, connexionHttp);
 				}
 			});
 		
-		JMenuItem menuItemSopClass = new JMenuItem("Check if secondary capture");
-		menuItemSopClass.addActionListener(new ActionListener() {			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String instanceUid = modeleSeries.getSerie(tableauSeries.convertRowIndexToModel(tableauSeries.getSelectedRow())).getInstance();
-				modeleSeries.checkSopClassUid(instanceUid);
-				modeleSeries.setValueAt(modeleSeries.checkSopClassUid(instanceUid), tableauSeries.convertRowIndexToModel(tableauSeries.getSelectedRow()), 3);
-				modeleSeries.fireTableCellUpdated(tableauSeries.getSelectedRow(), 3);
-				
-			}
-		});
 		JMenuItem menuItemAllSopClass = new JMenuItem("Detect all secondary captures");
+		
 		menuItemAllSopClass.addActionListener(new ActionListener() {
+			boolean activated=false;
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				modeleSeries.detectAllSecondaryCaptures();
-				modeleSeries.clear();
-				modeleSeries.addSerie(tableauStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 3).toString());
+				activated=!activated;
+				if(activated) {
+					tableauSeries.getColumnModel().getColumn(3).setMaxWidth(50);
+					tableauSeries.getColumnModel().getColumn(3).setMinWidth(50);
+					menuItemAllSopClass.setText("Undetect all secondary captures");
+					
+				} else {
+					tableauSeries.getColumnModel().getColumn(3).setMinWidth(0);
+					tableauSeries.getColumnModel().getColumn(3).setMaxWidth(0);
+					menuItemAllSopClass.setText("Detect all secondary captures");
+				}
 			}
 		});
+		
 		JMenuItem menuItemDeleteAllSop = new JMenuItem("Remove all secondary captures");
 		menuItemDeleteAllSop.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-					modeleSeries.removeAllSecondaryCaptures();
-					modeleSeries.clear();
-					modeleSeries.addSerie(tableauStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 3).toString());
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				} 
+				modeleSeries.removeAllSecondaryCaptures();
 			}
 		});
 		JMenuItem menuItemDeleteSeries = new JMenuItem("Delete this serie");
 		menuItemDeleteSeries.addActionListener(new DeleteActionMainPanel(connexionHttp, "Serie", this.modeleStudies, this.tableauStudies, 
-				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this.state, this, search));
+				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, searchBtn));
 
 		popMenuSeries.add(menuItemModifySeries);
 		popMenuSeries.addSeparator();
-		popMenuSeries.add(menuItemSopClass);
 		popMenuSeries.add(menuItemAllSopClass);
 		popMenuSeries.add(menuItemDeleteAllSop);
 		popMenuSeries.addSeparator();
 		popMenuSeries.add(menuItemDeleteSeries);
-		popMenuSeries.addPopupMenuListener(new PopupMenuListener() {
-
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        int rowAtPoint = tableauSeries.rowAtPoint(SwingUtilities.convertPoint(popMenuSeries, new Point(0, 0), tableauSeries));
-                        if (rowAtPoint > -1) {
-                        	tableauSeries.setRowSelectionInterval(rowAtPoint, rowAtPoint);
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {
-
-            }
-
-			@Override
-			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
-				
-			}
-        });
+		addPopUpMenuListener(popMenuSeries, tableauSeries);
 		
 		this.tableauSeries.setComponentPopupMenu(popMenuSeries);
-
-		this.tableauSeries.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public Component getTableCellRendererComponent(JTable table,
-					Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-
-				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-
-				boolean status = (boolean)table.getModel().getValueAt(tableauSeries.convertRowIndexToModel(row), 3);
-				if (status && !isSelected) {
-					setBackground(Color.RED);
-					setForeground(Color.black);
-				}else if(isSelected){
-					setBackground(tableauExportStudies.getSelectionBackground());
-				}else{
-					setBackground(tableauExportStudies.getBackground());
-				}
-				return this;
-			}   
-		});
 
 		/////////////////////////////////////////////////////////////////////////////
 		///////////////////////// ORTHANC TOOLBOX ///////////////////////////////////
@@ -790,68 +719,59 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		ortToolbox.setBorder(new EmptyBorder(0, 0, 0, 50));
 		labelAndAnon.add(ortToolbox);
 		labelAndAnon.add(this.state);
-		zipShownContent = new JComboBox<Object> (zipContent.toArray());
-		zipShownContent.setPreferredSize(new Dimension(297,27));
-
+		
 		oToolRight = new JPanel();
 		oToolRight.setLayout(new BoxLayout(oToolRight, BoxLayout.PAGE_AXIS));
 
 		JPanel storeTool = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JButton storeBtn = new JButton("Store list");
-		try {
-			query = new QueryFillStore(connexionHttp);
-			listeAET = new JComboBox<Object>(query.getAET());
+		
+		listeAET = new JComboBox<String>();
+		listeAET.setPreferredSize(new Dimension(297, 27));
+		storeTool.add(listeAET);
+		storeBtn.addActionListener(new ActionListener() {
 
-			listeAET.setPreferredSize(new Dimension(297, 27));
-			storeTool.add(listeAET);
-			storeBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(!exportContent.isEmpty()){
+					
+					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+						boolean success;
+						@Override
+						protected Void doInBackground()  {
+							setStateMessage("Storing data (Do not use the toolbox while the current operation is not done)", "red", -1);
+							storeBtn.setEnabled(false);
+							pack();
+							success=connexionHttp.sendToAet(listeAET.getSelectedItem().toString(), exportContent);
+							return null;
+						}
 
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					if(!zipContent.isEmpty()){
-						state.setText("<html>Storing data <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
-						storeBtn.setEnabled(false);
-						pack();
-						SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-
-							@Override
-							protected Void doInBackground() throws Exception {
-								try {
-									query.store(listeAET.getSelectedItem().toString(), zipContent);
-									
-									
-								} catch (IOException e1) {
-									e1.printStackTrace();
-								}
-								return null;
-							}
-
-							@Override
-							protected void done(){
+						@Override
+						protected void done(){
+							if(success) {
 								state.setText("<html><font color='green'>The data have successfully been stored.</font></html>");
-								zipShownContent.removeAllItems();
-								zipShownContentList.removeAll(zipShownContentList);
-								zipContent.removeAll(zipContent);
-								storeBtn.setEnabled(true);
-								pack();
+								emptyExportList();
+							}else {
+								setStateMessage("DICOM Send Failed", "red", -1);
+								
 							}
-						};
-						worker.execute();
-					}
+							storeBtn.setEnabled(true);
+							pack();
+						}
+					};
+					worker.execute();
 				}
-			});
-			storeTool.add(storeBtn);
-		} catch (NullPointerException e){
-			JOptionPane.showMessageDialog(gui, "You should set an AET before using this app (some functions may not work).",
-					"No AET found", JOptionPane.INFORMATION_MESSAGE);
-		}
+			}
+		});
+		storeTool.add(storeBtn);
+
 		JPanel comboBoxBtn = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		comboBoxBtn.add(zipShownContent);
+		comboBoxBtn.add(exportShownContent);
 		
 		removeFromZip.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				removeFromToolList(zipContent, zipShownContent, zipShownContentList, zipSize, state);
+				removeFromToolList(exportContent, exportShownContent, exportSizeLabel, state);
 					
 			}
 		});
@@ -859,7 +779,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		removeFromManage.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				removeFromToolList(manageContent, manageShownContent, manageShownContentList, manageSize, state);
+				removeFromToolList(manageContent, manageShownContent, manageSize, state);
 			}
 		});
 		
@@ -867,7 +787,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				//Ajout dans la tool list		
-				addToToolList(zipContent,zipShownContent, zipShownContentList, zipSize);
+				addToToolList(exportContent,exportShownContent, exportSizeLabel);
 			}
 		});
 		
@@ -875,7 +795,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				//Ajout dans la tool list
-				addToToolList(manageContent,manageShownContent, manageShownContentList, manageSize);
+				addToToolList(manageContent,manageShownContent, manageSize);
 			}
 		});
 		
@@ -884,23 +804,19 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				// Liste des orthanc ID A supprimer qu'on va delete un a un
-				
 				ArrayList<String> deleteSeries=new ArrayList<String>();
 				ArrayList<String> deleteStudies=new ArrayList<String>();
-				ArrayList<String> deletePatients=new ArrayList<String>();
 				
 				for (int i=0; i<manageContent.size(); i++){
-					if (manageShownContentList.get(i).contains("Study -")){
+					//Patient or Studies are defined as study level
+					if (manageShownContent.getItemAt(i).contains("Study -") || manageShownContent.getItemAt(i).contains("Patient -")){
 						deleteStudies.add("/studies/"+manageContent.get(i));
 					}
-					else if (manageShownContentList.get(i).contains("Serie -")){
+					else if (manageShownContent.getItemAt(i).contains("Serie -")){
 						deleteSeries.add("/series/"+manageContent.get(i));
 					}
-					else if (manageShownContentList.get(i).contains("Patient -")){
-						deletePatients.add("/patients/"+manageContent.get(i));
-					}
 				}
-				state.setText("<html><font color='red'>Deleting please wait</font></html>");
+				setStateMessage("Deleting please wait", "red", -1);
 				enableManageButtons(false);
 				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 					@Override
@@ -909,30 +825,24 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 						for (int i=0 ; i<deleteSeries.size(); i++){
 							connexionHttp.makeDeleteConnection(deleteSeries.get(i));
 							progress++;
-							state.setText("<html><font color='red'>Deleted "+ progress +"/"+manageContent.size()+"</font></html>");
+							setStateMessage("Deleted "+ progress +"/"+manageContent.size(), "red", -1);
 						}
 						for (int i=0 ; i<deleteStudies.size(); i++){
 							connexionHttp.makeDeleteConnection(deleteStudies.get(i));
 							progress++;
-							state.setText("<html><font color='red'>Deleted "+ progress +"/"+manageContent.size()+"</font></html>");
-						}
-						for (int i=0 ; i<deletePatients.size(); i++){
-							connexionHttp.makeDeleteConnection(deletePatients.get(i));
-							progress++;
-							state.setText("<html><font color='red'>Deleted "+ progress +"/"+manageContent.size()+"</font></html>");
+							setStateMessage("Deleted "+ progress +"/"+manageContent.size(), "red", -1);
 						}
 						return null;
 					}
 
 					@Override
 					protected void done(){
-						state.setText("<html><font color='green'>Delete Done</font></html>");
+						setStateMessage("Delete Done", "green", 4);
 						enableManageButtons(true);
 						manageSize.setText("empty list");
 						manageShownContent.removeAllItems();
-						manageShownContentList.removeAll(manageShownContentList);
 						manageContent.removeAll(manageContent);
-						search.doClick();
+						searchBtn.doClick();
 					}
 					
 					
@@ -951,7 +861,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		
 		exportTool.add(comboToolChooser);
 		exportTool.add(exportZip);;
-		comboBoxBtn.add(this.zipSize);
+		comboBoxBtn.add(this.exportSizeLabel);
 		oToolRight.add(comboBoxBtn);
 		oToolRight.add(exportTool);
 		oToolRight.add(storeTool);
@@ -960,34 +870,25 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		oToolRight.setVisible(false);
 		toolbox.add(oToolRight);
 		
-		
-		
 		//Manage Panel//
-		
 		oToolRightManage = new JPanel();
 		oToolRightManage.setLayout(new BoxLayout(oToolRightManage, BoxLayout.PAGE_AXIS));
 
-		
 		JPanel deletePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		JPanel deletePanelGrid = new JPanel(new GridLayout(2,1));
 		
 		JPanel deletePanelComboButton = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		manageShownContent=new JComboBox<Object>(manageContent.toArray());
-		manageShownContent.setPreferredSize(new Dimension(297,27));
-		
 	
 		deletePanelComboButton.add(manageShownContent);
 		deletePanelComboButton.add(addManage);
 		deletePanelComboButton.add(removeFromManage);
 		deletePanelComboButton.add(manageSize);
 		
-		
 		JPanel metadataPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JButton metadata = new JButton("Metadata");
 		metadata.setEnabled(false);
 		metadataPanel.add(deleteManage);
 		metadataPanel.add(metadata);
-		
 		
 		deletePanelGrid.add(deletePanelComboButton);
 		deletePanelGrid.add(metadataPanel);
@@ -1017,30 +918,49 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		anonPatientTable.getColumnModel().getColumn(4).setMinWidth(120);
 		anonPatientTable.getColumnModel().getColumn(5).setMinWidth(0);
 		anonPatientTable.getColumnModel().getColumn(5).setMaxWidth(0);
-		anonPatientTable.getColumnModel().getColumn(6).setMinWidth(0);
-		anonPatientTable.getColumnModel().getColumn(6).setMaxWidth(0);
-		anonPatientTable.getColumnModel().getColumn(7).setMinWidth(0);
-		anonPatientTable.getColumnModel().getColumn(7).setMaxWidth(0);
 		anonPatientTable.setPreferredScrollableViewportSize(new Dimension(440,130));
-		anonPatientTable.addMouseListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies));
 		anonPatientTable.putClientProperty("terminateEditOnFocusLost", true);
 
-		anonStudiesTable = new JTable(modeleAnonStudies);
+		//override edditing stoped and Set Value At to store the new studyDescription value in the AnonPatient object
+		anonStudiesTable = new JTable(modeleAnonStudies) {
+			private static final long serialVersionUID = 1L;
+			
+			@Override
+			public void setValueAt(Object aValue, int row, int column) {
+				super.setValueAt(aValue, row, column);
+				if(column==0) {
+					storeNewStudyDescription(row, aValue);
+				}
+			}
+
+			private void storeNewStudyDescription(int row, Object studyDescription) {
+				PatientAnon patient=(PatientAnon) modeleAnonPatients.getValueAt(anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()), 6);
+				Study2Anon editingStudy=patient.getAnonymizeStudy((String) getValueAt(row, 2));
+				editingStudy.setNewStudyDescription((String) studyDescription);
+			}
+		};
+
+		anonPatientTable.addMouseListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies, anonStudiesTable));
+		anonPatientTable.getSelectionModel().addListSelectionListener(new TableAnonPatientsMouseListener(anonPatientTable, modeleAnonPatients, modeleAnonStudies, anonStudiesTable));
+		
 		anonStudiesTable.getTableHeader().setToolTipText("Click on the description cells to change their values");
 		anonStudiesTable.getColumnModel().getColumn(0).setMinWidth(200);
 		anonStudiesTable.getColumnModel().getColumn(1).setMinWidth(80);
 		anonStudiesTable.getColumnModel().getColumn(1).setMaxWidth(80);
-		anonStudiesTable.getColumnModel().getColumn(2).setMinWidth(150);
-		anonStudiesTable.getColumnModel().getColumn(2).setMaxWidth(150);
+		anonStudiesTable.getColumnModel().getColumn(2).setMinWidth(0);
+		anonStudiesTable.getColumnModel().getColumn(2).setMaxWidth(0);
 		anonStudiesTable.getColumnModel().getColumn(3).setMinWidth(0);
 		anonStudiesTable.getColumnModel().getColumn(3).setMaxWidth(0);
+		anonStudiesTable.getColumnModel().getColumn(4).setMinWidth(0);
+		anonStudiesTable.getColumnModel().getColumn(4).setMaxWidth(0);
+		anonStudiesTable.getColumnModel().getColumn(5).setMinWidth(0);
+		anonStudiesTable.getColumnModel().getColumn(5).setMaxWidth(0);
 		anonStudiesTable.setPreferredScrollableViewportSize(new Dimension(430,130));
-		anonStudiesTable.setDefaultRenderer(Date.class, new DateRendererAnon());
+		anonStudiesTable.setDefaultRenderer(Date.class, new DateRenderer());
+		anonStudiesTable.putClientProperty("terminateEditOnFocusLost", true);
 		
-		
-
-		TableColumn studyDescCol = anonStudiesTable.getColumnModel().getColumn(0);
-		studyDescCol.setCellEditor(new DialogCellEditor());
+		anonPatientTable.addFocusListener(tableFocusAnon);
+		anonStudiesTable.addFocusListener(tableFocusAnon);
 
 		displayAnonTool = new JButton("Anonymize");
 		displayAnonTool.addActionListener(new ActionListener() {
@@ -1089,55 +1009,38 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		});
 
 		addToAnon = new JButton("Add to anonymization list");
+
 		addToAnon.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if(tableauPatients.getSelectedRow() != -1){
-					try {
-						String patientName = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 0).toString();
-						String patientID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 1).toString();
-						String patientUID = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 2).toString();
-						Date patientBirthDate = (Date)tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 3);
-						String patientSex = tableauPatients.getValueAt(tableauPatients.getSelectedRow(), 4).toString();
-						ArrayList<String> listeDummy = new ArrayList<String>();
-						if((tableauSeries.getSelectedRow() != -1 || tableauStudies.getSelectedRow() != -1) && tableauPatients.getSelectedRows().length == 1){
-							listeDummy.add(modeleStudies.getValueAt(tableauStudies.convertRowIndexToModel(tableauStudies.getSelectedRow()), 3).toString());
-							modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientBirthDate, patientSex, listeDummy);
-							modeleAnonStudies.clear();
-							modeleAnonStudies.addStudies(patientName, patientID, listeDummy);
-							for(int i = 0; i < modeleAnonPatients.getPatientList().size(); i++){
-								if(modeleAnonPatients.getPatient(i).getPatientId().equals(patientID) && 
-										modeleAnonPatients.getPatient(i).getPatientName().equals(patientName)){
-									anonPatientTable.setRowSelectionInterval(i, i);
-								}
-							}
-						}else {
-							for(Integer i : tableauPatients.getSelectedRows()){
-								modeleStudies.clear();
-								patientName = tableauPatients.getValueAt(i, 0).toString();
-								patientID = tableauPatients.getValueAt(i, 1).toString();
-								patientUID = tableauPatients.getValueAt(i, 2).toString();
-								patientBirthDate = (Date)tableauPatients.getValueAt(i, 3);
-								patientSex=tableauPatients.getValueAt(i, 4).toString();
-								ArrayList<String> listeUIDs = new ArrayList<String>();
-								modeleStudies.addStudy(patientName, patientID, patientUID);
-								listeUIDs.addAll(modeleStudies.getIds());
-								modeleAnonPatients.addPatient(connexionHttp,patientName, patientID, patientBirthDate, patientSex, listeUIDs);
-								modeleAnonStudies.clear();
-								modeleAnonStudies.addStudies(patientName, patientID, listeUIDs);
-							}
-							for(int i = 0; i < modeleAnonPatients.getPatientList().size(); i++){
-								if(modeleAnonPatients.getPatient(i).getPatientId().equals(patientID) && 
-										modeleAnonPatients.getPatient(i).getPatientName().equals(patientName)){
-									anonPatientTable.setRowSelectionInterval(i, i);
-								}
-							}
-						}
-					}catch (IOException | ParseException e) {
-						e.printStackTrace();
-					} 
+				//If request for patient Table Add all studies in Anon
+				if(lastTableFocusMain==tableauPatients) {
+					int[] selectedRows=tableauPatients.getSelectedRows();
+					for(int row:selectedRows) {
+						int modelRow=tableauPatients.convertRowIndexToModel(row);
+						Patient patient=modelePatients.getPatient(modelRow);
+						//Get the studies listed in this patients
+						ArrayList<Study2> studiesInPatient=patient.getStudies();
+						//Conversion into a PatientAnon object to store the future anonymized name / id ...
+						PatientAnon patientAnon=new PatientAnon(patient);
+						//Set all listed studies in this patient
+						patientAnon.addStudies(studiesInPatient);
+						patientAnon.addAllChildStudiesToAnonymizeList();
+						modeleAnonPatients.addPatient(patientAnon);	
+					}	
+				//Else Add Selected study
+				}else if(lastTableFocusMain==tableauStudies) {
+					int[] selectedRows=tableauStudies.getSelectedRows();
+					for(int row:selectedRows) {
+						int modelRow=tableauStudies.convertRowIndexToModel(row);
+						modeleAnonPatients.addStudy(modeleStudies.getStudy(modelRow));
+						
+					}		
 				}
-				pack();
+				else {
+					setStateMessage("Selection to Anonymize only possible from Patient Or Study table", "orange",4);
+					
+				}
 			}
 		});
 		removeFromAnonList = new JButton("Remove");
@@ -1145,23 +1048,22 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		removeFromAnonList.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(anonStudiesTable.getSelectedRow() != -1){
-					String patientID = modeleAnonStudies.getValueAt(
-							anonStudiesTable.convertRowIndexToModel(anonStudiesTable.getSelectedRow()), 3).toString();
-					String uidToRemove = modeleAnonStudies.removeStudy(anonStudiesTable.getSelectedRow());
-					modeleAnonPatients.removeStudy(uidToRemove);
-					if(anonStudiesTable.getRowCount() == 0){
-						for(int i = 0; i< modeleAnonPatients.getPatientList().size(); i++){
-							if(modeleAnonPatients.getPatientList().get(i).getPatientId().equals(patientID)){
-								modeleAnonPatients.removePatient(i);
-							}
-						}
+				if(lastTableFocusAnon==anonPatientTable) {
+					//Erase patient row in reverse order to avoid index change problems
+					int[] rows =anonPatientTable.getSelectedRows();
+					Arrays.sort(rows);
+				    for (int i = rows.length - 1; i >= 0; i--) {
+				    	modeleAnonPatients.removePatient(lastTableFocusAnon.convertRowIndexToModel(anonPatientTable.getSelectedRow()));						
+				    }
+				    modeleAnonStudies.clear();
+				}else if(lastTableFocusAnon==anonStudiesTable)  {
+					PatientAnon patient=(PatientAnon)anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), anonPatientTable.convertColumnIndexToView(6));
+					patient.removeOrthancIDfromAnonymize((String)anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), anonStudiesTable.convertRowIndexToView(2)));
+					modeleAnonStudies.refresh();
+					if(patient.getAnonymizeStudies().size()==0) {
+						modeleAnonPatients.removePatient(anonPatientTable.convertRowIndexToModel(anonPatientTable.getSelectedRow()));
 					}
-				}else if(anonPatientTable.getSelectedRow() != -1){
-					modeleAnonPatients.removePatient(anonPatientTable.getSelectedRow());
-					modeleAnonStudies.empty();
 				}
-				pack();
 			}
 		});
 		
@@ -1179,18 +1081,14 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 					// Si pas de study selectionnees on selectionne de force le 1er
 					if (anonStudiesTable.getSelectedRow()==-1) anonStudiesTable.setRowSelectionInterval(0, 0);
 					//On genere l'objet qui gere le CTP
-					CTP_Gui dialog = new CTP_Gui(addressFieldCTP.getText());
+					OTP_Gui dialog = new OTP_Gui(addressFieldCTP.getText());
+					Study2 studyAnon=(Study2) anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 4);
 					//On prepare les donnees locales dans l'objet
-					String patientName=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 0);
-					//String patientID=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 1);
-					Date patientDOB=(Date) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 6);
-					String patientSex=(String) anonPatientTable.getValueAt(anonPatientTable.getSelectedRow(), 7);
-					if (patientSex.equals("")) patientSex="N/A";
-					//String studyDescription=(String) anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 0);
-					Date studyDate=(Date) anonStudiesTable.getValueAt(anonStudiesTable.getSelectedRow(), 1);
-					//SK Si pas de date on injecte la date du jour ? ou on passe la string ici et on gere ds le CTP?
-					if (studyDate==null) studyDate=new Date();
-					if (patientDOB==null) patientDOB=new Date();
+					String patientName=studyAnon.getPatientName();
+					String patientSex=studyAnon.getPatientSex();
+					Date studyDate=studyAnon.getDate();
+					Date patientDOB=studyAnon.getPatientDob();
+					
 					//envoi des donnes dans objet GUI pour CTP
 					dialog.setStudyLocalValue(patientName, df.format(studyDate), patientSex, df.format(patientDOB));
 					dialog.pack();
@@ -1209,8 +1107,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 						anonPatientTable.setValueAt(patientNewName, anonPatientTable.getSelectedRow(), 3);
 						anonPatientTable.setValueAt(patientNewID, anonPatientTable.getSelectedRow(), 4);
 						anonStudiesTable.setValueAt(visitName, anonStudiesTable.getSelectedRow(), 0);
-						//If only One patient in the list, click the anonymize button to start the process
-						if (anonPatientTable.getRowCount()==1) {
+						//If only One patient and one study in the list, click the anonymize button to start the process
+						if (anonPatientTable.getRowCount()==1 && anonStudiesTable.getRowCount()==1) {
 							anonBtn.doClick();
 						}
 					}
@@ -1221,7 +1119,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		
 		anonBtn = new JButton("Anonymize");
 		anonBtn.setPreferredSize(new Dimension(120,27));
-		anonBtn.addActionListener(this);
+		anonBtn.addActionListener(new Controller_Anonymize_Btn(this, connexionHttp));
 		
 		//Label to show the currently selected profile in the main panel
 		JLabel profileLabel = new JLabel();
@@ -1242,114 +1140,13 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		anonBtnPanelRight.add(anonBtn);
 		anonBtnPanelRight.add(profileLabel);
 		
-		
 		anonTablesPanel.add(anonBtnPanelRight);
 		anonTablesPanel.setVisible(false);
 		addToAnon.setVisible(false);
 		anonDetailed.add(anonTablesPanel, BorderLayout.WEST);
 
-		exportZip.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				if (!zipContent.isEmpty()){
-					JFileChooser chooser = new JFileChooser();
-					chooser.setCurrentDirectory(new java.io.File(jprefer.get("zipLocation", System.getProperty("user.dir"))));
-					if (comboToolChooser.getSelectedItem().equals("Image with Viewer (iso)")) chooser.setSelectedFile(new File(zipShownContentList.get(0).replaceAll("/", "_")+"_image.iso")); 
-					else chooser.setSelectedFile(new File(dfZip.format(new Date()) + ".zip")); 
-					chooser.setDialogTitle("Export to...");
-					chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-					chooser.setAcceptAllFileFilterUsed(false);
-					
-					if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-						jprefer.put("zipLocation", chooser.getSelectedFile().toPath().toString());
-						ConvertZipAction convertzip=new ConvertZipAction(connexionHttp);
-						exportZip.setText("Generating Zip...");
-						exportZip.setEnabled(false);
-						addToZip.setEnabled(false);
-						removeFromZip.setEnabled(false);
-						comboToolChooser.setEnabled(false);
-						state.setText("Generating Zip...");
-							
-							SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-							@Override
-							protected Void doInBackground() throws IOException {
-								
-								if (comboToolChooser.getSelectedItem().equals("ZIP File") || comboToolChooser.getSelectedItem().equals("DICOMDIR Zip") ) {
-										convertzip.setConvertZipAction(chooser.getSelectedFile().getAbsolutePath().toString() , zipContent, false);
-										try{
-										if (comboToolChooser.getSelectedItem().equals("ZIP File")) convertzip.generateZip(false);
-										if (comboToolChooser.getSelectedItem().equals("DICOMDIR Zip")) convertzip.generateZip(true);
-										}catch(IOException e){
-										e.printStackTrace();
-										}
-									
-									}
-								
-								else if ( (comboToolChooser.getSelectedItem().equals("Image with Viewer (zip)")) ) {
-									convertzip.setConvertZipAction("Viewer", zipContent, true);
-									convertzip.generateZip(true);
-									File tempImageZip=convertzip.getGeneratedZipFile();
-									String viewerString=jpreferPerso.get("viewerDistribution", "empty");
-									
-									if (!viewerString.equals("empty") && new File(viewerString).exists()){
-										File packageViewer=new File(viewerString);
-										ZipAndViewer zip=new ZipAndViewer(tempImageZip, chooser.getSelectedFile(), packageViewer);
-										zip.ZipAndViewerToZip();
-										JOptionPane.showMessageDialog(gui,"Image and Viewer exported in "+viewerString.toString());
-									}
-									else {
-										JOptionPane.showMessageDialog(gui,"Viewer not available, please download it in the setup tab");
-									}
-								}
-								
-								else if ( (comboToolChooser.getSelectedItem().equals("Image with Viewer (iso)"))) {
-									convertzip.setConvertZipAction("Viewer", zipContent, true);
-									convertzip.generateZip(true);
-									File tempImageZip=convertzip.getGeneratedZipFile();
-									String distinationString=jpreferPerso.get("viewerDistribution", "empty");
-									if (!distinationString.equals("empty")){
-										File packageViewer=new File(distinationString);
-										ZipAndViewer zip=new ZipAndViewer(tempImageZip, chooser.getSelectedFile(), packageViewer);
-										zip.unzip();
-										zip.generateIsoFile();
-										JOptionPane.showMessageDialog(gui,"Image and Viewer ISO generated at "+chooser.getSelectedFile().getAbsolutePath().toString());
-									}
-									else {
-										JOptionPane.showMessageDialog(gui,"Viewer not available, please download it in the setup tab");
-									}
-								}
-								return null;
-							}
-							
-							@Override
-							protected void done() {
-								state.setText("<html><font color='green'>The data have successfully been exported to zip</font></html>");
-								//Reactivate component after export
-								exportZip.setText("Export list");
-								exportZip.setEnabled(true);
-								addToZip.setEnabled(true);
-								removeFromZip.setEnabled(true);
-								comboToolChooser.setEnabled(true);
-								//empty exported list
-								zipShownContent.removeAllItems();
-								zipShownContentList.removeAll(zipShownContentList);
-								zipContent.removeAll(zipContent);	
-								//Close export tool
-								openCloseExportTool(false);
-								pack();
-							}
-							
-						};
-						worker.execute();
-						pack();
-					
-					}	
-				}
-
-				
-			}
-		});
+		exportZip.addActionListener(new Controller_Export_Zip(this));
+		
 		/////////////////////////////// ADDING COMPONENTS ////////////////
 		JPanel p1 = new JPanel(new FlowLayout());
 		GridBagConstraints c = new GridBagConstraints();
@@ -1374,86 +1171,9 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		c.gridy = 0;
 		panelTableauSeries.add(jscp3, BorderLayout.CENTER);
 		JPanel panelButton=new JPanel();
-		JButton btnReadSeries=new JButton("Open Images");
-		btnReadSeries.addActionListener(new ActionListener() {
-
-			@SuppressWarnings("unchecked")
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				int[] selectedListes=tableauSeries.getSelectedRows();
-				
-				if(selectedListes.length==0) {
-					JOptionPane.showMessageDialog(gui, "Select Series to read", "No series", JOptionPane.ERROR_MESSAGE);
-				}
-				List<String> ids=new ArrayList<String>();
-				ArrayList<ImagePlus> imagestacks=new ArrayList<ImagePlus>();
-				
-				boolean ct = false;
-				boolean pet = false;
-				
-				for( int line : selectedListes) {
-					ids.add((String) tableauSeries.getValueAt(line, 4));
-					if(tableauSeries.getValueAt(line, 1).equals("PT")) pet=true;
-					if(tableauSeries.getValueAt(line, 1).equals("CT")) ct=true;
-					
-				}
-				
-				boolean startViewer=(pet && ct && fijiEnvironement);
-				
-				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-					
-					@SuppressWarnings("rawtypes")
-					@Override
-					protected Void doInBackground() {
-						btnReadSeries.setText("Reading Series");
-						for(String id : ids) {
-							Read_Orthanc reader=new Read_Orthanc(connexionHttp);
-							ImagePlus ip=reader.readSerie(id);
-							imagestacks.add(ip);
-							
-						}
-						
-						if(startViewer) {
-							System.out.println("start viewer");
-							Class Run_Pet_Ct = null;
-							try {
-								Run_Pet_Ct = Class.forName("Run_Pet_Ct");
-							} catch (ClassNotFoundException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-							try {
-								Constructor cs=Run_Pet_Ct.getDeclaredConstructor(ArrayList.class);
-								cs.newInstance(imagestacks);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} 
-							
-						}
-						
-						
-						
-						return null;
-					}
-
-					@Override
-					public void done(){
-						btnReadSeries.setText("Open Images");
-					
-					}
-				};
-				
-				worker.execute();
-				
-
-				
-				
-			}
-			
-			
-			
-		});
+		btnReadSeries=new JButton("Open Images");
+		btnReadSeries.addActionListener(new Controller_Read_Series(this));
+		
 		panelButton.add(btnReadSeries);
 		panelTableauSeries.add(panelButton, BorderLayout.EAST);
 		tablesPanel.add(panelTableauSeries,c);
@@ -1471,9 +1191,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		JPanel mainPanelExport = new JPanel(new BorderLayout());
-		JPanel tableExportPanel = new JPanel(new FlowLayout());
-		this.sorterExportStudies = new TableRowSorter<TableDataExportStudies>(modeleExportStudies);
-		this.sorterExportSeries = new TableRowSorter<TableDataExportSeries>(modeleExportSeries);		
+		JPanel tableExportPanel = new JPanel(new FlowLayout());	
 
 		this.tableauExportStudies = new JTable(modeleExportStudies);
 		this.tableauExportStudies.getTableHeader().setReorderingAllowed(false);
@@ -1497,80 +1215,69 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.tableauExportStudies.getColumnModel().getColumn(5).setResizable(false);
 		this.tableauExportStudies.setPreferredScrollableViewportSize(new Dimension(700,267));
 
-		this.tableauExportStudies.setDefaultRenderer(Date.class, new DateRendererAnon());
+		this.tableauExportStudies.setDefaultRenderer(Date.class, new DateRenderer());
 
 		JPopupMenu popMenuExportStudies = new JPopupMenu();
 		this.tableauExportStudies.setComponentPopupMenu(popMenuExportStudies);
 
 		JMenuItem menuItemExportStudiesRemove = new JMenuItem("Remove from list");
 		menuItemExportStudiesRemove.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				modeleExportSeries.clear();
-				modeleExportStudies.removeStudy(tableauExportStudies.convertRowIndexToModel(tableauExportStudies.getSelectedRow()));
+				modeleExportStudies.removeRow(tableauExportStudies.getSelectedRow());
 			}
 		});
+		
 		popMenuExportStudies.add(menuItemExportStudiesRemove);
 
 		JMenuItem menuItemExportStudiesDelete = new JMenuItem("Delete this study");
 		menuItemExportStudiesDelete.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				DeleteActionExport del = new DeleteActionExport(connexionHttp, tableauExportStudies, modeleExportStudies);
-				del.delete();
-				modeleExportStudies.removeStudy(tableauExportStudies.convertRowIndexToModel(tableauExportStudies.getSelectedRow()));
-				modeleExportSeries.clear();
+				
+				String url="/studies/" + tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(), 5);
+				
+				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+					@Override
+					protected Void doInBackground() {
+						boolean deleted=connexionHttp.makeDeleteConnection(url);
+						if(deleted) {
+							modeleExportStudies.removeRow(tableauExportStudies.getSelectedRow());
+							modeleExportSeries.clear();
+						}
+					
+						return null;
+					}
+				};
+				worker.execute();
+				
 			}
 		});
+		
 		popMenuExportStudies.add(menuItemExportStudiesDelete);
 
 		JMenuItem menuItemEmptyList = new JMenuItem("Empty the export list");
 		menuItemEmptyList.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				int dialogResult;
-				dialogResult = JOptionPane.showConfirmDialog (gui, 
+				int dialogResult = JOptionPane.showConfirmDialog (gui, 
 						"Are you sure you want to clear the export list ?",
 						"Clearing the export list",
 						JOptionPane.YES_NO_OPTION);
 				if(dialogResult == JOptionPane.YES_OPTION){
 					modeleExportSeries.clear();
 					modeleExportStudies.clear();
-					modeleExportStudies.clearIdsList();
 				}
 			}
 		});
+		
 		popMenuExportStudies.add(menuItemEmptyList);
+		addPopUpMenuListener(popMenuExportStudies, tableauExportStudies);
 
-		sorterExportStudies.setSortKeys(sortKeysStudies);
-		sorterExportStudies.sort();
-		this.tableauExportStudies.setRowSorter(sorterExportStudies);
 
-		this.tableauExportStudies.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent event) {
-				// selects the row at which point the mouse is clicked
-				Point point = event.getPoint();
-				int currentRow = tableauExportStudies.rowAtPoint(point);
-				tableauExportStudies.setRowSelectionInterval(currentRow, currentRow);
-				// We clear the details
-				modeleExportSeries.clear();
-				try {
-					if(modeleExportStudies.getRowCount() != 0){
-						String studyID = (String)tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(), 5);
-						modeleExportSeries.addSerie(studyID);
-					}
-				}catch (RuntimeException e1){
-					//Ignore
-				} catch (Exception e1) {
-					e1.printStackTrace();
-				}
-			}
-
-		});
+		tableauExportStudies.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		
+		this.tableauExportStudies.getSelectionModel().addListSelectionListener(new TableExportStudiesMouseListener(tableauExportStudies, modeleExportSeries) );
 
 		this.tableauExportSeries = new JTable(modeleExportSeries);
 		this.tableauExportSeries.getTableHeader().setReorderingAllowed(false);
@@ -1590,55 +1297,55 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.tableauExportSeries.getColumnModel().getColumn(4).setMaxWidth(0);
 		this.tableauExportSeries.getColumnModel().getColumn(4).setResizable(false);
 		this.tableauExportSeries.setPreferredScrollableViewportSize(new Dimension(460,267));
-
-		this.tableauExportSeries.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent event) {
-				// selects the row at which point the mouse is clicked
-				Point point = event.getPoint();
-				int currentRow = tableauExportSeries.rowAtPoint(point);
-				tableauExportSeries.setRowSelectionInterval(currentRow, currentRow);
-			}
-		});
-
-		this.tableauExportSeries.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public Component getTableCellRendererComponent(JTable table,
-					Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-
-				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-
-				boolean status = (boolean)table.getModel().getValueAt(tableauExportSeries.convertRowIndexToModel(row), 3);
-				if (status & !isSelected) {
-					setBackground(Color.RED);
-					setForeground(Color.black);
-				}else if(isSelected){
-					setBackground(tableauExportStudies.getSelectionBackground());
-				}else{
-					setBackground(tableauExportStudies.getBackground());
-				}
-				return this;
-			}   
-		});
+		
+		tableauExportSeries.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		JPopupMenu popMenuExportSeries = new JPopupMenu();
+		addPopUpMenuListener(popMenuExportSeries , tableauExportSeries);
 		this.tableauExportSeries.setComponentPopupMenu(popMenuExportSeries);
 
 		JMenuItem menuItemExportSeriesDelete = new JMenuItem("Delete this serie");
 		menuItemExportSeriesDelete.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				String uid = tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(), 4).toString();
-				DeleteActionExport del = new DeleteActionExport(connexionHttp, tableauExportSeries, modeleExportSeries);
-				del.delete();
-				if(tableauExportSeries.getRowCount() == 1){
-					modeleAnonStudies.removeFromList(uid);
-					modeleExportStudies.removeStudy(tableauExportStudies.convertRowIndexToModel(tableauExportStudies.getSelectedRow()));
-				}
-				modeleExportSeries.removeSerie(tableauExportSeries.convertRowIndexToModel(tableauExportSeries.getSelectedRow()));
+					
+				SwingWorker<Void, Void> worker = new SwingWorker<Void,Void>() {
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						int selectedRow = tableauExportSeries.getSelectedRow();
+						Serie serie= (Serie) tableauExportSeries.getValueAt(selectedRow,6);
+						
+						String url="/series/" + serie.getId();
+						setStateExportMessage("Deleting "+serie.getSerieDescription(), "red", -1);
+						boolean success=connexionHttp.makeDeleteConnection(url);
+						if(success) {
+							setStateExportMessage("Deleted suceeded", "green", 4);
+						}else {
+							setStateExportMessage("Delete Failed", "red", -1);
+						}
+						
+						return null;
+					}
+					
+					@Override
+					protected void done() {
+						try {
+							get();
+							//SK ICI GENERE UNE ERREUR
+							modeleExportSeries.refresh();
+							if(modeleExportSeries.getRowCount()==0) {
+								modeleExportStudies.removeStudy(modeleExportSeries.getStudyAnonymizedID());
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						
+					}
+					
+				};
+				worker.execute();
+				
 			}
 		});
 
@@ -1646,32 +1353,20 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		menuItemExportSeriesDeleteAllSc.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-					boolean[] studyExist = {true};
-					modeleExportSeries.removeAllSecondaryCaptures();
-
-					if(modeleExportSeries.getSeries().isEmpty()){
-						modeleExportStudies.removeStudy(tableauExportStudies.convertRowIndexToModel(tableauExportStudies.getSelectedRow()));
-						studyExist[0] = false;
-					}
-				} catch (IOException e1) {
-					e1.printStackTrace();
+				modeleExportSeries.removeAllSecondaryCaptures();
+				if(modeleExportSeries.getRowCount()==0){
+					modeleExportStudies.removeStudy(modeleExportSeries.getStudyAnonymizedID());
 				}
 			}
 		});
 
 		popMenuExportSeries.add(menuItemExportSeriesDelete);
 		popMenuExportSeries.add(menuItemExportSeriesDeleteAllSc);
-		sorterExportSeries.setSortKeys(sortKeysSeries);
-		sorterExportSeries.sort();
-		this.tableauExportSeries.setRowSorter(sorterExportSeries);
 
 		tableExportPanel.add(new JScrollPane(this.tableauExportStudies));
 		tableExportPanel.add(new JScrollPane(this.tableauExportSeries));
 
 		stateExports.setBorder(new EmptyBorder(0, 0, 0, 40));
-
-	
 
 		JPanel labelPanelExport = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JLabel exportToLabel = new JLabel("<html><font size=\"5\">Export list to...</font></html>");
@@ -1680,451 +1375,270 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		labelPanelExport.add(stateExports);
 
 		exportBtn = new JButton("Remote server");
+		exportBtn.setToolTipText("Fill the remote server parameters in the setup tab before attempting an export.");
+
 		exportBtn.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-					boolean[] successful = {true};
-					String exception = "";
+					
 					@Override
-					protected Void doInBackground() {
-						// Putting the export preferences in the anon plugin registry
-						if(remoteServer.getText() != null){
-							jprefer.put("remoteServer", remoteServer.getText());
-						}
+					protected Void doInBackground() throws Exception {
+						exportBtn.setText("Exporting...");
+						exportBtn.setEnabled(false);
 						
-						if(remotePort.getText() != null){
-							jprefer.put("remotePort", remotePort.getText());
-						}
+						ExportZip convertzip=new ExportZip(connexionHttp);
+						convertzip.setConvertZipAction("tempZipOrthanc", modeleExportStudies.getOrthancIds(), true);
+						convertzip.generateZip(false);
+						String zipPath = convertzip.getGeneratedZipPath();
+						String zipName = convertzip.getGeneratedZipName();
+						remoteFileName = new StringBuilder();
 						
-						if(servUsername.getText() != null){
-							jprefer.put("servUsername", servUsername.getText());
-						}
-						if(new String(servPassword.getPassword()) != null){
-							jprefer.put("servPassword", new String(servPassword.getPassword()));
-						}
-						if(remoteFilePath.getText() != null){
-							jprefer.put("remoteFilePath", remoteFilePath.getText());
-						}
-						jprefer.put("exportType", exportType.getSelectedItem().toString());
-
-							exportBtn.setText("Exporting...");
-							exportBtn.setEnabled(false);
-							
-							try {
-								ConvertZipAction convertzip=new ConvertZipAction(connexionHttp);
-								convertzip.setConvertZipAction("tempZipOrthanc", modeleExportStudies.getOrthancIds(), true);
-								convertzip.generateZip(false);
-								String zipPath = convertzip.getGeneratedZipPath();
-								String zipName = convertzip.getGeneratedZipName();
-								remoteFileName = new StringBuilder();
-								
-								//removing the temporary file default name value
-								remoteFileName.append(zipName.substring(0,14));
-								remoteFileName.append(zipName.substring(zipName.length() - 4));
-								ExportFiles export = new ExportFiles(jprefer.get("exportType", ExportFiles.OPTION_FTP), 
-										jprefer.get("remoteFilePath", "/"), remoteFileName.toString(), zipPath, jprefer.get("remoteServer", ""), 
-										jprefer.getInt("remotePort", 21), jprefer.get("servUsername", ""), jprefer.get("servPassword", ""));
-								export.export();
-								if(export.getResult() != null){
-									successful[0] = false;
-									exception = export.getResult();
-								}
-							} catch (FileNotFoundException e){
-								successful[0] = false;
-								stateExports.setText("<html><font color='red'>The data export failed (the zip was not created)</font></html>");
-							} catch (IOException e) {
-								successful[0] = false;
-								exception = e.getMessage();								
-							} 
+						//removing the temporary file default name value
+						remoteFileName.append(zipName.substring(0,14));
+						remoteFileName.append(zipName.substring(zipName.length() - 4));
+						SendFilesToRemote export = new SendFilesToRemote(jprefer.get("exportType", SendFilesToRemote.OPTION_FTP), 
+								jprefer.get("remoteFilePath", "/"), remoteFileName.toString(), zipPath, jprefer.get("remoteServer", ""), 
+								jprefer.getInt("remotePort", 21), jprefer.get("servUsername", ""), jprefer.get("servPassword", ""));
+						export.export();
+						
+						
 						return null;
 					}
 
 					@Override
 					public void done(){
-						if(successful[0]){
-							stateExports.setText("<html><font color='green'>The data has been successfully been exported</font></html>");
-						}else{
-							if(!stateExports.getText().contains("The zip was not created")){
-								stateExports.setText("<html><font color='red'>The data export failed (" + exception + ") </font></html>");	
-							}
+						try {
+							get();
+							setStateExportMessage("The data has been successfully been exported", "green", 4);							stateExports.setText("<html><font color='green'>The data has been successfully been exported</font></html>");
+						} catch (Exception e) {
+							setStateExportMessage("The data export failed", "red", -1);
+							e.printStackTrace();
 						}
 						exportBtn.setText("Remote server");
 						exportBtn.setEnabled(true);
 					}
 				};
+				
+			if(!modeleExportStudies.getOrthancIds().isEmpty()){
+				stateExports.setText("Exporting...");
+				worker.execute();
+			}
+		}
+		});
+
+		csvReport = new JButton("CSV Report");
+		csvReport.addActionListener(new Controller_Csv_Btn(modeleExportStudies, this));
+		
+		exportCTP = new JButton("OTP");
+		exportCTP.addActionListener(new ActionListener() {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+	
+				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+					
+					boolean sendOk;
+					boolean validateOk=false;
+					
+					@Override
+					protected Void doInBackground() {
+						//Send DICOM to CTP selected Peer
+						setStateExportMessage("Step 1/3 Sending to CTP Peer :"+listePeers.getSelectedItem().toString(), "red", -1);
+						exportCTP.setEnabled(false);
+						sendOk=connexionHttp.sendToPeer(listePeersCTP.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
+						
+						if (sendOk) {
+							setStateExportMessage("Step 2/3 : Validating upload", "red", -1);
+							//Create CTP object to manage CTP communication
+							OTP ctp=new OTP(CTPUsername, CTPPassword, addressFieldCTP.getText());
+							//Create the JSON to send
+							JsonArray sentStudiesArray=new JsonArray();
+							//For each study populate the array with studies details of send process
+							for(Study2 study : modeleExportStudies.getAnonymizedStudy2Object()){
+								study.storeStudyStatistics(queryOrthanc);
+								//Creat Object to send to OTP
+								JsonObject studyObject=new JsonObject();
+								studyObject.addProperty("visitName", study.getStudyDescription());
+								studyObject.addProperty("StudyInstanceUID", study.getStudyInstanceUid());
+								studyObject.addProperty("patientNumber", study.getPatientName());
+								studyObject.addProperty("instanceNumber", study.getStatNbInstance());
+								sentStudiesArray.add(studyObject);
+
+							}
+							validateOk=ctp.validateUpload(sentStudiesArray);
+							//If everything OK, says validated and remove anonymized studies from local
+							if(validateOk) {
+								setStateExportMessage("Step 3/3 : Deleting local study", "red", -1);
+								for(Study2 study : modeleExportStudies.getAnonymizedStudy2Object()){
+									//deleted anonymized and sent study
+									connexionHttp.makeDeleteConnection("/studies/"+study.getOrthancId());
+								}
+								// empty the export table
+								modeleExportStudies.clear();
+								modeleExportSeries.clear();
+							}
+						}
+						
+						return null;
+					}
+			
+					@Override
+					protected void done(){
+						exportCTP.setEnabled(true);
+						if (sendOk && validateOk) {
+							setStateExportMessage("CTP Export Done", "green", -1);
+						} else if (!sendOk) {
+							setStateExportMessage("Upload Failed", "red", -1);
+						} else if (!validateOk) {
+							setStateExportMessage("Validation Failed", "red", -1);
+						}
+					}
+				};
+				
 				if(!modeleExportStudies.getOrthancIds().isEmpty()){
-					stateExports.setText("Exporting...");
+					worker.execute();
+				}
+			
+
+			}
+		});
+
+		exportToZip = new JButton("Zip");
+		exportToZip.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+					@Override
+					protected Void doInBackground() throws Exception {
+						stateExports.setText("Converting to Zip...");
+						exportToZip.setText("Converting to Zip...");
+						exportToZip.setEnabled(false);
+						File file = null;
+						DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
+						JFileChooser chooser = new JFileChooser();
+						chooser.setCurrentDirectory(new File(jprefer.get("zipLocation", ".")));
+						chooser.setSelectedFile(new File(df.format(new Date()) + ".zip"));
+						chooser.setDialogTitle("Export zip to...");
+						chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+						chooser.setAcceptAllFileFilterUsed(false);
+						if (chooser.showSaveDialog(gui) == JFileChooser.APPROVE_OPTION) {
+							file = chooser.getSelectedFile();
+							ExportZip convertzip=new ExportZip(connexionHttp);
+							convertzip.setConvertZipAction(file.getAbsolutePath().toString(), modeleExportStudies.getOrthancIds(), false);
+							convertzip.generateZip(false);
+						}
+						return null;
+					}
+
+					@Override
+					public void done(){
+						try {
+							get();
+							setStateExportMessage("The data has been successfully been converted to zip", "green", -1);
+						} catch (Exception e) {
+							setStateExportMessage("Zip Export Failed", "red", -1);
+							e.printStackTrace();
+						}
+						exportToZip.setText("Zip");
+						exportToZip.setEnabled(true);
+					}
+				};
+				
+				if(!modeleExportStudies.getOrthancIds().isEmpty()){
 					worker.execute();
 				}
 			}
 		});
 
-		exportBtn.setToolTipText("Fill the remote server parameters in the setup tab before attempting an export.");
 
-		csvReport = new JButton("CSV Report");
-		csvReport.addActionListener(new ActionListener() {
-
+		listeAETExport = new JComboBox<String>();
+		//Fill Aets combobox with values from Orthanc
+		this.refreshAets();
+		dicomStoreExport = new JButton("Store");
+		dicomStoreExport.addActionListener(new ActionListener() {
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				jprefer.put("reportType", "CSV");
-				CSV csv = new CSV();
-				if(!modeleExportStudies.getOrthancIds().isEmpty()){
-					for(String uid : modeleExportStudies.getOrthancIds()){
-						try {
-							StringBuilder sb =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + uid);
-							JSONObject cdfResponse = (JSONObject) parser.parse(sb.toString());
-							StringBuilder sb2 =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + uid +"/statistics");
-							JSONObject cdfResponseStats = (JSONObject) parser.parse(sb2.toString());
-							
-							//Recupere Elements d'origine
-							JSONObject cdfResponseMainPatientTags=(JSONObject) cdfResponse.get("PatientMainDicomTags");
-							JSONObject cdfResponseMainDicomTags=(JSONObject) cdfResponse.get("MainDicomTags");
-							
-							String AnonymizedFrom=cdfResponse.get("AnonymizedFrom").toString();
-							
-							String newPatientName ;
-							String newPatientId ;
-							String newStudyDesc;
-							String studyInstanceUid;
-							String nbSeries;
-							String nbInstances ;
-							String size;
-							
-							// On recupere les data apres anonymization
-							
-							if (cdfResponseMainPatientTags.containsKey("PatientName") ) {
-								newPatientName =cdfResponseMainPatientTags.get("PatientName").toString();
-							} else {
-								newPatientName ="";
-							}
-							
-							if (cdfResponseMainPatientTags.containsKey(("PatientID"))) {
-								newPatientId= cdfResponseMainPatientTags.get("PatientID").toString();
-							}else {
-								newPatientId="";
-							}
-							
-							if (cdfResponseMainDicomTags.containsKey("StudyDescription")) {
-								newStudyDesc =cdfResponseMainDicomTags.get("StudyDescription").toString();
-							}else {
-								newStudyDesc="";
-							}
-							
-							if (cdfResponseMainDicomTags.containsKey("StudyInstanceUID")) {
-								studyInstanceUid=cdfResponseMainDicomTags.get("StudyInstanceUID").toString();
-							}else {
-								studyInstanceUid="";
-							}
-							
-							if (cdfResponseStats.containsKey("CountSeries")) {
-								nbSeries = cdfResponseStats.get("CountSeries").toString();
-							}else {
-								nbSeries="";
-							}
-							
-							if(cdfResponseStats.containsKey("CountInstances")) {
-								nbInstances = cdfResponseStats.get("CountInstances").toString();
-							} else {
-								nbInstances ="";
-							}
-							
-							if(cdfResponseStats.containsKey("DiskSizeMB")) {
-								size = cdfResponseStats.get("DiskSizeMB").toString();
-							} else {
-								size ="";
-							}
-							
-							
-							//Recupere data avant anonymization
-							StringBuilder sb3 =connexionHttp.makeGetConnectionAndStringBuilder("/studies/" + AnonymizedFrom);
-							JSONObject cdfOriginalStudyDataResponse = (JSONObject) parser.parse(sb3.toString());
-							
-							JSONObject cdfOriginalStudyDataResponseMainPatientTags=(JSONObject) cdfOriginalStudyDataResponse.get("PatientMainDicomTags");
-							JSONObject cdfOriginalStudyDataResponseMainDicomTags=(JSONObject) cdfOriginalStudyDataResponse.get("MainDicomTags");
-							
-							String oldPatientName;
-							String oldPatientId;
-							String oldStudyDate;
-							String oldStudyDesc;
-							
-							if (cdfOriginalStudyDataResponseMainPatientTags.containsKey("PatientName")){
-								oldPatientName=cdfOriginalStudyDataResponseMainPatientTags.get("PatientName").toString();
-							} else {
-								oldPatientName="";
-							}
-							
-							if (cdfOriginalStudyDataResponseMainPatientTags.containsKey("PatientID")){
-								oldPatientId=cdfOriginalStudyDataResponseMainPatientTags.get("PatientID").toString();
-							} else {
-								oldPatientId="";
-							}
-							
-							if (cdfOriginalStudyDataResponseMainDicomTags.containsKey("StudyDate")){
-								oldStudyDate=cdfOriginalStudyDataResponseMainDicomTags.get("StudyDate").toString();
-							} else {
-								oldStudyDate="";
-							}
-							
-							if (cdfOriginalStudyDataResponseMainDicomTags.containsKey("StudyDescription")){
-								oldStudyDesc=cdfOriginalStudyDataResponseMainDicomTags.get("StudyDescription").toString();
-							} else {
-								oldStudyDesc="";
-							}
-							
-							csv.addStudy(oldPatientName, oldPatientId, newPatientName, newPatientId, oldStudyDate, oldStudyDesc, newStudyDesc, nbSeries, nbInstances, size, studyInstanceUid);
-							
-						} catch (org.json.simple.parser.ParseException e1) {
-							e1.printStackTrace();
+			public void actionPerformed(ActionEvent e) {
+				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+					boolean storeSuccess;
+					@Override
+					protected Void doInBackground() {
+						dicomStoreExport.setEnabled(false);
+						dicomStoreExport.setText("Storing...");
+						storeSuccess=connexionHttp.sendToAet(listeAETExport.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
+						return null;
+					}
+
+					@Override
+					protected void done(){
+						if(storeSuccess) {
+							stateExports.setText("<html><font color= 'green'>The request was successfully received</font></html>");
+						}else {
+							stateExports.setText("<html><font color= 'red'>The request was not received</font></html>");
 						}
+						
+						dicomStoreExport.setText("Store");
+						dicomStoreExport.setEnabled(true);
 					}
-					try {
-						csv.genCSV();
-					} catch (FileNotFoundException e1) {
-						e1.printStackTrace();
-					}
-					
+				};
+				if(!modeleExportStudies.getOrthancIds().isEmpty()){
+					stateExports.setText("Storing data...");
+					worker.execute();
 				}
-				
 			}
-			
 		});
-		
-		//CTP Export, start peer send, upload validation and deletion of local anonymized studies.
-		exportCTP = new JButton("CTP");
-		exportCTP.addActionListener(new ActionListener() {
+
+		listePeers = new JComboBox<String>();
+		peerExport = new JButton("OrthancPeer");
+		peerExport.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
-					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-						
-						boolean sendOk=false;
-						boolean validateOk=false;
-						
-						@SuppressWarnings("unchecked")
-						@Override
-						protected Void doInBackground() {
-							//Send DICOM to CTP selected Peer
-							try {
-								stateExports.setText("<html><font color= 'green'> Step 1/3 Sending to CTP Peer :"+listePeers.getSelectedItem().toString()+ "</font></html>");
-								exportCTP.setEnabled(false);
-								query.sendPeer(listePeersCTP.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
-								sendOk=true;
-							} catch (IOException e1) {
-								stateExports.setText("<html><font color= 'red'>The upload was not received (" + e1.getMessage() + ") </font></html>");
-							}
-							//If send sucessfully, validation of Upload
-							if (sendOk) {
-								stateExports.setText("<html><font color= 'green'>Step 2/3 : Validating upload</font></html>");
-								//Create CTP object to manage CTP communication
-								CTP ctp=new CTP(CTPUsername, CTPPassword, addressFieldCTP.getText());
-								//Create the JSON to send
-								JSONArray sentStudiesArray=new JSONArray();
-								//For each study populate the array with studies details of send process
-								for(Study study : modeleExportStudies.getStudiesList()){
-									StringBuilder statistics=connexionHttp.makeGetConnectionAndStringBuilder("/studies/"+study.getId()+"/statistics/");
-									JSONObject stats = null;
-									try {
-										stats = (JSONObject) parser.parse(statistics.toString());
-									} catch (org.json.simple.parser.ParseException e) {
-										e.printStackTrace();
-									}
-									JSONObject studyObject=new JSONObject();
-									studyObject.put("visitName", study.getStudyDescription());
-									studyObject.put("StudyInstanceUID", study.getNewStudyInstanceUID());
-									studyObject.put("patientNumber", study.getPatientName());
-									studyObject.put("instanceNumber", Integer.valueOf(stats.get("CountInstances").toString()));
-									sentStudiesArray.add(studyObject);
-									
-									
-								}
-								validateOk=ctp.validateUpload(sentStudiesArray);
-								//If everything OK, says validated and remove anonymized studies from local
-								if(validateOk) {
-									stateExports.setText("<html><font color= 'green'>Step 3/3 : Deleting local study </font></html>");
-									for(Study study : modeleExportStudies.getStudiesList()){
-										//deleted anonymized and sent study
-										connexionHttp.makeDeleteConnection("/studies/"+study.getId());
-									}
-									// empty the export table
-									modeleExportStudies.clear();
-									modeleExportSeries.clear();
-									
-								}
-								else {
-								return null;
-								}
-							}
-							else {
-								return null;
-							}
-							
-							return null;
-						}
-				
-						@Override
-						protected void done(){
-							exportCTP.setEnabled(true);
-							if (sendOk && validateOk)stateExports.setText("<html><font color= 'green'>CTP Export Done </font></html>");
-							else if ( !sendOk) stateExports.setText("<html><font color= 'red'> Upload Failed </font></html>");
-							else if (!validateOk) stateExports.setText("<html><font color= 'red'> Validation Failed </font></html>");
-						}
-					};
-					
-					
-					if(!modeleExportStudies.getOrthancIds().isEmpty()){
-						
-						worker.execute();
+				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+					boolean sendok;
+					@Override
+					protected Void doInBackground() {
+						peerExport.setEnabled(false);
+						peerExport.setText("Sending...");
+						sendok=connexionHttp.sendToPeer(listePeers.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
+						return null;
 					}
-				
 
+					@Override
+					protected void done(){
+						if(sendok) {
+							stateExports.setText("<html><font color= 'green'>The upload was successfully received</font></html>");
+						}else {
+							stateExports.setText("<html><font color= 'red'>The upload was not received </font></html>");
+						}
+						peerExport.setText("OrthancPeer");
+						peerExport.setEnabled(true);
+					}
+				};
+				if(!modeleExportStudies.getOrthancIds().isEmpty()){
+					stateExports.setText("Sending to "+listePeers.getSelectedItem().toString());
+					worker.execute();
 				}
-			});
-
+			}
+		});
 		
-			QueryFillStore query = new QueryFillStore(connexionHttp);
+		JPanel exportPanel = new JPanel(new FlowLayout(FlowLayout.CENTER,50,10));
+		exportPanel.add(exportCTP);
+		exportPanel.add(csvReport);
+		exportPanel.add(exportToZip);
+		exportPanel.add(exportBtn);
 
-			exportToZip = new JButton("Zip");
-			exportToZip.addActionListener(new ActionListener() {
-				boolean confirm = true;
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-						@Override
-						protected Void doInBackground() {
-							confirm = true;
-							stateExports.setText("Converting to Zip...");
-							exportToZip.setText("Converting to Zip...");
-							exportToZip.setEnabled(false);
-							File file = null;
-							DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
-							JFileChooser chooser = new JFileChooser();
-							chooser.setCurrentDirectory(new File(jprefer.get("zipLocation", ".")));
-							chooser.setSelectedFile(new File(df.format(new Date()) + ".zip"));
-							chooser.setDialogTitle("Export zip to...");
-							chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-							chooser.setAcceptAllFileFilterUsed(false);
-							if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-								file = chooser.getSelectedFile();
-							}else{
-								confirm = false;
-							}
-							if(confirm){
-								try{
-									ConvertZipAction convertzip=new ConvertZipAction(connexionHttp);
-									convertzip.setConvertZipAction(file.getAbsolutePath().toString(), modeleExportStudies.getOrthancIds(), false);
-									convertzip.generateZip(false);
-								}catch(IOException e){
-									e.printStackTrace();
-								}
-							}
-							return null;
-						}
-
-						@Override
-						public void done(){
-							if(confirm){
-								stateExports.setText("<html><font color='green'>The data has been successfully been converted to zip</font></html>");
-							}else{
-								stateExports.setText("");
-							}
-							exportToZip.setText("Zip");
-							exportToZip.setEnabled(true);
-						}
-					};
-					if(!modeleExportStudies.getOrthancIds().isEmpty()){
-						worker.execute();
-					}
-				}
-			});
-
-
-			listeAETExport = new JComboBox<Object>(query.getAET());
-			dicomStoreExport = new JButton("Store");
-			dicomStoreExport.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-						@Override
-						protected Void doInBackground() {
-							try {
-								dicomStoreExport.setEnabled(false);
-								dicomStoreExport.setText("Storing...");
-								query.store(listeAETExport.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
-							} catch (IOException e1) {
-								stateExports.setText("<html><font color= 'red'>The request was not received (" + e1.getMessage() + ") </font></html>");
-							}
-							return null;
-						}
-
-						@Override
-						protected void done(){
-							stateExports.setText("<html><font color= 'green'>The request was successfully received</font></html>");
-							dicomStoreExport.setText("Store");
-							dicomStoreExport.setEnabled(true);
-						}
-					};
-					if(!modeleExportStudies.getOrthancIds().isEmpty()){
-						stateExports.setText("Storing data...");
-						worker.execute();
-					}
-				}
-			});
-
-			listePeers = new JComboBox<Object>(query.getPeers());
-			peerExport = new JButton("OrthancPeer");
-			peerExport.addActionListener(new ActionListener() {
-
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-						@Override
-						protected Void doInBackground() {
-							peerExport.setEnabled(false);
-							peerExport.setText("Sending...");
-							boolean sendok=true;
-							try {
-								query.sendPeer(listePeers.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
-							} catch (IOException e1) {
-								sendok=false;
-								stateExports.setText("<html><font color= 'red'>The upload was not received (" + e1.getMessage() + ") </font></html>");
-							}
-							if (sendok) stateExports.setText("<html><font color= 'green'>The upload was successfully received</font></html>");
-							
-							return null;
-						}
-
-						@Override
-						protected void done(){
-							peerExport.setText("OrthancPeer");
-							peerExport.setEnabled(true);
-						}
-					};
-					if(!modeleExportStudies.getOrthancIds().isEmpty()){
-						stateExports.setText("Sending to "+listePeers.getSelectedItem().toString());
-						worker.execute();
-					}
-				}
-			});
-			
-			JPanel exportPanel = new JPanel(new FlowLayout(FlowLayout.CENTER,50,10));
-			exportPanel.add(exportCTP);
-			exportPanel.add(csvReport);
-			exportPanel.add(exportToZip);
-			exportPanel.add(exportBtn);
-
-			JPanel dicomExport=new JPanel();
-			dicomExport.add(listeAETExport);
-			dicomExport.add(dicomStoreExport);
-			
-			JPanel peersExport=new JPanel();
-			peersExport.add(listePeers);
-			peersExport.add(peerExport);
-			
-			exportPanel.add(dicomExport);
-			exportPanel.add(peersExport);
+		JPanel dicomExport=new JPanel();
+		dicomExport.add(listeAETExport);
+		dicomExport.add(dicomStoreExport);
+		
+		JPanel peersExport=new JPanel();
+		peersExport.add(listePeers);
+		peersExport.add(peerExport);
+		
+		exportPanel.add(dicomExport);
+		exportPanel.add(peersExport);
 			
 		JPanel southExport = new JPanel();
 		southExport.setLayout(new BoxLayout(southExport, BoxLayout.PAGE_AXIS));
@@ -2143,13 +1657,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////// PANEL 3 : SETUP ////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		this.bodyCharChoice = Choice.KEEP;
-		this.datesChoice = Choice.KEEP;
-		this.bdChoice = Choice.REPLACE;
-		this.ptChoice = Choice.CLEAR;
-		this.scChoice = Choice.CLEAR;
-		this.descChoice = Choice.CLEAR;
 
 		JPanel mainPanelSetup = new JPanel();
 		mainPanelSetup.setLayout(new BorderLayout());
@@ -2179,7 +1686,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 		gbSetup.gridx = 0;
 		gbSetup.gridy = 1;
-		anonProfiles = new JComboBox<Object>(new String[]{"Default", "Full clearing", "Custom"});
+		anonProfiles = new JComboBox<String>(new String[]{"Default", "Full clearing", "Custom"});
 		anonProfiles.setPreferredSize(new Dimension(100,27));
 		JLabel anonProfilesLabel = new JLabel("Anonymization profile");
 		anonProfilesLabel.setBorder(new EmptyBorder(0, 0, 0, 20));
@@ -2215,8 +1722,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 
 		JRadioButton radioBodyCharac1 = new JRadioButton();
 		JRadioButton radioBodyCharac2 = new JRadioButton();
-		this.bodyCharList[0] = radioBodyCharac1;
-		this.bodyCharList[1] = radioBodyCharac2;
+		this.settingsBodyCharButtons[0] = radioBodyCharac1;
+		this.settingsBodyCharButtons[1] = radioBodyCharac2;
 		bgBodyCharac.add(radioBodyCharac1);
 		gbSetup.gridx = 1;
 		tabSetup.add(radioBodyCharac1, gbSetup);
@@ -2231,8 +1738,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		ButtonGroup bgDates = new ButtonGroup();
 		JRadioButton radioDates1 = new JRadioButton();
 		JRadioButton radioDates2 = new JRadioButton();
-		this.datesList[0] = radioDates1;
-		this.datesList[1] = radioDates2;
+		this.settingDatesButtons[0] = radioDates1;
+		this.settingDatesButtons[1] = radioDates2;
 		bgDates.add(radioDates1);
 		gbSetup.gridx = 1;
 		tabSetup.add(radioDates1, gbSetup);
@@ -2247,8 +1754,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		ButtonGroup bgBd = new ButtonGroup();
 		JRadioButton radioBd1 = new JRadioButton();
 		JRadioButton radioBd2 = new JRadioButton();
-		this.bdList[0] = radioBd1;
-		this.bdList[1] = radioBd2;
+		this.settingsBirthDateButtons[0] = radioBd1;
+		this.settingsBirthDateButtons[1] = radioBd2;
 		bgBd.add(radioBd1);
 		gbSetup.gridx = 1;
 		tabSetup.add(radioBd1, gbSetup);
@@ -2263,8 +1770,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		ButtonGroup bgPt = new ButtonGroup();
 		JRadioButton radioPt1 = new JRadioButton();
 		JRadioButton radioPt2 = new JRadioButton();
-		this.ptList[0] = radioPt1;
-		this.ptList[1] = radioPt2;
+		this.settingsPrivateTagButtons[0] = radioPt1;
+		this.settingsPrivateTagButtons[1] = radioPt2;
 		bgPt.add(radioPt1);
 		gbSetup.gridx = 1;
 		tabSetup.add(radioPt1, gbSetup);
@@ -2279,8 +1786,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		ButtonGroup bgSc = new ButtonGroup();
 		JRadioButton radioSc1 = new JRadioButton();
 		JRadioButton radioSc2 = new JRadioButton();
-		this.scList[0] = radioSc1;
-		this.scList[1] = radioSc2;
+		this.settingsSecondaryCaptureButtons[0] = radioSc1;
+		this.settingsSecondaryCaptureButtons[1] = radioSc2;
 		bgSc.add(radioSc1);
 		gbSetup.gridx = 1;
 		tabSetup.add(radioSc1, gbSetup);
@@ -2295,25 +1802,21 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		ButtonGroup bgDesc = new ButtonGroup();
 		JRadioButton radioDesc1 = new JRadioButton();
 		JRadioButton radioDesc2 = new JRadioButton();
-		this.descList[0] = radioDesc1;
-		this.descList[1] = radioDesc2;
+		this.settingsStudySerieDescriptionButtons[0] = radioDesc1;
+		this.settingsStudySerieDescriptionButtons[1] = radioDesc2;
 		bgDesc.add(radioDesc1);
 		gbSetup.gridx = 1;
 		tabSetup.add(radioDesc1, gbSetup);
 		bgDesc.add(radioDesc2);
 		gbSetup.gridx = 2;
 		tabSetup.add(radioDesc2, gbSetup);
-		
-		
 
 		anonProfiles.addActionListener(
-				new AnonActionProfileListener(anonProfiles, profileLabel, radioBodyCharac1, 
-						radioBodyCharac2, radioDates1, radioDates2, radioBd2, 
-						radioBd1, radioPt1, radioPt2, radioSc1, radioSc2, radioDesc1, radioDesc2));
+				new AnonActionProfileListener(anonProfiles, profileLabel, settingsBodyCharButtons,settingDatesButtons,
+						settingsBirthDateButtons,settingsPrivateTagButtons, settingsSecondaryCaptureButtons,
+						settingsStudySerieDescriptionButtons));
 
 		anonProfiles.setSelectedItem(jprefer.get("profileAnon", "Default"));
-
-		
 
 		JTabbedPane eastSetupPane = new JTabbedPane();
 		eastSetupPane.add("Export setup", eastExport);
@@ -2393,8 +1896,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.exportType.setPreferredSize(new Dimension(140,20));
 		eastExport.add(this.exportType, gbSetup);
 
-
-		
 		//add CTP Panel
 		JLabel address=new JLabel("CTP Address");
 		addressFieldCTP=new JTextField();
@@ -2402,7 +1903,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		addressFieldCTP.setPreferredSize(new Dimension(300,20));
 		addressFieldCTP.setText(jprefer.get("CTPAddress", "http://"));
 		JLabel peerLabel=new JLabel("CTP Peer");
-		listePeersCTP = new JComboBox<Object>(query.getPeers());
+		listePeersCTP = new JComboBox<String>();
+		this.refreshPeers();
 		listePeersCTP.insertItemAt("Choose", 0);
 		if(jprefer.getInt("CTPPeer", 0) <= listePeersCTP.getItemCount()-1) listePeersCTP.setSelectedIndex(jprefer.getInt("CTPPeer", 0));
 		else listePeersCTP.setSelectedIndex(0);
@@ -2411,10 +1913,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		clinicalTrialProcessorGrid.add(peerLabel);
 		clinicalTrialProcessorGrid.add(listePeersCTP);
 		
-		
 		JPanel aboutPanel = new JPanel(new FlowLayout());
 		JButton viewerDistribution = new JButton("Download Viewer Distribution");
-		
 		viewerDistribution.addActionListener(new ActionListener() {
 			
 			@Override
@@ -2423,8 +1923,8 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				chooser.setDialogTitle("Select folder for CD/DVD output");
 				chooser.setSelectedFile(new File("ImageJ.zip"));
 				chooser.setDialogTitle("Dowload Viewer to...");
-				if (! jpreferPerso.get("viewerDistribution", "empty").equals("empty") ) {
-					chooser.setSelectedFile(new File (jpreferPerso.get("viewerDistribution", "empty")));
+				if (! jprefer.get("viewerDistribution", "empty").equals("empty") ) {
+					chooser.setSelectedFile(new File (jprefer.get("viewerDistribution", "empty")));
 				}
 				chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				chooser.setAcceptAllFileFilterUsed(false);
@@ -2447,30 +1947,26 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 						@Override
 						protected void done(){
 							// Enregistre la destination du fichier dans le registery
-							jpreferPerso.put("viewerDistribution", chooser.getSelectedFile().toString());
+							jprefer.put("viewerDistribution", chooser.getSelectedFile().toString());
 							viewerDistribution.setBackground(null);
 						}
 					};
 					worker.execute();
 				}
-				
 
-				}
-				
+			}
 			
 		});
 		
 		//Setup button only for starting outside Fiji
 		JButton setupButton = new JButton("Orthanc HTTP Setup");
-		
 		setupButton.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				ConnectionSetup setup = new ConnectionSetup(runOrthanc);
+				ConnectionSetup setup = new ConnectionSetup(runOrthanc, connexionHttp);
 				setup.setLocationRelativeTo(gui);
 				setup.setVisible(true);
-				connexionHttp=new ParametreConnexionHttp();
+				connexionHttp=new OrthancRestApis(null);
 				if (setup.ok)JOptionPane.showMessageDialog(null,"Restart to take account");
 				
 			}
@@ -2478,8 +1974,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		});
 		
 		JButton jsonEditor = new JButton("Edit Orthanc config");
-		
-		
 		jsonEditor.addActionListener(new ActionListener() {
 
 			@Override
@@ -2493,14 +1987,11 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			
 		});
 		
-		JButton aboutBtn = new JButton("About us");
+		JButton aboutBtn = new JButton("About / Help");
 		aboutBtn.addActionListener(new ActionListener() {
-			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				AboutBoxFrame ab = new AboutBoxFrame();
-				ab.pack();
-				ab.setLocationRelativeTo(gui);
+				AboutBoxFrame ab = new AboutBoxFrame(gui);
 				ab.setVisible(true);
 			}
 		});
@@ -2509,10 +2000,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		aboutPanel.add(setupButton);
 		aboutPanel.add(jsonEditor);
 		aboutPanel.add(aboutBtn);
-		
-		if(!addressFieldCTP.getText().equals("http://")  && !addressFieldCTP.getText().equals("https://") ){
-			queryCTPBtn.setVisible(false);
-		}
 		
 		mainPanelSetup.add(westSetup, BorderLayout.WEST);
 		mainPanelSetup.add(eastSetupPane, BorderLayout.EAST);
@@ -2536,95 +2023,7 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		tabbedPane = new JTabbedPane();
-		tabbedPane.addChangeListener(new ChangeListener() {
-
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				//////////// Filling the user preferences ////////////
-				if(anonProfiles.getSelectedItem().equals("Custom")){
-					for(int i = 0; i < 2; i++){
-						if(bodyCharList[i].isSelected()){
-							if(jprefer.getInt("bodyCharac", 0) != i){
-								jprefer.putInt("bodyCharac", i);
-							}
-						}	
-					}
-					for(int i = 0; i < 2; i++){
-						if(datesList[i].isSelected()){
-							if(jprefer.getInt("Dates", 0) != i){
-								jprefer.putInt("Dates", i);
-							}
-						}
-					}
-					for(int i = 0; i < 2; i++){
-						if(bdList[i].isSelected()){
-							if(jprefer.getInt("BD", 0) != i){
-								jprefer.putInt("BD", i);
-							}
-						}
-					}
-					for(int i = 0; i < 2; i++){
-						if(ptList[i].isSelected()){
-							if(jprefer.getInt("PT", 0) != i){
-								jprefer.putInt("PT", i);
-							}
-						}
-					}
-					for(int i = 0; i < 2; i++){
-						if(scList[i].isSelected()){
-							if(jprefer.getInt("SC", 0) != i){
-								jprefer.putInt("SC", i);
-							}
-						}
-					}
-					for(int i = 0; i < 2; i++){
-						if(descList[i].isSelected()){
-							if(jprefer.getInt("DESC", 0) != i){
-								jprefer.putInt("DESC", i);
-							}
-						}
-					}
-				}
-				jprefer.put("profileAnon", anonProfiles.getSelectedItem().toString());
-				jprefer.put("centerCode", centerCode.getText());
-				jprefer.put("CTPAddress", addressFieldCTP.getText());
-				
-				// Putting the export preferences in the anon plugin registry
-				if(remoteServer.getText() != null){
-					jprefer.put("remoteServer", remoteServer.getText());
-				}
-				if(remotePort.getText() != null){
-					jprefer.put("remotePort", remotePort.getText());
-				}
-				if(servUsername.getText() != null){
-					jprefer.put("servUsername", servUsername.getText());
-				}
-				if(new String(servPassword.getPassword()) != null){
-					jprefer.put("servPassword", new String(servPassword.getPassword()));
-				}
-				if(remoteFilePath.getText() != null){
-					jprefer.put("remoteFilePath", remoteFilePath.getText());
-				}
-				jprefer.put("exportType", exportType.getSelectedItem().toString());
-				
-				if(addressFieldCTP.getText().equals("http://") || addressFieldCTP.getText().equals("https://") || addressFieldCTP.getText().isEmpty()){
-					exportCTP.setVisible(false);
-					queryCTPBtn.setVisible(false);
-				}else {
-					exportCTP.setVisible(true);
-					queryCTPBtn.setVisible(true);
-				}
-				
-				if(remoteServer.getText().length() == 0){
-					exportBtn.setEnabled(false);
-				}else{
-					exportBtn.setEnabled(true);
-				}
-				//Save Peer position
-				jprefer.putInt("CTPPeer", listePeersCTP.getSelectedIndex());
-				pack();
-			}
-		});
+		tabbedPane.addChangeListener(new Tab_Change_Listener(this));
 
 		p1.add(mainPanel);
 		tabbedPane.add("Main", p1);
@@ -2642,14 +2041,19 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		this.setIconImage(image);
 		this.getContentPane().add(tabbedPane);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		this.getRootPane().setDefaultButton(search);
-		this.addWindowListener(new CloseWindowAdapter(this, this.zipContent, this.modeleAnonStudies.getOldOrthancUIDs(), this.modeleExportStudies.getStudiesList(), monitoring, runOrthanc));
+		this.getRootPane().setDefaultButton(searchBtn);
+		this.addWindowListener(new Window_Custom_Listener(this, exportContent, modeleAnonPatients, modeleExportStudies, monitoring, runOrthanc));
 		pack();
-		
+		userInput.requestFocus();
 	}
 	
-	protected void openCloseAnonTool(boolean open) {
+	//private enum panels {Anon,Export,Manage};
+	//private panels currentopenPanel;
+	
+	public void openCloseAnonTool(boolean open) {
+		
 		if (open) {
+			closeAllPanel();
 			oToolRight.setVisible(false);
 			anonTablesPanel.setVisible(true);
 			addToAnon.setVisible(true);
@@ -2658,84 +2062,98 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			displayAnonTool.setText("Close anonymization tool");
 		}
 		else {
-			anonTablesPanel.setVisible(false);
-			addToAnon.setVisible(false);
-			displayAnonTool.setText("Anonymize");
-			displayExportTool.setVisible(true);
-			displayManageTool.setVisible(true);
+			closeAllPanel();
 		}
-		
+		pack();
 	}
 	
-	private void openCloseExportTool(boolean open) {
+	public void openCloseExportTool(boolean open) {
 		if (open) {
+			closeAllPanel();
 			oToolRight.setVisible(true);
 			displayExportTool.setText("Close Export Tool");
 			displayAnonTool.setVisible(false);
 			displayManageTool.setVisible(false);
 		}
 		else {
-			oToolRight.setVisible(false);
-			displayExportTool.setText("Export");
-			displayAnonTool.setVisible(true);
-			displayManageTool.setVisible(true);
+			closeAllPanel();
 		}
+		pack();
 	}
 	
 	private void openCloseManageTool(boolean open) {
 		if (open) {
+			closeAllPanel();
 			oToolRightManage.setVisible(true);
 			displayManageTool.setText("Close Manage Tool");
 			displayAnonTool.setVisible(false);
 			displayExportTool.setVisible(false);
 		}
 		else {
-			oToolRightManage.setVisible(false);
-			displayManageTool.setText("Manage");
-			displayAnonTool.setVisible(true);
-			displayExportTool.setVisible(true);
+			closeAllPanel();
 		}
+		pack();
+	}
+	
+	private void closeAllPanel() {
+		//Hide all panels
+		oToolRightManage.setVisible(false);
+		oToolRight.setVisible(false);
+		anonTablesPanel.setVisible(false);
+		addToAnon.setVisible(false);
+		//reset button to default value
+		displayManageTool.setText("Manage");
+		displayExportTool.setText("Export");
+		displayAnonTool.setText("Anonymize");
+		//Show buttons
+		displayAnonTool.setVisible(true);
+		displayExportTool.setVisible(true);
+		displayManageTool.setVisible(true);
 	}
 	
 	private void enableManageButtons(boolean enable) {
-		if (enable) {
-			addManage.setEnabled(true);
-			removeFromManage.setEnabled(true);
-		}
-		else {
-			addManage.setEnabled(false);
-			removeFromManage.setEnabled(false);
-		}
-		
+		addManage.setEnabled(enable);
+		removeFromManage.setEnabled(enable);
 	}
+	
+	public void activateExport(boolean activate){
+		exportZip.setEnabled(activate);
+		addToZip.setEnabled(activate);
+		removeFromZip.setEnabled(activate);
+		comboToolChooser.setEnabled(activate);
+	}
+	
 	// Ajoute seletion a la tool list
-	private void addToToolList(ArrayList<String> zipContent, JComboBox<Object> zipShownContent, ArrayList<String > zipShownContentList, JLabel zipSize){
+	private void addToToolList(ArrayList<String> zipContent, JComboBox<String> zipShownContent, JLabel zipSize){
 
 		//On recupere la table qui a eu le dernier focus pour la selection
-		JTable tableau =  lastTableFocus;
+		JTable tableau =  lastTableFocusMain;
 		int[] selectedLines=tableau.getSelectedRows();
 		boolean duplicate = false;
 		if(tableau.equals(tableauPatients)){
 			for (int i=0; i<selectedLines.length; i++){
-				String name = "Patient - " + tableauPatients.getValueAt(selectedLines[i], 0).toString();
-				String id = tableauPatients.getValueAt(selectedLines[i], 2).toString();
-				if(!zipContent.contains(id)){
-					zipShownContent.addItem(name);
-					zipShownContentList.add(name);
-					zipContent.add(id);
-				}else{
-					duplicate=true;
-					
-				}
+				Patient selectedPatient = (Patient) tableauPatients.getValueAt(selectedLines[i], 5);
+				ArrayList<Study2> studiesInPatient= selectedPatient.getStudies();
+				
+				for (Study2 study : studiesInPatient) {
+					if(!zipContent.contains(study.getOrthancId())){
+						String name = "Patient - " + tableauPatients.getValueAt(selectedLines[i], 0).toString()+" Study Date "+df.format(study.getDate())+" Desc "+study.getStudyDescription();
+						zipShownContent.addItem(name);
+						zipContent.add(study.getOrthancId());
+					}else{
+						duplicate=true;
+					}
+				}	
 			}
 			
 		}else if(tableau.equals(tableauStudies)){
 			for (int i=0; i<selectedLines.length; i++){
-				String date = "Study - " + df.format(((Date)tableauStudies.getValueAt(selectedLines[i], 0))) + "  " + tableauStudies.getValueAt(selectedLines[i], 1);
+				Study2 selectedStudy=(Study2)tableauStudies.getValueAt(selectedLines[i], 4);
+				
+				String date = "Patient - "+selectedStudy.getPatientName()+" Study - " + df.format(selectedStudy.getDate()) + " Desc " + selectedStudy.getStudyDescription();
 				String id = tableauStudies.getValueAt(selectedLines[i], 3).toString();
 				if(!zipContent.contains(id)){
 					zipShownContent.addItem(date);
-					zipShownContentList.add(date);
 					zipContent.add(id);
 				}else{
 				duplicate=true;
@@ -2749,7 +2167,6 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 				String id = tableauSeries.getValueAt(selectedLines[i], 4).toString();
 				if(!zipContent.contains(id)){
 					zipShownContent.addItem(desc);
-					zipShownContentList.add(desc);
 					zipContent.add(id);
 				}else{
 					duplicate=true;
@@ -2765,15 +2182,38 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 	
 	}
 	
+	/**
+	 * Add studies to export list (for AutoQuery result import)
+	 * @param study
+	 */
+	public void importStudiesInExportList(Study2[] study){
+		//Clear previous list
+		exportShownContent.removeAllItems();
+		exportContent.clear();
+		//Add new studies
+		for (int i=0; i<study.length; i++){
+			String date = "Study - " + df.format(study[i].getDate()) + "  " + study[i].getStudyDescription();
+			String id = study[i].getOrthancId();
+			if(!exportContent.contains(id)){
+				exportShownContent.addItem(date);
+				exportContent.add(id);
+			}
+		}
+	}
+	
+	public void importStudiesInAnonList(Study2[] study) {
+		modeleAnonPatients.clear();
+		for (int i=0; i<study.length; i++){
+			modeleAnonPatients.addStudy(study[i]);
+		}
+		
+	}
+	
 	// remove ligne active a la tool list
-	private void removeFromToolList(ArrayList<String> zipContent, JComboBox<Object> zipShownContent, ArrayList<String> zipShownContentList, JLabel zipSize, JLabel state){
+	private void removeFromToolList(ArrayList<String> zipContent, JComboBox<String> zipShownContent, JLabel zipSize, JLabel state){
 		if(!zipContent.isEmpty()){
 			zipContent.remove(zipShownContent.getSelectedIndex());
-			zipShownContentList.remove(zipShownContent.getSelectedIndex());
-			zipShownContent.removeAllItems();
-			for(String s : zipShownContentList){
-			zipShownContent.addItem(s);
-			}
+			zipShownContent.removeItemAt(zipShownContent.getSelectedIndex());
 			if(zipContent.size() >= 1){
 				zipSize.setText(zipContent.size() + " element(s)");
 			}else{
@@ -2783,243 +2223,12 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 			}
 		}
 	}
-
-	public void actionPerformed(ActionEvent arg0) {
-		anonCount = 0;
-		
-		SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-			int dialogResult=JOptionPane.YES_OPTION;
-			@Override
-			protected Void doInBackground() {
-				//////////// Filling the user preferences ////////////
-				if(anonProfiles.getSelectedItem().equals("Custom")){
-					for(int i = 0; i < 2; i++){
-						if(bodyCharList[i].isSelected()){
-							if(jprefer.getInt("bodyCharac", 0) != i){
-								jprefer.putInt("bodyCharac", i);
-							}
-						}	
-					}
-					for(int i = 0; i < 2; i++){
-						if(datesList[i].isSelected()){
-							if(jprefer.getInt("Dates", 0) != i){
-								jprefer.putInt("Dates", i);
-							}
-						}
-					}
-					for(int i = 0; i < 2; i++){
-						if(bdList[i].isSelected()){
-							if(jprefer.getInt("BD", 0) != i){
-								jprefer.putInt("BD", i);
-							}
-						}
-					}
-					for(int i = 0; i < 2; i++){
-						if(ptList[i].isSelected()){
-							if(jprefer.getInt("PT", 0) != i){
-								jprefer.putInt("PT", i);
-							}
-						}
-					}
-					for(int i = 0; i < 2; i++){
-						if(scList[i].isSelected()){
-							if(jprefer.getInt("SC", 0) != i){
-								jprefer.putInt("SC", i);
-							}
-						}
-					}
-					for(int i = 0; i < 2; i++){
-						if(descList[i].isSelected()){
-							if(jprefer.getInt("DESC", 0) != i){
-								jprefer.putInt("DESC", i);
-							}
-						}
-					}
-				}
-
-				jprefer.put("profileAnon", anonProfiles.getSelectedItem().toString());
-
-				//Disable the anons button during anonymization
-				enableAnonButton(false);
-
-				anonBtn.setText("Anonymizing");
-				// SETTING UP THE CHOICES
-				for(int i = 0; i < 2; i++){
-					if(i == 0){
-						if(bodyCharList[i].isSelected())
-							bodyCharChoice = Choice.KEEP;
-						if(datesList[i].isSelected())
-							datesChoice = Choice.KEEP;
-						if(bdList[i].isSelected())
-							bdChoice = Choice.KEEP;
-						if(ptList[i].isSelected())
-							ptChoice = Choice.KEEP;
-						if(scList[i].isSelected())
-							scChoice = Choice.KEEP;
-						if(descList[i].isSelected())
-							descChoice = Choice.KEEP;
-					}else{
-						if(bodyCharList[i].isSelected())
-							bodyCharChoice = Choice.CLEAR;
-						if(datesList[i].isSelected())
-							datesChoice = Choice.CLEAR;
-						if(bdList[i].isSelected())
-							bdChoice = Choice.REPLACE;
-						if(ptList[i].isSelected())
-							ptChoice = Choice.CLEAR;
-						if(scList[i].isSelected())
-							scChoice = Choice.CLEAR;
-						if(descList[i].isSelected())
-							descChoice = Choice.CLEAR;					
-					}
-				}
-
-				int i = 0;
-				int j = 0;
-				try {
-					
-					if(anonProfiles.getSelectedItem().equals("Full clearing")){
-						if(modeleAnonStudies.getModalities().contains("NM") || 
-								modeleAnonStudies.getModalities().contains("PT")){
-							dialogResult = JOptionPane.showConfirmDialog (gui, 
-									"Full clearing is not recommended for NM or PT modalities."
-											+ "Are you sure you want to anonymize ?",
-											"Warning anonymizing PT/NM",
-											JOptionPane.WARNING_MESSAGE,
-											JOptionPane.YES_NO_OPTION);
-						}
-					}
-					if(modeleAnonStudies.getModalities().contains("US")){
-						JOptionPane.showMessageDialog (gui, 
-								"DICOM files with the US modality may have hard printed informations, "
-										+ "you may want to check your files.",
-										"Warning anonymizing US",
-										JOptionPane.WARNING_MESSAGE);
-					}
-					
-					// Checking if several anonymized patients have the same ID or not
-					boolean similarIDs = false;
-					ArrayList<String> newIDs = new ArrayList<String>();
-					for(int n = 0; n < anonPatientTable.getRowCount(); n++){
-						String newID = modeleAnonPatients.getPatient(anonPatientTable.convertRowIndexToModel(n)).getNewID();
-						if(newID != "" && !newIDs.contains(newID)){
-							newIDs.add(newID);
-						}else if(newIDs.contains(newID)){
-							similarIDs = true;
-						}
-					}
-					if(similarIDs){
-						dialogResult = JOptionPane.showConfirmDialog (gui, 
-								"You have defined 2 or more identical IDs for anonymized patients, which is not recommended."
-										+ " Are you sure you want to anonymize ?",
-										"Warning similar IDs",
-										JOptionPane.WARNING_MESSAGE,
-										JOptionPane.YES_NO_OPTION);
-					}
-					
-					if(dialogResult == JOptionPane.YES_OPTION){
-
-						String substituteName = "A-" + jprefer.get("centerCode", "12345");
-
-						SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmm");
-						String substituteID = "A-" + df.format(new Date());
-
-						for(String patientID : modeleAnonStudies.getPatientIDs()){
-							String newName = modeleAnonPatients.getPatient(anonPatientTable.convertRowIndexToModel(j)).getNewName();
-							String newID = modeleAnonPatients.getPatient(anonPatientTable.convertRowIndexToModel(j)).getNewID();
-							String newStudyID = "";
-							if((newName == null || newName.equals("")) || (newID == null || newID.equals(""))){
-								anonCount++;
-							}
-							if(newName == null || newName.equals("")){
-								newName = substituteName + "^" + anonCount;
-								modeleAnonPatients.setValueAt(newName, anonPatientTable.convertRowIndexToModel(j), 3);
-							}
-
-							if(newID == null || newID.equals("")){
-								newID = substituteID + "^" + anonCount;
-								modeleAnonPatients.setValueAt(newID, anonPatientTable.convertRowIndexToModel(j), 4);
-							}
-
-							for(String uid : modeleAnonStudies.getOldOrthancUIDsWithID(patientID)){
-								String newDesc = modeleAnonStudies.getNewDesc(uid);
-								QueryAnon quAnon;
-								quAnon = new QueryAnon(connexionHttp, bodyCharChoice, datesChoice, bdChoice, ptChoice, scChoice, descChoice, newName, newID, newDesc);
-								quAnon.setQuery();
-								state.setText("<html>Anonymization state - " + (i+1) + "/" + modeleAnonStudies.getStudies().size() + 
-										" <font color='red'> <br>(Do not use the toolbox while the current operation is not done)</font></html>");
-								quAnon.sendQuery("studies", uid);
-								modeleAnonStudies.addNewUid(quAnon.getNewUID());
-								i++;
-								newStudyID = quAnon.getNewUID();
-								//Add anonymized study in export list
-								modeleExportStudies.addStudy(newName, newID, newStudyID);
-							}
-
-							j++;
-						}
-						
-						if(scList[1].isSelected()){
-							modeleAnonStudies.removeScAndSr();
-						}
-						
-						//Empty list
-						modeleAnonStudies.empty();
-						modeleAnonPatients.clear();
-						
-						
-					}
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				} catch (ParseException e) {
-					e.printStackTrace();
-				}
-				return null;
-			}
-
-			@Override
-			protected void done(){
-				
-				//Re-enable anon button
-				enableAnonButton(true);
-				anonBtn.setText("Anonymize");
-				if(dialogResult == JOptionPane.YES_OPTION){
-					state.setText("<html><font color='green'>The data has successfully been anonymized.</font></html>");
-					openCloseAnonTool(false);
-					pack();
-					tabbedPane.setSelectedIndex(1);
-					modeleAnonPatients.clear();
-					modeleAnonStudies.empty();
-					
-				}
-				if(tableauExportStudies.getRowCount() > 0){
-					tableauExportStudies.setRowSelectionInterval(tableauExportStudies.getRowCount() - 1, tableauExportStudies.getRowCount() - 1);
-				}
-				modeleExportSeries.clear();
-				try {
-					if(modeleExportStudies.getRowCount() > 0){
-						String studyID = (String)tableauExportStudies.getValueAt(tableauExportStudies.getSelectedRow(), 5);
-						modeleExportSeries.addSerie(studyID);
-						tableauExportSeries.setRowSelectionInterval(0,0);
-					}
-				} catch (Exception e1) {
-					// IGNORE
-				}
-				//Si foncion a �t� fait avec le CTP on fait l'envoi auto A l'issue de l'anon
-				if(autoSendCTP) {
-					exportCTP.doClick();
-					autoSendCTP=false;
-				}
-				if(anonymizeListener!=null) {
-					anonymizeListener.AnonymizationDone();
-				}
-			}
-		};
-		if(!modeleAnonStudies.getOldOrthancUIDs().isEmpty()){
-				worker.execute();
-		}
-	}
 	
+	public void emptyExportList() {
+		exportShownContent.removeAllItems();
+		exportContent.removeAll(exportContent);
+		exportSizeLabel.setText("empty list");
+	}
 	
 	public void enableAnonButton(boolean enable) {
 		anonBtn.setEnabled(enable);
@@ -3029,30 +2238,168 @@ public class VueAnon extends JFrame implements PlugIn, ActionListener{
 		importCTP.setEnabled(enable);
 	}
 	
+	public void enableReadButton(boolean enable) {
+		btnReadSeries.setEnabled(enable);
+	}
+	
+	public void refreshAets() {
+		String[] aets=connexionHttp.getAET();
+		listeAET.setModel(new DefaultComboBoxModel<String>(aets)) ;
+		listeAETExport.setModel(new DefaultComboBoxModel<String>(aets));
+	}
+	
+	public void refreshPeers() {
+		String[] peers=connexionHttp.getPeers();
+		listePeersCTP.setModel(new DefaultComboBoxModel<String>(peers)) ;
+		listePeers.setModel(new DefaultComboBoxModel<String>(peers));
+	}
+	
 	public void setAnonymizeListener(AnonymizeListener anonymizeListener) {
 		this.anonymizeListener=anonymizeListener;
 	}
 	
-	// LAUNCHERS
-	public static void main(String... args){
-		VueAnon anon=new VueAnon();
-		anon.setLocationRelativeTo(null);
-		anon.setVisible(true);
-		
-		
-	}
-
-	@Override
-	public void run(String string) {
-		setLocationRelativeTo(null);
-		this.setVisible(true);
-		fijiEnvironement=true;
-	}
-
-
-
-
-		
-		
 	
+	private void addPopUpMenuListener(JPopupMenu popupMenu , JTable table) {
+		popupMenu.addPopupMenuListener(new PopupMenuListener() {
+
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        int rowAtPoint = table.rowAtPoint(SwingUtilities.convertPoint(popupMenu, new Point(0, 0), table));
+                        if (rowAtPoint > -1) {
+                        	table.setRowSelectionInterval(rowAtPoint, rowAtPoint);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+            }
+
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
+			}
+        });
+	}
+	
+	//SK A revoir ne MARCHE PAS
+	public static void toogleScRenderer(JTable table, boolean activate, int scColumn) {
+		if(activate) {
+			table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				public Component getTableCellRendererComponent(JTable table,
+						Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+					
+					boolean status = (boolean) table.getModel().getValueAt(row, 3);
+					if (status && !isSelected) {
+						setBackground(Color.RED);
+						setForeground(Color.black);
+					}else if(isSelected){
+						super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+					}else{
+						super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+					}
+					return this;
+				}   
+			});
+			
+		}else {
+			table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer());
+		}
+		
+	}
+	
+	
+	public void setStateMessage(String message, String color, int seconds) {
+		state.setText("<html><font color='"+color+"'>"+message+"</font></html>");
+		if(seconds !=(-1)) {
+			
+			timerState.schedule(new TimerTask() {
+				  @Override
+				  public void run() {
+					  state.setText("");
+				  }
+				}, seconds*1000);
+		}
+		
+	}
+	
+	public void setStateExportMessage(String message, String color, int seconds) {
+		stateExports.setText("<html><font color='"+color+"'>"+message+"</font></html>");
+		if(seconds !=(-1)) {
+			Timer timer=new Timer();
+			timer.schedule(new TimerTask() {
+				  @Override
+				  public void run() {
+					  stateExports.setText("");
+				  }
+				}, seconds*1000);
+		}
+		
+	}
+	
+	public String getComboToolChooserSeletedItem() {
+		return (String) comboToolChooser.getSelectedItem();
+	}
+	 
+	//Getters Setup Tab
+	public String getSelectedAnonProfile() {
+		return (String) anonProfiles.getSelectedItem();
+	}
+	
+	public String getCenterCode() {
+		return centerCode.getText();
+	}
+	
+	public String getCTPaddress() {
+		return addressFieldCTP.getText();
+	}
+	
+	public void setCTPaddress(String address) {
+		addressFieldCTP.setText(address);
+	}
+	
+	public String[] getExportRemoteServer() {
+		String[] remoteServerParameter=new String[6];
+		remoteServerParameter[0]=remoteServer.getText();
+		remoteServerParameter[1]=remotePort.getText();
+		remoteServerParameter[2]=servUsername.getText();
+		remoteServerParameter[3]= new String(servPassword.getPassword());
+		remoteServerParameter[4]= remoteFilePath.getText();
+		remoteServerParameter[5]= exportType.getSelectedItem().toString();
+		
+		return remoteServerParameter;
+	}
+	
+	public void showRemoteExportBtn(boolean show) {
+		exportBtn.setVisible(show);
+		exportBtn.setVisible(show);
+	}
+	
+	public String getExportRemotePort() {
+		return remotePort.getText();
+	}
+	
+	public void showCTPButtons(boolean show) {
+		exportCTP.setVisible(show);
+		queryCTPBtn.setVisible(show);
+	}
+	
+	public OrthancRestApis getOrthancApisConnexion() {
+		return connexionHttp;
+	}
+	
+	public JButton getSearchButton() {
+		return searchBtn;
+	}
+	
+	public QueryOrthancData getOrthancQuery() {
+		return queryOrthanc;
+	}
+
 }

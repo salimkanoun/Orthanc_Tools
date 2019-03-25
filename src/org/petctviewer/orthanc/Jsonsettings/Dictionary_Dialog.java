@@ -16,20 +16,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
-import org.json.simple.JSONArray;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 @SuppressWarnings("serial")
 public class Dictionary_Dialog extends JDialog {
@@ -37,19 +37,6 @@ public class Dictionary_Dialog extends JDialog {
 	private final JPanel contentPanel = new JPanel();
 	private JTable table;
 	private DefaultTableModel model;
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			Dictionary_Dialog dialog = new Dictionary_Dialog(new Json_Settings());
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 	/**
 	 * Create the dialog.
@@ -70,7 +57,7 @@ public class Dictionary_Dialog extends JDialog {
 				String[] indexDictionary=new String[settings.dictionary.size()];
 				settings.dictionary.keySet().toArray(indexDictionary);
 				for (int i=0 ; i<indexDictionary.length; i++){
-					JSONArray dictionaire=settings.dictionary.get(indexDictionary[i]);
+					JsonArray dictionaire=settings.dictionary.get(indexDictionary[i]).getAsJsonArray();
 					model.addRow(new Object[]{"Name","Nickname", "VR", "Min", "Maximum", "Private Creator"});
 					table.setValueAt(indexDictionary[i], i, 0);
 					table.setValueAt(dictionaire.get(0).toString(), i, 1);
@@ -137,7 +124,7 @@ public class Dictionary_Dialog extends JDialog {
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						//On efface le dictionnaire existant avant de le re creer
-						settings.dictionary.clear();
+						settings.dictionary=new JsonObject();
 						for (int i=0; i<table.getRowCount();i++){
 							settings.addDictionary(table.getValueAt(i, 0).toString(), table.getValueAt(i, 1).toString(),table.getValueAt(i, 2).toString(), Integer.parseInt(table.getValueAt(i, 3).toString()), Integer.parseInt(table.getValueAt(i, 4).toString()), table.getValueAt(i, 5).toString());
 						}

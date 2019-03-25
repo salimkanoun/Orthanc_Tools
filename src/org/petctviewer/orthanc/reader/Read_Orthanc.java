@@ -1,18 +1,18 @@
 package org.petctviewer.orthanc.reader;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.petctviewer.orthanc.ParametreConnexionHttp;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -21,64 +21,132 @@ import ij.measure.Calibration;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
+import ij.util.DicomTools;
 
-
+/**
+ * Read a DICOM serie and return it in an ImagePlus
+ * @author kanoun_s
+ *
+ */
 public class Read_Orthanc {
 	
-	JSONParser parser=new JSONParser();
-	ParametreConnexionHttp connexion;
+	private JsonParser parser=new JsonParser();
+	private OrthancRestApis connexion;
 	
-	public Read_Orthanc(ParametreConnexionHttp connexion) {
+	public Read_Orthanc(OrthancRestApis connexion) {
 		this.connexion=connexion;
-		
+	}
+	
+	private int getFrameNumber(String instanceID) {
+		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/instances/"+instanceID+"/frames/");
+		JsonArray nbframe=parser.parse(sb.toString()).getAsJsonArray();
+		return nbframe.size();
 	}
 	
 	public ImagePlus readSerie(String uuid) {
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/series/"+uuid);
-		JSONObject seriesDetails = null;
-		try {
-			seriesDetails=(JSONObject)parser.parse(sb.toString());
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		JsonObject seriesDetails=parser.parse(sb.toString()).getAsJsonObject();
+		JsonArray instanceIDList=seriesDetails.get("Instances").getAsJsonArray();
+		
+		boolean screenCapture=false;
+		int nbFrameInInstance = 0;
 		ImageStack stack = null;
 		
-		JSONArray instanceIDList=(JSONArray) seriesDetails.get("Instances");
-		boolean screenCapture=false;
 		for(int i=0 ; i<instanceIDList.size(); i++) {
-			
+
+			String instanceID= instanceIDList.get(i).getAsString();
+			String metadata = this.extractDicomInfo(instanceID);
+			//end;
+
 			if(i==0) {
-				StringBuilder sop=connexion.makeGetConnectionAndStringBuilder("/instances/"+instanceIDList.get(i)+"/metadata/SopClassUid");
+				StringBuilder sop=connexion.makeGetConnectionAndStringBuilder("/instances/"+instanceID+"/metadata/SopClassUid");
+				nbFrameInInstance=getFrameNumber(instanceIDList.get(i).getAsString());
 				//If it is a screen capture change the boolean
 				if(sop.toString().startsWith("1.2.840.10008.5.1.4.1.1.7")) screenCapture=true;
+				if(sop.toString().equals("1.2.840.10008.5.1.4.1.1.6.1")) screenCapture=true;
 			}
 			
-			ImageProcessor ip=readCompressed(instanceIDList.get(i).toString(), screenCapture);
-			String metadata = "Compressed \n" + this.extractDicomInfo(instanceIDList.get(i).toString());
-			
-			if(i==0) {
+			if(nbFrameInInstance==1) {
+				ImageProcessor ip=readInstance(instanceID, screenCapture);
+				if(i==0) {
+					stack= new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
+				}
 				
+				stack.addSlice(metadata, ip);
+				
+				IJ.showStatus("Reading");
+				IJ.showProgress((double) (i+1)/instanceIDList.size());
+			} else {
+				ImagePlus imp=readMultiFrameImage(instanceIDList.get(i).getAsString(), nbFrameInInstance, metadata, screenCapture);
+				return imp;
+			}
+			
+			//end
+			
+		}
+		
+		ImagePlus imp=generateFinalImagePlus(stack);
+		return imp;
+		
+		
+		
+	}
+	
+	private ImagePlus readMultiFrameImage(String instanceID, int nbFrameInInstance, String metadata, boolean sc) {
+		ImageStack stack = null;
+		for(int i=0; i<nbFrameInInstance; i++) {
+			ImageProcessor ip=readFrameInInstance(instanceID, i,sc );
+			if(i==0) {
 				stack= new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
 			}
-
-
 			stack.addSlice(metadata, ip);
-			
-			IJ.showProgress((double) i+1/instanceIDList.size());
+			IJ.showStatus("Reading");
+			IJ.showProgress((double) (i+1)/nbFrameInInstance);
 		}
+		
+		ImagePlus imp=generateFinalImagePlus(stack);
+		return imp;
+	}
+	
+	private ImagePlus generateFinalImagePlus(ImageStack stack) {
+		
 		ImagePlus imp=new ImagePlus();
 		imp.setStack(stack);
-		updateCalibration(imp);
-		imp.show();
-		return imp;
+		
+		ImageStack stackSorted=this.sortStack(imp);
+		imp.close();
+		ImagePlus imp2=new ImagePlus();
+		imp2.setStack(stackSorted);
+		updateCalibration(imp2);
+		imp2.setProperty("Info", imp2.getStack().getSliceLabel(1));
+		
+		//Parse Metadata to create Title
+		String patientName="";
+		if(getDicomValue(imp2.getInfoProperty(), "0010,0010")!=null) {
+			patientName=getDicomValue(imp2.getInfoProperty(), "0010,0010");
+		}
+		
+		String studyDate="";
+		if(getDicomValue(imp2.getInfoProperty(), "0008,0022")!=null) {
+			studyDate=getDicomValue(imp2.getInfoProperty(), "0008,0022");
+		}else if(getDicomValue(imp2.getInfoProperty(), "0008,0020")!=null){
+			studyDate=getDicomValue(imp2.getInfoProperty(), "0008,0020");
+		}
+		
+		String serieDescription="";
+		if(getDicomValue(imp2.getInfoProperty(), "0008,103E")!=null) {
+			serieDescription=getDicomValue(imp2.getInfoProperty(), "0008,103E");
+		}
+		
+		imp2.setTitle(patientName+"-"+studyDate+"-"+serieDescription);
+		
+		return imp2;
 		
 	}
 
-	private ImageProcessor readCompressed(String uuid, boolean SC ) {
+	private ImageProcessor readInstance(String uuid, boolean SC ) {
 		ImageProcessor slice=null;
 		try {
-			
 			String uri=null;
 			if(SC) {
 				uri = "/instances/" + uuid +  "/preview";
@@ -99,32 +167,45 @@ public class Read_Orthanc {
 		
 	}
 	
+	private ImageProcessor readFrameInInstance(String uuid, int frameNb, boolean SC ) {
+		ImageProcessor slice=null;
+		try {
+			String uri=null;
+			if(SC) {
+				uri = "/instances/" + uuid +"/frames/" +frameNb+"/preview";
+			}else {
+				uri = "/instances/" + uuid +"/frames/"+frameNb+"/image-uint16";
+
+			}
+			
+			BufferedImage bi = ImageIO.read( connexion.openImage(uri));
+		
+			if(SC) slice = new ColorProcessor(bi);
+			else slice = new ShortProcessor(bi);
+
+			
+		} catch (Exception e) { e.printStackTrace();}
+		
+		return slice;
+		
+	}
+	
 	private String extractDicomInfo(String uuid) {
 		StringBuilder sb=connexion.makeGetConnectionAndStringBuilder("/instances/" + uuid + "/tags");
-		
-		JSONObject tags=null;
-		try {
-			tags = (JSONObject) parser.parse(sb.toString());
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (tags == null || tags.isEmpty()) return "";
+		JsonObject tags = parser.parse(sb.toString()).getAsJsonObject();
+		if (tags == null || tags.size()==0) return "";
 		String info = new String();
 		String type1;
 
-		ArrayList<String> tagsIndex = new ArrayList<String>();
-		for (Object tag : tags.keySet()) {
-			tagsIndex.add((String) tag);
-		}
+		String[] tagsIndex=tags.keySet().toArray(new String[0]);
+		Arrays.sort(tagsIndex);
 
-		Collections.sort(tagsIndex);
 		for (String tag : tagsIndex) {
-			JSONObject value = (JSONObject) tags.get(tag);
-			type1 = (String) value.get("Type");
+			JsonObject value = (JsonObject) tags.get(tag);
+			type1 = value.get("Type").getAsString();
 			if (type1.equals("String")) {
-				info += (tag + " " + (String) value.get("Name")
-					+ ": " + (String) value.get("Value") + "\n");
+				info += (tag + " " + value.get("Name").getAsString()
+					+ ": " + value.get("Value").getAsString() + "\n");
 			} else {
 				if( type1.equals("Sequence")) {
 					info = addSequence(info, value, tag);
@@ -136,30 +217,26 @@ public class Read_Orthanc {
 	
 	private int seqDepth = 0;
 	
-	private String addSequence(String info0, JSONObject value, Object tag) {
+	private String addSequence(String info0, JsonObject value, Object tag) {
 		String type2, info = info0;
-		JSONArray seq0;
-		JSONObject seqVal, vals;
-		seq0 = (JSONArray)value.get("Value");
-		if( seq0 == null || seq0.isEmpty()) {
+		JsonObject seqVal, vals;
+		JsonArray seq0 = value.get("Value").getAsJsonArray();
+		if( seq0 == null || seq0.size()==0) {
 			return info;	// ignore empty sequences
 		}
-		info += tag + getIndent() + (String) value.get("Name") +"\n";
+		info += tag + getIndent() + value.get("Name").getAsString() +"\n";
 		seqDepth++;
-		seqVal = (JSONObject) seq0.get(0);
+		seqVal = seq0.get(0).getAsJsonObject();
 
-		ArrayList<String> tagsIndex = new ArrayList<String>();
-		for( Object tag0 : seqVal.keySet()) {
-			tagsIndex.add((String) tag0);
-		}
-		Collections.sort(tagsIndex);
+		String[] tagsIndex=seqVal.keySet().toArray(new String[0]);
+		Arrays.sort(tagsIndex);
 
-		for( Object tag1 : tagsIndex) {
-			vals = (JSONObject) seqVal.get(tag1);
-			type2 = (String) vals.get("Type");
+		for(String tag1 : tagsIndex) {
+			vals = seqVal.get(tag1).getAsJsonObject();
+			type2 = vals.get("Type").getAsString();
 			if( type2.equals("String")) {
-				info += tag1 + getIndent() + (String) vals.get("Name")
-					+ ": " + (String) vals.get("Value")+ "\n";
+				info += tag1 + getIndent() + vals.get("Name").getAsString()
+					+ ": " + vals.get("Value").getAsString()+ "\n";
 			} else {
 				if(type2.equals("Sequence")) {
 					info = addSequence(info, vals, tag1);
@@ -194,8 +271,6 @@ public class Read_Orthanc {
 		img.getCalibration().pixelWidth = spacing[0];
 		img.getCalibration().pixelHeight = spacing[1];
 		img.getCalibration().setUnit("mm");
-		
-		img.setTitle(getDicomValue(meta, "0010,0010")+"-"+getDicomValue(meta, "0008,0022")+"-"+getDicomValue(meta, "0008,0103E"));
 	}
 	
 	private String getDicomValue( String meta, String key1) {
@@ -249,6 +324,46 @@ public class Read_Orthanc {
 		}
 		
 		return ret1;
+	}
+	
+	/**
+	 * Sort stack according to ImageNumber
+	 * In uparseable ImageNumber or non labelled image in stack, return the orignal stack without change
+	 * @param imp : Original Image plus
+	 * @return ImageStack : New ordered stack image by ImageNumber
+	 */
+	private ImageStack sortStack(ImagePlus imp) {
+		
+		ImageStack stack2 = new ImageStack(imp.getWidth(), imp.getHeight(), imp.getStack().getColorModel());
+		
+		HashMap<Integer,Integer> sliceMap=new HashMap<Integer,Integer>();
+		
+		for(int i=1; i<=imp.getImageStackSize(); i++) {
+			
+			try {
+				imp.setSlice(i);
+				String imageNumber=DicomTools.getTag(imp, "0020,0013").trim();
+				sliceMap.put(Integer.parseInt(imageNumber), i);	
+			
+			}catch(Exception e1){
+				//If parse error of slice number return the original stack
+				return imp.getStack();
+			}
+		}
+		
+		//Check that the number of parsed image number is matching the number of slice
+		if(sliceMap.size() ==imp.getStackSize()) {
+			for(int i=1; i<=imp.getStackSize(); i++){
+				int sliceToadd=sliceMap.get(i);
+				stack2.addSlice(imp.getStack().getSliceLabel(sliceToadd),imp.getStack().getProcessor(sliceToadd));	
+			}
+		//Else return original stack	
+		}else {
+			return imp.getStack();
+		}
+		
+		
+		return stack2;
 	}
 
 }

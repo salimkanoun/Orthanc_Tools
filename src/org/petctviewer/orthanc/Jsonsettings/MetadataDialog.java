@@ -16,20 +16,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
-import org.json.simple.JSONArray;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+import com.google.gson.JsonArray;
 
 @SuppressWarnings("serial")
 public class MetadataDialog extends JDialog {
@@ -39,22 +38,8 @@ public class MetadataDialog extends JDialog {
 	private DefaultTableModel model;
 
 	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			MetadataDialog dialog = new MetadataDialog(new Json_Settings());
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
 	 * Create the dialog.
 	 */
-	@SuppressWarnings("unchecked")
 	public MetadataDialog(Json_Settings settings) {
 		setModal(true);
 		setBounds(100, 100, 450, 300);
@@ -75,7 +60,7 @@ public class MetadataDialog extends JDialog {
 					String[] metadata=new String[settings.userMetadata.size()];
 					settings.userMetadata.keySet().toArray(metadata);
 					for (int i=0; i<metadata.length; i++){
-						JSONArray meta=(JSONArray) settings.userMetadata.get(metadata[i]);
+						JsonArray meta=settings.userMetadata.get(metadata[i]).getAsJsonArray();
 						model.addRow(new String[] {"Name","0"});
 						table.setValueAt(metadata[i], i, 0);
 						table.setValueAt(meta.get(0), i, 1);

@@ -24,6 +24,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+
+import com.google.gson.JsonObject;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
@@ -35,22 +38,8 @@ public class UserDialog extends JDialog {
 	private DefaultTableModel model;
 
 	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			UserDialog dialog = new UserDialog(new Json_Settings());
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
 	 * Create the dialog.
 	 */
-	@SuppressWarnings("unchecked")
 	public UserDialog(Json_Settings settings) {
 		setModal(true);
 		setBounds(100, 100, 450, 300);
@@ -108,7 +97,7 @@ public class UserDialog extends JDialog {
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						//On vide les anciens users
-						settings.users.clear();
+						settings.users=new JsonObject();
 						
 						for (int i=0; i<table.getRowCount() ; i++){
 							//On ajoute les users un a un
