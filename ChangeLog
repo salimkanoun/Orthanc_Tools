@@ -1,4 +1,7 @@
 Pending Change for next Release
+
+
+Version 1.5 - 25/03/2019
 - Big refactoring, better efficiency
 - Warning : Due to refactoring your previous settings will be lost (server address...) you will have to re-set them.
 - Search made at the study level (more specific search in Orthanc with study description, modalities filters)
