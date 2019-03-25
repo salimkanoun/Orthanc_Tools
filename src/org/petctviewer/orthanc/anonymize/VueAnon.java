@@ -1987,7 +1987,7 @@ public class VueAnon extends JFrame {
 			
 		});
 		
-		JButton aboutBtn = new JButton("About us");
+		JButton aboutBtn = new JButton("About / Help");
 		aboutBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

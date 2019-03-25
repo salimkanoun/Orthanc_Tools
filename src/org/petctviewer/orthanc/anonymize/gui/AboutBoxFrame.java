@@ -19,6 +19,7 @@ package org.petctviewer.orthanc.anonymize.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.GridLayout;
 import java.awt.Image;
 
@@ -30,6 +31,12 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.Font;
+import javax.swing.JButton;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.awt.event.ActionEvent;
 
 public class AboutBoxFrame extends JDialog{
 
@@ -88,9 +95,49 @@ public class AboutBoxFrame extends JDialog{
 		JLabel orthancSite = new JLabel("<html><i>Based on Orthanc :  http://www.orthanc-server.com</i></html>");
 		panel_north.add(orthancSite);
 		orthancSite.setBorder(new EmptyBorder(3, 100, 3, 100));
+		
+		JPanel panel = new JPanel();
+		mainPanel.add(panel, BorderLayout.SOUTH);
+		
+		JButton btnYouTubeChanel = new JButton("You Tube Chanel");
+		btnYouTubeChanel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				 try {
+					open(new URI("https://www.youtube.com/watch?v=cCvDfanQWCw&list=PLlWfh5HNr8mIK3sAe03qY8ynS569sHnGm"));
+				} catch (URISyntaxException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		JLabel lblHelp = new JLabel("Help :");
+		panel.add(lblHelp);
+		panel.add(btnYouTubeChanel);
+		
+		JButton btnDocumentation = new JButton("Documentation");
+		btnDocumentation.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					open(new URI("https://github.com/salimkanoun/Orthanc_Tools/blob/master/Orthanc_Tools_Documentation.pdf"));
+				} catch (URISyntaxException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		panel.add(btnDocumentation);
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		pack();
 		setLocationRelativeTo(gui);
 	}
+	
+	private static void open(URI uri) {
+	    if (Desktop.isDesktopSupported()) {
+	      try {
+	        Desktop.getDesktop().browse(uri);
+	      } catch (IOException e) { /* TODO: error handling */ }
+	    } else { /* TODO: error handling */ }
+	  }
 	
 }
