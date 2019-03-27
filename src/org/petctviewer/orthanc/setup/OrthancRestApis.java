@@ -409,6 +409,43 @@ public class OrthancRestApis {
 		}
 	}
 	
+	/**
+	 * Send the data through transfer accelerator and return the JobID to monitor progress
+	 * in /jobs/ID
+	 * @param peer
+	 * @param idList
+	 * @return
+	 */
+	public String sendStudiesToPeerAccelerator(String peer, ArrayList<String> idList) {
+		JsonObject request=new JsonObject();
+		request.addProperty("Compression", "gzip");
+		request.addProperty("Peer", peer);
+		
+		JsonArray ressources=new JsonArray();
+		for(String id:idList) {
+			JsonObject studyToSend=new JsonObject();
+			studyToSend.addProperty("Level", "Study");
+			studyToSend.addProperty("ID", id);
+			ressources.add(studyToSend);
+		}
+		request.add("Resources", ressources);
+		
+		StringBuilder sb=makePostConnectionAndStringBuilder("/transfers/send", request.toString());
+		
+		JsonObject answer=this.parser.parse(sb.toString()).getAsJsonObject();
+		String jobId=answer.get("ID").getAsString();
+		
+		return jobId;
+		
+	}
+	
+	public static void main(String[] arg) {
+		OrthancRestApis apis=new OrthancRestApis(null);
+		ArrayList<String> idList = new ArrayList<String>();
+		idList.add("96ab96e0-d7df8f2f-3b50ae6d-55fb9aef-42732200");
+		apis.sendStudiesToPeerAccelerator("NewCTP", idList);
+	}
+	
 	public boolean isConnected() {
 		return connected;
 	}

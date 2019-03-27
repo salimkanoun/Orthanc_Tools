@@ -1449,6 +1449,7 @@ public class VueAnon extends JFrame {
 						exportCTP.setEnabled(false);
 						sendOk=connexionHttp.sendToPeer(listePeersCTP.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
 						
+						
 						if (sendOk) {
 							setStateExportMessage("Step 2/3 : Validating upload", "red", -1);
 							//Create CTP object to manage CTP communication
