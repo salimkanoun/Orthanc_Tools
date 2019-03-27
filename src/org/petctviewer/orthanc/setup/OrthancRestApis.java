@@ -429,8 +429,8 @@ public class OrthancRestApis {
 			ressources.add(studyToSend);
 		}
 		request.add("Resources", ressources);
-		
-		StringBuilder sb=makePostConnectionAndStringBuilder("/transfers/send", request.toString());
+		System.out.println(request);
+		StringBuilder sb=makePostConnectionAndStringBuilder("/transfers/send/", request.toString());
 		
 		JsonObject answer=this.parser.parse(sb.toString()).getAsJsonObject();
 		String jobId=answer.get("ID").getAsString();

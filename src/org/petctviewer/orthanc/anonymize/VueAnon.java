@@ -106,6 +106,7 @@ import org.petctviewer.orthanc.export.ExportZip;
 import org.petctviewer.orthanc.export.SendFilesToRemote;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.modify.Modify;
+import org.petctviewer.orthanc.monitoring.Job_Monitoring;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.VueQuery;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
@@ -1431,6 +1432,94 @@ public class VueAnon extends JFrame {
 		csvReport = new JButton("CSV Report");
 		csvReport.addActionListener(new Controller_Csv_Btn(modeleExportStudies, this));
 		
+		JButton exportCTPAccelerator=new JButton("OTPAcc");
+		exportCTPAccelerator.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				
+					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+						
+					boolean validateOk=false;
+					
+					@Override
+					protected Void doInBackground() throws InterruptedException {
+						//Send DICOM to CTP selected Peer
+						exportCTP.setEnabled(false);
+						String jobID=connexionHttp.sendStudiesToPeerAccelerator(listePeersCTP.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
+						Job_Monitoring jobMonitoring=new Job_Monitoring(connexionHttp, jobID);
+						
+						do {
+							setStateExportMessage("Step 1/3 Sending to CTP Peer : Progress "+jobMonitoring.getProgress()+" %", "orange", -1);
+							Thread.sleep(2000);
+						} while (jobMonitoring.isRunning() );
+						
+						if(jobMonitoring.getState().equals("Success")) {
+							validateUpload();
+						}else if(jobMonitoring.getState().equals("Failure")) {
+							setStateExportMessage("Send Failed", "red", -1);
+							return null;
+							
+						}
+
+						//If everything OK, says validated and remove anonymized studies from local
+						if(validateOk) {
+							setStateExportMessage("Step 3/3 : Deleting local study", "red", -1);
+							for(Study2 study : modeleExportStudies.getAnonymizedStudy2Object()){
+								//deleted anonymized and sent study
+								connexionHttp.makeDeleteConnection("/studies/"+study.getOrthancId());
+							}
+							// empty the export table
+							modeleExportStudies.clear();
+							modeleExportSeries.clear();
+						}
+						
+						
+						return null;
+					}
+			
+					private void validateUpload() {
+						setStateExportMessage("Step 2/3 : Validating upload", "red", -1);
+						//Create CTP object to manage CTP communication
+						OTP ctp=new OTP(CTPUsername, CTPPassword, addressFieldCTP.getText());
+						//Create the JSON to send
+						JsonArray sentStudiesArray=new JsonArray();
+						//For each study populate the array with studies details of send process
+						for(Study2 study : modeleExportStudies.getAnonymizedStudy2Object()){
+							study.storeStudyStatistics(queryOrthanc);
+							//Creat Object to send to OTP
+							JsonObject studyObject=new JsonObject();
+							studyObject.addProperty("visitName", study.getStudyDescription());
+							studyObject.addProperty("StudyInstanceUID", study.getStudyInstanceUid());
+							studyObject.addProperty("patientNumber", study.getPatientName());
+							studyObject.addProperty("instanceNumber", study.getStatNbInstance());
+							sentStudiesArray.add(studyObject);
+
+						}
+						validateOk=ctp.validateUpload(sentStudiesArray);
+						if (validateOk) {
+							setStateExportMessage("CTP Export Done", "green", -1);
+						}else {
+							setStateExportMessage("Validation Failed", "red", -1);
+						}
+						
+					}
+					@Override
+					protected void done(){
+						exportCTP.setEnabled(true);
+						
+					}
+				};
+				
+				if(!modeleExportStudies.getOrthancIds().isEmpty()){
+					worker.execute();
+				}
+				// TODO Auto-generated method stub
+				
+			}
+			
+		});
+		
 		exportCTP = new JButton("OTP");
 		exportCTP.addActionListener(new ActionListener() {
 
@@ -1626,6 +1715,7 @@ public class VueAnon extends JFrame {
 		
 		JPanel exportPanel = new JPanel(new FlowLayout(FlowLayout.CENTER,50,10));
 		exportPanel.add(exportCTP);
+		exportPanel.add(exportCTPAccelerator);
 		exportPanel.add(csvReport);
 		exportPanel.add(exportToZip);
 		exportPanel.add(exportBtn);
