@@ -227,7 +227,7 @@
   // The list of the known Orthanc peers
   "OrthancPeers" : {
   
-  "Lysarc"  : [ "http://orthanc.kanoun.fr:80/", "salim", "salim" ]
+  "Lysarc"  : [ "https://orthanc.petctviewer.com:443/", "salim", "salim" ]
     /**
      * Each line gives the base URL of an Orthanc peer, possibly
      * followed by the username/password pair (if the password
