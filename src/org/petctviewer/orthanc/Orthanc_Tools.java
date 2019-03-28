@@ -45,15 +45,11 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 //Tester envoie DICOM plateforme
 //Debeuger sortie reste des thread non collectes=> Tracker update de ImageJ
 
-//AutoQuery doc a refaire : 
-//Valeur global au click
-//Interface resultats
-//recurrent query 
-
 //+Tard
 //Faire detection des SC dans table export Series comme sur main Tab
 //Faire item listener dans query pour repondre au changement clavier comme main tab
 //Envoi manuel de cd/dvd ?
+//Job monitoring pour toutes les operation longue
 
 //Idee refactor 
 //sortir panel modalities dans un objet a part
