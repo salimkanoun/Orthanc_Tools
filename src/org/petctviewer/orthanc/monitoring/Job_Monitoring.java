@@ -18,7 +18,12 @@ public class Job_Monitoring {
 	private String errorDescription;
 	private JsonParser parser;
 	
-	
+	/**
+	 * Monitor a job (defined by its ID), store the progress/status data in it
+	 * Once job finish the monitoring thread is automatically stoped
+	 * @param orthancApis
+	 * @param jobID
+	 */
 	public Job_Monitoring(OrthancRestApis orthancApis, String jobID) {
 		
 		parser=new JsonParser();
@@ -42,19 +47,13 @@ public class Job_Monitoring {
 					stopJobMonitoring();
 				}
 				
-				System.out.println(state);
-				System.out.println(progress);
-				
-				
-
-				
 			}	
 		};
 		
         //running timer task as daemon thread
         timer = new Timer(true);
         //each 2 seconds
-        timer.scheduleAtFixedRate(timerTask, 0, (2*1000) );
+        timer.scheduleAtFixedRate(timerTask, 0, (1000) );
 	}
 	
 	public void stopJobMonitoring() {

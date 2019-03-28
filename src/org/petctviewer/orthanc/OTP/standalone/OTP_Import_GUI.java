@@ -40,9 +40,9 @@ public class OTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 		peerExport.setVisible(false);
 		csvReport.setVisible(false);
 		exportToZip.setVisible(false);
-		exportBtn.setVisible(false);
+		exportRemoteBtn.setVisible(false);
 		dicomStoreExport.setVisible(false);
-		exportCTP.setText("Send");
+		getExportCTPbtn().setText("Send");
 		
 		listePeers.setVisible(false);
 		listeAETExport.setVisible(false);

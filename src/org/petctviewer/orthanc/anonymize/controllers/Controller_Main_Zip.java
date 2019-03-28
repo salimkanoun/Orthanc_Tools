@@ -15,12 +15,12 @@ import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.export.ExportZip;
 import org.petctviewer.orthanc.export.ExportZipAndViewer;
 
-public class Controller_Export_Zip implements ActionListener {
+public class Controller_Main_Zip implements ActionListener {
 
 	private VueAnon vue;
 	private DateFormat dfZip = new SimpleDateFormat("MM_dd_yyyy_HHmmss");
 	
-	public Controller_Export_Zip(VueAnon vue) {
+	public Controller_Main_Zip(VueAnon vue) {
 		this.vue=vue;
 	}
 	

@@ -14,11 +14,11 @@ import org.petctviewer.orthanc.reader.Read_Orthanc;
 
 import ij.ImagePlus;
 
-public class Controller_Read_Series implements ActionListener {
+public class Controller_Main_Read_Series implements ActionListener {
 	
 	private VueAnon vue;
 	
-	public Controller_Read_Series(VueAnon vue) {
+	public Controller_Main_Read_Series(VueAnon vue) {
 		this.vue=vue;
 	}
 

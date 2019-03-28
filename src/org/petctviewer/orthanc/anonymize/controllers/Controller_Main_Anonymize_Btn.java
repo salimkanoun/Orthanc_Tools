@@ -22,12 +22,13 @@ import org.petctviewer.orthanc.anonymize.datastorage.Study_Anonymized;
 import org.petctviewer.orthanc.anonymize.datastorage.Tags.Choice;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
-public class Controller_Anonymize_Btn implements ActionListener {
+public class Controller_Main_Anonymize_Btn implements ActionListener {
 	
 	private VueAnon vue;
 	private int anonCount;
 	private QueryOrthancData queryOrthanc;
-	public Controller_Anonymize_Btn(VueAnon vue, OrthancRestApis connexion) {
+	
+	public Controller_Main_Anonymize_Btn(VueAnon vue, OrthancRestApis connexion) {
 		this.vue=vue;
 		queryOrthanc=new QueryOrthancData(connexion);
 	}
@@ -100,7 +101,7 @@ public class Controller_Anonymize_Btn implements ActionListener {
 					
 					//Si fonction a ete fait avec le CTP on fait l'envoi auto A l'issue de l'anon
 					if(vue.autoSendCTP) {
-						vue.exportCTP.doClick();
+						vue.getExportCTPbtn().doClick();
 						vue.autoSendCTP=false;
 					}
 					
@@ -229,7 +230,6 @@ public class Controller_Anonymize_Btn implements ActionListener {
 				}
 				
 			}
-			
 			
 		};
 		//Sk Avant de Lancer faire check Modalites

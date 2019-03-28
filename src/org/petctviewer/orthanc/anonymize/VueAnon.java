@@ -79,13 +79,14 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.petctviewer.orthanc.Orthanc_Tools;
 import org.petctviewer.orthanc.Jsonsettings.SettingsGUI;
-import org.petctviewer.orthanc.OTP.OTP;
 import org.petctviewer.orthanc.OTP.OTP_Gui;
-import org.petctviewer.orthanc.anonymize.controllers.Controller_Anonymize_Btn;
-import org.petctviewer.orthanc.anonymize.controllers.Controller_Csv_Btn;
-import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_Zip;
-import org.petctviewer.orthanc.anonymize.controllers.Controller_Read_Series;
-import org.petctviewer.orthanc.anonymize.controllers.DeleteActionMainPanel;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_Remote_Btn;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Main_Anonymize_Btn;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_Csv_Btn;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_OTP;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Main_Zip;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Main_Read_Series;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Main_Delete;
 import org.petctviewer.orthanc.anonymize.datastorage.Patient;
 import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
 import org.petctviewer.orthanc.anonymize.datastorage.Serie;
@@ -103,18 +104,14 @@ import org.petctviewer.orthanc.anonymize.listeners.TablePatientsMouseListener;
 import org.petctviewer.orthanc.anonymize.listeners.TableStudiesMouseListener;
 import org.petctviewer.orthanc.anonymize.listeners.Window_Custom_Listener;
 import org.petctviewer.orthanc.export.ExportZip;
-import org.petctviewer.orthanc.export.SendFilesToRemote;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.modify.Modify;
-import org.petctviewer.orthanc.monitoring.Job_Monitoring;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
 import org.petctviewer.orthanc.query.VueQuery;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 import org.petctviewer.orthanc.setup.Run_Orthanc;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.michaelbaranov.microba.calendar.DatePicker;
 
 public class VueAnon extends JFrame {
@@ -193,14 +190,13 @@ public class VueAnon extends JFrame {
 
 	// Tab Export (p2)
 	private JLabel stateExports = new JLabel("");
-	protected JButton peerExport,csvReport, exportToZip, exportBtn, dicomStoreExport;
+	protected JButton peerExport,csvReport, exportToZip, exportRemoteBtn, dicomStoreExport;
 	protected JComboBox<String> listePeers;
 	protected JComboBox<String> listeAETExport;
 	private JTable tableauExportStudies;
 	private JTable tableauExportSeries;
 	public TableExportStudiesModel modeleExportStudies;
 	public TableExportSeriesModel modeleExportSeries;
-	private StringBuilder remoteFileName;
 	
 
 	//Monitoring (p3)
@@ -226,9 +222,9 @@ public class VueAnon extends JFrame {
 	//CTP
 	private JTextField addressFieldCTP;
 	public JComboBox<String> listePeersCTP ;
-	public JButton exportCTP;
 	private String CTPUsername;
 	private String CTPPassword;
+	private JButton exportCTP;
 	public boolean autoSendCTP=false;
 
 	
@@ -590,7 +586,7 @@ public class VueAnon extends JFrame {
 			});
 		
 		JMenuItem menuItemDeletePatients = new JMenuItem("Delete this patient");
-		menuItemDeletePatients.addActionListener(new DeleteActionMainPanel(connexionHttp, "Patient", this.modeleStudies, this.tableauStudies, 
+		menuItemDeletePatients.addActionListener(new Controller_Main_Delete(connexionHttp, "Patient", this.modeleStudies, this.tableauStudies, 
 				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, searchBtn));
 
 		popMenuPatients.add(menuItemModifyPatients);
@@ -631,7 +627,7 @@ public class VueAnon extends JFrame {
 		
 		
 		JMenuItem menuItemDeleteStudy = new JMenuItem("Delete this study");
-		menuItemDeleteStudy.addActionListener(new DeleteActionMainPanel(connexionHttp, "Study", this.modeleStudies, this.tableauStudies, 
+		menuItemDeleteStudy.addActionListener(new Controller_Main_Delete(connexionHttp, "Study", this.modeleStudies, this.tableauStudies, 
 				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, searchBtn));
 		
 		popMenuStudies.add(menuItemModifyStudy);
@@ -697,7 +693,7 @@ public class VueAnon extends JFrame {
 			}
 		});
 		JMenuItem menuItemDeleteSeries = new JMenuItem("Delete this serie");
-		menuItemDeleteSeries.addActionListener(new DeleteActionMainPanel(connexionHttp, "Serie", this.modeleStudies, this.tableauStudies, 
+		menuItemDeleteSeries.addActionListener(new Controller_Main_Delete(connexionHttp, "Serie", this.modeleStudies, this.tableauStudies, 
 				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, searchBtn));
 
 		popMenuSeries.add(menuItemModifySeries);
@@ -1120,7 +1116,7 @@ public class VueAnon extends JFrame {
 		
 		anonBtn = new JButton("Anonymize");
 		anonBtn.setPreferredSize(new Dimension(120,27));
-		anonBtn.addActionListener(new Controller_Anonymize_Btn(this, connexionHttp));
+		anonBtn.addActionListener(new Controller_Main_Anonymize_Btn(this, connexionHttp));
 		
 		//Label to show the currently selected profile in the main panel
 		JLabel profileLabel = new JLabel();
@@ -1146,7 +1142,7 @@ public class VueAnon extends JFrame {
 		addToAnon.setVisible(false);
 		anonDetailed.add(anonTablesPanel, BorderLayout.WEST);
 
-		exportZip.addActionListener(new Controller_Export_Zip(this));
+		exportZip.addActionListener(new Controller_Main_Zip(this));
 		
 		/////////////////////////////// ADDING COMPONENTS ////////////////
 		JPanel p1 = new JPanel(new FlowLayout());
@@ -1173,7 +1169,7 @@ public class VueAnon extends JFrame {
 		panelTableauSeries.add(jscp3, BorderLayout.CENTER);
 		JPanel panelButton=new JPanel();
 		btnReadSeries=new JButton("Open Images");
-		btnReadSeries.addActionListener(new Controller_Read_Series(this));
+		btnReadSeries.addActionListener(new Controller_Main_Read_Series(this));
 		
 		panelButton.add(btnReadSeries);
 		panelTableauSeries.add(panelButton, BorderLayout.EAST);
@@ -1375,226 +1371,17 @@ public class VueAnon extends JFrame {
 		labelPanelExport.add(exportToLabel);
 		labelPanelExport.add(stateExports);
 
-		exportBtn = new JButton("Remote server");
-		exportBtn.setToolTipText("Fill the remote server parameters in the setup tab before attempting an export.");
+		exportRemoteBtn = new JButton("Remote server");
+		exportRemoteBtn.setToolTipText("Fill the remote server parameters in the setup tab before attempting an export.");
 
-		exportBtn.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-					
-					@Override
-					protected Void doInBackground() throws Exception {
-						exportBtn.setText("Exporting...");
-						exportBtn.setEnabled(false);
-						
-						ExportZip convertzip=new ExportZip(connexionHttp);
-						convertzip.setConvertZipAction("tempZipOrthanc", modeleExportStudies.getOrthancIds(), true);
-						convertzip.generateZip(false);
-						String zipPath = convertzip.getGeneratedZipPath();
-						String zipName = convertzip.getGeneratedZipName();
-						remoteFileName = new StringBuilder();
-						
-						//removing the temporary file default name value
-						remoteFileName.append(zipName.substring(0,14));
-						remoteFileName.append(zipName.substring(zipName.length() - 4));
-						SendFilesToRemote export = new SendFilesToRemote(jprefer.get("exportType", SendFilesToRemote.OPTION_FTP), 
-								jprefer.get("remoteFilePath", "/"), remoteFileName.toString(), zipPath, jprefer.get("remoteServer", ""), 
-								jprefer.getInt("remotePort", 21), jprefer.get("servUsername", ""), jprefer.get("servPassword", ""));
-						export.export();
-						
-						
-						return null;
-					}
-
-					@Override
-					public void done(){
-						try {
-							get();
-							setStateExportMessage("The data has been successfully been exported", "green", 4);							stateExports.setText("<html><font color='green'>The data has been successfully been exported</font></html>");
-						} catch (Exception e) {
-							setStateExportMessage("The data export failed", "red", -1);
-							e.printStackTrace();
-						}
-						exportBtn.setText("Remote server");
-						exportBtn.setEnabled(true);
-					}
-				};
-				
-			if(!modeleExportStudies.getOrthancIds().isEmpty()){
-				stateExports.setText("Exporting...");
-				worker.execute();
-			}
-		}
-		});
+		exportRemoteBtn.addActionListener(new Controller_Export_Remote_Btn(this));
 
 		csvReport = new JButton("CSV Report");
-		csvReport.addActionListener(new Controller_Csv_Btn(modeleExportStudies, this));
+		csvReport.addActionListener(new Controller_Export_Csv_Btn(modeleExportStudies, this));
 		
-		JButton exportCTPAccelerator=new JButton("OTPAcc");
-		exportCTPAccelerator.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				
-					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-						
-					boolean validateOk=false;
-					
-					@Override
-					protected Void doInBackground() throws InterruptedException {
-						//Send DICOM to CTP selected Peer
-						exportCTP.setEnabled(false);
-						String jobID=connexionHttp.sendStudiesToPeerAccelerator(listePeersCTP.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
-						Job_Monitoring jobMonitoring=new Job_Monitoring(connexionHttp, jobID);
-						
-						do {
-							setStateExportMessage("Step 1/3 Sending to CTP Peer : Progress "+jobMonitoring.getProgress()+" %", "orange", -1);
-							Thread.sleep(2000);
-						} while (jobMonitoring.isRunning() );
-						
-						if(jobMonitoring.getState().equals("Success")) {
-							validateUpload();
-						}else if(jobMonitoring.getState().equals("Failure")) {
-							setStateExportMessage("Send Failed", "red", -1);
-							return null;
-							
-						}
-
-						//If everything OK, says validated and remove anonymized studies from local
-						if(validateOk) {
-							setStateExportMessage("Step 3/3 : Deleting local study", "red", -1);
-							for(Study2 study : modeleExportStudies.getAnonymizedStudy2Object()){
-								//deleted anonymized and sent study
-								connexionHttp.makeDeleteConnection("/studies/"+study.getOrthancId());
-							}
-							// empty the export table
-							modeleExportStudies.clear();
-							modeleExportSeries.clear();
-						}
-						
-						
-						return null;
-					}
-			
-					private void validateUpload() {
-						setStateExportMessage("Step 2/3 : Validating upload", "red", -1);
-						//Create CTP object to manage CTP communication
-						OTP ctp=new OTP(CTPUsername, CTPPassword, addressFieldCTP.getText());
-						//Create the JSON to send
-						JsonArray sentStudiesArray=new JsonArray();
-						//For each study populate the array with studies details of send process
-						for(Study2 study : modeleExportStudies.getAnonymizedStudy2Object()){
-							study.storeStudyStatistics(queryOrthanc);
-							//Creat Object to send to OTP
-							JsonObject studyObject=new JsonObject();
-							studyObject.addProperty("visitName", study.getStudyDescription());
-							studyObject.addProperty("StudyInstanceUID", study.getStudyInstanceUid());
-							studyObject.addProperty("patientNumber", study.getPatientName());
-							studyObject.addProperty("instanceNumber", study.getStatNbInstance());
-							sentStudiesArray.add(studyObject);
-
-						}
-						validateOk=ctp.validateUpload(sentStudiesArray);
-						if (validateOk) {
-							setStateExportMessage("CTP Export Done", "green", -1);
-						}else {
-							setStateExportMessage("Validation Failed", "red", -1);
-						}
-						
-					}
-					@Override
-					protected void done(){
-						exportCTP.setEnabled(true);
-						
-					}
-				};
-				
-				if(!modeleExportStudies.getOrthancIds().isEmpty()){
-					worker.execute();
-				}
-				// TODO Auto-generated method stub
-				
-			}
-			
-		});
+		exportCTP=new JButton("OTP");
+		exportCTP.addActionListener(new Controller_Export_OTP(this));
 		
-		exportCTP = new JButton("OTP");
-		exportCTP.addActionListener(new ActionListener() {
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-	
-				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-					
-					boolean sendOk;
-					boolean validateOk=false;
-					
-					@Override
-					protected Void doInBackground() {
-						//Send DICOM to CTP selected Peer
-						setStateExportMessage("Step 1/3 Sending to CTP Peer :"+listePeers.getSelectedItem().toString(), "red", -1);
-						exportCTP.setEnabled(false);
-						sendOk=connexionHttp.sendToPeer(listePeersCTP.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
-						
-						
-						if (sendOk) {
-							setStateExportMessage("Step 2/3 : Validating upload", "red", -1);
-							//Create CTP object to manage CTP communication
-							OTP ctp=new OTP(CTPUsername, CTPPassword, addressFieldCTP.getText());
-							//Create the JSON to send
-							JsonArray sentStudiesArray=new JsonArray();
-							//For each study populate the array with studies details of send process
-							for(Study2 study : modeleExportStudies.getAnonymizedStudy2Object()){
-								study.storeStudyStatistics(queryOrthanc);
-								//Creat Object to send to OTP
-								JsonObject studyObject=new JsonObject();
-								studyObject.addProperty("visitName", study.getStudyDescription());
-								studyObject.addProperty("StudyInstanceUID", study.getStudyInstanceUid());
-								studyObject.addProperty("patientNumber", study.getPatientName());
-								studyObject.addProperty("instanceNumber", study.getStatNbInstance());
-								sentStudiesArray.add(studyObject);
-
-							}
-							validateOk=ctp.validateUpload(sentStudiesArray);
-							//If everything OK, says validated and remove anonymized studies from local
-							if(validateOk) {
-								setStateExportMessage("Step 3/3 : Deleting local study", "red", -1);
-								for(Study2 study : modeleExportStudies.getAnonymizedStudy2Object()){
-									//deleted anonymized and sent study
-									connexionHttp.makeDeleteConnection("/studies/"+study.getOrthancId());
-								}
-								// empty the export table
-								modeleExportStudies.clear();
-								modeleExportSeries.clear();
-							}
-						}
-						
-						return null;
-					}
-			
-					@Override
-					protected void done(){
-						exportCTP.setEnabled(true);
-						if (sendOk && validateOk) {
-							setStateExportMessage("CTP Export Done", "green", -1);
-						} else if (!sendOk) {
-							setStateExportMessage("Upload Failed", "red", -1);
-						} else if (!validateOk) {
-							setStateExportMessage("Validation Failed", "red", -1);
-						}
-					}
-				};
-				
-				if(!modeleExportStudies.getOrthancIds().isEmpty()){
-					worker.execute();
-				}
-			
-
-			}
-		});
-
 		exportToZip = new JButton("Zip");
 		exportToZip.addActionListener(new ActionListener() {
 			@Override
@@ -1715,10 +1502,9 @@ public class VueAnon extends JFrame {
 		
 		JPanel exportPanel = new JPanel(new FlowLayout(FlowLayout.CENTER,50,10));
 		exportPanel.add(exportCTP);
-		exportPanel.add(exportCTPAccelerator);
 		exportPanel.add(csvReport);
 		exportPanel.add(exportToZip);
-		exportPanel.add(exportBtn);
+		exportPanel.add(exportRemoteBtn);
 
 		JPanel dicomExport=new JPanel();
 		dicomExport.add(listeAETExport);
@@ -2138,9 +1924,6 @@ public class VueAnon extends JFrame {
 		userInput.requestFocus();
 	}
 	
-	//private enum panels {Anon,Export,Manage};
-	//private panels currentopenPanel;
-	
 	public void openCloseAnonTool(boolean open) {
 		
 		if (open) {
@@ -2455,6 +2238,18 @@ public class VueAnon extends JFrame {
 		addressFieldCTP.setText(address);
 	}
 	
+	public String getCTPLogin() {
+		return CTPUsername;
+	}
+	
+	public String getCTPPassword() {
+		return CTPPassword;
+	}
+	
+	public String getSelectedCTPPeer() {
+		return listePeersCTP.getSelectedItem().toString();
+	}
+	
 	public String[] getExportRemoteServer() {
 		String[] remoteServerParameter=new String[6];
 		remoteServerParameter[0]=remoteServer.getText();
@@ -2468,8 +2263,8 @@ public class VueAnon extends JFrame {
 	}
 	
 	public void showRemoteExportBtn(boolean show) {
-		exportBtn.setVisible(show);
-		exportBtn.setVisible(show);
+		exportRemoteBtn.setVisible(show);
+		exportRemoteBtn.setVisible(show);
 	}
 	
 	public String getExportRemotePort() {
@@ -2491,6 +2286,14 @@ public class VueAnon extends JFrame {
 	
 	public QueryOrthancData getOrthancQuery() {
 		return queryOrthanc;
+	}
+	
+	public JButton getExportCTPbtn() {
+		return exportCTP;
+	}
+	
+	public JButton getExportRemoteBtn() {
+		return this.exportRemoteBtn;
 	}
 
 }
