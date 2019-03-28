@@ -164,13 +164,17 @@ public class QueryOrthancData {
 			String patientSex="N/A";
 			String patientName="N/A";
 			String patientId="N/A";
+			
+			String patientDobString=null;
 			Date patientDob=null;
 			if(parentPatientDetails.has("PatientBirthDate")) {
-				try {
-					patientDob = format.parse("19000101");
-					patientDob=format.parse(parentPatientDetails.get("PatientBirthDate").getAsString());
-				} catch (Exception e) { }
+				patientDobString=parentPatientDetails.get("PatientBirthDate").getAsString();
 			}
+			
+			try {
+				patientDob = format.parse("19000101");
+				patientDob=format.parse(patientDobString);
+			} catch (Exception e) { }
 			
 			if(parentPatientDetails.has("PatientSex")) {
 				patientSex=parentPatientDetails.get("PatientSex").getAsString();
@@ -457,16 +461,16 @@ public class QueryOrthancData {
 			patientSex=patientDetails.get("PatientSex").getAsString();
 		}
 		
+		String patientDobString=null;
 		Date patientDob=null;
 		if(patientDetails.has("PatientBirthDate")) {
-			try {
-				patientDob = format.parse("19000101");
-				patientDob=format.parse(patientDetails.get("PatientBirthDate").getAsString());
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				//e.printStackTrace();
-			}
+			patientDobString=patientDetails.get("PatientBirthDate").getAsString();
 		}
+		
+		try {
+			patientDob = format.parse("19000101");
+			patientDob = format.parse(patientDobString);
+		} catch (Exception e) {  }
 		
 		String patientOrthancID=studyData.get("ParentPatient").getAsString();
 		

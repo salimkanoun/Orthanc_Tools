@@ -19,7 +19,6 @@ package org.petctviewer.orthanc.anonymize;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -73,8 +72,6 @@ import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.table.DefaultTableCellRenderer;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.petctviewer.orthanc.Orthanc_Tools;
@@ -1271,7 +1268,6 @@ public class VueAnon extends JFrame {
 		popMenuExportStudies.add(menuItemEmptyList);
 		addPopUpMenuListener(popMenuExportStudies, tableauExportStudies);
 
-
 		tableauExportStudies.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
 		this.tableauExportStudies.getSelectionModel().addListSelectionListener(new TableExportStudiesMouseListener(tableauExportStudies, modeleExportSeries) );
@@ -1924,6 +1920,12 @@ public class VueAnon extends JFrame {
 		userInput.requestFocus();
 	}
 	
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////// Open Close Panels //////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	
 	public void openCloseAnonTool(boolean open) {
 		
 		if (open) {
@@ -1985,6 +1987,11 @@ public class VueAnon extends JFrame {
 		displayManageTool.setVisible(true);
 	}
 	
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////Element Activation / Deactivation ///////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	private void enableManageButtons(boolean enable) {
 		addManage.setEnabled(enable);
 		removeFromManage.setEnabled(enable);
@@ -1997,7 +2004,34 @@ public class VueAnon extends JFrame {
 		comboToolChooser.setEnabled(activate);
 	}
 	
-	// Ajoute seletion a la tool list
+	public void enableAnonButton(boolean enable) {
+		anonBtn.setEnabled(enable);
+		addToAnon.setEnabled(enable);
+		queryCTPBtn.setEnabled(enable);
+		removeFromAnonList.setEnabled(enable);
+		importCTP.setEnabled(enable);
+	}
+	
+	public void enableReadButton(boolean enable) {
+		btnReadSeries.setEnabled(enable);
+	}
+	
+	public void showRemoteExportBtn(boolean show) {
+		exportRemoteBtn.setVisible(show);
+		exportRemoteBtn.setVisible(show);
+	}
+	
+	public void showCTPButtons(boolean show) {
+		exportCTP.setVisible(show);
+		queryCTPBtn.setVisible(show);
+	}
+	
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////Toolist Import/erase ////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	
 	private void addToToolList(ArrayList<String> zipContent, JComboBox<String> zipShownContent, JLabel zipSize){
 
 		//On recupere la table qui a eu le dernier focus pour la selection
@@ -2056,6 +2090,21 @@ public class VueAnon extends JFrame {
 	
 	}
 	
+	// remove ligne active a la tool list
+	private void removeFromToolList(ArrayList<String> zipContent, JComboBox<String> zipShownContent, JLabel zipSize, JLabel state){
+		if(!zipContent.isEmpty()){
+			zipContent.remove(zipShownContent.getSelectedIndex());
+			zipShownContent.removeItemAt(zipShownContent.getSelectedIndex());
+			if(zipContent.size() >= 1){
+				zipSize.setText(zipContent.size() + " element(s)");
+			}else{
+				state.setText("");
+				zipSize.setText(" Empty List");
+				pack();
+			}
+		}
+	}
+	
 	/**
 	 * Add studies to export list (for AutoQuery result import)
 	 * @param study
@@ -2083,38 +2132,15 @@ public class VueAnon extends JFrame {
 		
 	}
 	
-	// remove ligne active a la tool list
-	private void removeFromToolList(ArrayList<String> zipContent, JComboBox<String> zipShownContent, JLabel zipSize, JLabel state){
-		if(!zipContent.isEmpty()){
-			zipContent.remove(zipShownContent.getSelectedIndex());
-			zipShownContent.removeItemAt(zipShownContent.getSelectedIndex());
-			if(zipContent.size() >= 1){
-				zipSize.setText(zipContent.size() + " element(s)");
-			}else{
-				state.setText("");
-				zipSize.setText(" Empty List");
-				pack();
-			}
-		}
-	}
-	
 	public void emptyExportList() {
 		exportShownContent.removeAllItems();
 		exportContent.removeAll(exportContent);
 		exportSizeLabel.setText("empty list");
 	}
 	
-	public void enableAnonButton(boolean enable) {
-		anonBtn.setEnabled(enable);
-		addToAnon.setEnabled(enable);
-		queryCTPBtn.setEnabled(enable);
-		removeFromAnonList.setEnabled(enable);
-		importCTP.setEnabled(enable);
-	}
-	
-	public void enableReadButton(boolean enable) {
-		btnReadSeries.setEnabled(enable);
-	}
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////Refresh Aet/Peers ///////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	public void refreshAets() {
 		String[] aets=connexionHttp.getAET();
@@ -2127,6 +2153,11 @@ public class VueAnon extends JFrame {
 		listePeersCTP.setModel(new DefaultComboBoxModel<String>(peers)) ;
 		listePeers.setModel(new DefaultComboBoxModel<String>(peers));
 	}
+	
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////// add Listeners //////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	public void setAnonymizeListener(AnonymizeListener anonymizeListener) {
 		this.anonymizeListener=anonymizeListener;
@@ -2159,35 +2190,10 @@ public class VueAnon extends JFrame {
         });
 	}
 	
-	//SK A revoir ne MARCHE PAS
-	public static void toogleScRenderer(JTable table, boolean activate, int scColumn) {
-		if(activate) {
-			table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
-				private static final long serialVersionUID = 1L;
 
-				@Override
-				public Component getTableCellRendererComponent(JTable table,
-						Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-					
-					boolean status = (boolean) table.getModel().getValueAt(row, 3);
-					if (status && !isSelected) {
-						setBackground(Color.RED);
-						setForeground(Color.black);
-					}else if(isSelected){
-						super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-					}else{
-						super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-					}
-					return this;
-				}   
-			});
-			
-		}else {
-			table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer());
-		}
-		
-	}
-	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////// Display Status /////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	public void setStateMessage(String message, String color, int seconds) {
 		state.setText("<html><font color='"+color+"'>"+message+"</font></html>");
@@ -2217,11 +2223,15 @@ public class VueAnon extends JFrame {
 		
 	}
 	
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////// Getters / Setters //////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	public String getComboToolChooserSeletedItem() {
 		return (String) comboToolChooser.getSelectedItem();
 	}
-	 
-	//Getters Setup Tab
+	
 	public String getSelectedAnonProfile() {
 		return (String) anonProfiles.getSelectedItem();
 	}
@@ -2261,21 +2271,12 @@ public class VueAnon extends JFrame {
 		
 		return remoteServerParameter;
 	}
-	
-	public void showRemoteExportBtn(boolean show) {
-		exportRemoteBtn.setVisible(show);
-		exportRemoteBtn.setVisible(show);
-	}
+
 	
 	public String getExportRemotePort() {
 		return remotePort.getText();
 	}
-	
-	public void showCTPButtons(boolean show) {
-		exportCTP.setVisible(show);
-		queryCTPBtn.setVisible(show);
-	}
-	
+
 	public OrthancRestApis getOrthancApisConnexion() {
 		return connexionHttp;
 	}
