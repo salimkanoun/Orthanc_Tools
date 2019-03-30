@@ -2,6 +2,7 @@ package org.petctviewer.orthanc.anonymize.controllers;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.SwingWorker;
 
@@ -30,7 +31,7 @@ public class Controller_Export_OTP implements ActionListener{
 			boolean validateOk=false;
 			
 			@Override
-			protected Void doInBackground() throws InterruptedException {
+			protected Void doInBackground() throws Exception {
 				
 				OrthancRestApis connexionHttp=vue.getOrthancApisConnexion();
 				//Send DICOM to CTP selected Peer
@@ -69,7 +70,8 @@ public class Controller_Export_OTP implements ActionListener{
 			private void validateUpload() {
 				vue.setStateExportMessage("Step 2/3 : Validating upload", "red", -1);
 				//Create CTP object to manage CTP communication
-				OTP ctp=new OTP(vue.getCTPLogin(), vue.getCTPPassword(), vue.getCTPaddress());
+				System.out.println("ici");
+				OTP otp=new OTP(vue.getCTPLogin(), vue.getCTPPassword(), vue.getCTPaddress());
 				//Create the JSON to send
 				JsonArray sentStudiesArray=new JsonArray();
 				//For each study populate the array with studies details of send process
@@ -84,7 +86,7 @@ public class Controller_Export_OTP implements ActionListener{
 					sentStudiesArray.add(studyObject);
 
 				}
-				validateOk=ctp.validateUpload(sentStudiesArray);
+				validateOk=otp.validateUpload(sentStudiesArray);
 				if (validateOk) {
 					vue.setStateExportMessage("CTP Export Done", "green", -1);
 				}else {
@@ -95,6 +97,15 @@ public class Controller_Export_OTP implements ActionListener{
 			
 			@Override
 			protected void done(){
+				try {
+					get();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				vue.getExportCTPbtn().setEnabled(true);
 			}
 			

@@ -277,7 +277,7 @@
   // Pay attention that setting this option to "false" results in
   // security risks!
   // Reference: http://curl.haxx.se/docs/sslcerts.html
-  "HttpsVerifyPeers" : true,
+  "HttpsVerifyPeers" : false,
 
   // Path to the CA (certification authority) certificates to validate
   // peers in HTTPS requests. From curl documentation ("--cacert"

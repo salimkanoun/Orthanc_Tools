@@ -232,6 +232,7 @@ public class ImportDCM extends JDialog {
 					
 					//HashMap for a new Study imported
 					HashMap<String, String> newStudy=new HashMap<String,String>();
+					//SK ICI BUG FAIRE SAFTY POUR TAG MANQUANT
 					String studyDate=parentStudy.get("MainDicomTags").getAsJsonObject().get("StudyDate").getAsString();
 					String patientID= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientID").getAsString();
 					String patientName= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientName").getAsString();
