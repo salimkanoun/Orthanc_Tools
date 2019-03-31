@@ -12,7 +12,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
-import org.petctviewer.orthanc.anonymize.QueryOrthancData;
 import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.anonymize.listeners.AnonymizeListener;
@@ -124,11 +123,9 @@ public class OTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 	}
 
 	@Override
-	public void ImportFinished(HashMap<String, HashMap<String, String>> importedStudy) {
+	public void ImportFinished(HashMap<String, Study2> importedStudy) {
 		
-		QueryOrthancData queryOrthanc=new QueryOrthancData(getOrthancApisConnexion());
-		
-		HashMap<String, HashMap<String, String>> importedstudy=importFrame.getImportedStudy();
+		HashMap<String, Study2> importedstudy=importFrame.getImportedStudy();
 		
 		Set<String> keys=importedstudy.keySet();
 		String[] keysArray=new String[keys.size()];
@@ -136,14 +133,7 @@ public class OTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 		
 		modeleAnonPatients.clear();
 		for (int i=0; i<keysArray.length; i++) {
-			try {
-				Study2 study = queryOrthanc.getStudyDetails(keysArray[i], true);
-				modeleAnonPatients.addStudy(study);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+			modeleAnonPatients.addStudy(importedstudy.get(keysArray[i]));
 		}
 		
 		importFrame.dispose();

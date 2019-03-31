@@ -50,7 +50,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
+import org.petctviewer.orthanc.anonymize.QueryOrthancData;
 import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import com.google.gson.JsonObject;
@@ -64,8 +66,8 @@ public class ImportDCM extends JDialog {
 	private OrthancRestApis connexion;
 	private JDialog gui;
 	private ArrayList<String> importAnswer=new ArrayList<String>();
-	private HashMap<String, HashMap<String,String> > importedstudy=new HashMap<String, HashMap<String,String> >();
 	private JsonParser parser=new JsonParser();
+	private HashMap<String, Study2 > importedstudy=new HashMap<String, Study2 >();
 	
 	private ImportListener listener;
 
@@ -218,7 +220,9 @@ public class ImportDCM extends JDialog {
 	 * Return Hashmap describing imported studies
 	 * @return
 	 */
-	public HashMap<String, HashMap<String, String>> getImportedStudy() {
+	public HashMap<String, Study2> getImportedStudy() {
+		
+		QueryOrthancData queryOrthanc = new QueryOrthancData(connexion);
 		
 		for (int i=0; i<importAnswer.size(); i++) {
 				JsonObject importedInstance=(JsonObject) parser.parse(importAnswer.get(i));
@@ -227,26 +231,14 @@ public class ImportDCM extends JDialog {
 				//If new study Add it to the global Hashmap
 				if( ! importedstudy.containsKey(parentStudyID)) {
 					
-					StringBuilder studyQuery=connexion.makeGetConnectionAndStringBuilder("/studies/"+parentStudyID);
-					JsonObject parentStudy=(JsonObject)parser.parse(studyQuery.toString());
+					try {
+						Study2 study=queryOrthanc.getStudyDetails(parentStudyID, true);
+						importedstudy.put(parentStudyID, study);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					
-					//HashMap for a new Study imported
-					HashMap<String, String> newStudy=new HashMap<String,String>();
-					//SK ICI BUG FAIRE SAFTY POUR TAG MANQUANT
-					String studyDate=parentStudy.get("MainDicomTags").getAsJsonObject().get("StudyDate").getAsString();
-					String patientID= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientID").getAsString();
-					String patientName= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientName").getAsString();
-					String patientDOB= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientBirthDate").getAsString();
-					String patientSex= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientSex").getAsString();
-					String patientOrthancID=parentStudy.get("ParentPatient").getAsString();
-					
-					newStudy.put("studyDate", studyDate);
-					newStudy.put("patientID", patientID);
-					newStudy.put("patientName", patientName);
-					newStudy.put("patientDOB", patientDOB);
-					newStudy.put("patientSex", patientSex);
-					newStudy.put("patientOrthancID", patientOrthancID);
-					importedstudy.put(parentStudyID, newStudy);
 				}
 				
 		}
