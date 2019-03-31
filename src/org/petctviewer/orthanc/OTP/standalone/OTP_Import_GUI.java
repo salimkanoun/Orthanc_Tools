@@ -46,7 +46,7 @@ public class OTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 		listePeers.setVisible(false);
 		listeAETExport.setVisible(false);
 		
-		setCTPaddress("https://kanoun.fr/");
+		setCTPaddress("https://petctviewer.com/");
 		
 		queryCTPBtn.setVisible(true);
 		

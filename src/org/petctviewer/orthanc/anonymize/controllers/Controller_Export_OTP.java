@@ -87,9 +87,7 @@ public class Controller_Export_OTP implements ActionListener{
 
 				}
 				validateOk=otp.validateUpload(sentStudiesArray);
-				if (validateOk) {
-					vue.setStateExportMessage("CTP Export Done", "green", -1);
-				}else {
+				if (!validateOk) {
 					vue.setStateExportMessage("Validation Failed", "red", -1);
 				}
 				
@@ -99,6 +97,9 @@ public class Controller_Export_OTP implements ActionListener{
 			protected void done(){
 				try {
 					get();
+					if(validateOk) {
+						vue.setStateExportMessage("CTP Export Done", "green", -1);
+					}
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
