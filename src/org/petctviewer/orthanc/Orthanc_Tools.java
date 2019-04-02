@@ -50,6 +50,7 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 //Faire item listener dans query pour repondre au changement clavier comme main tab
 //Envoi manuel de cd/dvd ?
 //Job monitoring pour toutes les operation longue
+//Voir pour sauvegarde BF quand ouvert depius Orthanc (bf.gr)
 
 //Idee refactor 
 //sortir panel modalities dans un objet a part
