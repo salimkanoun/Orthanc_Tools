@@ -10,6 +10,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
 import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.reader.Custom_StackWindow;
 import org.petctviewer.orthanc.reader.Read_Orthanc;
 
 import ij.ImagePlus;
@@ -82,7 +83,8 @@ public class Controller_Main_Read_Series implements ActionListener {
 				vue.enableReadButton(true);
 				vue.setStateMessage("Reading Done", "green", 4);
 				for(ImagePlus ip: imagestacks) {
-					ip.show();
+					Custom_StackWindow window=new Custom_StackWindow(ip);
+					window.setVisible(true);
 				}
 			
 			}
