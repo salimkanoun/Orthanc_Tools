@@ -32,10 +32,15 @@ public class Select_Series extends JDialog {
 		
 		JTable tableSeries = new JTable(tableSeriesModel);
 		tableSeries.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		tableSeries.getColumnModel().getColumn(3).setMinWidth(0);;
+		tableSeries.getColumnModel().getColumn(3).setMinWidth(0);
 		tableSeries.getColumnModel().getColumn(4).setMinWidth(0);
+		tableSeries.getColumnModel().getColumn(5).setMinWidth(0);
+		tableSeries.getColumnModel().getColumn(6).setMinWidth(0);
+		
 		tableSeries.getColumnModel().getColumn(3).setMaxWidth(0);
 		tableSeries.getColumnModel().getColumn(4).setMaxWidth(0);
+		tableSeries.getColumnModel().getColumn(5).setMaxWidth(0);
+		tableSeries.getColumnModel().getColumn(6).setMaxWidth(0);
 		//VueAnon.setRenderer(tableSeries);
 		
 		getContentPane().setLayout(new BorderLayout());

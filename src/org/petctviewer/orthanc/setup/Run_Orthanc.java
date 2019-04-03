@@ -211,7 +211,6 @@ public class Run_Orthanc {
        while(!isStarted && loop<10) {
     	   try {
     		   System.out.println(loop);
-    		  
     		   Thread.sleep(1000);
     		   loop++;
     	   } catch (InterruptedException e) {
@@ -219,9 +218,12 @@ public class Run_Orthanc {
     	   }
        }
        
-       if(loop==10) {
-    	   System.exit(0);
-       }
+     
+	   if(!isStarted) {
+		   System.exit(0);
+	   }
+    	 
+       
        
 
 	}

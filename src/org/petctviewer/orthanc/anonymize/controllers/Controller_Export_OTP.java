@@ -54,7 +54,7 @@ public class Controller_Export_OTP implements ActionListener{
 
 				//If everything OK, says validated and remove anonymized studies from local
 				if(validateOk) {
-					vue.setStateExportMessage("Step 3/3 : Deleting local study", "red", -1);
+					vue.setStateExportMessage("Step 3/3 : Deleting local study", "orange", -1);
 					for(Study2 study : vue.modeleExportStudies.getAnonymizedStudy2Object()){
 						//deleted anonymized and sent study
 						connexionHttp.makeDeleteConnection("/studies/"+study.getOrthancId());
@@ -68,7 +68,7 @@ public class Controller_Export_OTP implements ActionListener{
 			}
 	
 			private void validateUpload() {
-				vue.setStateExportMessage("Step 2/3 : Validating upload", "red", -1);
+				vue.setStateExportMessage("Step 2/3 : Validating upload", "orange", -1);
 				//Create CTP object to manage CTP communication
 				System.out.println("ici");
 				OTP otp=new OTP(vue.getCTPLogin(), vue.getCTPPassword(), vue.getCTPaddress());
