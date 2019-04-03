@@ -69,6 +69,17 @@ public class OrthancRestApis {
 		getSystemInformationsAndTest();
 	}
 	
+	public void refreshServerAddress() {
+		String ip = jpreferPerso.get("ip", "http://localhost");
+		String port = jpreferPerso.get("port", "8042");
+		this.fullAddress = ip + ":" + port;
+		if(jpreferPerso.get("username", null) != null && jpreferPerso.get("username", null) != null){
+			authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
+		}
+		getSystemInformationsAndTest();
+		
+	}
+	
 	
 	private HttpURLConnection makeGetConnection(String apiUrl) throws Exception {
 		

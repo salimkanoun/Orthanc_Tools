@@ -28,6 +28,8 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -42,9 +44,13 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.petctviewer.orthanc.anonymize.VueAnon;
 
@@ -53,7 +59,8 @@ public class ConnectionSetup extends JDialog {
 	private static final long serialVersionUID = 1L;
 	private Preferences jpreferPerso = VueAnon.jprefer;
 	private JDialog gui=this;
-	public boolean ok=false;
+	private JTextField ipTxt,portTxt,usernameTxt;
+	private JPasswordField passwordTxt;
 
 	public ConnectionSetup(Run_Orthanc orthanc, OrthancRestApis http){
 		this.setTitle("Setup");
@@ -82,32 +89,62 @@ public class ConnectionSetup extends JDialog {
 		
 		JPanel panel_http_settings = new JPanel();
 		panel_http_settings.setLayout(new GridLayout(0, 2, 0, 0));
+		
+		JLabel lblServer = new JLabel("Server");
+		panel_http_settings.add(lblServer);
+		
+		JSpinner spinnerServerChoice = new JSpinner();
+		spinnerServerChoice.setModel(new SpinnerNumberModel(1, 1, 10, 1));
+		panel_http_settings.add(spinnerServerChoice);
 
 		JLabel label = new JLabel("Address");
 		panel_http_settings.add(label);
 		
-		JTextField ipTxt = new JTextField();
+		ipTxt = new JTextField();
+		ipTxt.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent arg0) {
+				int index=(int) spinnerServerChoice.getValue();
+				jpreferPerso.put("ip"+index, ipTxt.getText());
+			}
+		});
 		panel_http_settings.add(ipTxt);
 		ipTxt.setPreferredSize(new Dimension(100,18));
-		ipTxt.setText(jpreferPerso.get("ip", "http://localhost"));
 		
 		
 		JLabel label_1 = new JLabel("Port");
-		JTextField portTxt = new JTextField();
+		portTxt = new JTextField();
+		portTxt.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				int index=(int) spinnerServerChoice.getValue();
+				jpreferPerso.put("port"+index, portTxt.getText());
+			}
+		});
 		portTxt.setPreferredSize(new Dimension(100,18));
-		portTxt.setText(jpreferPerso.get("port", "8042"));
 		
 		
 		JLabel label_2 = new JLabel("Username");
-		JTextField usernameTxt = new JTextField();
+		usernameTxt = new JTextField();
+		usernameTxt.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				int index=(int) spinnerServerChoice.getValue();
+				jpreferPerso.put("username"+index, usernameTxt.getText());
+			}
+		});
 		usernameTxt.setPreferredSize(new Dimension(100,18));
-		usernameTxt.setText(jpreferPerso.get("username", ""));
 		
 		JLabel label_3 = new JLabel("Password");
-		JPasswordField passwordTxt = new JPasswordField();
+		passwordTxt = new JPasswordField();
+		passwordTxt.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				int index=(int) spinnerServerChoice.getValue();
+				jpreferPerso.put("password"+index, new String(passwordTxt.getPassword()));
+			}
+		});
 		passwordTxt.setPreferredSize(new Dimension(100,18));
-		passwordTxt.setText(jpreferPerso.get("password", ""));
-		
 		
 		panel_http_settings.add(label_1);
 		panel_http_settings.add(portTxt);
@@ -118,6 +155,22 @@ public class ConnectionSetup extends JDialog {
 		
 		setupPanel.add(panel_http_settings);
 		
+		spinnerServerChoice.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent arg0) {
+				int number=(int) spinnerServerChoice.getValue();
+				if(number!=1) {
+					fillParameter(number);
+				}else {
+					ipTxt.setText(jpreferPerso.get("ip"+number, "http://localhost"));
+					portTxt.setText(jpreferPerso.get("port"+number, "8042"));
+				}
+				
+				
+				
+			}
+		});
+		fillParameter(jpreferPerso.getInt("currentOrthancServer", 1));
+
 		JButton submit = new JButton("Submit");
 		setupPanel.add(submit, BorderLayout.SOUTH);
 		submit.addActionListener(new ActionListener() {
@@ -129,7 +182,8 @@ public class ConnectionSetup extends JDialog {
 					jpreferPerso.put("port", portTxt.getText());
 					jpreferPerso.put("password", new String(passwordTxt.getPassword()));
 					jpreferPerso.put("username", usernameTxt.getText());
-					ok=true;
+					jpreferPerso.putInt("currentOrthancServer", (int) spinnerServerChoice.getValue());
+					http.refreshServerAddress();
 					dispose();
 					
 				}
@@ -171,7 +225,6 @@ public class ConnectionSetup extends JDialog {
 						orthanc.startOrthanc();
 						dispose();
 					} catch (Exception e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
 				}else {
@@ -240,6 +293,12 @@ public class ConnectionSetup extends JDialog {
 		pack();
 	}
 	
+	private void fillParameter(int number) {
+		ipTxt.setText(jpreferPerso.get("ip"+number, ""));
+		portTxt.setText(jpreferPerso.get("port"+number, ""));
+		passwordTxt.setText(jpreferPerso.get("password"+number, ""));
+		usernameTxt.setText(jpreferPerso.get("username"+number, ""));
+	}
 	private void openWebPage(String url){
 		try {         
 			Desktop.getDesktop().browse(URI.create(url));

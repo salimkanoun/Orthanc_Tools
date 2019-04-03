@@ -83,8 +83,12 @@ public class Controller_Main_Read_Series implements ActionListener {
 				vue.enableReadButton(true);
 				vue.setStateMessage("Reading Done", "green", 4);
 				for(ImagePlus ip: imagestacks) {
-					Custom_StackWindow window=new Custom_StackWindow(ip);
-					window.setVisible(true);
+					if(ip.getStackSize()>1) {
+						Custom_StackWindow window=new Custom_StackWindow(ip);
+						window.setVisible(true);
+					}else {
+						ip.show();
+					}
 				}
 			
 			}

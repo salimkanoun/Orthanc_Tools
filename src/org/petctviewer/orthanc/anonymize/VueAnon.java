@@ -242,7 +242,6 @@ public class VueAnon extends JFrame {
 	public VueAnon() {
 		super("Orthanc Tools");
 		connexionHttp= new OrthancRestApis(null);
-		queryOrthanc=new QueryOrthancData(connexionHttp);
 		runOrthanc=new Run_Orthanc();
 		//Until we reach the Orthanc Server we give the setup panel
 		int check=0;
@@ -254,6 +253,7 @@ public class VueAnon extends JFrame {
 				check++;
 				if(check ==3) JOptionPane.showMessageDialog(null, "Programme is starting without connexion (no services)", "Failure", JOptionPane.ERROR_MESSAGE);
 		}
+		queryOrthanc=new QueryOrthancData(connexionHttp);
 		buildGui();
 		
 	}
@@ -1840,8 +1840,7 @@ public class VueAnon extends JFrame {
 				ConnectionSetup setup = new ConnectionSetup(runOrthanc, connexionHttp);
 				setup.setLocationRelativeTo(gui);
 				setup.setVisible(true);
-				connexionHttp=new OrthancRestApis(null);
-				if (setup.ok)JOptionPane.showMessageDialog(null,"Restart to take account");
+				
 				
 			}
 			

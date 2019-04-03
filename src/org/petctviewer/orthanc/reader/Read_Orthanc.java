@@ -15,11 +15,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import ij.IJ;
-import ij.ImageListener;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.gui.ImageWindow;
-import ij.gui.StackWindow;
 import ij.measure.Calibration;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
@@ -31,7 +28,7 @@ import ij.util.DicomTools;
  * @author kanoun_s
  *
  */
-public class Read_Orthanc implements ImageListener {
+public class Read_Orthanc {
 	
 	private JsonParser parser=new JsonParser();
 	private OrthancRestApis connexion;
@@ -90,7 +87,6 @@ public class Read_Orthanc implements ImageListener {
 		}
 		
 		ImagePlus imp=generateFinalImagePlus(stack);
-		imp.addImageListener(this);
 		return imp;
 		
 		
@@ -369,28 +365,6 @@ public class Read_Orthanc implements ImageListener {
 		
 		
 		return stack2;
-	}
-
-	@Override
-	public void imageClosed(ImagePlus arg0) {
-		ImageWindow win=arg0.getWindow();
-		if(win instanceof StackWindow) {
-			StackWindow stackwin=(StackWindow) win;
-			stackwin.close();
-		}
-		
-	}
-
-	@Override
-	public void imageOpened(ImagePlus arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void imageUpdated(ImagePlus arg0) {
-		// TODO Auto-generated method stub
-		
 	}
 
 }
