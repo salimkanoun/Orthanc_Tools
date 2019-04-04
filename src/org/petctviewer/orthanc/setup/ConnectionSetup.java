@@ -62,7 +62,7 @@ public class ConnectionSetup extends JDialog {
 	private JTextField ipTxt,portTxt,usernameTxt;
 	private JPasswordField passwordTxt;
 
-	public ConnectionSetup(Run_Orthanc orthanc, OrthancRestApis http){
+	public ConnectionSetup(Run_Orthanc orthanc, VueAnon vueAnon){
 		this.setTitle("Setup");
 		this.setModal(true);
 		this.setResizable(true);
@@ -163,13 +163,15 @@ public class ConnectionSetup extends JDialog {
 				}else {
 					ipTxt.setText(jpreferPerso.get("ip"+number, "http://localhost"));
 					portTxt.setText(jpreferPerso.get("port"+number, "8042"));
+					passwordTxt.setText(jpreferPerso.get("password"+number, ""));
+					usernameTxt.setText(jpreferPerso.get("username"+number, ""));
 				}
 				
 				
 				
 			}
 		});
-		fillParameter(jpreferPerso.getInt("currentOrthancServer", 1));
+		
 
 		JButton submit = new JButton("Submit");
 		setupPanel.add(submit, BorderLayout.SOUTH);
@@ -183,7 +185,12 @@ public class ConnectionSetup extends JDialog {
 					jpreferPerso.put("password", new String(passwordTxt.getPassword()));
 					jpreferPerso.put("username", usernameTxt.getText());
 					jpreferPerso.putInt("currentOrthancServer", (int) spinnerServerChoice.getValue());
-					http.refreshServerAddress();
+					vueAnon.getOrthancApisConnexion().refreshServerAddress();
+					vueAnon.refreshAets();
+					vueAnon.refreshPeers();
+					
+					//SK RESTE A FERMER EVENTUELLE FENETRE QUERY ET IMPORT
+					//REPERCUSSION SUR LE MONITORING A VOIR
 					dispose();
 					
 				}
@@ -228,7 +235,7 @@ public class ConnectionSetup extends JDialog {
 						e1.printStackTrace();
 					}
 				}else {
-					orthanc.stopOrthanc(http);
+					orthanc.stopOrthanc(vueAnon.getOrthancApisConnexion());
 					dispose();
 				}
 			}
@@ -289,6 +296,9 @@ public class ConnectionSetup extends JDialog {
 		
 		
 		disclaimerPanel.add(link);
+		
+		fillParameter(jpreferPerso.getInt("currentOrthancServer", 1));
+		
 		setSize(1200, 400);
 		pack();
 	}
@@ -299,6 +309,7 @@ public class ConnectionSetup extends JDialog {
 		passwordTxt.setText(jpreferPerso.get("password"+number, ""));
 		usernameTxt.setText(jpreferPerso.get("username"+number, ""));
 	}
+	
 	private void openWebPage(String url){
 		try {         
 			Desktop.getDesktop().browse(URI.create(url));

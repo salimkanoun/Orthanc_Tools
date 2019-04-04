@@ -1837,7 +1837,7 @@ public class VueAnon extends JFrame {
 		setupButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				ConnectionSetup setup = new ConnectionSetup(runOrthanc, connexionHttp);
+				ConnectionSetup setup = new ConnectionSetup(runOrthanc, gui);
 				setup.setLocationRelativeTo(gui);
 				setup.setVisible(true);
 				
