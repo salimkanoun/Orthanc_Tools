@@ -25,6 +25,8 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -58,7 +60,7 @@ import org.petctviewer.orthanc.setup.OrthancRestApis;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-public class ImportDCM extends JDialog {
+public class ImportDCM extends JDialog implements WindowListener{
 	
 	private static final long serialVersionUID = 1L;
 	private Preferences jprefer = VueAnon.jprefer;
@@ -68,10 +70,11 @@ public class ImportDCM extends JDialog {
 	private ArrayList<String> importAnswer=new ArrayList<String>();
 	private JsonParser parser=new JsonParser();
 	private HashMap<String, Study2 > importedstudy=new HashMap<String, Study2 >();
+	private SwingWorker<Void,Void> importWorker;
 	
 	private ImportListener listener;
 
-	public ImportDCM(OrthancRestApis connexion, JFrame parentJframe){
+	public ImportDCM(OrthancRestApis connexion, JFrame parentJframe)  {
 		this.setTitle("Import DICOM files");
 		this.connexion=connexion;
 		this.gui=this;
@@ -108,7 +111,7 @@ public class ImportDCM extends JDialog {
 			public void actionPerformed(ActionEvent e) {
 				if(path.getText().length() > 0){
 					state.setForeground(Color.black);
-					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+					importWorker = new SwingWorker<Void,Void>(){
 
 						@Override
 						protected Void doInBackground() throws Exception { 
@@ -128,7 +131,7 @@ public class ImportDCM extends JDialog {
 							}
 						}
 					};
-					worker.execute();
+					importWorker.execute();
 				}
 			}
 		});
@@ -164,8 +167,10 @@ public class ImportDCM extends JDialog {
 		Image image = new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage();
 		this.setIconImage(image);
 		this.getContentPane().add(mainPanel);
+		addWindowListener(this);
 		pack();
 		setLocationRelativeTo(parentJframe);
+		
 		
 		
 	}
@@ -245,6 +250,50 @@ public class ImportDCM extends JDialog {
 		
 		return importedstudy;
 
+	}
+
+	@Override
+	public void windowActivated(WindowEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowClosed(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowClosing(WindowEvent e) {
+		if(!importWorker.isDone()) {
+			importWorker.cancel(true);
+		}
+		
+	}
+
+	@Override
+	public void windowDeactivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeiconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowIconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowOpened(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }
