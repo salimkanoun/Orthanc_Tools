@@ -156,7 +156,7 @@ public class CD_Burner {
 				List<String> newStableStudyID=new ArrayList<String>();
 				newStableStudyID.add(studiesOrthancId.get(0).getAsString());
 				makeCD(newStableStudyID);
-				return;
+				continue;
 			}
 			
 			
