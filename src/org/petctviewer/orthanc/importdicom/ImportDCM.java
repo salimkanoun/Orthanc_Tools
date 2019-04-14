@@ -266,7 +266,7 @@ public class ImportDCM extends JDialog implements WindowListener{
 
 	@Override
 	public void windowClosing(WindowEvent e) {
-		if(!importWorker.isDone()) {
+		if(importWorker!=null && !importWorker.isDone()) {
 			importWorker.cancel(true);
 		}
 		
