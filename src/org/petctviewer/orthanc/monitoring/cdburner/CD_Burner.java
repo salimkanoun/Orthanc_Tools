@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,6 +40,12 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -251,7 +258,7 @@ public class CD_Burner {
 			burningStatus.put(requestFileName, new Object[] {rownumber, folder.toFile()});
 			
 			table_burning_history.setValueAt("Sent to Burner", rownumber, 5);
-			boolean isPrimera=burnerManifacturer.equals("Primera")?true:false;
+			
 			
 			JButton button=(JButton) table_burning_history.getValueAt(rownumber, 6);
 			button.setText("Test Salim");
@@ -313,18 +320,14 @@ public class CD_Burner {
 				String studyDate=mainDicomTag.get("StudyDate").getAsString();
 				Date dateExamen = parserDate.parse(studyDate);
 				formattedDateExamen = formatter.format(dateExamen);
-			}catch (Exception e) {
-				e.printStackTrace();
-			}
+			}catch (Exception e) { }
 			
 			String formattedPatientDOB="N/A";
 			try {
 				String patientDOB=mainPatientTag.get("PatientBirthDate").getAsString();
 				Date patientDOBDate = parserDate.parse(patientDOB);
 				formattedPatientDOB = formatter.format(patientDOBDate);
-			}catch (Exception e) {
-				e.printStackTrace();
-			}
+			}catch (Exception e) { }
 			
 			//Update display status
 			(( DefaultTableModel) table_burning_history.getModel()).addRow(new String[]{nom,id, formattedPatientDOB , formattedDateExamen ,studyDescription,"Recieved" });
@@ -357,7 +360,9 @@ public class CD_Burner {
 			
 			table_burning_history.setValueAt("Sent to Burner", rownumber, 5);
 			//Add cancel Button
-			boolean isPrimera=burnerManifacturer.equals("Primera")?true:false;
+			table_burning_history.setValueAt(requestFileAndID[1], rownumber, 7);
+			table_burning_history.setValueAt(requestFileName, rownumber, 8);
+			
 			//table_burning_history.setValueAt(new Cancel_Cd_Button(requestFileName,(String) requestFileAndID[1],isPrimera), rownumber, 6);
 			
 			
@@ -504,7 +509,8 @@ public class CD_Burner {
 		
 		if(jobId != null) txtRobot +="JobID="+jobId+"\n";
 			
-		txtRobot+="Copies = 1\n"
+		txtRobot+="ClientID = Orthanc-Tools"
+				+"Copies = 1\n"
 				+ "DataImageType = UDF\n"
 				+ "Data="+fijiDirectory+"\n"
 				+ "Data="+folder+ File.separator+ "DICOM\n"
@@ -614,10 +620,14 @@ public class CD_Burner {
 		    		File tempFolder=(File) burningStatus.get(baseName)[1];
 		    		if(extension.equals("ERR")) {
 		    			table_burning_history.setValueAt("Burning Error", rowNubmer, 5);
+		    			burningStatus.remove(baseName);
+		    			playSound(false);
 		    			FileUtils.deleteDirectory(tempFolder);
 		    		}else if(extension.equals("INP")) {
 		    			table_burning_history.setValueAt("Burning In Progress", rowNubmer, 5);
 		    		}else if(extension.equals("DON")) {
+		    			playSound(true);
+		    			burningStatus.remove(baseName);
 		    			table_burning_history.setValueAt("Burning Done", rowNubmer, 5);
 		    			FileUtils.deleteDirectory(tempFolder);
 		    		}else if(extension.equals("STP")) {
@@ -703,6 +713,50 @@ public class CD_Burner {
 				
 		
 				
+	}
+	
+	public boolean getIsPrimera() {
+		return burnerManifacturer.equals("Primera")?true:false;
+		
+	}
+	
+	public void cancelJob(String jobId, String requestFileName) {
+		if(getIsPrimera()) {
+			String ptmString = "Message = ABORT\n"
+					+ "ClientID = Orthanc-Tools";
+			File ptm = new File(epsonDirectory + File.separator + requestFileName+".PTM");
+			Orthanc_Tools.writeCSV(ptmString, ptm);
+		}else {
+			String jcfString="[CANCEL]\n"
+					+ "JOB_ID="+jobId;
+			File jcf = new File(epsonDirectory + File.separator + requestFileName+".JCF");
+			Orthanc_Tools.writeCSV(jcfString, jcf);
+		}
+		
+		
+		
+	}
+	
+	private void playSound(boolean success) {
+		try {
+			URL url=null;
+			if(success) {
+				url=ClassLoader.getSystemResource("logos/cd_Success.wav");
+			}else {
+				url=ClassLoader.getSystemResource("logos/cd_Error.wav");
+			}
+			
+	        AudioInputStream inputStream = AudioSystem.getAudioInputStream(url);
+	        
+	        DataLine.Info info = new DataLine.Info(Clip.class, inputStream.getFormat());
+	        Clip clip = (Clip) AudioSystem.getLine(info);
+			
+	        clip.open(inputStream);
+	        clip.start(); 
+			} catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	}
 	
 	private class DatInfos {

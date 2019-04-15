@@ -179,15 +179,16 @@ public class Monitoring_GUI extends JFrame {
 						table_burning_history = new JTable();
 						table_burning_history.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 						table_burning_history.setPreferredScrollableViewportSize(new Dimension(450, 200));
-						table_burning_history.setModel(new DefaultTableModel(0,7){
+						table_burning_history.setModel(new DefaultTableModel(0,9){
 
 							Class<?>[] columnTypes = new Class[] {
-								String.class, String.class, String.class, String.class, String.class, String.class, JButton.class
+								String.class, String.class, String.class, String.class, String.class, String.class, JButton.class,
+								String.class, String.class
 							};
 							
 							
 							String[] titles=new String[] {
-								"Name", "ID", "DOB", "Date", "Description", "Status", "Cancel"
+								"Name", "ID", "DOB", "Date", "Description", "Status", "Cancel", "jobID", "requestFile"
 							};
 					
 							public Class<?> getColumnClass(int columnIndex) {
@@ -199,12 +200,24 @@ public class Monitoring_GUI extends JFrame {
 								return titles[columnIndex];
 								
 							}
+							
+							public boolean isCellEditable(int row, int column) {
+								if(column==6) return true;
+								return false;
+								
+							}
 						});
-						//SK ON TEST ICI
+						
 						table_burning_history.getColumnModel().getColumn(6).setCellRenderer(new Cancel_Cd_Column());
 						table_burning_history.getColumnModel().getColumn(6).setCellEditor(
-						        new Cancel_CD_Column_Editor(new JCheckBox()));
+						        new Cancel_CD_Column_Editor(new JCheckBox(), table_burning_history, this));
 						scrollPane.setViewportView(table_burning_history);
+						
+						//Hide JobID and RequestFile column
+						table_burning_history.getColumnModel().getColumn(7).setMinWidth(0);
+						table_burning_history.getColumnModel().getColumn(7).setMaxWidth(0);
+						table_burning_history.getColumnModel().getColumn(8).setMinWidth(0);
+						table_burning_history.getColumnModel().getColumn(8).setMaxWidth(0);
 						
 						JPanel panel = new JPanel();
 						CD_Burner_Tab.add(panel, BorderLayout.SOUTH);
@@ -675,5 +688,9 @@ public class Monitoring_GUI extends JFrame {
 			running=true;
 		}
 		return running;
+	}
+	
+	public CD_Burner getCdBunerObject() {
+		return cdBurner;
 	}
 }
