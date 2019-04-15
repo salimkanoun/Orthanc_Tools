@@ -186,8 +186,11 @@ public class ConnectionSetup extends JDialog {
 					jpreferPerso.put("username", usernameTxt.getText());
 					jpreferPerso.putInt("currentOrthancServer", (int) spinnerServerChoice.getValue());
 					vueAnon.getOrthancApisConnexion().refreshServerAddress();
-					vueAnon.refreshAets();
-					vueAnon.refreshPeers();
+					if(vueAnon.isVisible()) {
+						vueAnon.refreshAets();
+						vueAnon.refreshPeers();
+					}
+					
 					
 					//SK RESTE A FERMER EVENTUELLE FENETRE QUERY ET IMPORT
 					//REPERCUSSION SUR LE MONITORING A VOIR

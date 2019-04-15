@@ -39,6 +39,7 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -217,7 +218,7 @@ public class CD_Burner {
 			}
 
 			//Update display status
-			(( DefaultTableModel) table_burning_history.getModel()).addRow(new String[]{nom, id, formattedPatientDOB ,"Mutiples", nbOfStudies+" studies" ,"Recieved" });
+			(( DefaultTableModel) table_burning_history.getModel()).addRow(new String[]{nom, id, formattedPatientDOB ,"Mutiples", nbOfStudies+" studies" ,"Recieved", null });
 			table_burning_history.setValueAt("Retriving DICOMs", rownumber, 5);
 			
 			//Generate the ZIP with Orthanc IDs dicom
@@ -231,23 +232,31 @@ public class CD_Burner {
 			table_burning_history.setValueAt("Unzipping", rownumber, 5);
 			unzip(zip);
 			
-			File robotRequestFile=null;
+			
+			Object[] requestFileAndID=null;
 			// Creation du Cd
 			if (burnerManifacturer.equals("Epson")) {
 				String discType=determineDiscType();
 				File dat=printDat(datInfos);
 				//Generation du Dat
 				//File dat = printDat(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB );
-				robotRequestFile=createCdBurnerEpson(dat, discType, nom, "Mutiples");
+				requestFileAndID=createCdBurnerEpson(dat, discType, nom, "Mutiples");
 				
 			} else if(burnerManifacturer.equals("Primera")) {
-				robotRequestFile=createCdBurnerPrimera(nom, id, "Mutiples", nbOfStudies+" studies", "Mutiples", formattedPatientDOB ,nbOfStudies);
+				requestFileAndID=createCdBurnerPrimera(nom, id, "Mutiples", nbOfStudies+" studies", "Mutiples", formattedPatientDOB ,nbOfStudies);
 			}
 			
 			//Put the JDF base name associated to the Row number of the table for Monitoring
-			burningStatus.put(FilenameUtils.getBaseName(robotRequestFile.getAbsolutePath().toString()), new Object[] {rownumber, folder.toFile()});
+			String requestFileName=FilenameUtils.getBaseName(((File)requestFileAndID[0]).getAbsolutePath().toString());
+			burningStatus.put(requestFileName, new Object[] {rownumber, folder.toFile()});
 			
 			table_burning_history.setValueAt("Sent to Burner", rownumber, 5);
+			boolean isPrimera=burnerManifacturer.equals("Primera")?true:false;
+			
+			JButton button=(JButton) table_burning_history.getValueAt(rownumber, 6);
+			button.setText("Test Salim");
+			//table_burning_history.setValueAt(new Cancel_Cd_Button(requestFileName,(String) requestFileAndID[1],isPrimera), rownumber, 6);
+			
 			
 			//On efface tout a la sortie JVM
 			recursiveDeleteOnExit(folder);
@@ -330,22 +339,27 @@ public class CD_Burner {
 			table_burning_history.setValueAt("Unzipping", rownumber, 5);
 			unzip(zip);
 
-			File robotRequestFile=null;
+			Object[] requestFileAndID=null;
 			// Creation du Cd
 			if (burnerManifacturer.equals("Epson")) {
 				String discType=determineDiscType();
 				//Generation du Dat
 				File dat = printDat(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB );
-				robotRequestFile=createCdBurnerEpson(dat, discType, nom, formattedDateExamen);
+				requestFileAndID=createCdBurnerEpson(dat, discType, nom, formattedDateExamen);
 				
 			} else if(burnerManifacturer.equals("Primera")) {
-				robotRequestFile=createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB, 1);
+				requestFileAndID=createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB, 1);
 			}
 			
 			//Put the JDF base name associated to the Row number of the table for Monitoring
-			burningStatus.put(FilenameUtils.getBaseName(robotRequestFile.getAbsolutePath().toString()), new Object[] {rownumber, folder.toFile()});
+			String requestFileName=FilenameUtils.getBaseName(((File) requestFileAndID[0]).getAbsolutePath().toString());
+			burningStatus.put(requestFileName, new Object[] {rownumber, folder.toFile()});
 			
 			table_burning_history.setValueAt("Sent to Burner", rownumber, 5);
+			//Add cancel Button
+			boolean isPrimera=burnerManifacturer.equals("Primera")?true:false;
+			//table_burning_history.setValueAt(new Cancel_Cd_Button(requestFileName,(String) requestFileAndID[1],isPrimera), rownumber, 6);
+			
 			
 			//On efface tout a la sortie JVM
 			recursiveDeleteOnExit(folder);
@@ -447,11 +461,12 @@ public class CD_Burner {
 	 * @param studyDescription
 	 * @param dat
 	 */
-	private File createCdBurnerEpson(File dat, String discType, String name, String formattedStudyDate){
+	private Object[] createCdBurnerEpson(File dat, String discType, String name, String formattedStudyDate){
 		//REalisation du texte pour le Robot
 		String txtRobot= "# Making data CD\n";
+		String jobId=createJobID(name, formattedStudyDate);
 		//Peut definir le Job ID et le mettre le compteur dans registery si besoin de tracer les operation avec fichier STF
-		if(createJobID(name, formattedStudyDate)!=null) txtRobot+="JOB_ID="+createJobID(name, formattedStudyDate)+"\n";
+		if(jobId!=null) txtRobot+="JOB_ID="+jobId+"\n";
 		
 		txtRobot+="#nombre de copies\n"
 		+ "COPIES=1\n"
@@ -469,7 +484,8 @@ public class CD_Burner {
 		
 		Orthanc_Tools.writeCSV(txtRobot, f);
 		
-		return f;
+		Object[] answer=new Object[] {f, jobId};
+		return answer;
 				
 	}
 	
@@ -481,11 +497,12 @@ public class CD_Burner {
 	 * @param studyDescription
 	 * @param discType
 	 */
-	private File createCdBurnerPrimera(String nom, String id, String date, String studyDescription, String accessionNumber, String patientDOB, int nbStudies){
+	private Object[] createCdBurnerPrimera(String nom, String id, String date, String studyDescription, String accessionNumber, String patientDOB, int nbStudies){
 		//Command Keys/Values for Primera Robot
 		String txtRobot=new String();
+		String jobId=createJobID(nom, date);
 		
-		if(createJobID(nom, date) != null) txtRobot +="JobID="+createJobID(nom,date)+"\n";
+		if(jobId != null) txtRobot +="JobID="+jobId+"\n";
 			
 		txtRobot+="Copies = 1\n"
 				+ "DataImageType = UDF\n"
@@ -515,12 +532,13 @@ public class CD_Burner {
 				+ "MergeField="+accessionNumber+"\n"
 				+ "MergeField="+nbStudies+"\n";
 		
-				// Making a .JRQ file in the watched folder
-				File f = new File(epsonDirectory + File.separator + "CD_"+dateFormat.format(datenow)+".JRQ");
-				
-				Orthanc_Tools.writeCSV(txtRobot, f);
-				
-				return f;
+		// Making a .JRQ file in the watched folder
+		File f = new File(epsonDirectory + File.separator + "CD_"+dateFormat.format(datenow)+".JRQ");
+		
+		Orthanc_Tools.writeCSV(txtRobot, f);
+		
+		Object[] answer=new Object[] {f, jobId};
+		return answer;
 					
 	}
 	

@@ -50,6 +50,8 @@ import org.petctviewer.orthanc.monitoring.autofetch.Auto_Fetch;
 import org.petctviewer.orthanc.monitoring.autorouting.Rule_AutoRouting_Gui;
 import org.petctviewer.orthanc.monitoring.cdburner.Burner_Settings;
 import org.petctviewer.orthanc.monitoring.cdburner.CD_Burner;
+import org.petctviewer.orthanc.monitoring.cdburner.Cancel_CD_Column_Editor;
+import org.petctviewer.orthanc.monitoring.cdburner.Cancel_Cd_Column;
 import org.petctviewer.orthanc.monitoring.tagmonitoring.Tag_Monitoring;
 import org.petctviewer.orthanc.monitoring.tagmonitoring.Tag_Monitoring_Settings;
 import org.petctviewer.orthanc.query.QueryRetrieve;
@@ -177,20 +179,31 @@ public class Monitoring_GUI extends JFrame {
 						table_burning_history = new JTable();
 						table_burning_history.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 						table_burning_history.setPreferredScrollableViewportSize(new Dimension(450, 200));
-						table_burning_history.setModel(new DefaultTableModel(
-							new String[][] {
-							},
-							new String[] {
-								"Name", "ID", "DOB", "Date", "Description", "Status"
-							}
-						) {
+						table_burning_history.setModel(new DefaultTableModel(0,7){
+
 							Class<?>[] columnTypes = new Class[] {
-								String.class, String.class, String.class, String.class, String.class, String.class
+								String.class, String.class, String.class, String.class, String.class, String.class, JButton.class
 							};
+							
+							
+							String[] titles=new String[] {
+								"Name", "ID", "DOB", "Date", "Description", "Status", "Cancel"
+							};
+					
 							public Class<?> getColumnClass(int columnIndex) {
 								return columnTypes[columnIndex];
+								
+							}
+							
+							public String getColumnName(int columnIndex) {
+								return titles[columnIndex];
+								
 							}
 						});
+						//SK ON TEST ICI
+						table_burning_history.getColumnModel().getColumn(6).setCellRenderer(new Cancel_Cd_Column());
+						table_burning_history.getColumnModel().getColumn(6).setCellEditor(
+						        new Cancel_CD_Column_Editor(new JCheckBox()));
 						scrollPane.setViewportView(table_burning_history);
 						
 						JPanel panel = new JPanel();

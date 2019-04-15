@@ -263,16 +263,18 @@ public class OrthancRestApis {
 	public void getSystemInformationsAndTest() {
 		
 		StringBuilder sb= makeGetConnectionAndStringBuilder("/system");
-		if(sb!=null) {
+		try {
 			JsonParser parser=new JsonParser();
 			JsonObject systemJson=(JsonObject) parser.parse(sb.toString());
 			orthancVersion=systemJson.get("Version").getAsString();
 			localAETName=systemJson.get("DicomAet").getAsString();
 			versionHigher131=isVersionAfter131();
 			connected=true;	
-		}else{ 
+		}catch(Exception e) {
 			connected=false;
 		}
+			
+		
 		
 		
 		

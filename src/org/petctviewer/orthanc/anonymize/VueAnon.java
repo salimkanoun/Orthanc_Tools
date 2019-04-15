@@ -237,7 +237,7 @@ public class VueAnon extends JFrame {
 
 	public boolean fijiEnvironement=false;
 	
-	public Timer timerState=new Timer();
+	public Timer timerState;
 	
 	public VueAnon() {
 		super("Orthanc Tools");
@@ -247,14 +247,23 @@ public class VueAnon extends JFrame {
 		int check=0;
 		while (!connexionHttp.isConnected() && check<3) {
 				if (check>0) JOptionPane.showMessageDialog(null, "Settings Attempt " + (check+1) +"/3", "Attempt", JOptionPane.INFORMATION_MESSAGE);
-				ConnectionSetup setup = new ConnectionSetup(runOrthanc, null);
+				ConnectionSetup setup = new ConnectionSetup(runOrthanc, this);
 				setup.setVisible(true);
 				connexionHttp=new OrthancRestApis(null);
 				check++;
-				if(check ==3) JOptionPane.showMessageDialog(null, "Programme is starting without connexion (no services)", "Failure", JOptionPane.ERROR_MESSAGE);
+				if(check ==3) {
+					JOptionPane.showMessageDialog(null, "Can't reach Orthanc, terminating", "Failure", JOptionPane.ERROR_MESSAGE);	
+				}
 		}
-		queryOrthanc=new QueryOrthancData(connexionHttp);
-		buildGui();
+		//SK BUG SI SERVER NON JOIGNABLE
+		if(connexionHttp.isConnected()) {
+			timerState=new Timer();
+			queryOrthanc=new QueryOrthancData(connexionHttp);
+			buildGui();
+		}else {
+			dispose();
+		}
+		
 		
 	}
 	
