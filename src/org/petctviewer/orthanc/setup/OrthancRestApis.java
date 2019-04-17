@@ -56,12 +56,7 @@ public class OrthancRestApis {
 	
 	public OrthancRestApis(String fullAddress)  {
 		if(fullAddress==null) {
-			String ip = jpreferPerso.get("ip", "http://localhost");
-			String port = jpreferPerso.get("port", "8042");
-			this.fullAddress = ip + ":" + port;
-			if(jpreferPerso.get("username", null) != null && jpreferPerso.get("username", null) != null){
-				authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
-			}
+			refreshServerAddress();
 			
 		}else {
 			this.fullAddress = fullAddress;
@@ -70,12 +65,16 @@ public class OrthancRestApis {
 	}
 	
 	public void refreshServerAddress() {
-		String ip = jpreferPerso.get("ip", "http://localhost");
-		String port = jpreferPerso.get("port", "8042");
+		
+		int serverNum=jpreferPerso.getInt("currentOrthancServer", 1);
+		String ip =jpreferPerso.get("ip"+serverNum, "http://localhost");
+		String port =jpreferPerso.get("port"+serverNum, "8042");
 		this.fullAddress = ip + ":" + port;
-		if(jpreferPerso.get("username", null) != null && jpreferPerso.get("username", null) != null){
-			authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
+		
+		if(jpreferPerso.get("username"+serverNum, null) != null && jpreferPerso.get("password"+serverNum, null) != null){
+			authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username"+serverNum, null) + ":" + jpreferPerso.get("password"+serverNum, null)).getBytes());
 		}
+		
 		getSystemInformationsAndTest();
 		
 	}
@@ -272,10 +271,8 @@ public class OrthancRestApis {
 			connected=true;	
 		}catch(Exception e) {
 			connected=false;
+			JOptionPane.showMessageDialog(null, "Orthanc Unreachable", "No Reachable", JOptionPane.ERROR_MESSAGE);
 		}
-			
-		
-		
 		
 		
 	}

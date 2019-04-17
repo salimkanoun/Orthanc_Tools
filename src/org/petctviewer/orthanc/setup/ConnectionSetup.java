@@ -61,6 +61,7 @@ public class ConnectionSetup extends JDialog {
 	private JDialog gui=this;
 	private JTextField ipTxt,portTxt,usernameTxt;
 	private JPasswordField passwordTxt;
+	private JSpinner spinnerServerChoice;
 
 	public ConnectionSetup(Run_Orthanc orthanc, VueAnon vueAnon){
 		this.setTitle("Setup");
@@ -93,10 +94,10 @@ public class ConnectionSetup extends JDialog {
 		JLabel lblServer = new JLabel("Server");
 		panel_http_settings.add(lblServer);
 		
-		JSpinner spinnerServerChoice = new JSpinner();
+		spinnerServerChoice = new JSpinner();
 		spinnerServerChoice.setModel(new SpinnerNumberModel(1, 1, 10, 1));
 		panel_http_settings.add(spinnerServerChoice);
-
+		
 		JLabel label = new JLabel("Address");
 		panel_http_settings.add(label);
 		
@@ -158,17 +159,7 @@ public class ConnectionSetup extends JDialog {
 		spinnerServerChoice.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent arg0) {
 				int number=(int) spinnerServerChoice.getValue();
-				if(number!=1) {
-					fillParameter(number);
-				}else {
-					ipTxt.setText(jpreferPerso.get("ip"+number, "http://localhost"));
-					portTxt.setText(jpreferPerso.get("port"+number, "8042"));
-					passwordTxt.setText(jpreferPerso.get("password"+number, ""));
-					usernameTxt.setText(jpreferPerso.get("username"+number, ""));
-				}
-				
-				
-				
+				fillParameter(number);
 			}
 		});
 		
@@ -180,10 +171,6 @@ public class ConnectionSetup extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (ipTxt.getText().toLowerCase().startsWith("http://") || ipTxt.getText().toLowerCase().startsWith("https://")) {
-					jpreferPerso.put("ip", ipTxt.getText());
-					jpreferPerso.put("port", portTxt.getText());
-					jpreferPerso.put("password", new String(passwordTxt.getPassword()));
-					jpreferPerso.put("username", usernameTxt.getText());
 					jpreferPerso.putInt("currentOrthancServer", (int) spinnerServerChoice.getValue());
 					vueAnon.getOrthancApisConnexion().refreshServerAddress();
 					if(vueAnon.isVisible()) {
@@ -302,15 +289,23 @@ public class ConnectionSetup extends JDialog {
 		
 		fillParameter(jpreferPerso.getInt("currentOrthancServer", 1));
 		
+		selectServerSpinner();
+
 		setSize(1200, 400);
 		pack();
 	}
 	
 	private void fillParameter(int number) {
-		ipTxt.setText(jpreferPerso.get("ip"+number, ""));
-		portTxt.setText(jpreferPerso.get("port"+number, ""));
-		passwordTxt.setText(jpreferPerso.get("password"+number, ""));
-		usernameTxt.setText(jpreferPerso.get("username"+number, ""));
+		ipTxt.setText(jpreferPerso.get("ip"+number, "http://localhost"));
+		portTxt.setText(jpreferPerso.get("port"+number, "8042"));
+		passwordTxt.setText(jpreferPerso.get("password"+number, null));
+		usernameTxt.setText(jpreferPerso.get("username"+number, null));
+	}
+	
+	private void selectServerSpinner() {
+		int choiceValue=jpreferPerso.getInt("currentOrthancServer", 1);
+		this.spinnerServerChoice.setValue(choiceValue);
+		fillParameter(choiceValue);
 	}
 	
 	private void openWebPage(String url){
