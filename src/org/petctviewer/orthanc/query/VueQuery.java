@@ -247,6 +247,9 @@ public class VueQuery extends JFrame {
 		tablePatients.getColumnModel().getColumn(5).setMinWidth(0);
 		tablePatients.getColumnModel().getColumn(5).setMaxWidth(0);
 		tablePatients.getColumnModel().getColumn(5).setResizable(false);
+		tablePatients.getColumnModel().getColumn(6).setMinWidth(0);
+		tablePatients.getColumnModel().getColumn(6).setMaxWidth(0);
+		tablePatients.getColumnModel().getColumn(6).setResizable(false);
 		tablePatients.setPreferredScrollableViewportSize(new Dimension(655,400));
 
 		// We sort the array this way by default :
@@ -280,6 +283,9 @@ public class VueQuery extends JFrame {
 		tableSeries.getColumnModel().getColumn(1).setResizable(false);
 		tableSeries.getColumnModel().getColumn(2).setMaxWidth(100);
 		tableSeries.getColumnModel().getColumn(2).setResizable(false);
+		tableSeries.getColumnModel().getColumn(3).setMinWidth(0);
+		tableSeries.getColumnModel().getColumn(3).setMaxWidth(0);
+		tableSeries.getColumnModel().getColumn(3).setResizable(false);
 		tableSeries.setPreferredScrollableViewportSize(new Dimension(400,400));
 
 		List<RowSorter.SortKey> sortKeysDetails = new ArrayList<>();
@@ -416,6 +422,9 @@ public class VueQuery extends JFrame {
 		tablePatientsHistory.getColumnModel().getColumn(5).setMinWidth(0);
 		tablePatientsHistory.getColumnModel().getColumn(5).setMaxWidth(0);
 		tablePatientsHistory.getColumnModel().getColumn(5).setResizable(false);
+		tablePatientsHistory.getColumnModel().getColumn(6).setMinWidth(0);
+		tablePatientsHistory.getColumnModel().getColumn(6).setMaxWidth(0);
+		tablePatientsHistory.getColumnModel().getColumn(6).setResizable(false);
 		// 655 400
 		tablePatientsHistory.setPreferredScrollableViewportSize(new Dimension(655,400));
 
@@ -442,6 +451,9 @@ public class VueQuery extends JFrame {
 		tableSeriesHistory.getColumnModel().getColumn(2).setMinWidth(100);
 		tableSeriesHistory.getColumnModel().getColumn(2).setMaxWidth(100);
 		tableSeriesHistory.getColumnModel().getColumn(2).setResizable(false);
+		tableSeriesHistory.getColumnModel().getColumn(3).setMinWidth(0);
+		tableSeriesHistory.getColumnModel().getColumn(3).setMaxWidth(0);
+		tableSeriesHistory.getColumnModel().getColumn(3).setResizable(false);
 		tableSeriesHistory.setPreferredScrollableViewportSize(new Dimension(400,400));
 
 		//Setting the sorter for tableauDetailsH
