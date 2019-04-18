@@ -54,7 +54,7 @@ public class Burner_Settings extends JDialog {
 	private JLabel labelFilePath;
 	private JSpinner spinnerTiming;
 	private JComboBox<String> comboBoxSupportType, comboBoxBurnerManufacturer, levelMonitoring, dateFormatChoice;
-	private JCheckBox chckbxDeleteSentStudies;
+	private JCheckBox chckbxDeleteSentStudies, chckbxPlaySounds;
 	
 	/**
 	 * Create the dialog.
@@ -193,6 +193,8 @@ public class Burner_Settings extends JDialog {
 				jPrefer.put("Burner_DateFormat", dateFormatChoice.getSelectedItem().toString());
 				jPrefer.putInt("Burner_monitoringTime", (int) spinnerTiming.getValue());
 				
+				jPrefer.putBoolean("Burner_playSounds", chckbxPlaySounds.isSelected());
+				
 				if(levelMonitoring.getSelectedItem().equals("Patient")) {
 					jPrefer.putBoolean("Burner_levelPatient", true);
 				}else {
@@ -203,8 +205,10 @@ public class Burner_Settings extends JDialog {
 			}
 		});
 		
+		chckbxPlaySounds = new JCheckBox("Sounds");
+		buttonPane.add(chckbxPlaySounds);
+		
 		chckbxDeleteSentStudies = new JCheckBox("Delete Sent Studies");
-		chckbxDeleteSentStudies.setSelected(jPrefer.getBoolean("Burner_deleteStudies", false));
 		chckbxDeleteSentStudies.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (chckbxDeleteSentStudies.isSelected()) {
@@ -254,6 +258,7 @@ public class Burner_Settings extends JDialog {
 		epsonDirectoryLabel.setText(jPrefer.get("Burner_epsonDirectory", null));
 		dateFormatChoice.setSelectedItem(jPrefer.get("Burner_DateFormat", "yyyyMMdd"));
 		chckbxDeleteSentStudies.setSelected(jPrefer.getBoolean("Burner_deleteStudies", false));
+		chckbxPlaySounds.setSelected(jPrefer.getBoolean("Burner_playSounds", false));
 		comboBoxSupportType.setSelectedItem(jPrefer.get("Burner_suportType", "Auto"));
 		spinnerTiming.setValue(jPrefer.getInt("Burner_monitoringTime", 30));
 		if(jPrefer.getBoolean("Burner_levelPatient", false)) {

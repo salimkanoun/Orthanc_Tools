@@ -74,6 +74,7 @@ public class CD_Burner {
 	private String fijiDirectory;
 	private int monitoringTime;
 	private Boolean deleteStudies;
+	private Boolean playSounds;
 	private String suportType;
 	private JTable table_burning_history;
 	private Path folder;
@@ -709,6 +710,7 @@ public class CD_Burner {
 				suportType=jPrefer.get("Burner_suportType", "Auto");
 				monitoringTime=jPrefer.getInt("Burner_monitoringTime", 90);
 				levelPatient=jPrefer.getBoolean("Burner_levelPatient", false);
+				playSounds=jPrefer.getBoolean("Burner_playSounds", false);
 				
 				
 		
@@ -737,26 +739,33 @@ public class CD_Burner {
 		
 	}
 	
+	/**
+	 * Play sounds (sucess or error sounds depending on boolean) only if sounds activated in the options
+	 * @param success
+	 */
 	private void playSound(boolean success) {
-		try {
-			URL url=null;
-			if(success) {
-				url=ClassLoader.getSystemResource("logos/cd_Success.wav");
-			}else {
-				url=ClassLoader.getSystemResource("logos/cd_Error.wav");
-			}
-			
-	        AudioInputStream inputStream = AudioSystem.getAudioInputStream(url);
-	        
-	        DataLine.Info info = new DataLine.Info(Clip.class, inputStream.getFormat());
-	        Clip clip = (Clip) AudioSystem.getLine(info);
-			
-	        clip.open(inputStream);
-	        clip.start(); 
-			} catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		if(this.playSounds) {
+			try {
+				URL url=null;
+				if(success) {
+					url=ClassLoader.getSystemResource("logos/cd_Success.wav");
+				}else {
+					url=ClassLoader.getSystemResource("logos/cd_Error.wav");
+				}
+				
+		        AudioInputStream inputStream = AudioSystem.getAudioInputStream(url);
+		        
+		        DataLine.Info info = new DataLine.Info(Clip.class, inputStream.getFormat());
+		        Clip clip = (Clip) AudioSystem.getLine(info);
+				
+		        clip.open(inputStream);
+		        clip.start(); 
+				} catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}
+		
 	}
 	
 	private class DatInfos {

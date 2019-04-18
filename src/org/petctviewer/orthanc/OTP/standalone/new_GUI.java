@@ -9,6 +9,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.GridLayout;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.JButton;
 
 public class new_GUI extends JFrame {
 
@@ -43,6 +45,9 @@ public class new_GUI extends JFrame {
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
 		
+		JPanel panel_4 = new JPanel();
+		contentPane.add(panel_4, BorderLayout.WEST);
+		
 		JPanel panel = new JPanel();
 		contentPane.add(panel, BorderLayout.CENTER);
 		panel.setLayout(new BorderLayout(0, 0));
@@ -51,11 +56,29 @@ public class new_GUI extends JFrame {
 		panel.add(panel_1, BorderLayout.CENTER);
 		panel_1.setLayout(new GridLayout(1, 0, 0, 0));
 		
+		JPanel panel_5 = new JPanel();
+		panel_1.add(panel_5);
+		panel_5.setLayout(new BorderLayout(0, 0));
+		
 		JScrollPane scrollPane_Study = new JScrollPane();
-		panel_1.add(scrollPane_Study);
+		panel_5.add(scrollPane_Study);
 		
 		tableStudy = new JTable();
-		scrollPane_Study.add(tableStudy);
+		tableStudy.setModel(new DefaultTableModel(
+			new Object[][] {
+				{null, null, null, null, "", null},
+			},
+			new String[] {
+				"Name", "ID", "New Name", "New ID", "Study Description", "Study Date"
+			}
+		));
+		scrollPane_Study.setViewportView(tableStudy);
+		
+		JPanel panel_6 = new JPanel();
+		panel_5.add(panel_6, BorderLayout.SOUTH);
+		
+		JButton btnNewButton = new JButton("Query Anon Key");
+		panel_6.add(btnNewButton);
 		
 		
 		
@@ -63,7 +86,24 @@ public class new_GUI extends JFrame {
 		panel_1.add(scrollPane_Series);
 		
 		tableSeries = new JTable();
-		scrollPane_Series.add(tableSeries);
+		tableSeries.setModel(new DefaultTableModel(
+			new Object[][] {
+				{null, null, null, null},
+			},
+			new String[] {
+				"Serie Description", "Modality", "Serie Number", "Number of Instances"
+			}
+		));
+		scrollPane_Series.setViewportView(tableSeries);
+		
+		JPanel panel_2 = new JPanel();
+		contentPane.add(panel_2, BorderLayout.SOUTH);
+		
+		JPanel panel_3 = new JPanel();
+		contentPane.add(panel_3, BorderLayout.NORTH);
+		
+		JButton btnImport = new JButton("Import DICOM");
+		panel_3.add(btnImport);
 	}
 
 }
