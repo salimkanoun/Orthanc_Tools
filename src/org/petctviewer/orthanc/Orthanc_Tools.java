@@ -45,7 +45,7 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 //Tester envoie DICOM plateforme
 //Debeuger sortie reste des thread non collectes=> Tracker update de ImageJ
 //Query / Import passer en singeton + update interface au changement de serveur
-//CD Burner sons en option
+//Impact du changement du serveur sur le monitoring
 
 //+Tard
 //Faire detection des SC dans table export Series comme sur main Tab
