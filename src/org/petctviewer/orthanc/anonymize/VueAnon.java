@@ -285,6 +285,7 @@ public class VueAnon extends JFrame {
 		
 		connexionHttp= new OrthancRestApis("http://localhost:8043");
 		queryOrthanc=new QueryOrthancData(connexionHttp);
+		timerState=new Timer();
 		buildGui();
 		
 	}
