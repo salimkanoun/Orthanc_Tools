@@ -35,7 +35,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -72,18 +71,18 @@ import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import org.apache.commons.io.FileUtils;
+
 import org.apache.commons.lang.StringUtils;
 import org.petctviewer.orthanc.Orthanc_Tools;
 import org.petctviewer.orthanc.Jsonsettings.SettingsGUI;
 import org.petctviewer.orthanc.OTP.OTP_Gui;
-import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_Remote_Btn;
-import org.petctviewer.orthanc.anonymize.controllers.Controller_Main_Anonymize_Btn;
 import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_Csv_Btn;
 import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_OTP;
-import org.petctviewer.orthanc.anonymize.controllers.Controller_Main_Zip;
-import org.petctviewer.orthanc.anonymize.controllers.Controller_Main_Read_Series;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_Remote_Btn;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Main_Anonymize_Btn;
 import org.petctviewer.orthanc.anonymize.controllers.Controller_Main_Delete;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Main_Read_Series;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Main_Zip;
 import org.petctviewer.orthanc.anonymize.datastorage.Patient;
 import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
 import org.petctviewer.orthanc.anonymize.datastorage.Serie;
@@ -108,6 +107,7 @@ import org.petctviewer.orthanc.query.VueQuery;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 import org.petctviewer.orthanc.setup.Run_Orthanc;
+import org.petctviewer.orthanc.setup.Setup_Viewer_Distribution;
 
 import com.michaelbaranov.microba.calendar.DatePicker;
 
@@ -1798,47 +1798,18 @@ public class VueAnon extends JFrame {
 		clinicalTrialProcessorGrid.add(listePeersCTP);
 		
 		JPanel aboutPanel = new JPanel(new FlowLayout());
-		JButton viewerDistribution = new JButton("Download Viewer Distribution");
+		
+		JButton viewerDistribution = new JButton("Set Viewer Distribution");
 		viewerDistribution.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser chooser = new JFileChooser();
-				chooser.setDialogTitle("Select folder for CD/DVD output");
-				chooser.setSelectedFile(new File("ImageJ.zip"));
-				chooser.setDialogTitle("Dowload Viewer to...");
-				if (! jprefer.get("viewerDistribution", "empty").equals("empty") ) {
-					chooser.setSelectedFile(new File (jprefer.get("viewerDistribution", "empty")));
-				}
-				chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-				chooser.setAcceptAllFileFilterUsed(false);
-				if (chooser.showSaveDialog(gui) == JFileChooser.APPROVE_OPTION) {
-					viewerDistribution.setBackground(Color.ORANGE);
-					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-						@Override
-						protected Void doInBackground() {
-							try {
-								FileUtils.copyURLToFile(new URL("http://petctviewer.org/images/ImageJ.zip"), chooser.getSelectedFile());
-								//Message confirmation
-								JOptionPane.showMessageDialog(gui, "Viewer distribution sucessfully downloaded");
-							} catch (IOException e) {
-								e.printStackTrace();
-								JOptionPane.showMessageDialog(gui, "Download Failed",  "Error", JOptionPane.ERROR_MESSAGE);
-							}
-							return null;
-						}
-
-						@Override
-						protected void done(){
-							// Enregistre la destination du fichier dans le registery
-							jprefer.put("viewerDistribution", chooser.getSelectedFile().toString());
-							viewerDistribution.setBackground(null);
-						}
-					};
-					worker.execute();
-				}
-
+				Setup_Viewer_Distribution viewerGui=new Setup_Viewer_Distribution();
+				viewerGui.setVisible(true);
+				
 			}
+			
+			
 			
 		});
 		
