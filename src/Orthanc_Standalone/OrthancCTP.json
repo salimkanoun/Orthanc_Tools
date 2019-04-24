@@ -226,8 +226,6 @@
 
   // The list of the known Orthanc peers
   "OrthancPeers" : {
-  
-  "Lysarc"  : [ "https://orthanc.petctviewer.com:443/", "salim", "salim" ]
     /**
      * Each line gives the base URL of an Orthanc peer, possibly
      * followed by the username/password pair (if the password
@@ -287,8 +285,6 @@
   // Debian-based systems, this option can be set to
   // "/etc/ssl/certs/ca-certificates.crt"
   "HttpsCACertificates" : "",
-
-
 
   /**
    * Advanced options

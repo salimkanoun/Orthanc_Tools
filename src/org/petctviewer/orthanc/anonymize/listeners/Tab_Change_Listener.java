@@ -103,8 +103,7 @@ public class Tab_Change_Listener implements ChangeListener {
 		}else{
 			vue.showRemoteExportBtn(true);
 		}
-		//Save Peer position
-		jprefer.putInt("CTPPeer", vue.listePeersCTP.getSelectedIndex());
+		
 		vue.pack();
 		
 	}

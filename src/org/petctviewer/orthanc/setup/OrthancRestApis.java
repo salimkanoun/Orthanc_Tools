@@ -170,6 +170,27 @@ public class OrthancRestApis {
 		
 		return conn;
 	}
+	
+	public HttpURLConnection makePutConnection(String apiUrl, String post) throws Exception {
+
+		HttpURLConnection conn = null ;
+			URL url = new URL(fullAddress+apiUrl);
+			conn = (HttpURLConnection) url.openConnection();
+			conn.setDoOutput(true);
+			conn.setRequestMethod("PUT");
+			if((fullAddress != null && fullAddress.contains("https")) ){
+					HttpsTrustModifier.Trust(conn);
+			}
+			if(this.authentication != null){
+				conn.setRequestProperty("Authorization", "Basic " + this.authentication);
+			}
+			OutputStream os = conn.getOutputStream();
+			os.write(post.getBytes());
+			os.flush();
+			conn.getResponseMessage();
+		
+		return conn;
+	}
 
 	public HttpURLConnection sendDicom(String apiUrl, byte[] post) {
 		
@@ -206,6 +227,29 @@ public class OrthancRestApis {
 		try {
 			sb=new StringBuilder();
 			HttpURLConnection conn = makePostConnection(apiUrl, post);
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					(conn.getInputStream())));
+			// We get the study ID at the end
+			String output;
+			while ((output = br.readLine()) != null) {
+				sb.append(output);
+			}
+			conn.disconnect();
+			conn.getResponseMessage();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		return sb; 
+	}
+	
+	public StringBuilder makePutConnectionAndStringBuilder(String apiUrl, String post) {
+		
+		StringBuilder sb =null;
+		try {
+			sb=new StringBuilder();
+			HttpURLConnection conn = makePutConnection(apiUrl, post);
 			BufferedReader br = new BufferedReader(new InputStreamReader(
 					(conn.getInputStream())));
 			// We get the study ID at the end
@@ -447,6 +491,28 @@ public class OrthancRestApis {
 		
 		return jobId;
 		
+	}
+	
+	public void addPeerOtp(Object[] peer) {
+		JsonObject jsonPeer=new JsonObject();
+		if(((String) peer[0]).endsWith("/")) {
+			peer[0]=((String) peer[0]).substring(0, ((String) peer[0]).length());
+		}
+		jsonPeer.addProperty("Url", peer[0]+":"+peer[1]);
+		jsonPeer.addProperty("Username", (String) peer[2]);
+		jsonPeer.addProperty("Password", (String) peer[3]);
+		
+		try {
+			this.makePutConnection("/peers/otp", jsonPeer.toString());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public void removePeerOtp() {
+		this.makeDeleteConnection("/peers/toto");
 	}
 	
 	public static void main(String[] arg) {

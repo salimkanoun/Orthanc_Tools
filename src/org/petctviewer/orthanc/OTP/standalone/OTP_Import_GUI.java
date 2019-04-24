@@ -65,7 +65,6 @@ public class OTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 		anonBtn.setText("Send");
 		openCloseAnonTool(true);
 		tabbedPane.remove(2);
-		listePeersCTP.setSelectedIndex(1);
 		
 		//PopUp menu for series selections in Study anonymization list (most usefull for CTP)
 		JPopupMenu popMenuSelectSeries = new JPopupMenu();

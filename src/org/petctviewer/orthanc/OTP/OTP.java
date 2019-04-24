@@ -22,6 +22,9 @@ public class OTP {
 	private String serverAdress;
 	private JsonParser parser=new JsonParser();
 	
+	protected String orthancAdress, orthancLogin, orthancPassword;
+	protected int orthancPort;
+	
 	public OTP(String username, String password, String serverAdress) {
 		this.username=username;
 		this.password=password;
@@ -89,11 +92,16 @@ public class OTP {
 		jsonPost.addProperty("password", password);
 		jsonPost.addProperty("studyName", studyName);
 		jsonPost.addProperty("visit", visitName);
-		
-		JsonArray visits = null;
+
 		String answser=makePostConnection("/Rest_Api/get-possible-import.php", jsonPost.toString());
-		visits=parser.parse(answser).getAsJsonArray();
+		JsonObject answserJson=parser.parse(answser).getAsJsonObject();
+		JsonArray visits=answserJson.get("AvailablePatients").getAsJsonArray();
 		
+		
+		orthancAdress=answserJson.get("OrthancServer").getAsString();
+		orthancPort=answserJson.get("OrthancPort").getAsInt();
+		orthancLogin=answserJson.get("OrthancLogin").getAsString();
+		orthancPassword=answserJson.get("OrthancPassword").getAsString();
 		return visits;
 		
 		

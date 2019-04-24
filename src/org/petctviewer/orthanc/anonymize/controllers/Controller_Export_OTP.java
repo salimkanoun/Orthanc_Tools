@@ -36,9 +36,8 @@ public class Controller_Export_OTP implements ActionListener{
 				OrthancRestApis connexionHttp=vue.getOrthancApisConnexion();
 				//Send DICOM to CTP selected Peer
 				vue.getExportCTPbtn().setEnabled(false);
-				String jobID=connexionHttp.sendStudiesToPeerAccelerator(vue.getSelectedCTPPeer(), vue.modeleExportStudies.getOrthancIds());
+				String jobID=connexionHttp.sendStudiesToPeerAccelerator("otp", vue.modeleExportStudies.getOrthancIds());
 				Job_Monitoring jobMonitoring=new Job_Monitoring(connexionHttp, jobID);
-				
 				do {
 					vue.setStateExportMessage("Step 1/3 Sending to CTP Peer : Progress "+jobMonitoring.getProgress()+" %", "orange", -1);
 					Thread.sleep(500);
@@ -46,6 +45,7 @@ public class Controller_Export_OTP implements ActionListener{
 				
 				if(jobMonitoring.getState().equals("Success")) {
 					validateUpload();
+					connexionHttp.removePeerOtp();
 				}else if(jobMonitoring.getState().equals("Failure")) {
 					vue.setStateExportMessage("Send Failed", "red", -1);
 					return null;

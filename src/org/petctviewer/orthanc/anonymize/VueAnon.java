@@ -218,7 +218,7 @@ public class VueAnon extends JFrame {
 	
 	//CTP
 	private JTextField addressFieldCTP;
-	public JComboBox<String> listePeersCTP ;
+	public String ctpPeer ;
 	private String CTPUsername;
 	private String CTPPassword;
 	private JButton exportCTP;
@@ -1106,6 +1106,7 @@ public class VueAnon extends JFrame {
 						autoSendCTP=true;
 						CTPUsername=dialog.getLogin();
 						CTPPassword=dialog.getPassword();
+						connexionHttp.addPeerOtp(dialog.getOrthancServerReciever());
 						String patientNewName=dialog.getAnonName();
 						String patientNewID=dialog.getAnonID();
 						String visitName=dialog.getVisitName();
@@ -1786,16 +1787,11 @@ public class VueAnon extends JFrame {
 		addressFieldCTP.setToolTipText("Include http:// or https://");
 		addressFieldCTP.setPreferredSize(new Dimension(300,20));
 		addressFieldCTP.setText(jprefer.get("CTPAddress", "http://"));
-		JLabel peerLabel=new JLabel("CTP Peer");
-		listePeersCTP = new JComboBox<String>();
+		
 		this.refreshPeers();
-		listePeersCTP.insertItemAt("Choose", 0);
-		if(jprefer.getInt("CTPPeer", 0) <= listePeersCTP.getItemCount()-1) listePeersCTP.setSelectedIndex(jprefer.getInt("CTPPeer", 0));
-		else listePeersCTP.setSelectedIndex(0);
+		
 		clinicalTrialProcessorGrid.add(address);
 		clinicalTrialProcessorGrid.add(addressFieldCTP);
-		clinicalTrialProcessorGrid.add(peerLabel);
-		clinicalTrialProcessorGrid.add(listePeersCTP);
 		
 		JPanel aboutPanel = new JPanel(new FlowLayout());
 		
@@ -2131,7 +2127,6 @@ public class VueAnon extends JFrame {
 	
 	public void refreshPeers() {
 		String[] peers=connexionHttp.getPeers();
-		listePeersCTP.setModel(new DefaultComboBoxModel<String>(peers)) ;
 		listePeers.setModel(new DefaultComboBoxModel<String>(peers));
 	}
 	
@@ -2235,10 +2230,6 @@ public class VueAnon extends JFrame {
 	
 	public String getCTPPassword() {
 		return CTPPassword;
-	}
-	
-	public String getSelectedCTPPeer() {
-		return listePeersCTP.getSelectedItem().toString();
 	}
 	
 	public String[] getExportRemoteServer() {
