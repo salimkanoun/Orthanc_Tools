@@ -2,21 +2,8 @@ package org.petctviewer.orthanc.setup;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-
-import org.apache.commons.io.FileUtils;
-import org.petctviewer.orthanc.anonymize.VueAnon;
-
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.SwingConstants;
-import javax.swing.SwingWorker;
-
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,15 +11,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import java.awt.event.ActionEvent;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
+import javax.swing.border.EmptyBorder;
+
+import org.apache.commons.io.FileUtils;
+import org.petctviewer.orthanc.anonymize.VueAnon;
 
 public class Setup_Viewer_Distribution extends JDialog {
 
@@ -48,7 +42,6 @@ public class Setup_Viewer_Distribution extends JDialog {
 	 * Create the dialog.
 	 */
 	public Setup_Viewer_Distribution() {
-		setBounds(100, 100, 450, 300);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -96,22 +89,22 @@ public class Setup_Viewer_Distribution extends JDialog {
 						});
 						panel_buttons_download.add(btnDownloadFijiViewer);
 					}
+					{
+						JButton btnCustomViewerFolder = new JButton("Custom Viewer Folder");
+						panel_buttons_download.add(btnCustomViewerFolder);
+					}
 				}
 				{
 					JPanel panel_1 = new JPanel();
 					panel_3.add(panel_1);
 					panel_1.setLayout(new BorderLayout(0, 0));
 					{
-						JButton btnCustomViewerFolder = new JButton("Custom Viewer Folder");
-						panel_1.add(btnCustomViewerFolder, BorderLayout.CENTER);
+						JLabel lblPath = new JLabel("Path : ");
+						panel_1.add(lblPath, BorderLayout.NORTH);
 					}
 					{
-						JPanel panel_2 = new JPanel();
-						panel_1.add(panel_2, BorderLayout.EAST);
-						{
-							lblFolder = new JLabel("N/A");
-							panel_2.add(lblFolder);
-						}
+						lblFolder = new JLabel("N/A");
+						panel_1.add(lblFolder, BorderLayout.CENTER);
 					}
 				}
 			}
@@ -126,6 +119,7 @@ public class Setup_Viewer_Distribution extends JDialog {
 			lblNewLabel.setHorizontalAlignment(SwingConstants.TRAILING);
 			contentPanel.add(lblNewLabel, BorderLayout.SOUTH);
 		}
+		this.pack();
 	}
 
 	private void downloadAction(URL url , JButton button) {
@@ -143,7 +137,7 @@ public class Setup_Viewer_Distribution extends JDialog {
 				@Override
 				protected Void doInBackground() {
 					try {
-						recursiveDelete(chooser.getSelectedFile().toPath());
+						FileUtils.deleteDirectory(chooser.getSelectedFile());
 						chooser.getSelectedFile().mkdirs();
 						File zipTemp=File.createTempFile("OT_Viewer", ".zip");
 						FileUtils.copyURLToFile(url, zipTemp);
@@ -161,7 +155,7 @@ public class Setup_Viewer_Distribution extends JDialog {
 				@Override
 				protected void done(){
 					// Enregistre la destination du fichier dans le registery
-					jprefer.put("viewerDistribution", chooser.getSelectedFile().toString()+File.pathSeparator+"viewer");
+					jprefer.put("viewerDistribution", chooser.getSelectedFile().toString()+File.separator+"viewer");
 					updateFolder();
 					button.setBackground(null);
 				}
@@ -172,6 +166,7 @@ public class Setup_Viewer_Distribution extends JDialog {
 	
 	private void updateFolder() {
 		lblFolder.setText(jprefer.get("viewerDistribution", "N/A"));
+		this.pack();
 	}
 	
 	
@@ -214,34 +209,6 @@ public class Setup_Viewer_Distribution extends JDialog {
 	     } catch (IOException e) {
 				e.printStackTrace();
 			}
-	}
-	
-	
-	/**
-	 * Delete a path itself and all subdirectories
-	 * @param path
-	 * @throws IOException
-	 */
-	public static void recursiveDelete(Path path) {
-		  try {
-			Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-			    @Override
-			    public FileVisitResult visitFile(Path file,
-			        BasicFileAttributes attrs) {
-			      file.toFile().delete();
-			      return FileVisitResult.CONTINUE;
-			    }
-			    @Override
-			    public FileVisitResult preVisitDirectory(Path dir,
-			        BasicFileAttributes attrs) {
-			      dir.toFile().delete();
-			      return FileVisitResult.CONTINUE;
-			    }
-			  });
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 }
