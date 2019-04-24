@@ -2,8 +2,6 @@ package org.petctviewer.orthanc.setup;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
-
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -21,10 +19,19 @@ import javax.swing.SwingWorker;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.prefs.Preferences;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.awt.event.ActionEvent;
 
 public class Setup_Viewer_Distribution extends JDialog {
@@ -36,20 +43,7 @@ public class Setup_Viewer_Distribution extends JDialog {
 	private Preferences jprefer = VueAnon.jprefer;
 	private JDialog dialogDowload = this;
 	private JLabel lblFolder;
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			Setup_Viewer_Distribution dialog = new Setup_Viewer_Distribution();
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
+	
 	/**
 	 * Create the dialog.
 	 */
@@ -77,7 +71,7 @@ public class Setup_Viewer_Distribution extends JDialog {
 							public void actionPerformed(ActionEvent arg0) {
 								
 								try {
-									downloadAction(new URL("http://petctviewer.org/images/ImageJ.zip"), btnDownloadWaesisViewer);
+									downloadAction(new URL("https://github.com/salimkanoun/Orthanc_Tools/releases/download/Viewers/weasis_3.0.4.zip"), btnDownloadWaesisViewer);
 								} catch (MalformedURLException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
@@ -92,7 +86,8 @@ public class Setup_Viewer_Distribution extends JDialog {
 						btnDownloadFijiViewer.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent arg0) {
 								try {
-									downloadAction(new URL("http://petctviewer.org/images/ImageJ.zip"), btnDownloadFijiViewer);
+									
+									downloadAction(new URL("https://github.com/salimkanoun/Orthanc_Tools/releases/download/Viewers/ImageJ.zip"), btnDownloadFijiViewer);
 								} catch (MalformedURLException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
@@ -131,33 +126,16 @@ public class Setup_Viewer_Distribution extends JDialog {
 			lblNewLabel.setHorizontalAlignment(SwingConstants.TRAILING);
 			contentPanel.add(lblNewLabel, BorderLayout.SOUTH);
 		}
-		{
-			JPanel buttonPane = new JPanel();
-			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
-			getContentPane().add(buttonPane, BorderLayout.SOUTH);
-			{
-				JButton okButton = new JButton("OK");
-				okButton.setActionCommand("OK");
-				buttonPane.add(okButton);
-				getRootPane().setDefaultButton(okButton);
-			}
-			{
-				JButton cancelButton = new JButton("Cancel");
-				cancelButton.setActionCommand("Cancel");
-				buttonPane.add(cancelButton);
-			}
-		}
 	}
 
 	private void downloadAction(URL url , JButton button) {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogTitle("Select folder for CD/DVD output");
-		chooser.setSelectedFile(new File("ImageJ.zip"));
 		chooser.setDialogTitle("Dowload Viewer to...");
-		if (! jprefer.get("viewerDistribution", "empty").equals("empty") ) {
-			chooser.setSelectedFile(new File (jprefer.get("viewerDistribution", "empty")));
+		if (jprefer.get("viewerDistribution", null) !=null ) {
+			chooser.setSelectedFile(new File (jprefer.get("viewerDistribution", null)));
 		}
-		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		chooser.setAcceptAllFileFilterUsed(false);
 		if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
 			button.setBackground(Color.ORANGE);
@@ -165,7 +143,12 @@ public class Setup_Viewer_Distribution extends JDialog {
 				@Override
 				protected Void doInBackground() {
 					try {
-						FileUtils.copyURLToFile(url, chooser.getSelectedFile());
+						recursiveDelete(chooser.getSelectedFile().toPath());
+						chooser.getSelectedFile().mkdirs();
+						File zipTemp=File.createTempFile("OT_Viewer", ".zip");
+						FileUtils.copyURLToFile(url, zipTemp);
+						unzip(zipTemp, chooser.getSelectedFile());
+						zipTemp.delete();
 						//Message confirmation
 						JOptionPane.showMessageDialog(dialogDowload, "Viewer distribution sucessfully downloaded");
 					} catch (IOException e) {
@@ -178,7 +161,7 @@ public class Setup_Viewer_Distribution extends JDialog {
 				@Override
 				protected void done(){
 					// Enregistre la destination du fichier dans le registery
-					jprefer.put("viewerDistribution", chooser.getSelectedFile().toString());
+					jprefer.put("viewerDistribution", chooser.getSelectedFile().toString()+File.pathSeparator+"viewer");
 					updateFolder();
 					button.setBackground(null);
 				}
@@ -189,6 +172,76 @@ public class Setup_Viewer_Distribution extends JDialog {
 	
 	private void updateFolder() {
 		lblFolder.setText(jprefer.get("viewerDistribution", "N/A"));
+	}
+	
+	
+	private void unzip(File zipFile, File destination){
+	     byte[] buffer = new byte[1024];
+	     try {	    	
+	    	//get the zip file content
+	    	ZipInputStream zis;
+			zis = new ZipInputStream(new FileInputStream(zipFile));
+			
+	    	//get the zipped file list entry
+	    	ZipEntry ze = zis.getNextEntry();
+	    	
+	    	while(ze!=null){
+	     	   	String fileName = ze.getName();
+	     	    
+	     	   File newFile = new File(destination+File.separator+fileName);
+	            
+	            if (ze.isDirectory()) {
+	         	// if the entry is a directory, make the directory
+	                newFile.mkdirs();
+	            }
+	            else {
+	         	    new File(newFile.getParent()).mkdirs();
+	                 //create all non exists folders else you will hit FileNotFoundException for compressed folder
+	                 FileOutputStream fos = new FileOutputStream(newFile);
+	                 int len;
+	                 while ((len = zis.read(buffer)) > 0) {
+	            		fos.write(buffer, 0, len);
+	                 }
+	
+	                 fos.close();
+	                 
+	            }
+	            ze = zis.getNextEntry();
+	     	}
+	        zis.closeEntry();
+	    	zis.close();
+	    
+	     } catch (IOException e) {
+				e.printStackTrace();
+			}
+	}
+	
+	
+	/**
+	 * Delete a path itself and all subdirectories
+	 * @param path
+	 * @throws IOException
+	 */
+	public static void recursiveDelete(Path path) {
+		  try {
+			Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+			    @Override
+			    public FileVisitResult visitFile(Path file,
+			        BasicFileAttributes attrs) {
+			      file.toFile().delete();
+			      return FileVisitResult.CONTINUE;
+			    }
+			    @Override
+			    public FileVisitResult preVisitDirectory(Path dir,
+			        BasicFileAttributes attrs) {
+			      dir.toFile().delete();
+			      return FileVisitResult.CONTINUE;
+			    }
+			  });
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }
