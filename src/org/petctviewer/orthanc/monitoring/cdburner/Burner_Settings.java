@@ -26,6 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.setup.Setup_Viewer_Distribution;
 
 import java.awt.GridLayout;
 import javax.swing.JLabel;
@@ -49,9 +50,7 @@ public class Burner_Settings extends JDialog {
 	private Preferences jPrefer = VueAnon.jprefer;
 	private JDialog dialogSettings;
 	
-	private JLabel imageJPath;
-	private JLabel epsonDirectoryLabel;
-	private JLabel labelFilePath;
+	private JLabel epsonDirectoryLabel, setViewer, labelFilePath;
 	private JSpinner spinnerTiming;
 	private JComboBox<String> comboBoxSupportType, comboBoxBurnerManufacturer, levelMonitoring, dateFormatChoice;
 	private JCheckBox chckbxDeleteSentStudies, chckbxPlaySounds;
@@ -71,19 +70,20 @@ public class Burner_Settings extends JDialog {
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(new GridLayout(0, 2, 0, 0));
 		
-		JButton imageJ = new JButton("Set Viewer Directory");
-		imageJ.addActionListener(new ActionListener() {
+		setViewer=new JLabel("Set DICOM Viewer");
+		
+		JButton chooseViewer = new JButton("Choose DICOM Viewer");
+		chooseViewer.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser fc=new JFileChooser();
-				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-				int ouvrir=fc.showOpenDialog(null);
-				if (ouvrir==JFileChooser.APPROVE_OPTION){
-					String fijiDirectory=fc.getSelectedFile().getAbsolutePath().toString();
-					imageJPath.setText(fijiDirectory);
-				}
+				Setup_Viewer_Distribution viewerGui=new Setup_Viewer_Distribution();
+				viewerGui.setLocationRelativeTo(dialogSettings);
+				viewerGui.setVisible(true);
+				setCDPreference();
 			}
+
+			
 		});
-	
+		
 		JLabel lblDiscburnerManufacturer = new JLabel("DiscBurner Manufacturer : ");
 		lblDiscburnerManufacturer.setHorizontalAlignment(SwingConstants.CENTER);
 		contentPanel.add(lblDiscburnerManufacturer);
@@ -104,12 +104,9 @@ public class Burner_Settings extends JDialog {
 		});
 		
 		contentPanel.add(comboBoxBurnerManufacturer);
-		contentPanel.add(imageJ);
-	
-	
-		imageJPath = new JLabel();
-		contentPanel.add(imageJPath);
-	
+		contentPanel.add(chooseViewer);
+		contentPanel.add(setViewer);
+
 	
 		JButton labelFileButton = new JButton("Set Label File");
 		labelFileButton.addActionListener(new ActionListener() {
@@ -183,7 +180,6 @@ public class Burner_Settings extends JDialog {
 				//On sauve dans le registery
 				jPrefer.put("Burner_buernerManufacturer", (String) comboBoxBurnerManufacturer.getSelectedItem());
 				
-				if (imageJPath.getText()!=null) jPrefer.put("Burner_fijiDirectory", imageJPath.getText());
 				if (labelFilePath.getText()!=null) jPrefer.put("Burner_labelFile", labelFilePath.getText());
 				if (epsonDirectoryLabel.getText()!=null) jPrefer.put("Burner_epsonDirectory", epsonDirectoryLabel.getText());
 				;
@@ -253,7 +249,6 @@ public class Burner_Settings extends JDialog {
 	public void setCDPreference() {
 		//On prends les settings du registery
 		comboBoxBurnerManufacturer.setSelectedItem(jPrefer.get("Burner_buernerManufacturer", "Epson"));
-		imageJPath.setText(jPrefer.get("Burner_fijiDirectory", null));
 		labelFilePath.setText(jPrefer.get("Burner_labelFile", null));
 		epsonDirectoryLabel.setText(jPrefer.get("Burner_epsonDirectory", null));
 		dateFormatChoice.setSelectedItem(jPrefer.get("Burner_DateFormat", "yyyyMMdd"));
@@ -264,6 +259,8 @@ public class Burner_Settings extends JDialog {
 		if(jPrefer.getBoolean("Burner_levelPatient", false)) {
 			levelMonitoring.setSelectedItem("Patient");
 		}
+		String viewerPath=jPrefer.get("viewerDistribution", "N/A");
+		setViewer.setText(viewerPath);
 	}	
 	
 

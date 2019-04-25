@@ -71,7 +71,7 @@ public class CD_Burner {
 	private String dateFormatChoix;
 	private String labelFile;
 	private String epsonDirectory;
-	private String fijiDirectory;
+	private String viewerDirectory;
 	private int monitoringTime;
 	private Boolean deleteStudies;
 	private Boolean playSounds;
@@ -102,7 +102,7 @@ public class CD_Burner {
 	 * Start Monitoring of Orthanc Change API every 90secs
 	 */
 	public boolean startCDMonitoring() {
-		if ( epsonDirectory==null ||fijiDirectory==null ||labelFile==null || dateFormatChoix==null ){
+		if ( epsonDirectory==null ||viewerDirectory==null ||labelFile==null || dateFormatChoix==null ){
 			//Message d'erreur doit faire le set de output folder
 			JOptionPane.showMessageDialog(null, "Go to settings Menu to set missing paths", "Set directories and date format", JOptionPane.ERROR_MESSAGE);
 			return false;
@@ -402,7 +402,7 @@ public class CD_Burner {
 		} else {
 			//Get size of viewer and images to determine if CD or DVD to Burn
 			Long imageSize=FileUtils.sizeOfDirectory(folder.toFile());
-			Long ViewerSize=FileUtils.sizeOfDirectory(new File(fijiDirectory));
+			Long ViewerSize=FileUtils.sizeOfDirectory(new File(viewerDirectory));
 			//If size over 630 Mo
 			if(Long.sum(imageSize,ViewerSize) > 630000000) {
 				discType="DVD";
@@ -479,7 +479,7 @@ public class CD_Burner {
 		+ "#CD ou DVD\n"
 		+ "DISC_TYPE="+discType+"\n"
 		+ "FORMAT=UDF102\n"
-		+ "DATA="+fijiDirectory+"\n"
+		+ "DATA="+viewerDirectory+"\n"
 		+ "DATA="+folder+ File.separator+ "DICOM" +File.separator+"\n"
 		+ "#Instruction d'impression\n"
 		+ "LABEL="+labelFile+"\n"
@@ -513,7 +513,7 @@ public class CD_Burner {
 		txtRobot+="ClientID = Orthanc-Tools"
 				+"Copies = 1\n"
 				+ "DataImageType = UDF\n"
-				+ "Data="+fijiDirectory+"\n"
+				+ "Data="+viewerDirectory+"\n"
 				+ "Data="+folder+ File.separator+ "DICOM\n"
 				+ "RejectIfNotBlank=YES\n"
 				+ "CloseDisc=YES\n"
@@ -702,7 +702,7 @@ public class CD_Burner {
 				//On prends les settings du registery
 				Preferences jPrefer = VueAnon.jprefer;
 				burnerManifacturer=jPrefer.get("Burner_buernerManufacturer", "Epson");
-				fijiDirectory=jPrefer.get("Burner_fijiDirectory", null);
+				viewerDirectory=jPrefer.get("viewerDistribution", null);
 				epsonDirectory=jPrefer.get("Burner_epsonDirectory", null);
 				labelFile=jPrefer.get("Burner_labelFile", null);
 				dateFormatChoix=jPrefer.get("Burner_DateFormat", "yyyyMMdd");

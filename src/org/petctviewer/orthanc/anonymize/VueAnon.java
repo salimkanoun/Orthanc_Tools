@@ -1801,6 +1801,7 @@ public class VueAnon extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Setup_Viewer_Distribution viewerGui=new Setup_Viewer_Distribution();
+				viewerGui.setLocationRelativeTo(gui);
 				viewerGui.setVisible(true);
 				
 			}

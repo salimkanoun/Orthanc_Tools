@@ -42,6 +42,7 @@ public class Setup_Viewer_Distribution extends JDialog {
 	 * Create the dialog.
 	 */
 	public Setup_Viewer_Distribution() {
+		setModal(true);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -91,6 +92,18 @@ public class Setup_Viewer_Distribution extends JDialog {
 					}
 					{
 						JButton btnCustomViewerFolder = new JButton("Custom Viewer Folder");
+						btnCustomViewerFolder.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent arg0) {
+								JFileChooser fc=new JFileChooser();
+								fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+								int ouvrir=fc.showOpenDialog(null);
+								if (ouvrir==JFileChooser.APPROVE_OPTION){
+									String viewerDirectory=fc.getSelectedFile().getAbsolutePath().toString();
+									jprefer.put("viewerDistribution", viewerDirectory);
+									updateFolder();
+								}
+							}
+						});
 						panel_buttons_download.add(btnCustomViewerFolder);
 					}
 				}
@@ -137,7 +150,6 @@ public class Setup_Viewer_Distribution extends JDialog {
 				@Override
 				protected Void doInBackground() {
 					try {
-						FileUtils.deleteDirectory(chooser.getSelectedFile());
 						chooser.getSelectedFile().mkdirs();
 						File zipTemp=File.createTempFile("OT_Viewer", ".zip");
 						FileUtils.copyURLToFile(url, zipTemp);
@@ -183,7 +195,7 @@ public class Setup_Viewer_Distribution extends JDialog {
 	    	while(ze!=null){
 	     	   	String fileName = ze.getName();
 	     	    
-	     	   File newFile = new File(destination+File.separator+fileName);
+	     	   File newFile = new File(destination+File.separator+"viewer"+File.separator+fileName);
 	            
 	            if (ze.isDirectory()) {
 	         	// if the entry is a directory, make the directory
