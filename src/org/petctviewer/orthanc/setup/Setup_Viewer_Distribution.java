@@ -119,7 +119,7 @@ public class Setup_Viewer_Distribution extends JDialog {
 			lblNewLabel.setHorizontalAlignment(SwingConstants.TRAILING);
 			contentPanel.add(lblNewLabel, BorderLayout.SOUTH);
 		}
-		this.pack();
+		updateFolder();
 	}
 
 	private void downloadAction(URL url , JButton button) {

@@ -60,9 +60,9 @@ public class Controller_Main_Zip implements ActionListener {
 							if (comboToolItem.equals("DICOMDIR Zip")) convertzip.generateZip(true);
 						//If include the viewer	
 						} else {
-							String viewerString=VueAnon.jprefer.get("viewerDistribution", "empty");
+							String viewerString=VueAnon.jprefer.get("viewerDistribution", null);
 							
-							if( viewerString.equals("empty") || ! new File(viewerString).exists() ) {
+							if( viewerString ==null | !new File(viewerString).exists() ) {
 								JOptionPane.showMessageDialog(vue,"Viewer not available, please download it in the setup tab");
 								throw new Exception("No Available Viewer");
 							}
@@ -70,8 +70,7 @@ public class Controller_Main_Zip implements ActionListener {
 							convertzip.setConvertZipAction("Viewer", vue.exportContent, true);
 							convertzip.generateZip(true);
 							File tempImageZip=convertzip.getGeneratedZipFile();
-							File packageViewer=new File(viewerString);
-							ExportZipAndViewer zip=new ExportZipAndViewer(tempImageZip, chooser.getSelectedFile(), packageViewer);
+							ExportZipAndViewer zip=new ExportZipAndViewer(tempImageZip, chooser.getSelectedFile(), new File(viewerString));
 							
 							if( comboToolItem.equals("Image with Viewer (zip)") ) {
 								zip.ZipAndViewerToZip();
