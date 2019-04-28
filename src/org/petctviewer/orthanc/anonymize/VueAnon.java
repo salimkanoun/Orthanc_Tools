@@ -76,6 +76,7 @@ import org.apache.commons.lang.StringUtils;
 import org.petctviewer.orthanc.Orthanc_Tools;
 import org.petctviewer.orthanc.Jsonsettings.SettingsGUI;
 import org.petctviewer.orthanc.OTP.OTP_Gui;
+import org.petctviewer.orthanc.OTP.standalone.OTP_Tab;
 import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_Csv_Btn;
 import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_OTP;
 import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_Remote_Btn;
@@ -216,13 +217,14 @@ public class VueAnon extends JFrame {
 	private JTextField remoteFilePath;
 	private JComboBox<String> exportType;
 	
-	//CTP
+	//OTP
 	private JTextField addressFieldCTP;
 	public String ctpPeer ;
 	private String CTPUsername;
 	private String CTPPassword;
 	private JButton exportCTP;
 	public boolean autoSendCTP=false;
+	private Object[] orthancPeerOTP;
 
 	
 	//Run Orthanc
@@ -1104,9 +1106,9 @@ public class VueAnon extends JFrame {
 					if(dialog.getOk()) {
 						//Change autoSend boolean to get the automatic send at the anonymize button click
 						autoSendCTP=true;
-						CTPUsername=dialog.getLogin();
-						CTPPassword=dialog.getPassword();
-						connexionHttp.addPeerOtp(dialog.getOrthancServerReciever());
+						setCTPUsername(dialog.getLogin());
+						setCTPPassword(dialog.getPassword());
+						setOrthancPeerOTP(dialog.getOrthancServerReciever());
 						String patientNewName=dialog.getAnonName();
 						String patientNewID=dialog.getAnonID();
 						String visitName=dialog.getVisitName();
@@ -1884,7 +1886,10 @@ public class VueAnon extends JFrame {
 		
 		//Add monitoring
 		tabbedPane.addTab("Monitoring", panelMonitoring);
-
+		
+		//Add OTP panel
+		tabbedPane.addTab("OTP", new OTP_Tab(this));
+		
 		p3.add(mainPanelSetup);
 		tabbedPane.add("Setup", p3);
 		
@@ -2226,7 +2231,7 @@ public class VueAnon extends JFrame {
 	}
 	
 	public String getCTPLogin() {
-		return CTPUsername;
+		return getCTPUsername();
 	}
 	
 	public String getCTPPassword() {
@@ -2268,6 +2273,26 @@ public class VueAnon extends JFrame {
 	
 	public JButton getExportRemoteBtn() {
 		return this.exportRemoteBtn;
+	}
+
+	public String getCTPUsername() {
+		return CTPUsername;
+	}
+
+	public void setCTPUsername(String cTPUsername) {
+		CTPUsername = cTPUsername;
+	}
+
+	public void setCTPPassword(String cTPPassword) {
+		CTPPassword = cTPPassword;
+	}
+
+	public Object[] getOrthancPeerOTP() {
+		return orthancPeerOTP;
+	}
+
+	public void setOrthancPeerOTP(Object[] orthancPeerOTP) {
+		this.orthancPeerOTP = orthancPeerOTP;
 	}
 
 }

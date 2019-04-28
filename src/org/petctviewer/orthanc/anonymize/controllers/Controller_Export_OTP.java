@@ -36,6 +36,7 @@ public class Controller_Export_OTP implements ActionListener{
 				OrthancRestApis connexionHttp=vue.getOrthancApisConnexion();
 				//Send DICOM to CTP selected Peer
 				vue.getExportCTPbtn().setEnabled(false);
+				connexionHttp.addPeerOtp(vue.getOrthancPeerOTP());
 				String jobID=connexionHttp.sendStudiesToPeerAccelerator("otp", vue.modeleExportStudies.getOrthancIds());
 				Job_Monitoring jobMonitoring=new Job_Monitoring(connexionHttp, jobID);
 				do {
