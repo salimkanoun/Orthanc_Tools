@@ -8,7 +8,9 @@ public class Start_OTP_Import   {
 		VueAnon anon=new VueAnon("OrthancCTP.json");
 		anon.setLocationRelativeTo(null);
 		anon.exportTabForOtp();
+		anon.setCTPaddress("https://petctviewer.com");
 		anon.setVisible(true);
+		
 		
 	}
 
