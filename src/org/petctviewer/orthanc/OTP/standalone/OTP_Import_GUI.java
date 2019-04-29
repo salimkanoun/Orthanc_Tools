@@ -18,14 +18,8 @@ import org.petctviewer.orthanc.anonymize.listeners.AnonymizeListener;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.importdicom.ImportListener;
 
-public class OTP_Import_GUI extends VueAnon implements ImportListener, AnonymizeListener {
-	
-	//SK DEFINITION DES PEERS A TENTER EN API
-	private static final long serialVersionUID = 1L;
-	private ImportDCM importFrame;
-	private OTP_Import_GUI importGUI=this;
-	
-	
+public class OTP_Import_GUI   {
+/*
 	public OTP_Import_GUI() {
 		super("OrthancCTP.json");
 		
@@ -120,34 +114,11 @@ public class OTP_Import_GUI extends VueAnon implements ImportListener, Anonymize
 		importCTP.doClick();
 		
 	}
-
-	@Override
-	public void ImportFinished(HashMap<String, Study2> importedStudy) {
-		
-		HashMap<String, Study2> importedstudy=importFrame.getImportedStudy();
-		
-		Set<String> keys=importedstudy.keySet();
-		String[] keysArray=new String[keys.size()];
-		keys.toArray(keysArray);
-		
-		modeleAnonPatients.clear();
-		for (int i=0; i<keysArray.length; i++) {
-			modeleAnonPatients.addStudy(importedstudy.get(keysArray[i]));
-		}
-		
-		importFrame.dispose();
-		
-	}
-
-	@Override
-	public void AnonymizationDone() {
-		openCloseAnonTool(true);
-		
-	}
-	
+	*/
 	public static void main(String[] args) {
-		OTP_Import_GUI ctpImport=new OTP_Import_GUI();
-		ctpImport.setVisible(true);
+		VueAnon anon=new VueAnon("OrthancCTP.json");
+		anon.setLocationRelativeTo(null);
+		anon.setVisible(true);
 	}
 
 	

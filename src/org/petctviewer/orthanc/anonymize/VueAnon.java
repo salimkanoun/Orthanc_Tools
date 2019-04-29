@@ -187,6 +187,7 @@ public class VueAnon extends JFrame {
 	
 
 	// Tab Export (p2)
+	private JPanel mainPanelExport;
 	private JLabel stateExports = new JLabel("");
 	protected JButton peerExport,csvReport, exportToZip, exportRemoteBtn, dicomStoreExport;
 	protected JComboBox<String> listePeers;
@@ -290,6 +291,14 @@ public class VueAnon extends JFrame {
 		timerState=new Timer();
 		buildGui();
 		
+		tabbedPane.removeAll();
+		//Add only OTP and export panel
+		JPanel otp= new OTP_Tab(this);
+		tabbedPane.addTab("OTP", otp);
+		
+		JPanel p2 = new JPanel(new FlowLayout());
+		p2.add(mainPanelExport);
+		tabbedPane.add("Export Anonymized", p2);
 	}
 
 	public void buildGui(){
@@ -1156,7 +1165,7 @@ public class VueAnon extends JFrame {
 		exportZip.addActionListener(new Controller_Main_Zip(this));
 		
 		/////////////////////////////// ADDING COMPONENTS ////////////////
-		JPanel p1 = new JPanel(new FlowLayout());
+		
 		GridBagConstraints c = new GridBagConstraints();
 		JScrollPane jscp = new JScrollPane(tableauPatients);
 		jscp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -1198,7 +1207,7 @@ public class VueAnon extends JFrame {
 		////////////////////////////////// PANEL 2 : EXPORT ///////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		JPanel mainPanelExport = new JPanel(new BorderLayout());
+		mainPanelExport = new JPanel(new BorderLayout());
 		JPanel tableExportPanel = new JPanel(new FlowLayout());	
 
 		this.tableauExportStudies = new JTable(modeleExportStudies);
@@ -1534,7 +1543,7 @@ public class VueAnon extends JFrame {
 
 		mainPanelExport.add(southExport, BorderLayout.SOUTH);
 		mainPanelExport.add(tableExportPanel, BorderLayout.CENTER);
-		JPanel p2 = new JPanel(new FlowLayout());
+
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////// END PANEL 2 : EXPORT ///////////////////////////////////////////////
@@ -1858,7 +1867,6 @@ public class VueAnon extends JFrame {
 		mainPanelSetup.add(eastSetupPane, BorderLayout.EAST);
 		mainPanelSetup.add(aboutPanel, BorderLayout.SOUTH);
 
-		JPanel p3 = new JPanel(new FlowLayout());
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////// END TAB 3 : SETUP //////////////////////////////////////////////////
@@ -1866,30 +1874,26 @@ public class VueAnon extends JFrame {
 	
 		
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
-		////////////////////////////////// TAB 4 : Monitor //////////////////////////////////////////////////
+		////////////////////////////////// ADD PANELS //////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
-		monitoring = new Monitoring_GUI(connexionHttp);
-		JPanel panelMonitoring = (JPanel) monitoring.getContentPane();
-		
-		///////////////////////////////////////////////////////////////////////////////////////////////////////
-		////////////////////////////////// END TAB 4 : Monitor //////////////////////////////////////////////////
-		///////////////////////////////////////////////////////////////////////////////////////////////////////
-
+	
 		tabbedPane = new JTabbedPane();
 		tabbedPane.addChangeListener(new Tab_Change_Listener(this));
 
+		JPanel p1 = new JPanel(new FlowLayout());
 		p1.add(mainPanel);
 		tabbedPane.add("Main", p1);
 
+		JPanel p2 = new JPanel(new FlowLayout());
 		p2.add(mainPanelExport);
 		tabbedPane.add("Export Anonymized", p2);
 		
 		//Add monitoring
+		monitoring = new Monitoring_GUI(connexionHttp);
+		JPanel panelMonitoring = (JPanel) monitoring.getContentPane();
 		tabbedPane.addTab("Monitoring", panelMonitoring);
-		
-		//Add OTP panel
-		tabbedPane.addTab("OTP", new OTP_Tab(this));
-		
+
+		JPanel p3 = new JPanel(new FlowLayout());
 		p3.add(mainPanelSetup);
 		tabbedPane.add("Setup", p3);
 		

@@ -74,4 +74,5 @@ public class TableOTPStudiesModel extends DefaultTableModel{
 		this.setRowCount(0);
 	}
 	
+	
 }

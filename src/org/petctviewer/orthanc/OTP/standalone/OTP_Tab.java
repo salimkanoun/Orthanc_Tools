@@ -17,14 +17,18 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingWorker;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.petctviewer.orthanc.OTP.OTP_Gui;
+import org.petctviewer.orthanc.anonymize.AnonRequest;
 import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2;
+import org.petctviewer.orthanc.anonymize.datastorage.Study_Anonymized;
+import org.petctviewer.orthanc.anonymize.datastorage.Tags.Choice;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.importdicom.ImportListener;
 
@@ -36,13 +40,14 @@ public class OTP_Tab extends JPanel implements ImportListener, ListSelectionList
 	private ImportDCM importFrame;
 	private OTP_Tab guiOTP=this;
 	private JLabel lblStatusOTP;
+	private VueAnon anon;
 
 	/**
 	 * Create the frame.
 	 */
 	public OTP_Tab(VueAnon anon) {
 		setLayout(new BorderLayout(0, 0));
-		
+		this.anon=anon;
 		JPanel panel_north_main = new JPanel();
 		add(panel_north_main, BorderLayout.NORTH);
 		
@@ -121,18 +126,15 @@ public class OTP_Tab extends JPanel implements ImportListener, ListSelectionList
 						anon.setCTPUsername(dialog.getLogin());
 						anon.setCTPPassword(dialog.getPassword());
 						anon.setOrthancPeerOTP(dialog.getOrthancServerReciever());
-						String patientNewName=dialog.getAnonName();
-						String patientNewID=dialog.getAnonID();
-						String visitName=dialog.getVisitName();
-						//SK AJOUTER LES COLONNES
-						tableStudy.setValueAt(patientNewName, tableStudy.getSelectedRow(), 4);
-						tableStudy.setValueAt(patientNewID, tableStudy.getSelectedRow(), 5);
-						tableStudy.setValueAt(visitName, tableStudy.getSelectedRow(), 6);
+						//Add new value to table
+						tableStudy.setValueAt(dialog.getAnonName(), tableStudy.getSelectedRow(), 4);
+						tableStudy.setValueAt(dialog.getAnonID(), tableStudy.getSelectedRow(), 5);
+						tableStudy.setValueAt(dialog.getVisitName(), tableStudy.getSelectedRow(), 6);
 						//Update display of all the row for color feedback
 						((AbstractTableModel) tableStudy.getModel()).fireTableRowsUpdated(tableStudy.getSelectedRow(), tableStudy.getSelectedRow());
 						//If only One patient and one study in the list, click the anonymize button to start the process
-						if (tableStudy.getRowCount()==1) {
-							//anonBtn.doClick();
+						if (!isMissingChoice()) {
+							anonymize();
 						}
 					}
 
@@ -185,6 +187,93 @@ public class OTP_Tab extends JPanel implements ImportListener, ListSelectionList
 		
 	}
 	
+	/**
+	 * Return if there are studies still awaiting for Anon Key
+	 * @return
+	 */
+	private boolean isMissingChoice() {
+		
+		for(int i=0; i<tableStudy.getRowCount(); i++) {
+			if(tableStudy.getValueAt(tableStudy.getSelectedRow(), 5).equals("")) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private void anonymize() {
+		SwingWorker<Void, Void> worker=new SwingWorker<Void, Void>(){
+
+			@Override
+			protected Void doInBackground() throws Exception {
+				//Define Anon profile (equivalent to default profile), here forced
+				Choice bodyCharChoice=Choice.KEEP,
+						datesChoice=Choice.KEEP,
+						bdChoice=Choice.CLEAR,
+						ptChoice=Choice.CLEAR,
+						scChoice=Choice.CLEAR,
+						descChoice =Choice.KEEP;
+				
+				
+				int anonCount=0;
+				//SK AJOUT ANALYSE DE LA TABLE AVANT ANONYMISATION
+				for(int i=0 ; i<tableStudy.getRowCount(); i++) {
+					
+						lblStatusOTP.setText("Anonymizing study "+(anonCount+1)+"/"+tableStudy.getRowCount());
+						
+						String patientNewName=(String) tableStudy.getValueAt(tableStudy.getSelectedRow(), 4);
+						String patentNewId=(String) tableStudy.getValueAt(tableStudy.getSelectedRow(), 5);
+						String patientNewStudyDesc=(String) tableStudy.getValueAt(tableStudy.getSelectedRow(), 6);
+						String studyId=(String) tableStudy.getValueAt(tableStudy.getSelectedRow(), 7);
+						Study2 studyToAnon=(Study2) tableStudy.getValueAt(tableStudy.getSelectedRow(), 8);
+						
+						//Prepare the Anon Request
+						AnonRequest anonRequest= new AnonRequest(anon.getOrthancApisConnexion(), bodyCharChoice, datesChoice, bdChoice, 
+								ptChoice, scChoice, descChoice, 
+								patientNewName, patentNewId, patientNewStudyDesc);
+						//Start the Anonymization
+						anonRequest.sendQuery(studyId);
+						
+						Study2 anonymizedStudy = anon.getOrthancQuery().getStudyDetails(anonRequest.getNewOrthancID(), true);
+						
+						//Remove all SC in the anonymized study
+						anonymizedStudy.deleteAllSc(anon.getOrthancApisConnexion());
+						anonymizedStudy.refreshChildSeries(anon.getOrthancQuery());
+												
+						//Create object with the Anonymized Study and old study object
+						Study_Anonymized anonymizedStudyResult=new Study_Anonymized(anonymizedStudy, studyToAnon);
+						anon.modeleExportStudies.addStudy(anonymizedStudyResult);
+						
+						anonCount++;
+						
+					}
+				return null;
+			}
+			
+			@Override
+			public void done() {
+				try {
+					this.get();
+					anon.tabbedPane.setSelectedIndex(1);
+					((TableOTPStudiesModel)tableStudy.getModel()).clear();
+					((TableOTPSeriesModel)tableSeries.getModel()).clear();
+					anon.getExportCTPbtn().doClick();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
+				
+				
+			}
+			
+		};
+		worker.execute();
+
+		
+	}
+	
+	
+	
 	private class MyTableCellRenderer extends DefaultTableCellRenderer {
 		
 		private static final long serialVersionUID = 1L;
@@ -209,5 +298,7 @@ public class OTP_Tab extends JPanel implements ImportListener, ListSelectionList
 // Click droit Series delete SC
 // Click droit dans Studies pour supprimer ligne
 // Listener de Series pour Renommer Series Description
-// Boutton Anon ? ou lancement auto ?
-//Gerer demarrage auto Orthanc differment ?
+// Gerer demarrage auto Orthanc differment ?
+// Dans export tab ne laisser que OTP pour envoi
+
+//Boutton Anon ? ou lancement auto ? => voir avec groupe d'utilisateur
