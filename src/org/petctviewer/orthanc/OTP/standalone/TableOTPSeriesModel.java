@@ -49,7 +49,7 @@ public class TableOTPSeriesModel extends DefaultTableModel{
 			@Override
 			protected Void doInBackground() throws Exception {
 				for(int i=0; i<getRowCount(); i++) {
-					if ((Boolean) getValueAt(i, 3)) {
+					if ((Boolean) getValueAt(i, 4)) {
 						otpTab.getStatusOTP().setText("Deleting SC "+getValueAt(i, 0));
 						connexionHttp.makeDeleteConnection("/series/"+getValueAt(i, 5));
 					}

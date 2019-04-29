@@ -2013,6 +2013,17 @@ public class VueAnon extends JFrame {
 		queryCTPBtn.setVisible(show);
 	}
 	
+	public void exportTabForOtp() {
+		peerExport.setVisible(false);
+		csvReport.setVisible(false);
+		exportToZip.setVisible(false);
+		exportRemoteBtn.setVisible(false);
+		dicomStoreExport.setVisible(false);
+		getExportCTPbtn().setText("Send");
+		listePeers.setVisible(false);
+		listeAETExport.setVisible(false);
+	}
+	
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////Toolist Import/erase ////////////////////////////////////////////////

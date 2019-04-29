@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridLayout;
+import java.awt.MouseInfo;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DateFormat;
@@ -13,15 +14,21 @@ import java.util.HashMap;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 
 import org.petctviewer.orthanc.OTP.OTP_Gui;
 import org.petctviewer.orthanc.anonymize.AnonRequest;
@@ -41,7 +48,7 @@ public class OTP_Tab extends JPanel implements ImportListener, ListSelectionList
 	private OTP_Tab guiOTP=this;
 	private JLabel lblStatusOTP;
 	private VueAnon anon;
-
+	
 	/**
 	 * Create the frame.
 	 */
@@ -104,8 +111,7 @@ public class OTP_Tab extends JPanel implements ImportListener, ListSelectionList
 				if(tableStudy.getRowCount()>0){
 					// Si pas de study selectionnees on selectionne de force le 1er
 					if (tableStudy.getSelectedRow()==-1) tableStudy.setRowSelectionInterval(0, 0);
-					//On genere l'objet qui gere le CTP
-					OTP_Gui dialog = new OTP_Gui(anon.getCTPaddress());
+
 					Study2 studyAnon=(Study2) tableStudy.getValueAt(tableStudy.getSelectedRow(), 8);
 					//On prepare les donnees locales dans l'objet
 					String patientName=studyAnon.getPatientName();
@@ -114,13 +120,20 @@ public class OTP_Tab extends JPanel implements ImportListener, ListSelectionList
 					Date patientDOB=studyAnon.getPatientDob();
 					DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
 					//envoi des donnes dans objet GUI pour CTP
+					//On genere l'objet qui gere le CTP
+					OTP_Gui dialog = new OTP_Gui(anon.getCTPaddress());
 					dialog.setStudyLocalValue(patientName, df.format(studyDate), patientSex, df.format(patientDOB));
+					if(anon.getCTPUsername()!=null) {
+						dialog.setLogin(anon.getCTPLogin());
+						dialog.setPassword(anon.getCTPPassword());
+					}
 					dialog.pack();
 					dialog.setModal(true);
 					dialog.setLocationRelativeTo(anon);
 					dialog.setVisible(true);
 					//On recupere les donnees et on met dans l'anonymisation
 					if(dialog.getOk()) {
+						System.out.println("ok");
 						//Change autoSend boolean to get the automatic send at the anonymize button click
 						anon.autoSendCTP=true;
 						anon.setCTPUsername(dialog.getLogin());
@@ -158,6 +171,96 @@ public class OTP_Tab extends JPanel implements ImportListener, ListSelectionList
 		tableSeries.getColumnModel().getColumn(6).setMinWidth(0);
 		tableSeries.getColumnModel().getColumn(6).setMaxWidth(0);
 		scrollPane_Series.setViewportView(tableSeries);
+
+		JPopupMenu popMenuSelectSeries = new JPopupMenu();
+		JMenuItem menuItemDeleteSeries = new JMenuItem("Delete Serie");
+		popMenuSelectSeries.add(menuItemDeleteSeries);
+		popMenuSelectSeries.addPopupMenuListener(new PopupMenuListener() {
+
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        int rowAtPoint = tableSeries.rowAtPoint(SwingUtilities.convertPoint(tableSeries, MouseInfo.getPointerInfo().getLocation() , tableSeries));
+                        if (rowAtPoint > -1) {
+                        	tableSeries.setRowSelectionInterval(rowAtPoint, rowAtPoint);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+
+            }
+
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
+				
+			}
+        });
+		
+		menuItemDeleteSeries.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				anon.getOrthancApisConnexion().makeDeleteConnection("/series/"+tableSeries.getValueAt(tableSeries.getSelectedRow(), 5));
+				((TableOTPSeriesModel) tableSeries.getModel()).refresh();
+			}
+		});
+		
+		JMenuItem menuItemDeleteSeriesSC = new JMenuItem("Delete All Secondary Captures");
+		popMenuSelectSeries.add(menuItemDeleteSeriesSC);
+		
+		menuItemDeleteSeriesSC.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				((TableOTPSeriesModel) tableSeries.getModel()).removeAllSecondaryCaptures();
+			}
+		});
+		
+		tableSeries.setComponentPopupMenu(popMenuSelectSeries);
+		
+		
+		JPopupMenu popMenuSelectStudies = new JPopupMenu();
+		JMenuItem menuItemRemoveStudy = new JMenuItem("Remove Study");
+		popMenuSelectStudies.add(menuItemRemoveStudy);
+		popMenuSelectStudies.addPopupMenuListener(new PopupMenuListener() {
+
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        int rowAtPoint = tableStudy.rowAtPoint(SwingUtilities.convertPoint(tableStudy, MouseInfo.getPointerInfo().getLocation() , tableStudy));
+                        if (rowAtPoint > -1) {
+                        	tableStudy.setRowSelectionInterval(rowAtPoint, rowAtPoint);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+
+            }
+
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
+				
+			}
+        });
+		
+		
+		menuItemRemoveStudy.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				((DefaultTableModel)tableStudy.getModel()).removeRow(tableStudy.convertRowIndexToModel(tableStudy.getSelectedRow()));
+				((TableOTPSeriesModel)tableSeries.getModel()).clear();
+			}
+		});
+		
+		tableStudy.setComponentPopupMenu(popMenuSelectStudies);
 	}
 
 	@Override
@@ -194,7 +297,7 @@ public class OTP_Tab extends JPanel implements ImportListener, ListSelectionList
 	private boolean isMissingChoice() {
 		
 		for(int i=0; i<tableStudy.getRowCount(); i++) {
-			if(tableStudy.getValueAt(tableStudy.getSelectedRow(), 5).equals("")) {
+			if(tableStudy.getValueAt(i, 5).equals("")) {
 				return true;
 			}
 		}
@@ -292,13 +395,9 @@ public class OTP_Tab extends JPanel implements ImportListener, ListSelectionList
 
 }
 
-//TO DO
-// SAuver login / mdp apres premiere utilisation du Query OTP
-// Click droit dans Series pour suprimmer DICOM
-// Click droit Series delete SC
-// Click droit dans Studies pour supprimer ligne
+// TO DO
 // Listener de Series pour Renommer Series Description
 // Gerer demarrage auto Orthanc differment ?
+// Vider ligne study quand delete deniere serie possible
 // Dans export tab ne laisser que OTP pour envoi
-
 //Boutton Anon ? ou lancement auto ? => voir avec groupe d'utilisateur

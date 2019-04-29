@@ -434,6 +434,13 @@ public class OTP_Gui extends JDialog {
 		return new String(CTP_Password.getPassword());
 	}
 	
+	public void setLogin(String login) {
+		CTP_Username.setText(login);
+	}
+	public void setPassword(String password) {
+		CTP_Password.setText(password);
+	}
+	
 	public Object[] getOrthancServerReciever() {
 		return new Object[] {otp.orthancAdress, otp.orthancPort, otp.orthancLogin, otp.orthancPassword};
 	}
