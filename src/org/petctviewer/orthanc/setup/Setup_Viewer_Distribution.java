@@ -145,9 +145,10 @@ public class Setup_Viewer_Distribution extends JDialog {
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		chooser.setAcceptAllFileFilterUsed(false);
 		if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-			//if(chooser.getSelectedFile().list().length >0) {
-			//	JOptionPane.showMessageDialog(contentPanel, "Please Choose an empty directory", "Not empty", JOptionPane.ERROR_MESSAGE);
-			//}
+			if(chooser.getSelectedFile().list().length >0) {
+				JOptionPane.showMessageDialog(contentPanel, "Please Choose an empty directory", "Not empty", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 			//SK Peut ajouter un check pour verifier que le repertoire est vide avant de telecharger le viewer
 			String btnText=button.getText();
 			button.setBackground(Color.ORANGE);
@@ -174,7 +175,7 @@ public class Setup_Viewer_Distribution extends JDialog {
 				protected void done(){
 					// Enregistre la destination du fichier dans le registery
 					button.setText(btnText);
-					jprefer.put("viewerDistribution", chooser.getSelectedFile().toString()+File.separator+"viewer");
+					jprefer.put("viewerDistribution", chooser.getSelectedFile().getAbsolutePath());
 					updateFolder();
 					button.setBackground(null);
 				}
@@ -202,7 +203,7 @@ public class Setup_Viewer_Distribution extends JDialog {
 	    	while(ze!=null){
 	     	   	String fileName = ze.getName();
 	     	    
-	     	   File newFile = new File(destination+File.separator+"viewer"+File.separator+fileName);
+	     	   File newFile = new File(destination+File.separator+fileName);
 	            
 	            if (ze.isDirectory()) {
 	         	// if the entry is a directory, make the directory
