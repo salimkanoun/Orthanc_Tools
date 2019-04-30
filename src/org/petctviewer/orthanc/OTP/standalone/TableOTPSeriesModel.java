@@ -11,7 +11,7 @@ import org.petctviewer.orthanc.setup.OrthancRestApis;
 public class TableOTPSeriesModel extends DefaultTableModel{
 	private static final long serialVersionUID = 1L;
 
-	private String[] entetes = {"Serie Description", "Modality", "Serie Number", "Number of Instances","isSC", "OrthancSerieID", "Serie Object"};
+	private String[] entetes = {"Serie Description", "Modality", "Serie Number", "Number of Instances","Secondary Capture", "OrthancSerieID", "Serie Object"};
 	private Class<?>[] typeEntetes = {String.class, String.class, String.class, Integer.class, Boolean.class, String.class, Serie.class};
 
 	private OTP_Tab otpTab;

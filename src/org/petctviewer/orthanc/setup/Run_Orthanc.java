@@ -168,6 +168,11 @@ public class Run_Orthanc {
 							 if (line.contains("Orthanc has started")) {
 								 isStarted=true;
 								 showSplashScreen(false);
+							 } else if (line.contains("Orthanc has stoped")) {
+								 isStarted=false;
+								 showSplashScreen(false);
+								 process.destroy();
+								 orthancThread.interrupt();
 							 }
 						 }
 					
@@ -208,7 +213,7 @@ public class Run_Orthanc {
        
         
        int loop=0;
-       while(!isStarted && loop<10) {
+       while(!isStarted && loop<15) {
     	   try {
     		   System.out.println(loop);
     		   Thread.sleep(1000);
