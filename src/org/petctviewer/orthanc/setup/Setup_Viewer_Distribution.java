@@ -145,6 +145,11 @@ public class Setup_Viewer_Distribution extends JDialog {
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		chooser.setAcceptAllFileFilterUsed(false);
 		if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+			//if(chooser.getSelectedFile().list().length >0) {
+			//	JOptionPane.showMessageDialog(contentPanel, "Please Choose an empty directory", "Not empty", JOptionPane.ERROR_MESSAGE);
+			//}
+			//SK Peut ajouter un check pour verifier que le repertoire est vide avant de telecharger le viewer
+			String btnText=button.getText();
 			button.setBackground(Color.ORANGE);
 			SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 				@Override
@@ -152,6 +157,7 @@ public class Setup_Viewer_Distribution extends JDialog {
 					try {
 						chooser.getSelectedFile().mkdirs();
 						File zipTemp=File.createTempFile("OT_Viewer", ".zip");
+						button.setText("Downloading");
 						FileUtils.copyURLToFile(url, zipTemp);
 						unzip(zipTemp, chooser.getSelectedFile());
 						zipTemp.delete();
@@ -167,6 +173,7 @@ public class Setup_Viewer_Distribution extends JDialog {
 				@Override
 				protected void done(){
 					// Enregistre la destination du fichier dans le registery
+					button.setText(btnText);
 					jprefer.put("viewerDistribution", chooser.getSelectedFile().toString()+File.separator+"viewer");
 					updateFolder();
 					button.setBackground(null);
