@@ -321,14 +321,13 @@ public class OTP_Tab extends JPanel implements ImportListener, ListSelectionList
 				int anonCount=0;
 				//SK AJOUT ANALYSE DE LA TABLE AVANT ANONYMISATION
 				for(int i=0 ; i<tableStudy.getRowCount(); i++) {
-					
-						lblStatusOTP.setText("Anonymizing study "+(anonCount+1)+"/"+tableStudy.getRowCount());
+						lblStatusOTP.setText("<html><font color='red'>Anonymizing study "+(anonCount+1)+"/"+tableStudy.getRowCount()+"</font></html>");
 						
-						String patientNewName=(String) tableStudy.getValueAt(tableStudy.getSelectedRow(), 4);
-						String patentNewId=(String) tableStudy.getValueAt(tableStudy.getSelectedRow(), 5);
-						String patientNewStudyDesc=(String) tableStudy.getValueAt(tableStudy.getSelectedRow(), 6);
-						String studyId=(String) tableStudy.getValueAt(tableStudy.getSelectedRow(), 7);
-						Study2 studyToAnon=(Study2) tableStudy.getValueAt(tableStudy.getSelectedRow(), 8);
+						String patientNewName=(String) tableStudy.getValueAt(i, 4);
+						String patentNewId=(String) tableStudy.getValueAt(i, 5);
+						String patientNewStudyDesc=(String) tableStudy.getValueAt(i, 6);
+						String studyId=(String) tableStudy.getValueAt(i, 7);
+						Study2 studyToAnon=(Study2) tableStudy.getValueAt(i, 8);
 						
 						//Prepare the Anon Request
 						AnonRequest anonRequest= new AnonRequest(anon.getOrthancApisConnexion(), bodyCharChoice, datesChoice, bdChoice, 
@@ -357,6 +356,8 @@ public class OTP_Tab extends JPanel implements ImportListener, ListSelectionList
 			public void done() {
 				try {
 					this.get();
+					lblStatusOTP.setText("<html><font color='blue'>Done</font></html>");
+					
 					anon.tabbedPane.setSelectedIndex(1);
 					((TableOTPStudiesModel)tableStudy.getModel()).clear();
 					((TableOTPSeriesModel)tableSeries.getModel()).clear();
