@@ -57,11 +57,11 @@ public class OrthancRestApis {
 	public OrthancRestApis(String fullAddress)  {
 		if(fullAddress==null) {
 			refreshServerAddress();
-			
 		}else {
 			this.fullAddress = fullAddress;
+			getSystemInformationsAndTest();
 		}
-		getSystemInformationsAndTest();
+
 	}
 	
 	public void refreshServerAddress() {

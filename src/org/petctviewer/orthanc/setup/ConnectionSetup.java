@@ -62,8 +62,10 @@ public class ConnectionSetup extends JDialog {
 	private JTextField ipTxt,portTxt,usernameTxt;
 	private JPasswordField passwordTxt;
 	private JSpinner spinnerServerChoice;
+	private JButton runOrthancLocal, btnReusableRun;
+	private Run_Orthanc runOrthanc;
 
-	public ConnectionSetup(Run_Orthanc orthanc, VueAnon vueAnon){
+	public ConnectionSetup(){
 		this.setTitle("Setup");
 		this.setModal(true);
 		this.setResizable(true);
@@ -172,15 +174,6 @@ public class ConnectionSetup extends JDialog {
 			public void actionPerformed(ActionEvent e) {
 				if (ipTxt.getText().toLowerCase().startsWith("http://") || ipTxt.getText().toLowerCase().startsWith("https://")) {
 					jpreferPerso.putInt("currentOrthancServer", (int) spinnerServerChoice.getValue());
-					vueAnon.getOrthancApisConnexion().refreshServerAddress();
-					if(vueAnon.isVisible()) {
-						vueAnon.refreshAets();
-						vueAnon.refreshPeers();
-					}
-					
-					
-					//SK RESTE A FERMER EVENTUELLE FENETRE QUERY ET IMPORT
-					//REPERCUSSION SUR LE MONITORING A VOIR
 					dispose();
 					
 				}
@@ -207,39 +200,37 @@ public class ConnectionSetup extends JDialog {
 		panel_non_install.add(button_non_install, BorderLayout.SOUTH);
 		
 		//Display start or stop button depending on local run of orthanc
-		JButton runOrthancLocal= new JButton("Run Temporary Orthanc");
-		if(orthanc.getIsStarted()) {
-			runOrthancLocal.setText("Stop Temporary Orthanc");
-		}
+		runOrthancLocal= new JButton("Run Temporary Orthanc");
+		
 		
 		runOrthancLocal.addActionListener(new ActionListener() {
 		
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(runOrthancLocal.getText()=="Run Temporary Orthanc") {
+					runOrthanc=new Run_Orthanc();
 					try {
-						orthanc.copyOrthanc(null);
-						orthanc.startOrthanc();
+						runOrthanc.copyOrthanc(null);
+						runOrthanc.startOrthanc();
 						dispose();
 					} catch (Exception e1) {
 						e1.printStackTrace();
 					}
 				}else {
-					orthanc.stopOrthanc(vueAnon.getOrthancApisConnexion());
 					dispose();
 				}
 			}
 		});
 		
-		JButton btnReusableRun = new JButton("Re-usable Run");
+		btnReusableRun = new JButton("Re-usable Run");
 		button_non_install.add(btnReusableRun);
 		button_non_install.add(runOrthancLocal);
 		
 		btnReusableRun.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
-					boolean copy=orthanc.isCopyAvailable();
+					runOrthanc=new Run_Orthanc();
+					boolean copy=runOrthanc.isCopyAvailable();
 					if (!copy) {
 						JOptionPane.showMessageDialog(gui, "Set folder installation", "Orthanc Install", JOptionPane.WARNING_MESSAGE);
 						JFileChooser chooser = new JFileChooser();
@@ -249,16 +240,20 @@ public class ConnectionSetup extends JDialog {
 						if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
 							String path = chooser.getSelectedFile().getAbsolutePath();
 							try {
-								orthanc.copyOrthanc(path);
+								runOrthanc.copyOrthanc(path);
 								jpreferPerso.put("OrthancLocalPath", path);
 							} catch (Exception e1) {
 								e1.printStackTrace();
 							}
 						}
-					}else {
-						orthanc.startOrthanc();
 					}
 					
+					if(runOrthanc.isCopyAvailable()) {
+						runOrthanc.startOrthanc();
+					}
+				
+					
+				
 				dispose();
 			}
 		});
@@ -293,6 +288,16 @@ public class ConnectionSetup extends JDialog {
 
 		setSize(1200, 400);
 		pack();
+	}
+	
+	public void setOrthancRun() {
+		runOrthancLocal.setEnabled(false);
+		btnReusableRun.setEnabled(false);
+		
+	}
+	
+	public Run_Orthanc getRunOrthanc() {
+		return runOrthanc;
 	}
 	
 	private void fillParameter(int number) {

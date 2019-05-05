@@ -76,7 +76,6 @@ import org.apache.commons.lang.StringUtils;
 import org.petctviewer.orthanc.Orthanc_Tools;
 import org.petctviewer.orthanc.Jsonsettings.SettingsGUI;
 import org.petctviewer.orthanc.OTP.OTP_Gui;
-import org.petctviewer.orthanc.OTP.standalone.OTP_Tab;
 import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_Csv_Btn;
 import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_OTP;
 import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_Remote_Btn;
@@ -126,7 +125,7 @@ public class VueAnon extends JFrame {
 	private VueAnon gui=this;
 	
 	//Objet de connexion aux restFul API, prend les settings des registery et etabli les connexion a la demande
-	private OrthancRestApis connexionHttp;
+	private OrthancRestApis restApis;
 	private QueryOrthancData queryOrthanc;
 	protected JPanel tablesPanel, mainPanel, topPanel, anonBtnPanelTop;
 	
@@ -187,7 +186,7 @@ public class VueAnon extends JFrame {
 	
 
 	// Tab Export (p2)
-	private JPanel mainPanelExport;
+	public JPanel mainPanelExport;
 	private JLabel stateExports = new JLabel("");
 	protected JButton peerExport,csvReport, exportToZip, exportRemoteBtn, dicomStoreExport;
 	protected JComboBox<String> listePeers;
@@ -242,72 +241,28 @@ public class VueAnon extends JFrame {
 	
 	public Timer timerState;
 	
-	public VueAnon() {
+	public VueAnon(OrthancRestApis restApis) {
 		super("Orthanc Tools");
-		connexionHttp= new OrthancRestApis(null);
-		runOrthanc=new Run_Orthanc();
-		//Until we reach the Orthanc Server we give the setup panel
-		int check=0;
-		while (!connexionHttp.isConnected() && check<3) {
-				if (check>0) JOptionPane.showMessageDialog(null, "Settings Attempt " + (check+1) +"/3", "Attempt", JOptionPane.INFORMATION_MESSAGE);
-				ConnectionSetup setup = new ConnectionSetup(runOrthanc, this);
-				setup.setVisible(true);
-				connexionHttp=new OrthancRestApis(null);
-				check++;
-				if(check ==3) {
-					JOptionPane.showMessageDialog(null, "Can't reach Orthanc, terminating", "Failure", JOptionPane.ERROR_MESSAGE);	
-				}
-		}
-		//SK BUG SI SERVER NON JOIGNABLE
-		if(connexionHttp.isConnected()) {
+		if(restApis.isConnected()) {
+			this.restApis= restApis;
 			timerState=new Timer();
-			queryOrthanc=new QueryOrthancData(connexionHttp);
+			queryOrthanc=new QueryOrthancData(restApis);
 			buildGui();
 		}else {
+			JOptionPane.showMessageDialog(this, "Can't Run without Orthanc Connexion", "No Orthanc", JOptionPane.ERROR_MESSAGE);
 			dispose();
 		}
 		
 		
-	}
-	
-	/**
-	 * Force temporary session of Orthanc, with a specified JSON config file
-	 * @param startTemporaryOrthanc
-	 */
-	public VueAnon(String orthancJsonName) {
-		super("Orthanc Tools");
-		
-		try {
-			runOrthanc=new Run_Orthanc();
-			runOrthanc.orthancJsonName=orthancJsonName;
-			runOrthanc.copyOrthanc(null);
-			runOrthanc.startOrthanc();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		connexionHttp= new OrthancRestApis("http://localhost:8043");
-		queryOrthanc=new QueryOrthancData(connexionHttp);
-		timerState=new Timer();
-		buildGui();
-		
-		tabbedPane.removeAll();
-		//Add only OTP and export panel
-		JPanel otp= new OTP_Tab(this);
-		tabbedPane.addTab("OTP", otp);
-		
-		JPanel p2 = new JPanel(new FlowLayout());
-		p2.add(mainPanelExport);
-		tabbedPane.add("Export Anonymized", p2);
 	}
 
 	public void buildGui(){
 		//Instanciate needed Table and their model
 		modelePatients = new TablePatientsModel();
 		modeleStudies = new TableStudiesModel(queryOrthanc);
-		modeleSeries = new TableSeriesModel(connexionHttp, this, queryOrthanc);
+		modeleSeries = new TableSeriesModel(restApis, this, queryOrthanc);
 		modeleExportStudies = new TableExportStudiesModel();
-		modeleExportSeries = new TableExportSeriesModel(connexionHttp, queryOrthanc, this);
+		modeleExportSeries = new TableExportSeriesModel(restApis, queryOrthanc, this);
 		modeleAnonStudies = new TableAnonStudiesModel();
 		modeleAnonPatients = new TableAnonPatientsModel();
 		
@@ -470,7 +425,7 @@ public class VueAnon extends JFrame {
 				SwingUtilities.invokeLater(new Runnable () {
 					@Override
 					public void run() {
-						VueQuery query=new VueQuery(connexionHttp, gui);
+						VueQuery query=new VueQuery(restApis, gui);
 						query.pack();
 						query.setLocationRelativeTo(gui);
 						query.setVisible(true);
@@ -486,7 +441,7 @@ public class VueAnon extends JFrame {
 				SwingUtilities.invokeLater(new Runnable () {
 					@Override
 					public void run() {
-						ImportDCM importFrame=new ImportDCM(connexionHttp,gui);
+						ImportDCM importFrame=new ImportDCM(restApis,gui);
 						importFrame.pack();
 						importFrame.setLocationRelativeTo(gui);
 						importFrame.setVisible(true);
@@ -600,12 +555,12 @@ public class VueAnon extends JFrame {
 		menuItemModifyPatients.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					new Modify("patients",(String)tableauPatients.getValueAt(tableauPatients.getSelectedRow(),2), gui, connexionHttp);
+					new Modify("patients",(String)tableauPatients.getValueAt(tableauPatients.getSelectedRow(),2), gui, restApis);
 				}
 			});
 		
 		JMenuItem menuItemDeletePatients = new JMenuItem("Delete this patient");
-		menuItemDeletePatients.addActionListener(new Controller_Main_Delete(connexionHttp, "Patient", this.modeleStudies, this.tableauStudies, 
+		menuItemDeletePatients.addActionListener(new Controller_Main_Delete(restApis, "Patient", this.modeleStudies, this.tableauStudies, 
 				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, searchBtn));
 
 		popMenuPatients.add(menuItemModifyPatients);
@@ -640,13 +595,13 @@ public class VueAnon extends JFrame {
 		menuItemModifyStudy.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					new Modify("studies",(String)tableauStudies.getValueAt(tableauStudies.getSelectedRow(),3), gui, connexionHttp);
+					new Modify("studies",(String)tableauStudies.getValueAt(tableauStudies.getSelectedRow(),3), gui, restApis);
 				}
 			});
 		
 		
 		JMenuItem menuItemDeleteStudy = new JMenuItem("Delete this study");
-		menuItemDeleteStudy.addActionListener(new Controller_Main_Delete(connexionHttp, "Study", this.modeleStudies, this.tableauStudies, 
+		menuItemDeleteStudy.addActionListener(new Controller_Main_Delete(restApis, "Study", this.modeleStudies, this.tableauStudies, 
 				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, searchBtn));
 		
 		popMenuStudies.add(menuItemModifyStudy);
@@ -679,7 +634,7 @@ public class VueAnon extends JFrame {
 		menuItemModifySeries.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					new Modify("series",(String)tableauSeries.getValueAt(tableauSeries.getSelectedRow(),4), gui, connexionHttp);
+					new Modify("series",(String)tableauSeries.getValueAt(tableauSeries.getSelectedRow(),4), gui, restApis);
 				}
 			});
 		
@@ -712,7 +667,7 @@ public class VueAnon extends JFrame {
 			}
 		});
 		JMenuItem menuItemDeleteSeries = new JMenuItem("Delete this serie");
-		menuItemDeleteSeries.addActionListener(new Controller_Main_Delete(connexionHttp, "Serie", this.modeleStudies, this.tableauStudies, 
+		menuItemDeleteSeries.addActionListener(new Controller_Main_Delete(restApis, "Serie", this.modeleStudies, this.tableauStudies, 
 				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, searchBtn));
 
 		popMenuSeries.add(menuItemModifySeries);
@@ -758,7 +713,7 @@ public class VueAnon extends JFrame {
 							setStateMessage("Storing data (Do not use the toolbox while the current operation is not done)", "red", -1);
 							storeBtn.setEnabled(false);
 							pack();
-							success=connexionHttp.sendToAet(listeAET.getSelectedItem().toString(), exportContent);
+							success=restApis.sendToAet(listeAET.getSelectedItem().toString(), exportContent);
 							return null;
 						}
 
@@ -839,12 +794,12 @@ public class VueAnon extends JFrame {
 					protected Void doInBackground() throws IOException {
 						int progress=0;
 						for (int i=0 ; i<deleteSeries.size(); i++){
-							connexionHttp.makeDeleteConnection(deleteSeries.get(i));
+							restApis.makeDeleteConnection(deleteSeries.get(i));
 							progress++;
 							setStateMessage("Deleted "+ progress +"/"+manageContent.size(), "red", -1);
 						}
 						for (int i=0 ; i<deleteStudies.size(); i++){
-							connexionHttp.makeDeleteConnection(deleteStudies.get(i));
+							restApis.makeDeleteConnection(deleteStudies.get(i));
 							progress++;
 							setStateMessage("Deleted "+ progress +"/"+manageContent.size(), "red", -1);
 						}
@@ -1136,7 +1091,7 @@ public class VueAnon extends JFrame {
 		
 		anonBtn = new JButton("Anonymize");
 		anonBtn.setPreferredSize(new Dimension(120,27));
-		anonBtn.addActionListener(new Controller_Main_Anonymize_Btn(this, connexionHttp));
+		anonBtn.addActionListener(new Controller_Main_Anonymize_Btn(this, restApis));
 		
 		//Label to show the currently selected profile in the main panel
 		JLabel profileLabel = new JLabel();
@@ -1257,7 +1212,7 @@ public class VueAnon extends JFrame {
 				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 					@Override
 					protected Void doInBackground() {
-						boolean deleted=connexionHttp.makeDeleteConnection(url);
+						boolean deleted=restApis.makeDeleteConnection(url);
 						if(deleted) {
 							modeleExportStudies.removeRow(tableauExportStudies.getSelectedRow());
 							modeleExportSeries.clear();
@@ -1334,7 +1289,7 @@ public class VueAnon extends JFrame {
 						
 						String url="/series/" + serie.getId();
 						setStateExportMessage("Deleting "+serie.getSerieDescription(), "red", -1);
-						boolean success=connexionHttp.makeDeleteConnection(url);
+						boolean success=restApis.makeDeleteConnection(url);
 						if(success) {
 							setStateExportMessage("Deleted suceeded", "green", 4);
 						}else {
@@ -1421,7 +1376,7 @@ public class VueAnon extends JFrame {
 						chooser.setAcceptAllFileFilterUsed(false);
 						if (chooser.showSaveDialog(gui) == JFileChooser.APPROVE_OPTION) {
 							file = chooser.getSelectedFile();
-							ExportZip convertzip=new ExportZip(connexionHttp);
+							ExportZip convertzip=new ExportZip(restApis);
 							convertzip.setConvertZipAction(file.getAbsolutePath().toString(), modeleExportStudies.getOrthancIds(), false);
 							convertzip.generateZip(false);
 						}
@@ -1462,7 +1417,7 @@ public class VueAnon extends JFrame {
 					protected Void doInBackground() {
 						dicomStoreExport.setEnabled(false);
 						dicomStoreExport.setText("Storing...");
-						storeSuccess=connexionHttp.sendToAet(listeAETExport.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
+						storeSuccess=restApis.sendToAet(listeAETExport.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
 						return null;
 					}
 
@@ -1497,7 +1452,7 @@ public class VueAnon extends JFrame {
 					protected Void doInBackground() {
 						peerExport.setEnabled(false);
 						peerExport.setText("Sending...");
-						sendok=connexionHttp.sendToPeer(listePeers.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
+						sendok=restApis.sendToPeer(listePeers.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
 						return null;
 					}
 
@@ -1826,10 +1781,15 @@ public class VueAnon extends JFrame {
 		setupButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				ConnectionSetup setup = new ConnectionSetup(runOrthanc, gui);
+				ConnectionSetup setup = new ConnectionSetup();
 				setup.setLocationRelativeTo(gui);
+				setup.setOrthancRun();
+				setup.setModal(true);
 				setup.setVisible(true);
-				
+				refreshOrthancConnexion();
+				if(setup.getRunOrthanc()!=null) {
+					runOrthanc=setup.getRunOrthanc();
+				};
 				
 			}
 			
@@ -1889,7 +1849,7 @@ public class VueAnon extends JFrame {
 		tabbedPane.add("Export Anonymized", p2);
 		
 		//Add monitoring
-		monitoring = new Monitoring_GUI(connexionHttp);
+		monitoring = new Monitoring_GUI(restApis);
 		JPanel panelMonitoring = (JPanel) monitoring.getContentPane();
 		tabbedPane.addTab("Monitoring", panelMonitoring);
 
@@ -1902,7 +1862,7 @@ public class VueAnon extends JFrame {
 		this.getContentPane().add(tabbedPane);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.getRootPane().setDefaultButton(searchBtn);
-		this.addWindowListener(new Window_Custom_Listener(this, exportContent, modeleAnonPatients, modeleExportStudies, monitoring, runOrthanc));
+		this.addWindowListener(new Window_Custom_Listener(this));
 		pack();
 		userInput.requestFocus();
 	}
@@ -2136,19 +2096,36 @@ public class VueAnon extends JFrame {
 		exportSizeLabel.setText("empty list");
 	}
 	
+	public boolean isCurrentWork() {
+
+		if(exportContent.size()>0 || modeleAnonPatients.getRowCount()>0 || modeleExportStudies.getRowCount()>0 || monitoring.isRunningMonitoringService()) {
+			return true;
+		}
+		return false;
+
+	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////Refresh Aet/Peers ///////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	public void refreshAets() {
-		String[] aets=connexionHttp.getAET();
+		String[] aets=restApis.getAET();
 		listeAET.setModel(new DefaultComboBoxModel<String>(aets)) ;
 		listeAETExport.setModel(new DefaultComboBoxModel<String>(aets));
 	}
 	
 	public void refreshPeers() {
-		String[] peers=connexionHttp.getPeers();
+		String[] peers=restApis.getPeers();
 		listePeers.setModel(new DefaultComboBoxModel<String>(peers));
+	}
+	
+	public void refreshOrthancConnexion(){
+		getOrthancApisConnexion().refreshServerAddress();
+		refreshAets();
+		refreshPeers();
+		
+		//SK RESTE A FERMER EVENTUELLE FENETRE QUERY ET IMPORT
+		//REPERCUSSION SUR LE MONITORING A VOIR
 	}
 	
 
@@ -2271,7 +2248,7 @@ public class VueAnon extends JFrame {
 	}
 
 	public OrthancRestApis getOrthancApisConnexion() {
-		return connexionHttp;
+		return restApis;
 	}
 	
 	public JButton getSearchButton() {
@@ -2308,6 +2285,18 @@ public class VueAnon extends JFrame {
 
 	public void setOrthancPeerOTP(Object[] orthancPeerOTP) {
 		this.orthancPeerOTP = orthancPeerOTP;
+	}
+	
+	public void setRunOrthanc(Run_Orthanc runOrthanc) {
+		this.runOrthanc=runOrthanc;
+	}
+	
+	public Run_Orthanc getRunOrthanc() {
+		 return runOrthanc;
+	}
+	
+	public Monitoring_GUI getMonitoring() {
+		return monitoring;
 	}
 
 }

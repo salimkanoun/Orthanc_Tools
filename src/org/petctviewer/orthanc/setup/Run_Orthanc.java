@@ -123,7 +123,6 @@ public class Run_Orthanc {
 		
         orthancThread=new Thread(new Runnable() {
         	JFrame splashScreen;
-        	JLabel openStatus;
 			public void run() {
 					showSplashScreen(true);
 				 	if ( ! System.getProperty("os.name").toLowerCase().startsWith("win")) {
@@ -182,7 +181,7 @@ public class Run_Orthanc {
 				}	
 			} 	
 			
-			public void showSplashScreen(boolean show) {
+			private void showSplashScreen(boolean show) {
 				if (show) {
 					splashScreen= new JFrame();
 					JPanel mainPanel=new JPanel(new BorderLayout());

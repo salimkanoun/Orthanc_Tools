@@ -43,6 +43,7 @@ public class Setup_Viewer_Distribution extends JDialog {
 	 */
 	public Setup_Viewer_Distribution() {
 		setModal(true);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
