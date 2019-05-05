@@ -123,7 +123,6 @@ public class Run_Orthanc {
 		
         orthancThread=new Thread(new Runnable() {
         	JFrame splashScreen;
-        	JLabel openStatus;
 			public void run() {
 					showSplashScreen(true);
 				 	if ( ! System.getProperty("os.name").toLowerCase().startsWith("win")) {
@@ -168,6 +167,11 @@ public class Run_Orthanc {
 							 if (line.contains("Orthanc has started")) {
 								 isStarted=true;
 								 showSplashScreen(false);
+							 } else if (line.contains("Orthanc has stoped")) {
+								 isStarted=false;
+								 showSplashScreen(false);
+								 process.destroy();
+								 orthancThread.interrupt();
 							 }
 						 }
 					
@@ -177,7 +181,7 @@ public class Run_Orthanc {
 				}	
 			} 	
 			
-			public void showSplashScreen(boolean show) {
+			private void showSplashScreen(boolean show) {
 				if (show) {
 					splashScreen= new JFrame();
 					JPanel mainPanel=new JPanel(new BorderLayout());
@@ -208,10 +212,9 @@ public class Run_Orthanc {
        
         
        int loop=0;
-       while(!isStarted && loop<10) {
+       while(!isStarted && loop<15) {
     	   try {
     		   System.out.println(loop);
-    		  
     		   Thread.sleep(1000);
     		   loop++;
     	   } catch (InterruptedException e) {
@@ -219,9 +222,12 @@ public class Run_Orthanc {
     	   }
        }
        
-       if(loop==10) {
-    	   System.exit(0);
-       }
+     
+	   if(!isStarted) {
+		   System.exit(0);
+	   }
+    	 
+       
        
 
 	}

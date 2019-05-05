@@ -17,12 +17,12 @@ import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.anonymize.datastorage.Study_Anonymized;
 
-public class Controller_Csv_Btn implements ActionListener {
+public class Controller_Export_Csv_Btn implements ActionListener {
 	
 	TableExportStudiesModel modeleExportStudies;
 	VueAnon vueAnon;
 
-	public Controller_Csv_Btn(TableExportStudiesModel modeleExportStudies, VueAnon vueAnon) {
+	public Controller_Export_Csv_Btn(TableExportStudiesModel modeleExportStudies, VueAnon vueAnon) {
 		this.modeleExportStudies=modeleExportStudies;
 		this.vueAnon=vueAnon;
 	}

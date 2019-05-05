@@ -28,6 +28,8 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -42,9 +44,13 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.petctviewer.orthanc.anonymize.VueAnon;
 
@@ -53,9 +59,13 @@ public class ConnectionSetup extends JDialog {
 	private static final long serialVersionUID = 1L;
 	private Preferences jpreferPerso = VueAnon.jprefer;
 	private JDialog gui=this;
-	public boolean ok=false;
+	private JTextField ipTxt,portTxt,usernameTxt;
+	private JPasswordField passwordTxt;
+	private JSpinner spinnerServerChoice;
+	private JButton runOrthancLocal, btnReusableRun;
+	private Run_Orthanc runOrthanc;
 
-	public ConnectionSetup(Run_Orthanc orthanc, OrthancRestApis http){
+	public ConnectionSetup(){
 		this.setTitle("Setup");
 		this.setModal(true);
 		this.setResizable(true);
@@ -82,32 +92,62 @@ public class ConnectionSetup extends JDialog {
 		
 		JPanel panel_http_settings = new JPanel();
 		panel_http_settings.setLayout(new GridLayout(0, 2, 0, 0));
-
+		
+		JLabel lblServer = new JLabel("Server");
+		panel_http_settings.add(lblServer);
+		
+		spinnerServerChoice = new JSpinner();
+		spinnerServerChoice.setModel(new SpinnerNumberModel(1, 1, 10, 1));
+		panel_http_settings.add(spinnerServerChoice);
+		
 		JLabel label = new JLabel("Address");
 		panel_http_settings.add(label);
 		
-		JTextField ipTxt = new JTextField();
+		ipTxt = new JTextField();
+		ipTxt.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent arg0) {
+				int index=(int) spinnerServerChoice.getValue();
+				jpreferPerso.put("ip"+index, ipTxt.getText());
+			}
+		});
 		panel_http_settings.add(ipTxt);
 		ipTxt.setPreferredSize(new Dimension(100,18));
-		ipTxt.setText(jpreferPerso.get("ip", "http://localhost"));
 		
 		
 		JLabel label_1 = new JLabel("Port");
-		JTextField portTxt = new JTextField();
+		portTxt = new JTextField();
+		portTxt.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				int index=(int) spinnerServerChoice.getValue();
+				jpreferPerso.put("port"+index, portTxt.getText());
+			}
+		});
 		portTxt.setPreferredSize(new Dimension(100,18));
-		portTxt.setText(jpreferPerso.get("port", "8042"));
 		
 		
 		JLabel label_2 = new JLabel("Username");
-		JTextField usernameTxt = new JTextField();
+		usernameTxt = new JTextField();
+		usernameTxt.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				int index=(int) spinnerServerChoice.getValue();
+				jpreferPerso.put("username"+index, usernameTxt.getText());
+			}
+		});
 		usernameTxt.setPreferredSize(new Dimension(100,18));
-		usernameTxt.setText(jpreferPerso.get("username", ""));
 		
 		JLabel label_3 = new JLabel("Password");
-		JPasswordField passwordTxt = new JPasswordField();
+		passwordTxt = new JPasswordField();
+		passwordTxt.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				int index=(int) spinnerServerChoice.getValue();
+				jpreferPerso.put("password"+index, new String(passwordTxt.getPassword()));
+			}
+		});
 		passwordTxt.setPreferredSize(new Dimension(100,18));
-		passwordTxt.setText(jpreferPerso.get("password", ""));
-		
 		
 		panel_http_settings.add(label_1);
 		panel_http_settings.add(portTxt);
@@ -118,6 +158,14 @@ public class ConnectionSetup extends JDialog {
 		
 		setupPanel.add(panel_http_settings);
 		
+		spinnerServerChoice.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent arg0) {
+				int number=(int) spinnerServerChoice.getValue();
+				fillParameter(number);
+			}
+		});
+		
+
 		JButton submit = new JButton("Submit");
 		setupPanel.add(submit, BorderLayout.SOUTH);
 		submit.addActionListener(new ActionListener() {
@@ -125,11 +173,7 @@ public class ConnectionSetup extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (ipTxt.getText().toLowerCase().startsWith("http://") || ipTxt.getText().toLowerCase().startsWith("https://")) {
-					jpreferPerso.put("ip", ipTxt.getText());
-					jpreferPerso.put("port", portTxt.getText());
-					jpreferPerso.put("password", new String(passwordTxt.getPassword()));
-					jpreferPerso.put("username", usernameTxt.getText());
-					ok=true;
+					jpreferPerso.putInt("currentOrthancServer", (int) spinnerServerChoice.getValue());
 					dispose();
 					
 				}
@@ -156,40 +200,37 @@ public class ConnectionSetup extends JDialog {
 		panel_non_install.add(button_non_install, BorderLayout.SOUTH);
 		
 		//Display start or stop button depending on local run of orthanc
-		JButton runOrthancLocal= new JButton("Run Temporary Orthanc");
-		if(orthanc.getIsStarted()) {
-			runOrthancLocal.setText("Stop Temporary Orthanc");
-		}
+		runOrthancLocal= new JButton("Run Temporary Orthanc");
+		
 		
 		runOrthancLocal.addActionListener(new ActionListener() {
 		
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(runOrthancLocal.getText()=="Run Temporary Orthanc") {
+					runOrthanc=new Run_Orthanc();
 					try {
-						orthanc.copyOrthanc(null);
-						orthanc.startOrthanc();
+						runOrthanc.copyOrthanc(null);
+						runOrthanc.startOrthanc();
 						dispose();
 					} catch (Exception e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
 				}else {
-					orthanc.stopOrthanc(http);
 					dispose();
 				}
 			}
 		});
 		
-		JButton btnReusableRun = new JButton("Re-usable Run");
+		btnReusableRun = new JButton("Re-usable Run");
 		button_non_install.add(btnReusableRun);
 		button_non_install.add(runOrthancLocal);
 		
 		btnReusableRun.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
-					boolean copy=orthanc.isCopyAvailable();
+					runOrthanc=new Run_Orthanc();
+					boolean copy=runOrthanc.isCopyAvailable();
 					if (!copy) {
 						JOptionPane.showMessageDialog(gui, "Set folder installation", "Orthanc Install", JOptionPane.WARNING_MESSAGE);
 						JFileChooser chooser = new JFileChooser();
@@ -199,16 +240,20 @@ public class ConnectionSetup extends JDialog {
 						if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
 							String path = chooser.getSelectedFile().getAbsolutePath();
 							try {
-								orthanc.copyOrthanc(path);
+								runOrthanc.copyOrthanc(path);
 								jpreferPerso.put("OrthancLocalPath", path);
 							} catch (Exception e1) {
 								e1.printStackTrace();
 							}
 						}
-					}else {
-						orthanc.startOrthanc();
 					}
 					
+					if(runOrthanc.isCopyAvailable()) {
+						runOrthanc.startOrthanc();
+					}
+				
+					
+				
 				dispose();
 			}
 		});
@@ -236,8 +281,36 @@ public class ConnectionSetup extends JDialog {
 		
 		
 		disclaimerPanel.add(link);
+		
+		fillParameter(jpreferPerso.getInt("currentOrthancServer", 1));
+		
+		selectServerSpinner();
+
 		setSize(1200, 400);
 		pack();
+	}
+	
+	public void setOrthancRun() {
+		runOrthancLocal.setEnabled(false);
+		btnReusableRun.setEnabled(false);
+		
+	}
+	
+	public Run_Orthanc getRunOrthanc() {
+		return runOrthanc;
+	}
+	
+	private void fillParameter(int number) {
+		ipTxt.setText(jpreferPerso.get("ip"+number, "http://localhost"));
+		portTxt.setText(jpreferPerso.get("port"+number, "8042"));
+		passwordTxt.setText(jpreferPerso.get("password"+number, null));
+		usernameTxt.setText(jpreferPerso.get("username"+number, null));
+	}
+	
+	private void selectServerSpinner() {
+		int choiceValue=jpreferPerso.getInt("currentOrthancServer", 1);
+		this.spinnerServerChoice.setValue(choiceValue);
+		fillParameter(choiceValue);
 	}
 	
 	private void openWebPage(String url){

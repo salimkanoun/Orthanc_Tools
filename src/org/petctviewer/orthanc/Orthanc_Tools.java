@@ -4,25 +4,48 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import javax.swing.JOptionPane;
+
 import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.setup.ConnectionSetup;
+import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import ij.plugin.PlugIn;
 
-public class Orthanc_Tools extends VueAnon implements PlugIn {
-	private static final long serialVersionUID = 1L;
+public class Orthanc_Tools implements PlugIn {
+	
+	VueAnon anon;
 
-	// LAUNCHERS
-	public static void main(String... args){
-		VueAnon anon=new VueAnon();
+	public Orthanc_Tools(){
+		OrthancRestApis restApis= new OrthancRestApis(null);
+		//Until we reach the Orthanc Server we give the setup panel
+		ConnectionSetup setup=null;
+		int check=0;
+		while (!restApis.isConnected() && check<3) {
+				if (check>0) JOptionPane.showMessageDialog(null, "Settings Attempt " + (check+1) +"/3", "Attempt", JOptionPane.INFORMATION_MESSAGE);
+				setup = new ConnectionSetup();
+				setup.setVisible(true);
+				restApis=new OrthancRestApis(null);
+				check++;
+				if(check ==3) {
+					JOptionPane.showMessageDialog(null, "Can't reach Orthanc, terminating", "Failure", JOptionPane.ERROR_MESSAGE);	
+					return;
+				}
+		}
+		anon=new VueAnon(restApis);
+		if(setup!=null && setup.getRunOrthanc()!=null) anon.setRunOrthanc(setup.getRunOrthanc());
 		anon.setLocationRelativeTo(null);
 		anon.setVisible(true);
+	}
+	
+	public static void main(String... args){
+		new Orthanc_Tools();
+		
 	}
 
 	@Override
 	public void run(String string) {
-		setLocationRelativeTo(null);
-		this.setVisible(true);
-		fijiEnvironement=true;
+		anon.fijiEnvironement=true;
 	}
 
 	public static void writeCSV(String text, File file) {
@@ -44,16 +67,15 @@ public class Orthanc_Tools extends VueAnon implements PlugIn {
 //SK TO DO
 //Tester envoie DICOM plateforme
 //Debeuger sortie reste des thread non collectes=> Tracker update de ImageJ
-
-//AutoQuery doc a refaire : 
-//Valeur global au click
-//Interface resultats
-//recurrent query 
+//Query / Import passer en singeton + update interface au changement de serveur
+//Impact du changement du serveur sur le monitoring
 
 //+Tard
 //Faire detection des SC dans table export Series comme sur main Tab
 //Faire item listener dans query pour repondre au changement clavier comme main tab
 //Envoi manuel de cd/dvd ?
+//Job monitoring pour toutes les operation longue
+//Voir pour sauvegarde BF quand ouvert depius Orthanc (bf.gr)
 
 //Idee refactor 
 //sortir panel modalities dans un objet a part

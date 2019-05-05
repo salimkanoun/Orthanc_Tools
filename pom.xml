@@ -188,7 +188,7 @@
 	<dependency>
 		<groupId>net.imagej</groupId>
 		<artifactId>ij</artifactId>
-		<version>1.51s</version>
+		<version>1.52n</version>
 	</dependency>
 	
 	<dependency>
@@ -261,6 +261,12 @@
 		<groupId>org.apache.commons</groupId>
 		<artifactId>commons-lang3</artifactId>
 		<version>3.8.1</version>
+	</dependency>
+	
+	<dependency>
+	    <groupId>org.zeroturnaround</groupId>
+	    <artifactId>zt-zip</artifactId>
+	    <version>1.13</version>
 	</dependency>
 	
 </dependencies>

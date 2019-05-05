@@ -394,6 +394,7 @@ public class Json_Settings {
 			 StringWriter out = new StringWriter();
 			 JSMin js= new JSMin(reader, out);
 			 js.jsmin();
+			 reader.close();
 			 JsonParser parser = new JsonParser();
 			 JsonObject orthancJson= parser.parse(out.toString()).getAsJsonObject();
 			 parserOrthancJson(orthancJson);

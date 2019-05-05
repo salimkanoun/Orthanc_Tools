@@ -22,6 +22,9 @@ public class OTP {
 	private String serverAdress;
 	private JsonParser parser=new JsonParser();
 	
+	protected String orthancAdress, orthancLogin, orthancPassword;
+	protected int orthancPort;
+	
 	public OTP(String username, String password, String serverAdress) {
 		this.username=username;
 		this.password=password;
@@ -33,10 +36,8 @@ public class OTP {
 		jsonPost.addProperty("username", username);
 		jsonPost.addProperty("password", password);
 		String answser=makePostConnection("/Rest_Api/check_login.php",jsonPost.toString());
-		System.out.println(answser);
-		JsonObject response = null;
-
-		response=parser.parse(answser).getAsJsonObject();
+		
+		JsonObject response=parser.parse(answser).getAsJsonObject();
 
 		if(!response.get("login").getAsString().equals("Allowed") ) {
 			JOptionPane.showMessageDialog(null, response.get("login").toString(), "Login Error",  JOptionPane.ERROR_MESSAGE);
@@ -54,7 +55,6 @@ public class OTP {
 		
 		JsonArray studies = null;
 		String answser=makePostConnection("/Rest_Api/get-studies.php",jsonPost.toString());
-		System.out.println(answser);
 		studies=parser.parse(answser).getAsJsonArray();
 
 		List<String> studiesList=new ArrayList<String>();
@@ -72,30 +72,17 @@ public class OTP {
 		jsonPost.addProperty("username", username);
 		jsonPost.addProperty("password", password);
 		jsonPost.addProperty("studyName", studyName);
-		System.out.println(jsonPost);
-		JsonArray visits = null;
+		
 		String answser=makePostConnection("/Rest_Api/get-visits.php", jsonPost.toString());
 		System.out.println(answser);
-		System.out.println(answser==null);
-		//SK A GERER COTE SERVEUR POUR AVOIR TOUJOURS UNE REPONSE EN JSON
-		try {
-		visits=parser.parse(answser).getAsJsonArray();
-		}catch (Exception e){
-			e.printStackTrace();
+		JsonArray visits=parser.parse(answser).getAsJsonArray();
+
+		String[] visitsTable=new String[visits.size()];
+		for(int i=0; i<visits.size(); i++) {
+			visitsTable[i]=(visits.get(i).getAsString());
 		}
+		return visitsTable;
 		
-		List<String> visitsList=new ArrayList<String>();
-		if (visits !=null) {
-			for(int i=0; i<visits.size(); i++) {
-				visitsList.add(visits.get(i).getAsString());
-			}
-			String[] visitsTable=new String[visitsList.size()];
-			visitsList.toArray(visitsTable);
-			return visitsTable;
-		}
-		else {
-			return null;
-		}
 		
 	}
 	
@@ -105,16 +92,18 @@ public class OTP {
 		jsonPost.addProperty("password", password);
 		jsonPost.addProperty("studyName", studyName);
 		jsonPost.addProperty("visit", visitName);
-		
-		JsonArray visits = null;
-		String answser=makePostConnection("/Rest_Api/get-possible-import.php", jsonPost.toString());
-		visits=parser.parse(answser).getAsJsonArray();
 
-		if (visits.size() !=0) {	
-			return visits;
-		} else {
-			return null;
-		}
+		String answser=makePostConnection("/Rest_Api/get-possible-import.php", jsonPost.toString());
+		JsonObject answserJson=parser.parse(answser).getAsJsonObject();
+		JsonArray visits=answserJson.get("AvailablePatients").getAsJsonArray();
+		
+		
+		orthancAdress=answserJson.get("OrthancServer").getAsString();
+		orthancPort=answserJson.get("OrthancPort").getAsInt();
+		orthancLogin=answserJson.get("OrthancLogin").getAsString();
+		orthancPassword=answserJson.get("OrthancPassword").getAsString();
+		return visits;
+		
 		
 	}
 
@@ -124,12 +113,9 @@ public class OTP {
 		jsonPost.addProperty("username", username);
 		jsonPost.addProperty("password", password);
 		jsonPost.add("studies", studiesArray);
-		//SK A MODFIER COTE PLATEFORME POUR SUPPORTER L ENVOI MULTIPLE
-		System.out.println(jsonPost.toString());
 		
 		JsonObject visits = null;
 		String answser=makePostConnection("/Rest_Api/validate-upload.php", jsonPost.toString());
-		System.out.println(answser);
 		visits=parser.parse(answser).getAsJsonObject();
 			
 		return visits.get("recivedConfirmation").getAsBoolean();

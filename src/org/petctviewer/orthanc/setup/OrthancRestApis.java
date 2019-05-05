@@ -56,17 +56,27 @@ public class OrthancRestApis {
 	
 	public OrthancRestApis(String fullAddress)  {
 		if(fullAddress==null) {
-			String ip = jpreferPerso.get("ip", "http://localhost");
-			String port = jpreferPerso.get("port", "8042");
-			this.fullAddress = ip + ":" + port;
-			if(jpreferPerso.get("username", null) != null && jpreferPerso.get("username", null) != null){
-				authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username", null) + ":" + jpreferPerso.get("password", null)).getBytes());
-			}
-			
+			refreshServerAddress();
 		}else {
 			this.fullAddress = fullAddress;
+			getSystemInformationsAndTest();
 		}
+
+	}
+	
+	public void refreshServerAddress() {
+		
+		int serverNum=jpreferPerso.getInt("currentOrthancServer", 1);
+		String ip =jpreferPerso.get("ip"+serverNum, "http://localhost");
+		String port =jpreferPerso.get("port"+serverNum, "8042");
+		this.fullAddress = ip + ":" + port;
+		
+		if(jpreferPerso.get("username"+serverNum, null) != null && jpreferPerso.get("password"+serverNum, null) != null){
+			authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username"+serverNum, null) + ":" + jpreferPerso.get("password"+serverNum, null)).getBytes());
+		}
+		
 		getSystemInformationsAndTest();
+		
 	}
 	
 	
@@ -160,6 +170,27 @@ public class OrthancRestApis {
 		
 		return conn;
 	}
+	
+	public HttpURLConnection makePutConnection(String apiUrl, String post) throws Exception {
+
+		HttpURLConnection conn = null ;
+			URL url = new URL(fullAddress+apiUrl);
+			conn = (HttpURLConnection) url.openConnection();
+			conn.setDoOutput(true);
+			conn.setRequestMethod("PUT");
+			if((fullAddress != null && fullAddress.contains("https")) ){
+					HttpsTrustModifier.Trust(conn);
+			}
+			if(this.authentication != null){
+				conn.setRequestProperty("Authorization", "Basic " + this.authentication);
+			}
+			OutputStream os = conn.getOutputStream();
+			os.write(post.getBytes());
+			os.flush();
+			conn.getResponseMessage();
+		
+		return conn;
+	}
 
 	public HttpURLConnection sendDicom(String apiUrl, byte[] post) {
 		
@@ -196,6 +227,29 @@ public class OrthancRestApis {
 		try {
 			sb=new StringBuilder();
 			HttpURLConnection conn = makePostConnection(apiUrl, post);
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					(conn.getInputStream())));
+			// We get the study ID at the end
+			String output;
+			while ((output = br.readLine()) != null) {
+				sb.append(output);
+			}
+			conn.disconnect();
+			conn.getResponseMessage();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		return sb; 
+	}
+	
+	public StringBuilder makePutConnectionAndStringBuilder(String apiUrl, String post) {
+		
+		StringBuilder sb =null;
+		try {
+			sb=new StringBuilder();
+			HttpURLConnection conn = makePutConnection(apiUrl, post);
 			BufferedReader br = new BufferedReader(new InputStreamReader(
 					(conn.getInputStream())));
 			// We get the study ID at the end
@@ -252,17 +306,17 @@ public class OrthancRestApis {
 	public void getSystemInformationsAndTest() {
 		
 		StringBuilder sb= makeGetConnectionAndStringBuilder("/system");
-		if(sb!=null) {
+		try {
 			JsonParser parser=new JsonParser();
 			JsonObject systemJson=(JsonObject) parser.parse(sb.toString());
 			orthancVersion=systemJson.get("Version").getAsString();
 			localAETName=systemJson.get("DicomAet").getAsString();
 			versionHigher131=isVersionAfter131();
 			connected=true;	
-		}else{ 
+		}catch(Exception e) {
 			connected=false;
+			JOptionPane.showMessageDialog(null, "Orthanc Unreachable", "No Reachable", JOptionPane.ERROR_MESSAGE);
 		}
-		
 		
 		
 	}
@@ -407,6 +461,65 @@ public class OrthancRestApis {
 		}else {
 			return false;
 		}
+	}
+	
+	/**
+	 * Send the data through transfer accelerator and return the JobID to monitor progress
+	 * in /jobs/ID
+	 * @param peer
+	 * @param idList
+	 * @return
+	 */
+	public String sendStudiesToPeerAccelerator(String peer, ArrayList<String> idList) {
+		JsonObject request=new JsonObject();
+		request.addProperty("Compression", "gzip");
+		request.addProperty("Peer", peer);
+		
+		JsonArray ressources=new JsonArray();
+		for(String id:idList) {
+			JsonObject studyToSend=new JsonObject();
+			studyToSend.addProperty("Level", "Study");
+			studyToSend.addProperty("ID", id);
+			ressources.add(studyToSend);
+		}
+		request.add("Resources", ressources);
+		System.out.println(request);
+		StringBuilder sb=makePostConnectionAndStringBuilder("/transfers/send/", request.toString());
+		
+		JsonObject answer=this.parser.parse(sb.toString()).getAsJsonObject();
+		String jobId=answer.get("ID").getAsString();
+		
+		return jobId;
+		
+	}
+	
+	public void addPeerOtp(Object[] peer) {
+		JsonObject jsonPeer=new JsonObject();
+		if(((String) peer[0]).endsWith("/")) {
+			peer[0]=((String) peer[0]).substring(0, ((String) peer[0]).length());
+		}
+		jsonPeer.addProperty("Url", peer[0]+":"+peer[1]);
+		jsonPeer.addProperty("Username", (String) peer[2]);
+		jsonPeer.addProperty("Password", (String) peer[3]);
+		
+		try {
+			this.makePutConnection("/peers/otp", jsonPeer.toString());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public void removePeerOtp() {
+		this.makeDeleteConnection("/peers/toto");
+	}
+	
+	public static void main(String[] arg) {
+		OrthancRestApis apis=new OrthancRestApis(null);
+		ArrayList<String> idList = new ArrayList<String>();
+		idList.add("96ab96e0-d7df8f2f-3b50ae6d-55fb9aef-42732200");
+		apis.sendStudiesToPeerAccelerator("NewCTP", idList);
 	}
 	
 	public boolean isConnected() {

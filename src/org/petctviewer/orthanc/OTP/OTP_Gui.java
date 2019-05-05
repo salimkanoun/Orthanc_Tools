@@ -44,7 +44,7 @@ public class OTP_Gui extends JDialog {
 	private JTable tablePatient;
 	private DefaultTableModel modelTablePatient;
 	private JComboBox<String> comboBox_Studies, comboBox_Visits;
-	private OTP ctp;
+	private OTP otp;
 	private JTable tableDetailsPatient;
 	private Preferences jprefer = VueAnon.jprefer;
 	
@@ -125,7 +125,7 @@ public class OTP_Gui extends JDialog {
 									if(arg0.getStateChange() == ItemEvent.SELECTED && !comboBox_Visits.getSelectedItem().equals("None") ) {
 										
 										System.out.println("ici");
-										JsonArray patients=ctp.getAvailableImports((String) comboBox_Studies.getSelectedItem(), (String) comboBox_Visits.getSelectedItem());
+										JsonArray patients=otp.getAvailableImports((String) comboBox_Studies.getSelectedItem(), (String) comboBox_Visits.getSelectedItem());
 										System.out.println(patients);
 										if (tablePatient.getModel().getRowCount()>0) modelTablePatient.setRowCount(0);
 										for (int i=0 ; i<patients.size() ; i++) {
@@ -157,7 +157,7 @@ public class OTP_Gui extends JDialog {
 									
 									comboBox_Visits.removeAllItems();
 									if (tablePatient.getModel().getRowCount()>0) modelTablePatient.setRowCount(0);
-									String[] visits=ctp.getAvailableVisits((String) comboBox_Studies.getSelectedItem());
+									String[] visits=otp.getAvailableVisits((String) comboBox_Studies.getSelectedItem());
 									if (visits !=null) {
 										for (int i=0; i<visits.length; i++) {
 											comboBox_Visits.addItem(visits[i]);
@@ -181,11 +181,11 @@ public class OTP_Gui extends JDialog {
 							comboBox_Studies.removeAllItems();
 							comboBox_Visits.removeAllItems();
 							if (tablePatient.getModel().getRowCount()>0) modelTablePatient.setRowCount(0);							
-							ctp=new OTP(CTP_Username.getText(), new String(CTP_Password.getPassword()), CTPAddress );
+							otp=new OTP(CTP_Username.getText(), new String(CTP_Password.getPassword()), CTPAddress );
 							
-							boolean checklogin=ctp.checkLogin();
+							boolean checklogin=otp.checkLogin();
 							if(checklogin) {
-								String[] studies=ctp.getAvailableStudies();
+								String[] studies=otp.getAvailableStudies();
 								comboBox_Studies.addItem("Choose");
 								for (int i=0; i<studies.length; i++) {
 									comboBox_Studies.addItem(studies[i]);
@@ -432,6 +432,17 @@ public class OTP_Gui extends JDialog {
 	}
 	public String getPassword() {
 		return new String(CTP_Password.getPassword());
+	}
+	
+	public void setLogin(String login) {
+		CTP_Username.setText(login);
+	}
+	public void setPassword(String password) {
+		CTP_Password.setText(password);
+	}
+	
+	public Object[] getOrthancServerReciever() {
+		return new Object[] {otp.orthancAdress, otp.orthancPort, otp.orthancLogin, otp.orthancPassword};
 	}
 	
 	private boolean checkMatch() {

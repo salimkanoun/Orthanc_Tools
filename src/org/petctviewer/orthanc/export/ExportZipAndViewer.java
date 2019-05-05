@@ -30,6 +30,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.FileUtils;
+import org.zeroturnaround.zip.ZipUtil;
+
 import com.github.stephenc.javaisotools.eltorito.impl.ElToritoConfig;
 import com.github.stephenc.javaisotools.iso9660.ISO9660RootDirectory;
 import com.github.stephenc.javaisotools.iso9660.impl.CreateISO;
@@ -49,7 +52,6 @@ public class ExportZipAndViewer {
 		this.zipDicom=zipDicom;
 		this.destination=destination;
 		this.viewerPackage=viewerPackage;
-		
 	}
 
 	/**
@@ -57,13 +59,40 @@ public class ExportZipAndViewer {
 	 * @throws Exception 
 	 */
 	public void ZipAndViewerToZip() throws Exception {
-		destination.createNewFile();
+		//Zip the viewer Package
+		Path tempZipViewer = Files.createTempFile("tempViewer", ".zip");
+		ZipUtil.pack(viewerPackage,  tempZipViewer.toFile());
+		
+		//Create the destination zip and concatenate ZIP dicom with Viewer
+		destination.createNewFile();	
 		ZipOutputStream outStream = new ZipOutputStream(new FileOutputStream(destination));
-		readZip(outStream , viewerPackage.toString());
+		readZip(outStream , tempZipViewer.toFile().toString());
 		readZip(outStream , zipDicom.toString());
 		outStream.close();
 		
 	}
+	
+	
+	/**
+	 * put ZIP content to outputStream (to concatenate two zip to the same output stream)
+	 * @param outStream
+	 * @param inputZip
+	 * @throws Exception
+	 */
+	private void readZip(ZipOutputStream outStream, String inputZip) throws Exception {
+	    ZipInputStream inStream = new ZipInputStream(new FileInputStream(inputZip));
+	    byte[] buffer = new byte[1024];
+	    int len = 0;
+	    for (ZipEntry e; (e = inStream.getNextEntry()) != null;) {
+	        ZipEntry destEntry =  new ZipEntry (e.getName());
+	    	outStream.putNextEntry(destEntry);
+	        while ((len = inStream.read(buffer)) > 0) {
+	            outStream.write(buffer, 0, len);
+	        }
+	    }
+	    inStream.close();
+	}
+
 	
 	/**
 	 * Unzip a zip to a destination
@@ -71,6 +100,8 @@ public class ExportZipAndViewer {
 	 * @param tempFolder
 	 */
 	private void unzip(File zip, Path tempFolder){
+		
+		
 		 try {
 		     byte[] buffer = new byte[1024];
 	    
@@ -113,39 +144,21 @@ public class ExportZipAndViewer {
 	     
 	     
 	}
-	
-	/**
-	 * put ZIP content to outputStream (to concatenate two zip to the same output stream)
-	 * @param outStream
-	 * @param inputZip
-	 * @throws Exception
-	 */
-	private void readZip(ZipOutputStream outStream, String inputZip) throws Exception {
-	    ZipInputStream inStream = new ZipInputStream(new FileInputStream(inputZip));
-	    byte[] buffer = new byte[1024];
-	    int len = 0;
-	    for (ZipEntry e; (e = inStream.getNextEntry()) != null;) {
-	        ZipEntry destEntry =  new ZipEntry (e.getName());
-	    	outStream.putNextEntry(destEntry);
-	        while ((len = inStream.read(buffer)) > 0) {
-	            outStream.write(buffer, 0, len);
-	        }
-	    }
-	    inStream.close();
-	}
 
 	/**
 	 * Generate the ISO file (in destination file) containing DICOM and Viewer
 	 * @throws Exception 
 	 */
 	public void generateIsoFile() throws Exception {
+		
 		//Create Temp folder and unzip both Viewer and Dicom in it
 		Path tempFolder = null;
 		
 		tempFolder = Files.createTempDirectory("ISO_");
 
+		//Unzip the DICOM Zip and copy the viewer distro with it
 		unzip(zipDicom, tempFolder);
-		unzip(viewerPackage, tempFolder);
+		FileUtils.copyDirectory(viewerPackage, tempFolder.toFile());
 		
 		//Build ISO Image in destination
 		// from https://github.com/stephenc/java-iso-tools/blob/master/iso9660-writer/ISOtest.java
@@ -190,6 +203,7 @@ public class ExportZipAndViewer {
 		ElToritoConfig elToritoConfig = null;
 
 		// Create ISO
+		destination.createNewFile();
 		StreamHandler streamHandler = new ISOImageFileHandler(destination);
 		CreateISO iso = new CreateISO(streamHandler, root);
 		iso.process(iso9660Config, rrConfig, jolietConfig, elToritoConfig);

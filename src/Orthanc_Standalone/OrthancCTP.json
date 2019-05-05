@@ -226,8 +226,6 @@
 
   // The list of the known Orthanc peers
   "OrthancPeers" : {
-  
-  "Lysarc"  : [ "http://orthanc.kanoun.fr:80/", "salim", "salim" ]
     /**
      * Each line gives the base URL of an Orthanc peer, possibly
      * followed by the username/password pair (if the password
@@ -270,14 +268,14 @@
   "HttpVerbose" : false,
 
   // Set the timeout for HTTP requests issued by Orthanc (in seconds).
-  "HttpTimeout" : 10,
+  "HttpTimeout" : 120,
 
   // Enable the verification of the peers during HTTPS requests. This
   // option must be set to "false" if using self-signed certificates.
   // Pay attention that setting this option to "false" results in
   // security risks!
   // Reference: http://curl.haxx.se/docs/sslcerts.html
-  "HttpsVerifyPeers" : true,
+  "HttpsVerifyPeers" : false,
 
   // Path to the CA (certification authority) certificates to validate
   // peers in HTTPS requests. From curl documentation ("--cacert"
@@ -287,8 +285,6 @@
   // Debian-based systems, this option can be set to
   // "/etc/ssl/certs/ca-certificates.crt"
   "HttpsCACertificates" : "",
-
-
 
   /**
    * Advanced options

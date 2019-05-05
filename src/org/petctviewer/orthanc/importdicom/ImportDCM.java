@@ -25,6 +25,8 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -50,13 +52,15 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
+import org.petctviewer.orthanc.anonymize.QueryOrthancData;
 import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-public class ImportDCM extends JDialog {
+public class ImportDCM extends JDialog implements WindowListener{
 	
 	private static final long serialVersionUID = 1L;
 	private Preferences jprefer = VueAnon.jprefer;
@@ -64,12 +68,13 @@ public class ImportDCM extends JDialog {
 	private OrthancRestApis connexion;
 	private JDialog gui;
 	private ArrayList<String> importAnswer=new ArrayList<String>();
-	private HashMap<String, HashMap<String,String> > importedstudy=new HashMap<String, HashMap<String,String> >();
 	private JsonParser parser=new JsonParser();
+	private HashMap<String, Study2 > importedstudy=new HashMap<String, Study2 >();
+	private SwingWorker<Void,Void> importWorker;
 	
 	private ImportListener listener;
 
-	public ImportDCM(OrthancRestApis connexion, JFrame parentJframe){
+	public ImportDCM(OrthancRestApis connexion, JFrame parentJframe)  {
 		this.setTitle("Import DICOM files");
 		this.connexion=connexion;
 		this.gui=this;
@@ -106,7 +111,7 @@ public class ImportDCM extends JDialog {
 			public void actionPerformed(ActionEvent e) {
 				if(path.getText().length() > 0){
 					state.setForeground(Color.black);
-					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
+					importWorker = new SwingWorker<Void,Void>(){
 
 						@Override
 						protected Void doInBackground() throws Exception { 
@@ -126,7 +131,7 @@ public class ImportDCM extends JDialog {
 							}
 						}
 					};
-					worker.execute();
+					importWorker.execute();
 				}
 			}
 		});
@@ -162,8 +167,10 @@ public class ImportDCM extends JDialog {
 		Image image = new ImageIcon(ClassLoader.getSystemResource("logos/OrthancIcon.png")).getImage();
 		this.setIconImage(image);
 		this.getContentPane().add(mainPanel);
+		addWindowListener(this);
 		pack();
 		setLocationRelativeTo(parentJframe);
+		
 		
 		
 	}
@@ -218,7 +225,9 @@ public class ImportDCM extends JDialog {
 	 * Return Hashmap describing imported studies
 	 * @return
 	 */
-	public HashMap<String, HashMap<String, String>> getImportedStudy() {
+	public HashMap<String, Study2> getImportedStudy() {
+		
+		QueryOrthancData queryOrthanc = new QueryOrthancData(connexion);
 		
 		for (int i=0; i<importAnswer.size(); i++) {
 				JsonObject importedInstance=(JsonObject) parser.parse(importAnswer.get(i));
@@ -227,31 +236,64 @@ public class ImportDCM extends JDialog {
 				//If new study Add it to the global Hashmap
 				if( ! importedstudy.containsKey(parentStudyID)) {
 					
-					StringBuilder studyQuery=connexion.makeGetConnectionAndStringBuilder("/studies/"+parentStudyID);
-					JsonObject parentStudy=(JsonObject)parser.parse(studyQuery.toString());
+					try {
+						Study2 study=queryOrthanc.getStudyDetails(parentStudyID, true);
+						importedstudy.put(parentStudyID, study);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					
-					//HashMap for a new Study imported
-					HashMap<String, String> newStudy=new HashMap<String,String>();
-					String studyDate=parentStudy.get("MainDicomTags").getAsJsonObject().get("StudyDate").getAsString();
-					String patientID= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientID").getAsString();
-					String patientName= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientName").getAsString();
-					String patientDOB= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientBirthDate").getAsString();
-					String patientSex= parentStudy.get("PatientMainDicomTags").getAsJsonObject().get("PatientSex").getAsString();
-					String patientOrthancID=parentStudy.get("ParentPatient").getAsString();
-					
-					newStudy.put("studyDate", studyDate);
-					newStudy.put("patientID", patientID);
-					newStudy.put("patientName", patientName);
-					newStudy.put("patientDOB", patientDOB);
-					newStudy.put("patientSex", patientSex);
-					newStudy.put("patientOrthancID", patientOrthancID);
-					importedstudy.put(parentStudyID, newStudy);
 				}
 				
 		}
 		
 		return importedstudy;
 
+	}
+
+	@Override
+	public void windowActivated(WindowEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowClosed(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowClosing(WindowEvent e) {
+		if(importWorker!=null && !importWorker.isDone()) {
+			importWorker.cancel(true);
+		}
+		
+	}
+
+	@Override
+	public void windowDeactivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeiconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowIconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowOpened(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

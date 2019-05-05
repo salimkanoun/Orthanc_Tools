@@ -91,7 +91,9 @@ public class Study2 {
 	
 	
 	public void storeStudyStatistics(QueryOrthancData queryOrthanc) {
-		int[] statistics=queryOrthanc.getStudyStatistics(StudyOrthancId);
+		int[] statistics=queryOrthanc.
+				getStudyStatistics(
+				StudyOrthancId);
 		this.statNbSeries=statistics[0];
 		this.statNbInstance=statistics[1];
 		this.statMbSize=statistics[2];

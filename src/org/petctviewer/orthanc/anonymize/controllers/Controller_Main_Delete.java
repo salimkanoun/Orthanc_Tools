@@ -31,7 +31,7 @@ import org.petctviewer.orthanc.anonymize.TableStudiesModel;
 import org.petctviewer.orthanc.anonymize.VueAnon;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 
-public class DeleteActionMainPanel implements ActionListener{
+public class Controller_Main_Delete implements ActionListener{
 
 	private String level;
 	private TableSeriesModel modeleSeries;
@@ -58,7 +58,7 @@ public class DeleteActionMainPanel implements ActionListener{
 	 * @param frame
 	 * @param searchBtn
 	 */
-	public DeleteActionMainPanel(OrthancRestApis connexion, String level, TableStudiesModel modeleStudies, JTable tableauStudies, TableSeriesModel modeleSeries, 
+	public Controller_Main_Delete(OrthancRestApis connexion, String level, TableStudiesModel modeleStudies, JTable tableauStudies, TableSeriesModel modeleSeries, 
 			JTable tableauSeries, TablePatientsModel modelePatients, JTable tableauPatients, VueAnon vue, JButton searchBtn){
 		this.connexion=connexion;
 		this.level = level;

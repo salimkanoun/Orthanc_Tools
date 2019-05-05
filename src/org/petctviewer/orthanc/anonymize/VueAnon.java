@@ -19,7 +19,6 @@ package org.petctviewer.orthanc.anonymize;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -36,7 +35,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -73,19 +71,18 @@ import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.table.DefaultTableCellRenderer;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.petctviewer.orthanc.Orthanc_Tools;
 import org.petctviewer.orthanc.Jsonsettings.SettingsGUI;
-import org.petctviewer.orthanc.OTP.OTP;
 import org.petctviewer.orthanc.OTP.OTP_Gui;
-import org.petctviewer.orthanc.anonymize.controllers.Controller_Anonymize_Btn;
-import org.petctviewer.orthanc.anonymize.controllers.Controller_Csv_Btn;
-import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_Zip;
-import org.petctviewer.orthanc.anonymize.controllers.Controller_Read_Series;
-import org.petctviewer.orthanc.anonymize.controllers.DeleteActionMainPanel;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_Csv_Btn;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_OTP;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Export_Remote_Btn;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Main_Anonymize_Btn;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Main_Delete;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Main_Read_Series;
+import org.petctviewer.orthanc.anonymize.controllers.Controller_Main_Zip;
 import org.petctviewer.orthanc.anonymize.datastorage.Patient;
 import org.petctviewer.orthanc.anonymize.datastorage.PatientAnon;
 import org.petctviewer.orthanc.anonymize.datastorage.Serie;
@@ -103,7 +100,6 @@ import org.petctviewer.orthanc.anonymize.listeners.TablePatientsMouseListener;
 import org.petctviewer.orthanc.anonymize.listeners.TableStudiesMouseListener;
 import org.petctviewer.orthanc.anonymize.listeners.Window_Custom_Listener;
 import org.petctviewer.orthanc.export.ExportZip;
-import org.petctviewer.orthanc.export.SendFilesToRemote;
 import org.petctviewer.orthanc.importdicom.ImportDCM;
 import org.petctviewer.orthanc.modify.Modify;
 import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
@@ -111,9 +107,8 @@ import org.petctviewer.orthanc.query.VueQuery;
 import org.petctviewer.orthanc.setup.ConnectionSetup;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
 import org.petctviewer.orthanc.setup.Run_Orthanc;
+import org.petctviewer.orthanc.setup.Setup_Viewer_Distribution;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.michaelbaranov.microba.calendar.DatePicker;
 
 public class VueAnon extends JFrame {
@@ -130,7 +125,7 @@ public class VueAnon extends JFrame {
 	private VueAnon gui=this;
 	
 	//Objet de connexion aux restFul API, prend les settings des registery et etabli les connexion a la demande
-	private OrthancRestApis connexionHttp;
+	private OrthancRestApis restApis;
 	private QueryOrthancData queryOrthanc;
 	protected JPanel tablesPanel, mainPanel, topPanel, anonBtnPanelTop;
 	
@@ -191,15 +186,15 @@ public class VueAnon extends JFrame {
 	
 
 	// Tab Export (p2)
+	public JPanel mainPanelExport;
 	private JLabel stateExports = new JLabel("");
-	protected JButton peerExport,csvReport, exportToZip, exportBtn, dicomStoreExport;
+	protected JButton peerExport,csvReport, exportToZip, exportRemoteBtn, dicomStoreExport;
 	protected JComboBox<String> listePeers;
 	protected JComboBox<String> listeAETExport;
 	private JTable tableauExportStudies;
 	private JTable tableauExportSeries;
 	public TableExportStudiesModel modeleExportStudies;
 	public TableExportSeriesModel modeleExportSeries;
-	private StringBuilder remoteFileName;
 	
 
 	//Monitoring (p3)
@@ -222,13 +217,14 @@ public class VueAnon extends JFrame {
 	private JTextField remoteFilePath;
 	private JComboBox<String> exportType;
 	
-	//CTP
+	//OTP
 	private JTextField addressFieldCTP;
-	public JComboBox<String> listePeersCTP ;
-	public JButton exportCTP;
+	public String ctpPeer ;
 	private String CTPUsername;
 	private String CTPPassword;
+	private JButton exportCTP;
 	public boolean autoSendCTP=false;
+	private Object[] orthancPeerOTP;
 
 	
 	//Run Orthanc
@@ -243,45 +239,20 @@ public class VueAnon extends JFrame {
 
 	public boolean fijiEnvironement=false;
 	
-	public Timer timerState=new Timer();
+	public Timer timerState;
 	
-	public VueAnon() {
+	public VueAnon(OrthancRestApis restApis) {
 		super("Orthanc Tools");
-		connexionHttp= new OrthancRestApis(null);
-		queryOrthanc=new QueryOrthancData(connexionHttp);
-		runOrthanc=new Run_Orthanc();
-		//Until we reach the Orthanc Server we give the setup panel
-		int check=0;
-		while (!connexionHttp.isConnected() && check<3) {
-				if (check>0) JOptionPane.showMessageDialog(null, "Settings Attempt " + (check+1) +"/3", "Attempt", JOptionPane.INFORMATION_MESSAGE);
-				ConnectionSetup setup = new ConnectionSetup(runOrthanc, null);
-				setup.setVisible(true);
-				connexionHttp=new OrthancRestApis(null);
-				check++;
-				if(check ==3) JOptionPane.showMessageDialog(null, "Programme is starting without connexion (no services)", "Failure", JOptionPane.ERROR_MESSAGE);
-		}
-		buildGui();
-		
-	}
-	
-	/**
-	 * Force temporary session of Orthanc, with a specified JSON config file
-	 * @param startTemporaryOrthanc
-	 */
-	public VueAnon(String orthancJsonName) {
-		super("Orthanc Tools");
-		
-		try {
-			runOrthanc=new Run_Orthanc();
-			runOrthanc.orthancJsonName=orthancJsonName;
-			runOrthanc.copyOrthanc(null);
-			runOrthanc.startOrthanc();
-		} catch (Exception e) {
-			e.printStackTrace();
+		if(restApis.isConnected()) {
+			this.restApis= restApis;
+			timerState=new Timer();
+			queryOrthanc=new QueryOrthancData(restApis);
+			buildGui();
+		}else {
+			JOptionPane.showMessageDialog(this, "Can't Run without Orthanc Connexion", "No Orthanc", JOptionPane.ERROR_MESSAGE);
+			dispose();
 		}
 		
-		connexionHttp= new OrthancRestApis("http://localhost:8043");
-		buildGui();
 		
 	}
 
@@ -289,9 +260,9 @@ public class VueAnon extends JFrame {
 		//Instanciate needed Table and their model
 		modelePatients = new TablePatientsModel();
 		modeleStudies = new TableStudiesModel(queryOrthanc);
-		modeleSeries = new TableSeriesModel(connexionHttp, this, queryOrthanc);
+		modeleSeries = new TableSeriesModel(restApis, this, queryOrthanc);
 		modeleExportStudies = new TableExportStudiesModel();
-		modeleExportSeries = new TableExportSeriesModel(connexionHttp, queryOrthanc, this);
+		modeleExportSeries = new TableExportSeriesModel(restApis, queryOrthanc, this);
 		modeleAnonStudies = new TableAnonStudiesModel();
 		modeleAnonPatients = new TableAnonPatientsModel();
 		
@@ -454,7 +425,7 @@ public class VueAnon extends JFrame {
 				SwingUtilities.invokeLater(new Runnable () {
 					@Override
 					public void run() {
-						VueQuery query=new VueQuery(connexionHttp, gui);
+						VueQuery query=new VueQuery(restApis, gui);
 						query.pack();
 						query.setLocationRelativeTo(gui);
 						query.setVisible(true);
@@ -470,7 +441,7 @@ public class VueAnon extends JFrame {
 				SwingUtilities.invokeLater(new Runnable () {
 					@Override
 					public void run() {
-						ImportDCM importFrame=new ImportDCM(connexionHttp,gui);
+						ImportDCM importFrame=new ImportDCM(restApis,gui);
 						importFrame.pack();
 						importFrame.setLocationRelativeTo(gui);
 						importFrame.setVisible(true);
@@ -584,12 +555,12 @@ public class VueAnon extends JFrame {
 		menuItemModifyPatients.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					new Modify("patients",(String)tableauPatients.getValueAt(tableauPatients.getSelectedRow(),2), gui, connexionHttp);
+					new Modify("patients",(String)tableauPatients.getValueAt(tableauPatients.getSelectedRow(),2), gui, restApis);
 				}
 			});
 		
 		JMenuItem menuItemDeletePatients = new JMenuItem("Delete this patient");
-		menuItemDeletePatients.addActionListener(new DeleteActionMainPanel(connexionHttp, "Patient", this.modeleStudies, this.tableauStudies, 
+		menuItemDeletePatients.addActionListener(new Controller_Main_Delete(restApis, "Patient", this.modeleStudies, this.tableauStudies, 
 				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, searchBtn));
 
 		popMenuPatients.add(menuItemModifyPatients);
@@ -624,13 +595,13 @@ public class VueAnon extends JFrame {
 		menuItemModifyStudy.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					new Modify("studies",(String)tableauStudies.getValueAt(tableauStudies.getSelectedRow(),3), gui, connexionHttp);
+					new Modify("studies",(String)tableauStudies.getValueAt(tableauStudies.getSelectedRow(),3), gui, restApis);
 				}
 			});
 		
 		
 		JMenuItem menuItemDeleteStudy = new JMenuItem("Delete this study");
-		menuItemDeleteStudy.addActionListener(new DeleteActionMainPanel(connexionHttp, "Study", this.modeleStudies, this.tableauStudies, 
+		menuItemDeleteStudy.addActionListener(new Controller_Main_Delete(restApis, "Study", this.modeleStudies, this.tableauStudies, 
 				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, searchBtn));
 		
 		popMenuStudies.add(menuItemModifyStudy);
@@ -663,7 +634,7 @@ public class VueAnon extends JFrame {
 		menuItemModifySeries.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					new Modify("series",(String)tableauSeries.getValueAt(tableauSeries.getSelectedRow(),4), gui, connexionHttp);
+					new Modify("series",(String)tableauSeries.getValueAt(tableauSeries.getSelectedRow(),4), gui, restApis);
 				}
 			});
 		
@@ -696,7 +667,7 @@ public class VueAnon extends JFrame {
 			}
 		});
 		JMenuItem menuItemDeleteSeries = new JMenuItem("Delete this serie");
-		menuItemDeleteSeries.addActionListener(new DeleteActionMainPanel(connexionHttp, "Serie", this.modeleStudies, this.tableauStudies, 
+		menuItemDeleteSeries.addActionListener(new Controller_Main_Delete(restApis, "Serie", this.modeleStudies, this.tableauStudies, 
 				this.modeleSeries, this.tableauSeries, this.modelePatients, this.tableauPatients, this, searchBtn));
 
 		popMenuSeries.add(menuItemModifySeries);
@@ -742,7 +713,7 @@ public class VueAnon extends JFrame {
 							setStateMessage("Storing data (Do not use the toolbox while the current operation is not done)", "red", -1);
 							storeBtn.setEnabled(false);
 							pack();
-							success=connexionHttp.sendToAet(listeAET.getSelectedItem().toString(), exportContent);
+							success=restApis.sendToAet(listeAET.getSelectedItem().toString(), exportContent);
 							return null;
 						}
 
@@ -823,12 +794,12 @@ public class VueAnon extends JFrame {
 					protected Void doInBackground() throws IOException {
 						int progress=0;
 						for (int i=0 ; i<deleteSeries.size(); i++){
-							connexionHttp.makeDeleteConnection(deleteSeries.get(i));
+							restApis.makeDeleteConnection(deleteSeries.get(i));
 							progress++;
 							setStateMessage("Deleted "+ progress +"/"+manageContent.size(), "red", -1);
 						}
 						for (int i=0 ; i<deleteStudies.size(); i++){
-							connexionHttp.makeDeleteConnection(deleteStudies.get(i));
+							restApis.makeDeleteConnection(deleteStudies.get(i));
 							progress++;
 							setStateMessage("Deleted "+ progress +"/"+manageContent.size(), "red", -1);
 						}
@@ -1099,8 +1070,9 @@ public class VueAnon extends JFrame {
 					if(dialog.getOk()) {
 						//Change autoSend boolean to get the automatic send at the anonymize button click
 						autoSendCTP=true;
-						CTPUsername=dialog.getLogin();
-						CTPPassword=dialog.getPassword();
+						setCTPUsername(dialog.getLogin());
+						setCTPPassword(dialog.getPassword());
+						setOrthancPeerOTP(dialog.getOrthancServerReciever());
 						String patientNewName=dialog.getAnonName();
 						String patientNewID=dialog.getAnonID();
 						String visitName=dialog.getVisitName();
@@ -1119,7 +1091,7 @@ public class VueAnon extends JFrame {
 		
 		anonBtn = new JButton("Anonymize");
 		anonBtn.setPreferredSize(new Dimension(120,27));
-		anonBtn.addActionListener(new Controller_Anonymize_Btn(this, connexionHttp));
+		anonBtn.addActionListener(new Controller_Main_Anonymize_Btn(this, restApis));
 		
 		//Label to show the currently selected profile in the main panel
 		JLabel profileLabel = new JLabel();
@@ -1145,10 +1117,10 @@ public class VueAnon extends JFrame {
 		addToAnon.setVisible(false);
 		anonDetailed.add(anonTablesPanel, BorderLayout.WEST);
 
-		exportZip.addActionListener(new Controller_Export_Zip(this));
+		exportZip.addActionListener(new Controller_Main_Zip(this));
 		
 		/////////////////////////////// ADDING COMPONENTS ////////////////
-		JPanel p1 = new JPanel(new FlowLayout());
+		
 		GridBagConstraints c = new GridBagConstraints();
 		JScrollPane jscp = new JScrollPane(tableauPatients);
 		jscp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -1172,7 +1144,7 @@ public class VueAnon extends JFrame {
 		panelTableauSeries.add(jscp3, BorderLayout.CENTER);
 		JPanel panelButton=new JPanel();
 		btnReadSeries=new JButton("Open Images");
-		btnReadSeries.addActionListener(new Controller_Read_Series(this));
+		btnReadSeries.addActionListener(new Controller_Main_Read_Series(this));
 		
 		panelButton.add(btnReadSeries);
 		panelTableauSeries.add(panelButton, BorderLayout.EAST);
@@ -1190,7 +1162,7 @@ public class VueAnon extends JFrame {
 		////////////////////////////////// PANEL 2 : EXPORT ///////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		JPanel mainPanelExport = new JPanel(new BorderLayout());
+		mainPanelExport = new JPanel(new BorderLayout());
 		JPanel tableExportPanel = new JPanel(new FlowLayout());	
 
 		this.tableauExportStudies = new JTable(modeleExportStudies);
@@ -1240,7 +1212,7 @@ public class VueAnon extends JFrame {
 				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
 					@Override
 					protected Void doInBackground() {
-						boolean deleted=connexionHttp.makeDeleteConnection(url);
+						boolean deleted=restApis.makeDeleteConnection(url);
 						if(deleted) {
 							modeleExportStudies.removeRow(tableauExportStudies.getSelectedRow());
 							modeleExportSeries.clear();
@@ -1273,7 +1245,6 @@ public class VueAnon extends JFrame {
 		
 		popMenuExportStudies.add(menuItemEmptyList);
 		addPopUpMenuListener(popMenuExportStudies, tableauExportStudies);
-
 
 		tableauExportStudies.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
@@ -1318,7 +1289,7 @@ public class VueAnon extends JFrame {
 						
 						String url="/series/" + serie.getId();
 						setStateExportMessage("Deleting "+serie.getSerieDescription(), "red", -1);
-						boolean success=connexionHttp.makeDeleteConnection(url);
+						boolean success=restApis.makeDeleteConnection(url);
 						if(success) {
 							setStateExportMessage("Deleted suceeded", "green", 4);
 						}else {
@@ -1374,137 +1345,17 @@ public class VueAnon extends JFrame {
 		labelPanelExport.add(exportToLabel);
 		labelPanelExport.add(stateExports);
 
-		exportBtn = new JButton("Remote server");
-		exportBtn.setToolTipText("Fill the remote server parameters in the setup tab before attempting an export.");
+		exportRemoteBtn = new JButton("Remote server");
+		exportRemoteBtn.setToolTipText("Fill the remote server parameters in the setup tab before attempting an export.");
 
-		exportBtn.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-					
-					@Override
-					protected Void doInBackground() throws Exception {
-						exportBtn.setText("Exporting...");
-						exportBtn.setEnabled(false);
-						
-						ExportZip convertzip=new ExportZip(connexionHttp);
-						convertzip.setConvertZipAction("tempZipOrthanc", modeleExportStudies.getOrthancIds(), true);
-						convertzip.generateZip(false);
-						String zipPath = convertzip.getGeneratedZipPath();
-						String zipName = convertzip.getGeneratedZipName();
-						remoteFileName = new StringBuilder();
-						
-						//removing the temporary file default name value
-						remoteFileName.append(zipName.substring(0,14));
-						remoteFileName.append(zipName.substring(zipName.length() - 4));
-						SendFilesToRemote export = new SendFilesToRemote(jprefer.get("exportType", SendFilesToRemote.OPTION_FTP), 
-								jprefer.get("remoteFilePath", "/"), remoteFileName.toString(), zipPath, jprefer.get("remoteServer", ""), 
-								jprefer.getInt("remotePort", 21), jprefer.get("servUsername", ""), jprefer.get("servPassword", ""));
-						export.export();
-						
-						
-						return null;
-					}
-
-					@Override
-					public void done(){
-						try {
-							get();
-							setStateExportMessage("The data has been successfully been exported", "green", 4);							stateExports.setText("<html><font color='green'>The data has been successfully been exported</font></html>");
-						} catch (Exception e) {
-							setStateExportMessage("The data export failed", "red", -1);
-							e.printStackTrace();
-						}
-						exportBtn.setText("Remote server");
-						exportBtn.setEnabled(true);
-					}
-				};
-				
-			if(!modeleExportStudies.getOrthancIds().isEmpty()){
-				stateExports.setText("Exporting...");
-				worker.execute();
-			}
-		}
-		});
+		exportRemoteBtn.addActionListener(new Controller_Export_Remote_Btn(this));
 
 		csvReport = new JButton("CSV Report");
-		csvReport.addActionListener(new Controller_Csv_Btn(modeleExportStudies, this));
+		csvReport.addActionListener(new Controller_Export_Csv_Btn(modeleExportStudies, this));
 		
-		exportCTP = new JButton("OTP");
-		exportCTP.addActionListener(new ActionListener() {
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-	
-				SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-					
-					boolean sendOk;
-					boolean validateOk=false;
-					
-					@Override
-					protected Void doInBackground() {
-						//Send DICOM to CTP selected Peer
-						setStateExportMessage("Step 1/3 Sending to CTP Peer :"+listePeers.getSelectedItem().toString(), "red", -1);
-						exportCTP.setEnabled(false);
-						sendOk=connexionHttp.sendToPeer(listePeersCTP.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
-						
-						if (sendOk) {
-							setStateExportMessage("Step 2/3 : Validating upload", "red", -1);
-							//Create CTP object to manage CTP communication
-							OTP ctp=new OTP(CTPUsername, CTPPassword, addressFieldCTP.getText());
-							//Create the JSON to send
-							JsonArray sentStudiesArray=new JsonArray();
-							//For each study populate the array with studies details of send process
-							for(Study2 study : modeleExportStudies.getAnonymizedStudy2Object()){
-								study.storeStudyStatistics(queryOrthanc);
-								//Creat Object to send to OTP
-								JsonObject studyObject=new JsonObject();
-								studyObject.addProperty("visitName", study.getStudyDescription());
-								studyObject.addProperty("StudyInstanceUID", study.getStudyInstanceUid());
-								studyObject.addProperty("patientNumber", study.getPatientName());
-								studyObject.addProperty("instanceNumber", study.getStatNbInstance());
-								sentStudiesArray.add(studyObject);
-
-							}
-							validateOk=ctp.validateUpload(sentStudiesArray);
-							//If everything OK, says validated and remove anonymized studies from local
-							if(validateOk) {
-								setStateExportMessage("Step 3/3 : Deleting local study", "red", -1);
-								for(Study2 study : modeleExportStudies.getAnonymizedStudy2Object()){
-									//deleted anonymized and sent study
-									connexionHttp.makeDeleteConnection("/studies/"+study.getOrthancId());
-								}
-								// empty the export table
-								modeleExportStudies.clear();
-								modeleExportSeries.clear();
-							}
-						}
-						
-						return null;
-					}
-			
-					@Override
-					protected void done(){
-						exportCTP.setEnabled(true);
-						if (sendOk && validateOk) {
-							setStateExportMessage("CTP Export Done", "green", -1);
-						} else if (!sendOk) {
-							setStateExportMessage("Upload Failed", "red", -1);
-						} else if (!validateOk) {
-							setStateExportMessage("Validation Failed", "red", -1);
-						}
-					}
-				};
-				
-				if(!modeleExportStudies.getOrthancIds().isEmpty()){
-					worker.execute();
-				}
-			
-
-			}
-		});
-
+		exportCTP=new JButton("OTP");
+		exportCTP.addActionListener(new Controller_Export_OTP(this));
+		
 		exportToZip = new JButton("Zip");
 		exportToZip.addActionListener(new ActionListener() {
 			@Override
@@ -1525,7 +1376,7 @@ public class VueAnon extends JFrame {
 						chooser.setAcceptAllFileFilterUsed(false);
 						if (chooser.showSaveDialog(gui) == JFileChooser.APPROVE_OPTION) {
 							file = chooser.getSelectedFile();
-							ExportZip convertzip=new ExportZip(connexionHttp);
+							ExportZip convertzip=new ExportZip(restApis);
 							convertzip.setConvertZipAction(file.getAbsolutePath().toString(), modeleExportStudies.getOrthancIds(), false);
 							convertzip.generateZip(false);
 						}
@@ -1566,7 +1417,7 @@ public class VueAnon extends JFrame {
 					protected Void doInBackground() {
 						dicomStoreExport.setEnabled(false);
 						dicomStoreExport.setText("Storing...");
-						storeSuccess=connexionHttp.sendToAet(listeAETExport.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
+						storeSuccess=restApis.sendToAet(listeAETExport.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
 						return null;
 					}
 
@@ -1601,7 +1452,7 @@ public class VueAnon extends JFrame {
 					protected Void doInBackground() {
 						peerExport.setEnabled(false);
 						peerExport.setText("Sending...");
-						sendok=connexionHttp.sendToPeer(listePeers.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
+						sendok=restApis.sendToPeer(listePeers.getSelectedItem().toString(), modeleExportStudies.getOrthancIds());
 						return null;
 					}
 
@@ -1627,7 +1478,7 @@ public class VueAnon extends JFrame {
 		exportPanel.add(exportCTP);
 		exportPanel.add(csvReport);
 		exportPanel.add(exportToZip);
-		exportPanel.add(exportBtn);
+		exportPanel.add(exportRemoteBtn);
 
 		JPanel dicomExport=new JPanel();
 		dicomExport.add(listeAETExport);
@@ -1647,7 +1498,7 @@ public class VueAnon extends JFrame {
 
 		mainPanelExport.add(southExport, BorderLayout.SOUTH);
 		mainPanelExport.add(tableExportPanel, BorderLayout.CENTER);
-		JPanel p2 = new JPanel(new FlowLayout());
+
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////// END PANEL 2 : EXPORT ///////////////////////////////////////////////
@@ -1902,59 +1753,26 @@ public class VueAnon extends JFrame {
 		addressFieldCTP.setToolTipText("Include http:// or https://");
 		addressFieldCTP.setPreferredSize(new Dimension(300,20));
 		addressFieldCTP.setText(jprefer.get("CTPAddress", "http://"));
-		JLabel peerLabel=new JLabel("CTP Peer");
-		listePeersCTP = new JComboBox<String>();
+		
 		this.refreshPeers();
-		listePeersCTP.insertItemAt("Choose", 0);
-		if(jprefer.getInt("CTPPeer", 0) <= listePeersCTP.getItemCount()-1) listePeersCTP.setSelectedIndex(jprefer.getInt("CTPPeer", 0));
-		else listePeersCTP.setSelectedIndex(0);
+		
 		clinicalTrialProcessorGrid.add(address);
 		clinicalTrialProcessorGrid.add(addressFieldCTP);
-		clinicalTrialProcessorGrid.add(peerLabel);
-		clinicalTrialProcessorGrid.add(listePeersCTP);
 		
 		JPanel aboutPanel = new JPanel(new FlowLayout());
-		JButton viewerDistribution = new JButton("Download Viewer Distribution");
+		
+		JButton viewerDistribution = new JButton("Set Viewer Distribution");
 		viewerDistribution.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser chooser = new JFileChooser();
-				chooser.setDialogTitle("Select folder for CD/DVD output");
-				chooser.setSelectedFile(new File("ImageJ.zip"));
-				chooser.setDialogTitle("Dowload Viewer to...");
-				if (! jprefer.get("viewerDistribution", "empty").equals("empty") ) {
-					chooser.setSelectedFile(new File (jprefer.get("viewerDistribution", "empty")));
-				}
-				chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-				chooser.setAcceptAllFileFilterUsed(false);
-				if (chooser.showSaveDialog(gui) == JFileChooser.APPROVE_OPTION) {
-					viewerDistribution.setBackground(Color.ORANGE);
-					SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>(){
-						@Override
-						protected Void doInBackground() {
-							try {
-								FileUtils.copyURLToFile(new URL("http://petctviewer.org/images/ImageJ.zip"), chooser.getSelectedFile());
-								//Message confirmation
-								JOptionPane.showMessageDialog(gui, "Viewer distribution sucessfully downloaded");
-							} catch (IOException e) {
-								e.printStackTrace();
-								JOptionPane.showMessageDialog(gui, "Download Failed",  "Error", JOptionPane.ERROR_MESSAGE);
-							}
-							return null;
-						}
-
-						@Override
-						protected void done(){
-							// Enregistre la destination du fichier dans le registery
-							jprefer.put("viewerDistribution", chooser.getSelectedFile().toString());
-							viewerDistribution.setBackground(null);
-						}
-					};
-					worker.execute();
-				}
-
+				Setup_Viewer_Distribution viewerGui=new Setup_Viewer_Distribution();
+				viewerGui.setLocationRelativeTo(gui);
+				viewerGui.setVisible(true);
+				
 			}
+			
+			
 			
 		});
 		
@@ -1963,11 +1781,15 @@ public class VueAnon extends JFrame {
 		setupButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				ConnectionSetup setup = new ConnectionSetup(runOrthanc, connexionHttp);
+				ConnectionSetup setup = new ConnectionSetup();
 				setup.setLocationRelativeTo(gui);
+				setup.setOrthancRun();
+				setup.setModal(true);
 				setup.setVisible(true);
-				connexionHttp=new OrthancRestApis(null);
-				if (setup.ok)JOptionPane.showMessageDialog(null,"Restart to take account");
+				refreshOrthancConnexion();
+				if(setup.getRunOrthanc()!=null) {
+					runOrthanc=setup.getRunOrthanc();
+				};
 				
 			}
 			
@@ -2005,7 +1827,6 @@ public class VueAnon extends JFrame {
 		mainPanelSetup.add(eastSetupPane, BorderLayout.EAST);
 		mainPanelSetup.add(aboutPanel, BorderLayout.SOUTH);
 
-		JPanel p3 = new JPanel(new FlowLayout());
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////// END TAB 3 : SETUP //////////////////////////////////////////////////
@@ -2013,27 +1834,26 @@ public class VueAnon extends JFrame {
 	
 		
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
-		////////////////////////////////// TAB 4 : Monitor //////////////////////////////////////////////////
+		////////////////////////////////// ADD PANELS //////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
-		monitoring = new Monitoring_GUI(connexionHttp);
-		JPanel panelMonitoring = (JPanel) monitoring.getContentPane();
-		
-		///////////////////////////////////////////////////////////////////////////////////////////////////////
-		////////////////////////////////// END TAB 4 : Monitor //////////////////////////////////////////////////
-		///////////////////////////////////////////////////////////////////////////////////////////////////////
-
+	
 		tabbedPane = new JTabbedPane();
 		tabbedPane.addChangeListener(new Tab_Change_Listener(this));
 
+		JPanel p1 = new JPanel(new FlowLayout());
 		p1.add(mainPanel);
 		tabbedPane.add("Main", p1);
 
+		JPanel p2 = new JPanel(new FlowLayout());
 		p2.add(mainPanelExport);
 		tabbedPane.add("Export Anonymized", p2);
 		
 		//Add monitoring
+		monitoring = new Monitoring_GUI(restApis);
+		JPanel panelMonitoring = (JPanel) monitoring.getContentPane();
 		tabbedPane.addTab("Monitoring", panelMonitoring);
 
+		JPanel p3 = new JPanel(new FlowLayout());
 		p3.add(mainPanelSetup);
 		tabbedPane.add("Setup", p3);
 		
@@ -2042,13 +1862,16 @@ public class VueAnon extends JFrame {
 		this.getContentPane().add(tabbedPane);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.getRootPane().setDefaultButton(searchBtn);
-		this.addWindowListener(new Window_Custom_Listener(this, exportContent, modeleAnonPatients, modeleExportStudies, monitoring, runOrthanc));
+		this.addWindowListener(new Window_Custom_Listener(this));
 		pack();
 		userInput.requestFocus();
 	}
 	
-	//private enum panels {Anon,Export,Manage};
-	//private panels currentopenPanel;
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////// Open Close Panels //////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	
 	public void openCloseAnonTool(boolean open) {
 		
@@ -2111,6 +1934,11 @@ public class VueAnon extends JFrame {
 		displayManageTool.setVisible(true);
 	}
 	
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////Element Activation / Deactivation ///////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	private void enableManageButtons(boolean enable) {
 		addManage.setEnabled(enable);
 		removeFromManage.setEnabled(enable);
@@ -2123,7 +1951,45 @@ public class VueAnon extends JFrame {
 		comboToolChooser.setEnabled(activate);
 	}
 	
-	// Ajoute seletion a la tool list
+	public void enableAnonButton(boolean enable) {
+		anonBtn.setEnabled(enable);
+		addToAnon.setEnabled(enable);
+		queryCTPBtn.setEnabled(enable);
+		removeFromAnonList.setEnabled(enable);
+		importCTP.setEnabled(enable);
+	}
+	
+	public void enableReadButton(boolean enable) {
+		btnReadSeries.setEnabled(enable);
+	}
+	
+	public void showRemoteExportBtn(boolean show) {
+		exportRemoteBtn.setVisible(show);
+		exportRemoteBtn.setVisible(show);
+	}
+	
+	public void showCTPButtons(boolean show) {
+		exportCTP.setVisible(show);
+		queryCTPBtn.setVisible(show);
+	}
+	
+	public void exportTabForOtp() {
+		peerExport.setVisible(false);
+		csvReport.setVisible(false);
+		exportToZip.setVisible(false);
+		exportRemoteBtn.setVisible(false);
+		dicomStoreExport.setVisible(false);
+		getExportCTPbtn().setText("Send");
+		listePeers.setVisible(false);
+		listeAETExport.setVisible(false);
+	}
+	
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////Toolist Import/erase ////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	
 	private void addToToolList(ArrayList<String> zipContent, JComboBox<String> zipShownContent, JLabel zipSize){
 
 		//On recupere la table qui a eu le dernier focus pour la selection
@@ -2182,6 +2048,21 @@ public class VueAnon extends JFrame {
 	
 	}
 	
+	// remove ligne active a la tool list
+	private void removeFromToolList(ArrayList<String> zipContent, JComboBox<String> zipShownContent, JLabel zipSize, JLabel state){
+		if(!zipContent.isEmpty()){
+			zipContent.remove(zipShownContent.getSelectedIndex());
+			zipShownContent.removeItemAt(zipShownContent.getSelectedIndex());
+			if(zipContent.size() >= 1){
+				zipSize.setText(zipContent.size() + " element(s)");
+			}else{
+				state.setText("");
+				zipSize.setText(" Empty List");
+				pack();
+			}
+		}
+	}
+	
 	/**
 	 * Add studies to export list (for AutoQuery result import)
 	 * @param study
@@ -2209,50 +2090,48 @@ public class VueAnon extends JFrame {
 		
 	}
 	
-	// remove ligne active a la tool list
-	private void removeFromToolList(ArrayList<String> zipContent, JComboBox<String> zipShownContent, JLabel zipSize, JLabel state){
-		if(!zipContent.isEmpty()){
-			zipContent.remove(zipShownContent.getSelectedIndex());
-			zipShownContent.removeItemAt(zipShownContent.getSelectedIndex());
-			if(zipContent.size() >= 1){
-				zipSize.setText(zipContent.size() + " element(s)");
-			}else{
-				state.setText("");
-				zipSize.setText(" Empty List");
-				pack();
-			}
-		}
-	}
-	
 	public void emptyExportList() {
 		exportShownContent.removeAllItems();
 		exportContent.removeAll(exportContent);
 		exportSizeLabel.setText("empty list");
 	}
 	
-	public void enableAnonButton(boolean enable) {
-		anonBtn.setEnabled(enable);
-		addToAnon.setEnabled(enable);
-		queryCTPBtn.setEnabled(enable);
-		removeFromAnonList.setEnabled(enable);
-		importCTP.setEnabled(enable);
+	public boolean isCurrentWork() {
+
+		if(exportContent.size()>0 || modeleAnonPatients.getRowCount()>0 || modeleExportStudies.getRowCount()>0 || monitoring.isRunningMonitoringService()) {
+			return true;
+		}
+		return false;
+
 	}
-	
-	public void enableReadButton(boolean enable) {
-		btnReadSeries.setEnabled(enable);
-	}
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////Refresh Aet/Peers ///////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	public void refreshAets() {
-		String[] aets=connexionHttp.getAET();
+		String[] aets=restApis.getAET();
 		listeAET.setModel(new DefaultComboBoxModel<String>(aets)) ;
 		listeAETExport.setModel(new DefaultComboBoxModel<String>(aets));
 	}
 	
 	public void refreshPeers() {
-		String[] peers=connexionHttp.getPeers();
-		listePeersCTP.setModel(new DefaultComboBoxModel<String>(peers)) ;
+		String[] peers=restApis.getPeers();
 		listePeers.setModel(new DefaultComboBoxModel<String>(peers));
 	}
+	
+	public void refreshOrthancConnexion(){
+		getOrthancApisConnexion().refreshServerAddress();
+		refreshAets();
+		refreshPeers();
+		
+		//SK RESTE A FERMER EVENTUELLE FENETRE QUERY ET IMPORT
+		//REPERCUSSION SUR LE MONITORING A VOIR
+	}
+	
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////// add Listeners //////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	public void setAnonymizeListener(AnonymizeListener anonymizeListener) {
 		this.anonymizeListener=anonymizeListener;
@@ -2285,35 +2164,10 @@ public class VueAnon extends JFrame {
         });
 	}
 	
-	//SK A revoir ne MARCHE PAS
-	public static void toogleScRenderer(JTable table, boolean activate, int scColumn) {
-		if(activate) {
-			table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
-				private static final long serialVersionUID = 1L;
 
-				@Override
-				public Component getTableCellRendererComponent(JTable table,
-						Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-					
-					boolean status = (boolean) table.getModel().getValueAt(row, 3);
-					if (status && !isSelected) {
-						setBackground(Color.RED);
-						setForeground(Color.black);
-					}else if(isSelected){
-						super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-					}else{
-						super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-					}
-					return this;
-				}   
-			});
-			
-		}else {
-			table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer());
-		}
-		
-	}
-	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////// Display Status /////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	public void setStateMessage(String message, String color, int seconds) {
 		state.setText("<html><font color='"+color+"'>"+message+"</font></html>");
@@ -2343,11 +2197,15 @@ public class VueAnon extends JFrame {
 		
 	}
 	
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////// Getters / Setters //////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	public String getComboToolChooserSeletedItem() {
 		return (String) comboToolChooser.getSelectedItem();
 	}
-	 
-	//Getters Setup Tab
+	
 	public String getSelectedAnonProfile() {
 		return (String) anonProfiles.getSelectedItem();
 	}
@@ -2364,6 +2222,14 @@ public class VueAnon extends JFrame {
 		addressFieldCTP.setText(address);
 	}
 	
+	public String getCTPLogin() {
+		return getCTPUsername();
+	}
+	
+	public String getCTPPassword() {
+		return CTPPassword;
+	}
+	
 	public String[] getExportRemoteServer() {
 		String[] remoteServerParameter=new String[6];
 		remoteServerParameter[0]=remoteServer.getText();
@@ -2375,23 +2241,14 @@ public class VueAnon extends JFrame {
 		
 		return remoteServerParameter;
 	}
-	
-	public void showRemoteExportBtn(boolean show) {
-		exportBtn.setVisible(show);
-		exportBtn.setVisible(show);
-	}
+
 	
 	public String getExportRemotePort() {
 		return remotePort.getText();
 	}
-	
-	public void showCTPButtons(boolean show) {
-		exportCTP.setVisible(show);
-		queryCTPBtn.setVisible(show);
-	}
-	
+
 	public OrthancRestApis getOrthancApisConnexion() {
-		return connexionHttp;
+		return restApis;
 	}
 	
 	public JButton getSearchButton() {
@@ -2400,6 +2257,46 @@ public class VueAnon extends JFrame {
 	
 	public QueryOrthancData getOrthancQuery() {
 		return queryOrthanc;
+	}
+	
+	public JButton getExportCTPbtn() {
+		return exportCTP;
+	}
+	
+	public JButton getExportRemoteBtn() {
+		return this.exportRemoteBtn;
+	}
+
+	public String getCTPUsername() {
+		return CTPUsername;
+	}
+
+	public void setCTPUsername(String cTPUsername) {
+		CTPUsername = cTPUsername;
+	}
+
+	public void setCTPPassword(String cTPPassword) {
+		CTPPassword = cTPPassword;
+	}
+
+	public Object[] getOrthancPeerOTP() {
+		return orthancPeerOTP;
+	}
+
+	public void setOrthancPeerOTP(Object[] orthancPeerOTP) {
+		this.orthancPeerOTP = orthancPeerOTP;
+	}
+	
+	public void setRunOrthanc(Run_Orthanc runOrthanc) {
+		this.runOrthanc=runOrthanc;
+	}
+	
+	public Run_Orthanc getRunOrthanc() {
+		 return runOrthanc;
+	}
+	
+	public Monitoring_GUI getMonitoring() {
+		return monitoring;
 	}
 
 }

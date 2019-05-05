@@ -19,38 +19,22 @@ package org.petctviewer.orthanc.anonymize.listeners;
 
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
 
-import org.petctviewer.orthanc.anonymize.TableAnonPatientsModel;
-import org.petctviewer.orthanc.anonymize.TableExportStudiesModel;
 import org.petctviewer.orthanc.anonymize.VueAnon;
-import org.petctviewer.orthanc.monitoring.Monitoring_GUI;
-import org.petctviewer.orthanc.setup.Run_Orthanc;
 
 public class Window_Custom_Listener implements WindowListener{
 
 	private VueAnon gui;
-	private ArrayList<String>  zipContent;
-	private TableAnonPatientsModel patientAnonList;
-	private TableExportStudiesModel exportlist;
-	private Monitoring_GUI monitoring;
-	private Run_Orthanc runOrthanc;
-
-	public Window_Custom_Listener(VueAnon vue, ArrayList<String> zipContent, 
-			TableAnonPatientsModel patientAnonList, TableExportStudiesModel exportlist, Monitoring_GUI monitoring, Run_Orthanc runOrthanc){
-		this.exportlist = exportlist;
+	
+	public Window_Custom_Listener(VueAnon vue){
 		this.gui = vue;
-		this.zipContent = zipContent;
-		this.patientAnonList = patientAnonList;
-		this.monitoring=monitoring;
-		this.runOrthanc=runOrthanc;
 	}
 	
 	@Override
 	public void windowClosing(WindowEvent e) {
-		if(zipContent.size()>0 || patientAnonList.getRowCount()>0 || exportlist.getRowCount()>0 || monitoring.isRunningMonitoringService()){
+		if(gui.isCurrentWork()){
 			int PromptResult = JOptionPane.showConfirmDialog(gui,"Are you sure you want to exit?","Orthanc Tools",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
 			if(PromptResult==JOptionPane.YES_OPTION) {
 				closeAll();
@@ -61,9 +45,9 @@ public class Window_Custom_Listener implements WindowListener{
 	}
 	
 	private void closeAll() {
-		if (monitoring.isRunningMonitoringService())  monitoring.closeAllMonitoringServices();
-		if(runOrthanc.getIsStarted()) {
-			runOrthanc.stopOrthanc(gui.getOrthancApisConnexion());
+		if (gui.getMonitoring().isRunningMonitoringService())  gui.getMonitoring().closeAllMonitoringServices();
+		if(gui.getRunOrthanc()!=null && gui.getRunOrthanc().getIsStarted()) {
+			gui.getRunOrthanc().stopOrthanc(gui.getOrthancApisConnexion());
 		}
 		gui.timerState.cancel();
 		gui.dispose();
