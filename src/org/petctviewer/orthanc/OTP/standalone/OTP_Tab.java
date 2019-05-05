@@ -386,8 +386,10 @@ public class OTP_Tab extends JPanel implements ImportListener, ListSelectionList
 	    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 	    	TableOTPStudiesModel model = (TableOTPStudiesModel) table.getModel();
 	        Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-	        if(!model.getValueAt(row, 4).equals("")) {
+	        if(!model.getValueAt(row, 4).equals("") ) {
 	        	 c.setBackground(Color.GREEN);
+	        }else {
+	        	c.setBackground(Color.RED);
 	        }
 	       
 	        return c;

@@ -35,6 +35,7 @@ public class Start_OTP_Import {
 		
 		anon.setCTPaddress("https://petctviewer.com");
 		anon.setRunOrthanc(runOrthanc);
+		anon.setLocationRelativeTo(null);
 		anon.setVisible(true);
 		
 		
