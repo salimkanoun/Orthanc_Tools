@@ -61,7 +61,7 @@ public class OTP_Tab extends JPanel implements ImportListener, ListSelectionList
 		JButton btnImport = new JButton("Load Local DICOM");
 		btnImport.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-					importFrame=new ImportDCM(anon.getOrthancApisConnexion(), anon);
+					importFrame=ImportDCM.getImportDcm(anon);
 					importFrame.setImportListener(guiOTP);
 					importFrame.setModal(true);
 					importFrame.setVisible(true);

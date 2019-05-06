@@ -90,8 +90,6 @@ import org.petctviewer.orthanc.query.listeners.ChangeTabListener;
 import org.petctviewer.orthanc.query.listeners.FilterAction;
 import org.petctviewer.orthanc.query.listeners.Retrieve_Action;
 import org.petctviewer.orthanc.query.listeners.TableStudyMouseListener;
-import org.petctviewer.orthanc.setup.OrthancRestApis;
-
 import com.michaelbaranov.microba.calendar.DatePicker;
 
 public class VueQuery extends JFrame {
@@ -180,12 +178,22 @@ public class VueQuery extends JFrame {
 	//Last focused table
 	private JTable lastFocusMain;
 	private JTable lastFocusHistory;
+	
+	 /** Instance unique non préinitialisée */
+    private static VueQuery vueQuery = null;
     
-	public VueQuery(OrthancRestApis http, VueAnon vueAnon) {
+    public static VueQuery getVueQuery(VueAnon vueAnon) {
+    	if(vueQuery==null) {
+    		vueQuery=new VueQuery(vueAnon);
+    	}
+    	return vueQuery;
+    }
+    
+	private VueQuery(VueAnon vueAnon) {
 		
 		super("Orthanc queries");
 		this.vueAnon=vueAnon;
-		rest=new QueryRetrieve(http);
+		rest=new QueryRetrieve(vueAnon.getOrthancApisConnexion());
 		this.setResizable(true);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.addWindowListener(new WindowAdapter() {

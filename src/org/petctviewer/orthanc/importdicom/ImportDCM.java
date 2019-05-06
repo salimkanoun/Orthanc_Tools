@@ -73,10 +73,19 @@ public class ImportDCM extends JDialog implements WindowListener{
 	private SwingWorker<Void,Void> importWorker;
 	
 	private ImportListener listener;
+	
+	private static ImportDCM importDcm=null;
+	
+	public static ImportDCM getImportDcm(VueAnon vueAnon) {
+		if(importDcm==null) {
+			importDcm=new ImportDCM(vueAnon);
+		}
+		return importDcm;
+	}
 
-	public ImportDCM(OrthancRestApis connexion, JFrame parentJframe)  {
+	private ImportDCM(VueAnon vueAnon)  {
 		this.setTitle("Import DICOM files");
-		this.connexion=connexion;
+		this.connexion=vueAnon.getOrthancApisConnexion();
 		this.gui=this;
 		JPanel mainPanel = new JPanel(new GridBagLayout());
 		JLabel labelPath = new JLabel("DICOM files path");
@@ -169,7 +178,7 @@ public class ImportDCM extends JDialog implements WindowListener{
 		this.getContentPane().add(mainPanel);
 		addWindowListener(this);
 		pack();
-		setLocationRelativeTo(parentJframe);
+		setLocationRelativeTo(vueAnon);
 		
 		
 		
