@@ -425,7 +425,7 @@ public class VueAnon extends JFrame {
 				SwingUtilities.invokeLater(new Runnable () {
 					@Override
 					public void run() {
-						VueQuery query=new VueQuery(restApis, gui);
+						VueQuery query=VueQuery.getVueQuery(gui);
 						query.pack();
 						query.setLocationRelativeTo(gui);
 						query.setVisible(true);
@@ -441,7 +441,7 @@ public class VueAnon extends JFrame {
 				SwingUtilities.invokeLater(new Runnable () {
 					@Override
 					public void run() {
-						ImportDCM importFrame=new ImportDCM(restApis,gui);
+						ImportDCM importFrame=ImportDCM.getImportDcm(gui);
 						importFrame.pack();
 						importFrame.setLocationRelativeTo(gui);
 						importFrame.setVisible(true);
@@ -2123,9 +2123,9 @@ public class VueAnon extends JFrame {
 		getOrthancApisConnexion().refreshServerAddress();
 		refreshAets();
 		refreshPeers();
-		
-		//SK RESTE A FERMER EVENTUELLE FENETRE QUERY ET IMPORT
-		//REPERCUSSION SUR LE MONITORING A VOIR
+		VueQuery.getVueQuery(gui).dispose();
+		ImportDCM.getImportDcm(gui).dispose();
+		this.monitoring.closeAllMonitoringServices();
 	}
 	
 

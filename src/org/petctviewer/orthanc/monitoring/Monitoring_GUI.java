@@ -676,6 +676,7 @@ public class Monitoring_GUI extends JFrame {
 		if (cdMonitoringStarted) cdBurner.stopCDMonitoring();
 		if(tagMonitoringStarted) tagMonitoring.stopTagMonitoring();
 		if(autoFetchStarted) autoFetch.stopAutoFecth();
+		updateStatusLabel();
 		
 	}
 	/**

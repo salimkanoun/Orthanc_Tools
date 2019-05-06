@@ -66,9 +66,7 @@ public class Orthanc_Tools implements PlugIn {
 
 //SK TO DO
 //Tester envoie DICOM plateforme
-//Debeuger sortie reste des thread non collectes=> Tracker update de ImageJ
-//Query / Import passer en singeton + update interface au changement de serveur
-//Impact du changement du serveur sur le monitoring
+// pb Renderer envoie DICOM
 
 //+Tard
 //Faire detection des SC dans table export Series comme sur main Tab
