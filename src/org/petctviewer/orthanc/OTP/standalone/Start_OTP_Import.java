@@ -51,6 +51,8 @@ public class Start_OTP_Import {
 		anon.tabbedPane.add("Export Anonymized", p2);
 		anon.exportTabForOtp();
 		
+		/*
+		 * SK A REFAIRE TESTER A ALINA
 		Setup_OTP_Panel otpPanel=new Setup_OTP_Panel();
 		anon.tabbedPane.add("Setup", otpPanel);
 		
@@ -68,6 +70,7 @@ public class Start_OTP_Import {
 			}
 			
 		});
+		*/
 		
 		
 		
