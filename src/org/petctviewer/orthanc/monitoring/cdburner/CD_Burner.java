@@ -261,10 +261,9 @@ public class CD_Burner {
 			table_burning_history.setValueAt("Sent to Burner", rownumber, 5);
 			
 			
-			JButton button=(JButton) table_burning_history.getValueAt(rownumber, 6);
-			button.setText("Test Salim");
-			//table_burning_history.setValueAt(new Cancel_Cd_Button(requestFileName,(String) requestFileAndID[1],isPrimera), rownumber, 6);
-			
+			//Add cancel Button
+			table_burning_history.setValueAt(requestFileAndID[1], rownumber, 7);
+			table_burning_history.setValueAt(requestFileName, rownumber, 8);
 			
 			//On efface tout a la sortie JVM
 			recursiveDeleteOnExit(folder);

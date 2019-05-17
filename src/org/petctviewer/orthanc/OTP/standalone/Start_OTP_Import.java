@@ -5,6 +5,8 @@ import java.util.Timer;
 import java.util.prefs.Preferences;
 
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.petctviewer.orthanc.anonymize.QueryOrthancData;
 import org.petctviewer.orthanc.anonymize.VueAnon;
@@ -48,6 +50,30 @@ public class Start_OTP_Import {
 		p2.add(anon.mainPanelExport);
 		anon.tabbedPane.add("Export Anonymized", p2);
 		anon.exportTabForOtp();
+		
+		/*
+		 * SK A REFAIRE TESTER A ALINA
+		Setup_OTP_Panel otpPanel=new Setup_OTP_Panel();
+		anon.tabbedPane.add("Setup", otpPanel);
+		
+		anon.tabbedPane.addChangeListener(new ChangeListener() {
+
+			@Override
+			public void stateChanged(ChangeEvent e) {
+			     
+		    	 System.setProperty("http.proxyHost", otpPanel.getProxyAdress());
+			     System.setProperty("http.proxyPort", otpPanel.getProxyPort());
+			     System.setProperty("https.proxyHost",  otpPanel.getProxyAdress());
+			     System.setProperty("https.proxyPort", otpPanel.getProxyPort());
+
+				
+			}
+			
+		});
+		*/
+		
+		
+		
 		
 	}
 
