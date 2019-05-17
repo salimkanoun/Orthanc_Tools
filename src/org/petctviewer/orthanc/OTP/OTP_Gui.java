@@ -139,7 +139,7 @@ public class OTP_Gui extends JDialog {
 											//String investigatorName=patient.get("investigatorName").getAsString();
 											//String country=patient.get("country").getAsString();
 											//String centerNumber=patient.get("centerNumber").getAsString();
-											String acquisitionDate=(String) patient.get("acquisitionDate").toString().replaceAll("-", "/");
+											String acquisitionDate=patient.get("acquisitionDate").getAsString().replaceAll("-", "/");
 											modelTablePatient.addRow(new Object[]{numeroPatient, lastName, firstName, patientSex , patientDOB, acquisitionDate});
 											//SK MANQUE ACQUISITION DATE DANS L API
 										}
