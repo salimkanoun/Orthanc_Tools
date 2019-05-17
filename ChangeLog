@@ -1,5 +1,8 @@
 Pending Change for next Release
 
+Version 1.6.1 - 15/05/2019 
+- Fixed a bug for Patient Level CD/DVD burning 
+
 Version 1.6 - 06/05/2019
 - Download CD distribution for CD burner
 - New Viewer distribution based on Weasis (https://dcm4che.atlassian.net/) thanks to Mark Bonucci
