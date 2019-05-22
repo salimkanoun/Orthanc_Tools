@@ -205,7 +205,7 @@ public class Read_Orthanc {
 			JsonObject value = (JsonObject) tags.get(tag);
 			type1 = value.get("Type").getAsString();
 			if (type1.equals("String")) {
-				info += (tag + " " + value.get("Name").getAsString()
+				info += (tag.toUpperCase() + " " + value.get("Name").getAsString()
 					+ ": " + value.get("Value").getAsString() + "\n");
 			} else {
 				if( type1.equals("Sequence")) {
