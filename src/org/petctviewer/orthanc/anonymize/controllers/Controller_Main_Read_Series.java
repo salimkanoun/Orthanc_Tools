@@ -57,6 +57,14 @@ public class Controller_Main_Read_Series implements ActionListener {
 					ImagePlus ip=reader.readSerie(ids.get(i));
 
 					imagestacks.add(ip);
+
+					if(ip.getStackSize()>1) {
+						Custom_StackWindow window=new Custom_StackWindow(ip);
+						window.setVisible(true);
+					}else {
+						ip.show();
+					}
+					
 				}
 				
 				if(startViewer) {
@@ -75,6 +83,8 @@ public class Controller_Main_Read_Series implements ActionListener {
 					
 				}
 				
+				
+				
 				return null;
 			}
 
@@ -82,14 +92,6 @@ public class Controller_Main_Read_Series implements ActionListener {
 			public void done(){
 				vue.enableReadButton(true);
 				vue.setStateMessage("Reading Done", "green", 4);
-				for(ImagePlus ip: imagestacks) {
-					if(ip.getStackSize()>1) {
-						Custom_StackWindow window=new Custom_StackWindow(ip);
-						window.setVisible(true);
-					}else {
-						ip.show();
-					}
-				}
 			
 			}
 		};
