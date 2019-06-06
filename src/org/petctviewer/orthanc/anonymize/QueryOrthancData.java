@@ -44,6 +44,36 @@ public class QueryOrthancData {
 	public QueryOrthancData(OrthancRestApis connexion) {
 		this.connexion=connexion;
 	}
+	
+	public Patient getPatient(String patientID) {
+		StringBuilder answer=connexion.makeGetConnectionAndStringBuilder("/patients/"+ patientID);
+		JsonObject jsonResponse=parserJson.parse(answer.toString()).getAsJsonObject();			
+		JsonObject mainPatientTag=jsonResponse.get("MainDicomTags").getAsJsonObject();
+		
+		String patientName="N/A";
+		if(mainPatientTag.has("PatientName")) {
+			patientName=mainPatientTag.get("PatientName").getAsString();
+		}
+		
+		String patientId="N/A";
+		if(mainPatientTag.has("PatientID")) {
+			patientId=mainPatientTag.get("PatientID").getAsString();
+		}
+		
+		String patientSex="N/A";
+		if(mainPatientTag.has("PatientSex")) {
+			patientSex=mainPatientTag.get("PatientSex").getAsString();
+		}
+		
+
+		String patientDobString = null;
+		if(mainPatientTag.has("PatientBirthDate")) {
+			patientDobString=mainPatientTag.get("PatientBirthDate").getAsString();
+		}
+		
+		return new Patient(patientName, patientId, patientDobString, patientSex, patientID);
+		
+	}
 	/*
 	public ArrayList<Patient> findPatients(String inputType, String input, String date, String studyDesc) {
 		

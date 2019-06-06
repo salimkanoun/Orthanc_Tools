@@ -27,7 +27,6 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,7 +45,6 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -55,15 +53,13 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.petctviewer.orthanc.Orthanc_Tools;
+import org.petctviewer.orthanc.anonymize.QueryOrthancData;
 import org.petctviewer.orthanc.anonymize.VueAnon;
+import org.petctviewer.orthanc.anonymize.datastorage.Patient;
+import org.petctviewer.orthanc.anonymize.datastorage.Study2;
 import org.petctviewer.orthanc.export.ExportZip;
 import org.petctviewer.orthanc.monitoring.Orthanc_Monitoring;
 import org.petctviewer.orthanc.setup.OrthancRestApis;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 public class CD_Burner {
 	
@@ -81,17 +77,18 @@ public class CD_Burner {
 	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS");
 	private SimpleDateFormat parserDate = new SimpleDateFormat("yyyyMMdd");
 	private SimpleDateFormat formatter;
+	private QueryOrthancData ortancQuery;
 	
 	private Date datenow;
 	private OrthancRestApis connexion;
 	private Timer timer;
-	private JsonParser parser=new JsonParser();
 	private HashMap<String, Object[]> burningStatus=new HashMap<String, Object[]>();
 	
 	private boolean levelPatient;
 	
 	public CD_Burner (OrthancRestApis connexion, JTable table_burning_history) {
 		this.connexion=connexion;
+		ortancQuery=new QueryOrthancData(connexion); 
 		this.table_burning_history=table_burning_history;
 		setCDPreference();
 		formatter= new SimpleDateFormat(dateFormatChoix);
@@ -115,10 +112,16 @@ public class CD_Burner {
 				@Override
 				public void run() {
 					monitoring.makeMonitor();
-					if(levelPatient) {
-						makeCDFromPatient(monitoring.newStablePatientID);
-					}else {
-						makeCD(monitoring.newStableStudyID);
+					try {
+						if(levelPatient) {
+								makeCDFromPatient(monitoring.newStablePatientID);
+						}else {
+							makeCD(monitoring.newStableStudyID);
+						}
+					
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
 					
 					monitoring.clearAllList();
@@ -149,90 +152,61 @@ public class CD_Burner {
 		}
 	}
 	
-	private void makeCDFromPatient(List<String> newStablePatientID) {
+	private void makeCDFromPatient(List<String> newStablePatientID) throws Exception {
 		for (String patientID : newStablePatientID) {
 			//Store the Row number where we are going to display progress
 			int rownumber=table_burning_history.getRowCount();
+			Patient patient =ortancQuery.getPatient(patientID);
 			
-			StringBuilder answer=connexion.makeGetConnectionAndStringBuilder("/patients/"+ patientID);
-			JsonObject jsonResponse=parser.parse(answer.toString()).getAsJsonObject();			
-			JsonObject mainPatientTag=jsonResponse.get("MainDicomTags").getAsJsonObject();
-			JsonArray studiesOrthancId=jsonResponse.get("Studies").getAsJsonArray();
+			ArrayList<Study2> studies= ortancQuery.getAllStudiesOfPatient(patientID, true);
 			
-			int nbOfStudies=studiesOrthancId.size();
-			
-			if(nbOfStudies==1) {
+			if(studies.size()==1) {
 				List<String> newStableStudyID=new ArrayList<String>();
-				newStableStudyID.add(studiesOrthancId.get(0).getAsString());
+				newStableStudyID.add(studies.get(0).getOrthancId());
 				makeCD(newStableStudyID);
 				continue;
 			}
 			
-			
-			//Get value of interest : Patient Name / ID / DOB / study date and description
-			String nom="N/A";
-			if(mainPatientTag.has("PatientName")) {
-				nom=mainPatientTag.get("PatientName").getAsString();
-			}
-			
-			String id="N/A";
-			if(mainPatientTag.has("PatientID")) {
-				id=mainPatientTag.get("PatientID").getAsString();
-			}
-
-			
 			String formattedPatientDOB="N/A";
 			try {
-				String patientDOB=mainPatientTag.get("PatientBirthDate").getAsString();
+				String patientDOB=patient.getPatientBirthDate();
 				Date patientDOBDate = parserDate.parse(patientDOB);
 				formattedPatientDOB = formatter.format(patientDOBDate);
 			}catch (Exception e) {
 				e.printStackTrace();
 			}
 			
+			DatInfos[] datInfos=new DatInfos[studies.size()];
 			
-			StringBuilder answerStudies=connexion.makeGetConnectionAndStringBuilder("/patients/"+ patientID+"/studies?expand");
-			JsonArray jsonStudiesResponse=parser.parse(answerStudies.toString()).getAsJsonArray();
+			ArrayList<String> uniqueModalitiesForPrimera = new ArrayList<String>();
 			
-			DatInfos[] datInfos=new DatInfos[jsonStudiesResponse.size()];
 			
-			for(int i=0; i<jsonStudiesResponse.size() ; i++) {
-				JsonObject studyJsonObj=jsonStudiesResponse.get(i).getAsJsonObject();
-				JsonObject mainDicomTags=studyJsonObj.get("MainDicomTags").getAsJsonObject();
+			for(int i=0; i<studies.size() ; i++) {
 				
 				String formattedDateExamen = "N/A";
-				if(mainDicomTags.has("StudyDate")) {
-					try {
-						Date dateExamen = parserDate.parse(mainDicomTags.get("StudyDate").getAsString());
-						formattedDateExamen = formatter.format(dateExamen);
-					} catch (ParseException e) {
-						e.printStackTrace();
+				if(studies.get(i).getDate()!=null) formattedDateExamen=formatter.format(studies.get(i).getDate());
+				String studyDescription=studies.get(i).getStudyDescription();	
+				String accessionNumber=studies.get(i).getAccession();
+				String modalitiesInStudy = String.join("//", studies.get(i).getModalitiesInStudy());
+				for(String modality: studies.get(i).getModalitiesInStudy()) {
+					if(!uniqueModalitiesForPrimera.contains(modality)) {
+						uniqueModalitiesForPrimera.add(modality);
 					}
-					
 				}
-				
-				
-				String studyDescription="N/A";
-				if(mainDicomTags.has("StudyDescription")) {
-					studyDescription=mainDicomTags.get("StudyDescription").getAsString();
-				}
-						
-				String accessionNumber="N/A";
-				if(mainDicomTags.has("AccessionNumber")) {
-					accessionNumber=mainDicomTags.get("AccessionNumber").getAsString();
-				}
-				datInfos[i]=new DatInfos(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB);
+				datInfos[i]=new DatInfos(patient.getName(), patient.getPatientId(), formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB, modalitiesInStudy);
 				
 			}
+			
+			String modalitiesInStudyPrimera = String.join("//", uniqueModalitiesForPrimera);
 
 			//Update display status
-			(( DefaultTableModel) table_burning_history.getModel()).addRow(new String[]{nom, id, formattedPatientDOB ,"Mutiples", nbOfStudies+" studies" ,"Recieved", null });
+			(( DefaultTableModel) table_burning_history.getModel()).addRow(new String[]{patient.getName(), patient.getPatientId(), formattedPatientDOB ,"Mutiples", studies.size()+" studies" ,"Recieved", null });
 			table_burning_history.setValueAt("Retriving DICOMs", rownumber, 5);
 			
 			//Generate the ZIP with Orthanc IDs dicom
 			ArrayList<String> orthancIds=new ArrayList<String>();
-			for(JsonElement studyID : studiesOrthancId) {
-				orthancIds.add(studyID.getAsString());
+			for(Study2 study:studies) {
+				orthancIds.add(study.getOrthancId());
 			}
 			File zip=generateZip(orthancIds);
 			
@@ -248,10 +222,10 @@ public class CD_Burner {
 				File dat=printDat(datInfos);
 				//Generation du Dat
 				//File dat = printDat(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB );
-				requestFileAndID=createCdBurnerEpson(dat, discType, nom, "Mutiples");
+				requestFileAndID=createCdBurnerEpson(dat, discType, patient.getName(), "Mutiples");
 				
 			} else if(burnerManifacturer.equals("Primera")) {
-				requestFileAndID=createCdBurnerPrimera(nom, id, "Mutiples", nbOfStudies+" studies", "Mutiples", formattedPatientDOB ,nbOfStudies);
+				requestFileAndID=createCdBurnerPrimera(patient.getName(), patient.getPatientId(), "Mutiples", studies.size()+" studies", "Mutiples", formattedPatientDOB ,studies.size(), modalitiesInStudyPrimera);
 			}
 			
 			//Put the JDF base name associated to the Row number of the table for Monitoring
@@ -282,52 +256,35 @@ public class CD_Burner {
 	/**
 	 * Make CD structure, download ZIP from Orthanc at study level and make CD process creation
 	 * @param newStableStudyID
+	 * @throws Exception 
 	 */
-	public void makeCD(List<String> newStableStudyID) {
+	public void makeCD(List<String> newStableStudyID) throws Exception {
+	
 		for (String studyID : newStableStudyID) {
 			
+			Study2 study=ortancQuery.getStudyDetails(studyID, true);
+			Patient patient= ortancQuery.getPatient(study.getParentPatientId());
 			//Store the Row number where we are going to display progress
 			int rownumber=table_burning_history.getRowCount();
-			StringBuilder answer=connexion.makeGetConnectionAndStringBuilder("/studies/"+ studyID);
-			JsonObject response=parser.parse(answer.toString()).getAsJsonObject();			
-			JsonObject mainPatientTag=response.get("PatientMainDicomTags").getAsJsonObject();
 			
 			//Get value of interest : Patient Name / ID / DOB / study date and description
-			String nom="N/A";
-			if(mainPatientTag.has("PatientName")) {
-				nom=mainPatientTag.get("PatientName").getAsString();
-			}
-			
-			String id="N/A";
-			if(mainPatientTag.has("PatientID")) {
-				id=mainPatientTag.get("PatientID").getAsString();
-			}
-
-			JsonObject mainDicomTag=response.get("MainDicomTags").getAsJsonObject();
-			
-			String studyDescription="N/A";
-			if(mainDicomTag.has("StudyDescription")) {
-				studyDescription=mainDicomTag.get("StudyDescription").getAsString();
-			}
-
-			String accessionNumber="N/A";
-			if(mainDicomTag.has("AccessionNumber")) {
-				mainDicomTag.get("AccessionNumber").getAsString();
-			}
-
+			String nom=patient.getName();
+			String id=patient.getPatientId();
+			String studyDescription=study.getStudyDescription();
+			String accessionNumber=study.getAccession();
+		
 			String formattedDateExamen="N/A";
-			try {
-				String studyDate=mainDicomTag.get("StudyDate").getAsString();
-				Date dateExamen = parserDate.parse(studyDate);
-				formattedDateExamen = formatter.format(dateExamen);
-			}catch (Exception e) { }
+			if(study.getDate()!=null) {
+				formattedDateExamen = formatter.format(study.getDate());
+			}
 			
 			String formattedPatientDOB="N/A";
 			try {
-				String patientDOB=mainPatientTag.get("PatientBirthDate").getAsString();
-				Date patientDOBDate = parserDate.parse(patientDOB);
+				Date patientDOBDate = parserDate.parse(patient.getPatientBirthDate());
 				formattedPatientDOB = formatter.format(patientDOBDate);
 			}catch (Exception e) { }
+			
+			String modalitiesInStudy = String.join("//", study.getModalitiesInStudy());
 			
 			//Update display status
 			(( DefaultTableModel) table_burning_history.getModel()).addRow(new String[]{nom,id, formattedPatientDOB , formattedDateExamen ,studyDescription,"Recieved" });
@@ -347,11 +304,11 @@ public class CD_Burner {
 			if (burnerManifacturer.equals("Epson")) {
 				String discType=determineDiscType();
 				//Generation du Dat
-				File dat = printDat(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB );
+				File dat = printDat(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB, modalitiesInStudy );
 				requestFileAndID=createCdBurnerEpson(dat, discType, nom, formattedDateExamen);
 				
 			} else if(burnerManifacturer.equals("Primera")) {
-				requestFileAndID=createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB, 1);
+				requestFileAndID=createCdBurnerPrimera(nom, id, formattedDateExamen, studyDescription, accessionNumber, formattedPatientDOB, 1, modalitiesInStudy);
 			}
 			
 			//Put the JDF base name associated to the Row number of the table for Monitoring
@@ -362,9 +319,6 @@ public class CD_Burner {
 			//Add cancel Button
 			table_burning_history.setValueAt(requestFileAndID[1], rownumber, 7);
 			table_burning_history.setValueAt(requestFileName, rownumber, 8);
-			
-			//table_burning_history.setValueAt(new Cancel_Cd_Button(requestFileName,(String) requestFileAndID[1],isPrimera), rownumber, 6);
-			
 			
 			//On efface tout a la sortie JVM
 			recursiveDeleteOnExit(folder);
@@ -502,7 +456,7 @@ public class CD_Burner {
 	 * @param studyDescription
 	 * @param discType
 	 */
-	private Object[] createCdBurnerPrimera(String nom, String id, String date, String studyDescription, String accessionNumber, String patientDOB, int nbStudies){
+	private Object[] createCdBurnerPrimera(String nom, String id, String date, String studyDescription, String accessionNumber, String patientDOB, int nbStudies, String modalities){
 		//Command Keys/Values for Primera Robot
 		String txtRobot=new String();
 		String jobId=createJobID(nom, date);
@@ -536,7 +490,8 @@ public class CD_Burner {
 				+ "MergeField="+studyDescription+"\n"
 				+ "MargeField="+patientDOB+"\n"
 				+ "MergeField="+accessionNumber+"\n"
-				+ "MergeField="+nbStudies+"\n";
+				+ "MergeField="+nbStudies+"\n"
+				+ "MergeField="+modalities+"\n";
 		
 		// Making a .JRQ file in the watched folder
 		File f = new File(epsonDirectory + File.separator + "CD_"+dateFormat.format(datenow)+".JRQ");
@@ -549,7 +504,7 @@ public class CD_Burner {
 	}
 	
 	//Creer le fichier DAT pour injecter NOM, Date, Modalite
-	private File printDat(String nom, String id, String date, String studyDescription, String accessionNumber, String patientDOB) {
+	private File printDat(String nom, String id, String date, String studyDescription, String accessionNumber, String patientDOB, String modalities) {
 
        //On parse le nom pour enlever les ^ et passer le prenom en minuscule
        int separationNomPrenom=nom.indexOf("^", 0);
@@ -565,6 +520,7 @@ public class CD_Burner {
 					+ "studyDescription="+ studyDescription+"\n"
 					+ "accessionNumber="+ accessionNumber+"\n"
 					+ "patientDOB="+patientDOB+"\n"
+					+ "modalities="+modalities+"\n"
 					+ "numberOfStudies=1";
 		
 		
@@ -587,6 +543,7 @@ public class CD_Burner {
 			String datFile = "patientName="+nom.replaceAll("\\^", " ")+"\n"
 						+ "patientId=" + infos[0].id +"\n"
 						+ "studyDate="+ infos[0].date + "\n"
+						+ "modalities="+infos[0].modalities+"\n"
 						//patient date is a duplicate of studydate (depreciated)
 						+ "patientDate="+ infos[0].patientDOB + "\n"
 						+ "studyDescription="+ infos[0].studyDescription+"\n"
@@ -597,7 +554,8 @@ public class CD_Burner {
 			for(int i=1; i<infos.length ; i++) {
 				datFile+= "studyDate"+(i+1)+"="+ infos[i].date + "\n"
 						+ "studyDescription"+(i+1)+"="+ infos[i].studyDescription+"\n"
-						+ "accessionNumber"+(i+1)+"="+ infos[i].accessionNumber+"\n";
+						+ "accessionNumber"+(i+1)+"="+ infos[i].accessionNumber+"\n"
+						+ "modalities"+(i+1)+"="+infos[i].modalities+"\n";
 			}
 			
 			
@@ -711,9 +669,6 @@ public class CD_Burner {
 				levelPatient=jPrefer.getBoolean("Burner_levelPatient", false);
 				playSounds=jPrefer.getBoolean("Burner_playSounds", false);
 				
-				
-		
-				
 	}
 	
 	public boolean getIsPrimera() {
@@ -769,15 +724,16 @@ public class CD_Burner {
 	
 	private class DatInfos {
 		
-		 public String nom, id, date, studyDescription, accessionNumber, patientDOB;
+		 public String nom, id, date, studyDescription, accessionNumber, patientDOB, modalities;
 		
-		 public DatInfos(String nom, String id, String date, String studyDescription, String accessionNumber, String patientDOB) {
+		 public DatInfos(String nom, String id, String date, String studyDescription, String accessionNumber, String patientDOB, String modalities) {
 			 this.nom=nom;
 			 this.id=id;
 			 this.date=date;
 			 this.studyDescription=studyDescription;
 		     this.accessionNumber=accessionNumber;
 		     this.patientDOB=patientDOB;
+		     this.modalities=modalities;
 		 }
 	}
 }
