@@ -106,8 +106,8 @@ public class AnonRequest {
 		// Keep some Private tags usefull for PET/CT or Scintigraphy
 		tags.add(new Tags("7053,1000", Choice.KEEP,null)); // Philips
 		tags.add(new Tags("7053,1009", Choice.KEEP,null)); // Philips
-		tags.add(new Tags("0009,103b", Choice.KEEP,null)); // GE
-		tags.add(new Tags("0009,100d", Choice.KEEP,null)); // GE
+		tags.add(new Tags("0009,103B", Choice.KEEP,null)); // GE
+		tags.add(new Tags("0009,100D", Choice.KEEP,null)); // GE
 		tags.add(new Tags("0011,1012", Choice.KEEP,null));
 		
 		if (!this.connexionHttp.getIfVersionAfter131()) {
