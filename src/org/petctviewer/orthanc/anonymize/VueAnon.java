@@ -2171,6 +2171,7 @@ public class VueAnon extends JFrame {
 	
 	public void setStateMessage(String message, String color, int seconds) {
 		state.setText("<html><font color='"+color+"'>"+message+"</font></html>");
+		//SK EXISTE METHODE DE TIMER DANS AWT EST PLUS THREADSAFE
 		if(seconds !=(-1)) {
 			
 			timerState.schedule(new TimerTask() {

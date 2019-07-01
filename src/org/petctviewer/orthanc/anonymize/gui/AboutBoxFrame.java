@@ -88,7 +88,7 @@ public class AboutBoxFrame extends JDialog{
 		mainPanel.add(panel_north, BorderLayout.NORTH);
 		panel_north.setBorder(new LineBorder(Color.LIGHT_GRAY));
 		panel_north.setLayout(new GridLayout(0, 1, 0, 0));
-		JLabel title = new JLabel("Orthanc Tools v.1.6");
+		JLabel title = new JLabel("Orthanc Tools v.1.6.2");
 		title.setForeground(Color.RED);
 		panel_north.add(title);
 		title.setBorder(new EmptyBorder(3, 150, 3, 150));
