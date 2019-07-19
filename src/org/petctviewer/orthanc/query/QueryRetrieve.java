@@ -67,13 +67,20 @@ public class QueryRetrieve {
 			String indexContent = getIndexContent(idQuery,answer);
 			JsonObject contentJson= (JsonObject) parserJson.parse(indexContent);
 
-			//SK peut etre ici faire safety check ?
 			String patientName=contentJson.get("0010,0010").getAsJsonObject().get("Value").getAsString();
 			String patientID=contentJson.get("0010,0020").getAsJsonObject().get("Value").getAsString();
 			String studyInstanceUID=contentJson.get("0020,000d").getAsJsonObject().get("Value").getAsString();
 			String studyDate2=contentJson.get("0008,0020").getAsJsonObject().get("Value").getAsString();
 			String accessionNumber2=contentJson.get("0008,0050").getAsJsonObject().get("Value").getAsString();
 			String studyDescription2=contentJson.get("0008,1030").getAsJsonObject().get("Value").getAsString();
+			
+			String modalitiesInStudy="*";
+			try {
+				modalitiesInStudy=contentJson.get("0008,0061").getAsJsonObject().get("Value").getAsString();
+				
+			}catch(Exception e) {
+				
+			}
 			
 			Date studyDateParsed = null;
 			try {
@@ -82,7 +89,7 @@ public class QueryRetrieve {
 				e.printStackTrace();
 			}
 			
-			patients[i] = new StudyDetails(patientName, patientID, studyDateParsed, studyDescription2, modality, accessionNumber2, studyInstanceUID, aet, idQuery,answer);
+			patients[i] = new StudyDetails(patientName, patientID, studyDateParsed, studyDescription2, modalitiesInStudy, accessionNumber2, studyInstanceUID, aet, idQuery,answer);
 			
 		}
 		

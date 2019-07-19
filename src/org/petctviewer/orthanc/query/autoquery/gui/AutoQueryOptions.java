@@ -290,6 +290,7 @@ public class AutoQueryOptions extends JDialog {
 		chckbxUs.setEnabled(activate);
 		chckbxXa.setEnabled(activate);
 		chckbxMg.setEnabled(activate);
+		chckbxDx.setEnabled(activate);
 		
 	}
 
