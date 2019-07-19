@@ -1,5 +1,8 @@
 Pending Change for next Release
 
+-- Next version -- 
+Debug missing modality filter in autoQuery
+
 Version 1.6.2 - 01/07/2019
 - Add Modalities to tag for CD Label Printing
 
