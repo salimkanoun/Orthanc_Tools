@@ -426,8 +426,9 @@ public class QueryOrthancData {
 	
 	/**
 	 * For AutoQuery
+	 * @throws Exception 
 	 */
-	public Study2 getStudyObjbyStudyInstanceUID(String studyInstanceUID) {
+	public Study2 getStudyObjbyStudyInstanceUID(String studyInstanceUID) throws Exception {
 
 		JsonObject query=new JsonObject();
 		query.addProperty("Level", "Study");
@@ -438,7 +439,10 @@ public class QueryOrthancData {
 		query.add("Query", queryDetails);
 		
 		StringBuilder sb=connexion.makePostConnectionAndStringBuilder("/tools/find", query.toString());
-		JsonObject studyAnswer=parserJson.parse(sb.toString()).getAsJsonArray().get(0).getAsJsonObject();
+		System.out.println("resultat Tool"+sb);
+		JsonArray resultArray=parserJson.parse(sb.toString()).getAsJsonArray();
+		if(resultArray.size()==0) throw new Exception("not found in Orthanc");
+		JsonObject studyAnswer=resultArray.get(0).getAsJsonObject();
 		Study2 study=answerToStudyObject(studyAnswer);
 		
 		return study;

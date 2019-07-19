@@ -66,7 +66,7 @@ public class QueryRetrieve {
 			int answer=answers.get(i).getAsInt();
 			String indexContent = getIndexContent(idQuery,answer);
 			JsonObject contentJson= (JsonObject) parserJson.parse(indexContent);
-
+			System.out.println(contentJson);
 			String patientName=contentJson.get("0010,0010").getAsJsonObject().get("Value").getAsString();
 			String patientID=contentJson.get("0010,0020").getAsJsonObject().get("Value").getAsString();
 			String studyInstanceUID=contentJson.get("0020,000d").getAsJsonObject().get("Value").getAsString();
@@ -79,9 +79,9 @@ public class QueryRetrieve {
 				modalitiesInStudy=contentJson.get("0008,0061").getAsJsonObject().get("Value").getAsString();
 				
 			}catch(Exception e) {
-				
+				e.printStackTrace();
 			}
-			
+			System.out.println(modalitiesInStudy);
 			Date studyDateParsed = null;
 			try {
 				studyDateParsed = dateParser.parse(studyDate2);
@@ -154,6 +154,7 @@ public class QueryRetrieve {
 	 */
 	public JsonObject retrieve(String queryID, int answer, String retrieveAET) throws Exception {
 		StringBuilder sb=connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve/", retrieveAET);
+		System.out.println(sb);
 		if(sb==null) {
 			throw new Exception("Retrieved Failed");
 		}
