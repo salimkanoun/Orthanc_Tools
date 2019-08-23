@@ -154,11 +154,13 @@ public class QueryRetrieve {
 	 */
 	public JsonObject retrieve(String queryID, int answer, String retrieveAET) throws Exception {
 		StringBuilder sb=connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve/", retrieveAET);
-		System.out.println(sb);
-		if(sb==null) {
+		System.out.println("reponse Retrieve"+sb.toString());
+		System.out.println("Fin reponse Retrieve");
+		if(sb==null || sb.toString().equals("{}")) {
 			throw new Exception("Retrieved Failed");
 		}
 		JsonObject response=parserJson.parse(sb.toString()).getAsJsonObject();
+		
 		return response;
 	}
 	
