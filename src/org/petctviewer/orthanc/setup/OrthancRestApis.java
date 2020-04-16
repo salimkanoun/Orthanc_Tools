@@ -314,6 +314,7 @@ public class OrthancRestApis {
 			versionHigher131=isVersionAfter131();
 			connected=true;	
 		}catch(Exception e) {
+			System.out.print(e);
 			connected=false;
 			JOptionPane.showMessageDialog(null, "Orthanc Unreachable", "No Reachable", JOptionPane.ERROR_MESSAGE);
 		}
@@ -326,6 +327,7 @@ public class OrthancRestApis {
 	 * @return
 	 */
 	private boolean isVersionAfter131() {
+		if(orthancVersion.equals("mainline")) return true;
 		int test=versionCompare(orthancVersion, "1.3.1");
 		if (test>0) return true; else return false;
 		
