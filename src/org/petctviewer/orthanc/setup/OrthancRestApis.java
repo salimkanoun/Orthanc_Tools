@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -36,13 +37,15 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 /**
- * Permet de recuperer l'adresse du serveur Orthanc a partir des settings de BIdatabase ou des settings defini dans le settings panel des Orthanc Plugin
+ * Permet de recuperer l'adresse du serveur Orthanc a partir des settings de
+ * BIdatabase ou des settings defini dans le settings panel des Orthanc Plugin
  * et permet de creer les connexion get et post
+ * 
  * @author kanoun_s
  *
  */
 public class OrthancRestApis {
-	
+
 	private Preferences jpreferPerso = VueAnon.jprefer;
 	private String fullAddress;
 	private String authentication;
@@ -50,26 +53,41 @@ public class OrthancRestApis {
 	private boolean versionHigher131;
 	private boolean connected;
 	private String localAETName;
-	private JsonParser jsonParser=new JsonParser();
-	private JsonParser parser=new JsonParser();
-	
-	
-	public OrthancRestApis(String fullAddress)  {
-		if(fullAddress==null) {
+	private JsonParser jsonParser = new JsonParser();
+	private JsonParser parser = new JsonParser();
+
+	private String protocol;
+	private String host;
+	private Integer port;
+	private String rootPath;
+
+	public OrthancRestApis(String fullAddress) {
+		if (fullAddress == null) {
 			refreshServerAddress();
-		}else {
+		} else {
 			this.fullAddress = fullAddress;
 			getSystemInformationsAndTest();
 		}
 
 	}
-	
+
 	public void refreshServerAddress() {
-		
-		int serverNum=jpreferPerso.getInt("currentOrthancServer", 1);
-		String ip =jpreferPerso.get("ip"+serverNum, "http://localhost");
-		String port =jpreferPerso.get("port"+serverNum, "8042");
+
+		int serverNum = jpreferPerso.getInt("currentOrthancServer", 1);
+		String ip = jpreferPerso.get("ip" + serverNum, "http://localhost");
+		String port = jpreferPerso.get("port" + serverNum, "8042");
 		this.fullAddress = ip + ":" + port;
+
+		try {
+			URL url = new URL(ip);
+			this.host = url.getHost();
+			this.port = Integer.parseInt(port);
+			this.protocol = url.getProtocol();
+			this.rootPath = url.getFile();
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		if(jpreferPerso.get("username"+serverNum, null) != null && jpreferPerso.get("password"+serverNum, null) != null){
 			authentication = Base64.getEncoder().encodeToString((jpreferPerso.get("username"+serverNum, null) + ":" + jpreferPerso.get("password"+serverNum, null)).getBytes());
@@ -83,7 +101,8 @@ public class OrthancRestApis {
 	private HttpURLConnection makeGetConnection(String apiUrl) throws Exception {
 		
 		HttpURLConnection conn=null;
-		URL url = new URL(fullAddress+apiUrl);
+		// URL url = new URL(fullAddress+apiUrl);
+		URL url = new URL(this.protocol, this.host, this.port, this.rootPath+apiUrl);
 		conn = (HttpURLConnection) url.openConnection();
 		conn.setDoOutput(true);
 		conn.setRequestMethod("GET");
@@ -106,7 +125,8 @@ public class OrthancRestApis {
 		
 		HttpURLConnection conn=null;
 		try {
-			URL url = new URL(fullAddress+apiUrl);
+			// URL url = new URL(fullAddress+apiUrl);
+			URL url = new URL(this.protocol, this.host, this.port, this.rootPath+apiUrl);
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestProperty("Accept", "image/png");
 			conn.setDoOutput(true);
@@ -153,7 +173,7 @@ public class OrthancRestApis {
 	public HttpURLConnection makePostConnection(String apiUrl, String post) throws Exception {
 
 		HttpURLConnection conn = null ;
-			URL url = new URL(fullAddress+apiUrl);
+			URL url = new URL(this.protocol, this.host, this.port, this.rootPath+apiUrl);
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setDoOutput(true);
 			conn.setRequestMethod("POST");
@@ -174,7 +194,7 @@ public class OrthancRestApis {
 	public HttpURLConnection makePutConnection(String apiUrl, String post) throws Exception {
 
 		HttpURLConnection conn = null ;
-			URL url = new URL(fullAddress+apiUrl);
+			URL url = new URL(this.protocol, this.host, this.port, this.rootPath+apiUrl);
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setDoOutput(true);
 			conn.setRequestMethod("PUT");
@@ -197,7 +217,7 @@ public class OrthancRestApis {
 		HttpURLConnection conn =null;
 		
 		try {
-			URL url=new URL(fullAddress+apiUrl);
+			URL url = new URL(this.protocol, this.host, this.port, this.rootPath+apiUrl);
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setDoOutput(true);
 			conn.setRequestMethod("POST");
@@ -282,7 +302,7 @@ public class OrthancRestApis {
 	
 	public boolean makeDeleteConnection(String apiUrl) {
 		try {
-			URL url=new URL(fullAddress+apiUrl);
+			URL url = new URL(this.protocol, this.host, this.port, this.rootPath+apiUrl);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setDoOutput(true);
 			conn.setRequestMethod("DELETE");
