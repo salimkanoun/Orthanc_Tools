@@ -48,9 +48,6 @@ public class AutoQueryShowResultDialog extends JDialog {
 	private final JPanel contentPanel = new JPanel();
 	private JTable table;
 	boolean validate;
-
-	
-	//SK AJOUTER EXPORT VERS MAIN FRAME DANS ANONYMISATION LIST ET EXPORT LIST
 	
 	/**
 	 * Create the dialog.

@@ -66,8 +66,7 @@ public class QueryRetrieve {
 			int answer=answers.get(i).getAsInt();
 			String indexContent = getIndexContent(idQuery,answer);
 			JsonObject contentJson= (JsonObject) parserJson.parse(indexContent);
-
-			//SK peut etre ici faire safety check ?
+			System.out.println(contentJson);
 			String patientName=contentJson.get("0010,0010").getAsJsonObject().get("Value").getAsString();
 			String patientID=contentJson.get("0010,0020").getAsJsonObject().get("Value").getAsString();
 			String studyInstanceUID=contentJson.get("0020,000d").getAsJsonObject().get("Value").getAsString();
@@ -75,6 +74,14 @@ public class QueryRetrieve {
 			String accessionNumber2=contentJson.get("0008,0050").getAsJsonObject().get("Value").getAsString();
 			String studyDescription2=contentJson.get("0008,1030").getAsJsonObject().get("Value").getAsString();
 			
+			String modalitiesInStudy="*";
+			try {
+				modalitiesInStudy=contentJson.get("0008,0061").getAsJsonObject().get("Value").getAsString();
+				
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+			System.out.println(modalitiesInStudy);
 			Date studyDateParsed = null;
 			try {
 				studyDateParsed = dateParser.parse(studyDate2);
@@ -82,7 +89,7 @@ public class QueryRetrieve {
 				e.printStackTrace();
 			}
 			
-			patients[i] = new StudyDetails(patientName, patientID, studyDateParsed, studyDescription2, modality, accessionNumber2, studyInstanceUID, aet, idQuery,answer);
+			patients[i] = new StudyDetails(patientName, patientID, studyDateParsed, studyDescription2, modalitiesInStudy, accessionNumber2, studyInstanceUID, aet, idQuery,answer);
 			
 		}
 		
@@ -147,10 +154,13 @@ public class QueryRetrieve {
 	 */
 	public JsonObject retrieve(String queryID, int answer, String retrieveAET) throws Exception {
 		StringBuilder sb=connexion.makePostConnectionAndStringBuilder("/queries/" + queryID + "/answers/" + answer + "/retrieve/", retrieveAET);
-		if(sb==null) {
+		System.out.println("reponse Retrieve"+sb.toString());
+		System.out.println("Fin reponse Retrieve");
+		if(sb==null || sb.toString().equals("{}")) {
 			throw new Exception("Retrieved Failed");
 		}
 		JsonObject response=parserJson.parse(sb.toString()).getAsJsonObject();
+		
 		return response;
 	}
 	

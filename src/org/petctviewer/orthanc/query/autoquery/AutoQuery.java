@@ -109,6 +109,7 @@ public class AutoQuery  {
 		
 		StudyDetails[] results=null;
 		try {
+			System.out.println("salim");
 			//Selectionne l'AET de query
 			//On format les date pour avoir la bonne string
 			Date From=null;
@@ -123,13 +124,15 @@ public class AutoQuery  {
 			if (From!=null && To==null) date=df.format(From)+"-";
 			if (From==null && To==null) date="*";
 			//On lance la query
+			System.out.println("salim2");
 			if (StringUtils.equals(name, "*")==false || StringUtils.equals(id, "*")==false || StringUtils.equals(dateFrom, "*")==false || StringUtils.equals(dateTo, "*")==false || StringUtils.equals(modality, "*")==false || StringUtils.equals(studyDescription, "*")==false|| StringUtils.equals(accessionNumber, "*")==false) {
 				results=queryRetrieve.getStudiesResults("Study", name, id, date, modality, studyDescription, accessionNumber, aet);
 			}
 			else {
 				results=null;
 			}
-			
+			System.out.println("salim3");
+			System.out.println(results);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -147,7 +150,7 @@ public class AutoQuery  {
 	public void retrieveQuery(StudyDetails[] results, String aetRetrieve, JTextArea textAreaConsole) {
 	
 		updatePreferences();
-		
+
 		textAreaConsole.append(results.length+" Studies match,");
 		retrievedStudies=new ArrayList<JsonObject>();
 		
@@ -158,16 +161,22 @@ public class AutoQuery  {
 		
 		if (results.length<=discard){
 			int studiesRetrievedSuccess=0;
+			System.out.println("Longueur "+results.length);
 			for (int i=0; i<results.length; i++) {
+				
 				JsonObject answer=null;
 				try {
 					
 					if(this.chckbxSeriesFilter) {
+						System.out.println("ici serie filter");
 						//ICI RECUPERER L ARRAY LISTE DES STUDYUID?
 						ArrayList<JsonObject> series=filterSerie(results[i], aetRetrieve);
 						textAreaConsole.append("Downloaded " + series.size() + " series \n");
 						answer=series.get(0);
 					}else {
+						System.out.println("ici non serie filter");
+						System.out.println(results[i].getQueryID());
+						System.out.println(results[i].getAnswerNumber());
 						answer=queryRetrieve.retrieve(results[i].getQueryID(), results[i].getAnswerNumber(), aetRetrieve );
 					}
 					
@@ -176,11 +185,11 @@ public class AutoQuery  {
 					System.out.println( "Error During Retrieve Patient ID"+results[i].getPatientID() +" Study Date "+ results[i].getStudyDate() );
 					e.printStackTrace();
 				}
+				System.out.println(answer);
 				retrievedStudies.add(answer);
 			}
 			textAreaConsole.append(studiesRetrievedSuccess + " studies Retrieved \n");
-		}
-		else {
+		} else {
 			textAreaConsole.append("over limits, discarded,");
 		}
 	}
@@ -283,8 +292,14 @@ public class AutoQuery  {
 			for(int i=0 ; i<queryArray.size() ; i++){
 				JsonObject query=queryArray.get(i).getAsJsonObject();
 				String studyUID=query.get("0020,000d").getAsString();
-				Study2 studyObject=queryOrthanc.getStudyObjbyStudyInstanceUID(studyUID);
-				studies.add(studyObject);
+				System.out.println(studyUID);
+				Study2 studyObject;
+				try {
+					studyObject = queryOrthanc.getStudyObjbyStudyInstanceUID(studyUID);
+					studies.add(studyObject);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 				
 			}
 		}
