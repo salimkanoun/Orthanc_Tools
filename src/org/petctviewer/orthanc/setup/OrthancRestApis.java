@@ -56,10 +56,10 @@ public class OrthancRestApis {
 	private JsonParser jsonParser = new JsonParser();
 	private JsonParser parser = new JsonParser();
 
-	private String protocol;
-	private String host;
-	private Integer port;
-	private String rootPath;
+	private String protocol= "http";
+	private String host = "localhost";
+	private Integer port = 80;
+	private String rootPath = "";
 
 	public OrthancRestApis(String fullAddress) {
 		if (fullAddress == null) {
@@ -84,9 +84,8 @@ public class OrthancRestApis {
 			this.port = Integer.parseInt(port);
 			this.protocol = url.getProtocol();
 			this.rootPath = url.getFile();
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("Error Parsing URL");
 		}
 		
 		if(jpreferPerso.get("username"+serverNum, null) != null && jpreferPerso.get("password"+serverNum, null) != null){

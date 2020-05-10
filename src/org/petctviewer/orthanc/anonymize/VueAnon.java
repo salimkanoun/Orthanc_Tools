@@ -1142,12 +1142,10 @@ public class VueAnon extends JFrame {
 		c.gridx = 2;
 		c.gridy = 0;
 		panelTableauSeries.add(jscp3, BorderLayout.CENTER);
-		JPanel panelButton=new JPanel();
 		btnReadSeries=new JButton("Open Images");
 		btnReadSeries.addActionListener(new Controller_Main_Read_Series(this));
 		
-		panelButton.add(btnReadSeries);
-		panelTableauSeries.add(panelButton, BorderLayout.EAST);
+		panelTableauSeries.add(btnReadSeries, BorderLayout.SOUTH);
 		tablesPanel.add(panelTableauSeries,c);
 
 		mainPanel.add(tablesPanel);
