@@ -1,6 +1,9 @@
 # Orthanc_Tools
 DICOM tools built on Orthanc API in Java
 
+Disclaimer : This project is in Maintenance Only.
+This project will be replaced by Orthanc Tools JS which provide similar functionalities in a web oriented application, see https://github.com/salimkanoun/Orthanc-Tools-JS
+
 Detailled Documentation : https://github.com/salimkanoun/Orthanc_Tools/blob/master/Orthanc_Tools_Documentation.pdf
 
 YouTube demos : https://www.youtube.com/watch?v=cCvDfanQWCw&list=PLlWfh5HNr8mIK3sAe03qY8ynS569sHnGm
